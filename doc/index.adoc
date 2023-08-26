@@ -1,0 +1,14 @@
+:sectnums:
+== Hardware List
+=== Hello
+[cols="1,1"]
+|===
+
+|===
+
+== Software List
+=== Good
+[cols="1,1"]
+|===
+
+|===
