@@ -1,0 +1,9 @@
+:sectnums:
+
+include::01-background.adoc[]
+
+include::02-steps.adoc[]
+
+include::03-hardware-list.adoc[]
+include::04-software-list.adoc[]
+include::06-ref.adoc[]

@@ -1,0 +1,4 @@
+doc/~*
+.waf*
+.lock-waf*
+.vscode

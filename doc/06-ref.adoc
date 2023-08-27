@@ -1,0 +1,11 @@
+
+== Reference
+[cols="1,1"]
+|===
+| Ardupilot Copter | https://ardupilot.org/copter/index.html
+| Arduino UNO R4 Minima | https://docs.arduino.cc/hardware/uno-r4-minima
+| |
+| |
+| |
+| |
+|===

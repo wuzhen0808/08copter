@@ -1,0 +1,17 @@
+== Learning Ardupilot Code
+
+=== Basic Structure
+See here:
+https://ardupilot.org/dev/docs/learning-ardupilot-introduction.html
+
+=== Copter Code Structure
+See here:
+https://ardupilot.org/dev/docs/apmcopter-code-overview.html
+
+==== HAL(Hardware Abstract Layer)
+
+==== AP_HAL_ChibiOS::RCOutput::push_local()
+==== AP_HAL_ChibiOS::RCOutput::trigger_groups()
+
+    group.pwm_drv->tim->EGR = STM32_TIM_EGR_UG;
+==== PWMDriver

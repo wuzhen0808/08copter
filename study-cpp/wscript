@@ -1,0 +1,7 @@
+def options(opt):
+	opt.load("compiler_c compiler_cxx")
+def configure(conf):
+	conf.load('compiler_c compiler_cxx')	
+def build(bld):
+	bld(features='c cxx cxxprogram', source='a.c b.c++ main.c', target='app')
+

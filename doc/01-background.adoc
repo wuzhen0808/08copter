@@ -1,0 +1,101 @@
+// Chapter line --------------------------------//
+== Background Knowledge
+
+=== AHRS
+    Attitude and heading reference system，姿态和航向参照系统；
+    Ardupilot 使用DCM或者EKF
+
+=== Arduino
+    开发工具
+
+=== Ardupilot
+    飞控系统
+
+=== Brushless Motor
+    无刷电机
+
+=== COM
+
+=== Copter
+    旋翼无人机，参考：https://ardupilot.org/copter/docs/what-you-need.html
+
+=== DCM
+
+=== ESC（Electronic Speed Controls）
+    外设，电调
+    参考：
+    https://ardupilot.org/copter/docs/common-escs-and-motors.html
+    ESC接地和联线问题注意事项：
+    https://ardupilot.org/copter/docs/common-esc-grounding.html
+
+=== Kalman filter
+    卡尔曼滤波，用于AP高度预测？
+
+=== IMU
+    Inertial measurement unit，惯性测量单元，包括了加速度计和陀螺仪；
+
+
+=== MPU
+    
+=== PID
+    Proportional-Integral-Derivative；
+    PID控制器的比例单元（P）、积分单元（I）和微分单元（D）分别对应目前误差、过去累计误差及未来误差。     
+
+=== RC
+    遥控
+
+=== GCS
+    地面站，可选配置，建议配置；
+    地面站通过遥测(Telemetry)和无人机通讯；
+    Mission Planner is the most full-featured GCS.
+    APM Planner 2.0 is the best one on MAC/Linux.
+    MAVProxy is on linux and used for developer.
+    QGroundControl is on any platform.
+
+=== MAVLink
+    二进制的遥测协议；
+    参考：
+    https://mavlink.io/en/about/overview.html
+    最多16个通道；
+
+=== UART
+    通用异步收发协议；
+    最常用的设备间通讯协议；
+    使用两个线TX(Transmitter)、TR(Receiver)分别作为发送和接受信号；
+    Arduino主板的USB一般是通过UART作为电脑和单片机的通讯手段；
+       参考：
+    https://docs.arduino.cc/tutorials/nano-every/run-4-uart
+
+=== UART Order
+
+=== IMU    
+
+=== Barometer
+    气压表，用于测量高度；
+
+=== I2C
+    接口，可用于接入指南针；
+=== SPI
+
+=== Schematics
+    电路图，Ardupilot 支持的一些主板，请参考：
+    https://ardupilot.org/copter/docs/common-autopilots.html
+
+    某些主板的设计在这里：
+    https://github.com/ArduPilot/Schematics
+    
+=== Open hardware
+=== Peripheral Hardware
+    参考：
+    https://ardupilot.org/copter/docs/common-optional-hardware.html
+
+=== PWM
+    PWM（Pulse Width Modulation）是一种方波控制信号，用于输出和模拟"模拟信号"；
+    如果主板提供了支持PWM的引脚，那么可以直接输出一个模拟信号到此类引脚；
+    或者手动制造方波，输出到任一引脚；
+    参考：
+    https://blog.csdn.net/xq151750111/article/details/114551852
+
+=== UAV
+    无人机
+
