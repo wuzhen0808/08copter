@@ -1,0 +1,36 @@
+
+== Filters Overview
+
+=== Median Filter
+
+=== Complementary Filter
+
+    #define GYRO_PART 0.995
+    #define ACC_PART  0.005
+
+    dt = <time since last update>
+    angles.x =  GYRO_PART * (angles.x + (rates.x * dt)) +
+                ACC_PART * accel_angles.x;
+
+    互补滤波器
+    参考：
+    https://www.youtube.com/watch?v=CHSYgLfhwUo&t=1200s
+
+=== A simple implementation of discrete complementary filter
+
+    参考：
+    https://www.youtube.com/watch?v=whSw42XddsU
+
+=== Kalman filter
+    Kalman滤波
+
+=== EKF
+    扩展Kalman滤波
+
+=== Madgwick Filter
+
+    参考：
+    https://courses.cs.washington.edu/courses/cse474/17wi/labs/l4/madgwick_internal_report.pdf
+
+
+

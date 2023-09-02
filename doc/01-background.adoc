@@ -1,6 +1,14 @@
 // Chapter line --------------------------------//
 == Background Knowledge
 
+=== Accelerometer
+    x = accel_filtered.x;
+    y = accel_filtered.y;
+    z = accel_filtered.z;
+
+    accel_angles.x = atan2(y, z) * RAD_TO_DEG;
+    accel_angles.y = atan2(-1 * x, sqrt(y * y + z * z)) * RAD_TO_DEG;
+
 === AHRS
     Attitude and heading reference system，姿态和航向参照系统；
     Ardupilot 使用DCM或者EKF算法;
@@ -55,6 +63,20 @@
     APM Planner 2.0 is the best one on MAC/Linux.
     MAVProxy is on linux and used for developer.
     QGroundControl is on any platform.
+
+=== Gyroscope
+    
+    //rotational rates = degrees per second
+    unit32_t gyro_last_update = micros();
+    void compute_gyro_angles() {
+        mpu6050_read_gyro(&gyro_rates);
+        rates.x = gyro_rates.x + GYRO_X_OFFSET;
+        delta_t = (micros() - gyro_last_update) / (1000 * 1000);
+        gyro_angles.x += rates.x * delta_t;
+    }
+
+    参考：
+    https://www.youtube.com/watch?v=CHSYgLfhwUo&t=1200s
 === HRT (high resolution timer)
 
 === I2C
@@ -70,14 +92,23 @@
     Inertial measurement unit，惯性测量单元，包括了加速度计和陀螺仪；
 
     參考：
+    https://www.youtube.com/watch?v=CHSYgLfhwUo&t=1200s
     https://ww2.mathworks.cn/help/fusion/ug/Estimating-Orientation-Using-Inertial-Sensor-Fusion-and-MPU-9250.html
+
 
 === Kalman filter
     卡尔曼滤波，用于AP高度预测？
 
     參考：
+    https://www.bitcraze.io/documentation/repository/crazyflie-firmware/master/functional-areas/sensor-to-control/state_estimators/
+
     https://github.com/pronenewbits/Embedded_EKF_Library
     https://github.com/pronenewbits/Arduino_AHRS_System
+
+    https://idsc.ethz.ch/education/lectures/recursive-estimation.html
+
+=== MARG
+    Magnetic angular rate and gravity
 
 === MAVLink
     二进制的遥测协议；
@@ -85,6 +116,10 @@
     https://mavlink.io/en/about/overview.html
     最多16个通道；
 
+=== MMA
+    Mixing Motor Algorithm
+    roll,pitch,yam,thrust as the input.
+    
 
 === MPU
     
@@ -96,6 +131,8 @@
 === PID
     Proportional-Integral-Derivative；
     PID控制器的比例单元（P）、积分单元（I）和微分单元（D）分别对应目前误差、过去累计误差及未来误差。     
+    参考：
+    https://microdynamics.github.io/
 === Posix IO
 
 

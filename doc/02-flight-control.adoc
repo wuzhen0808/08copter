@@ -1,0 +1,33 @@
+== Flight control
+
+=== Motors speed
+
+motor1 = throttle - roll_adjust - pitch_adjust - yaw_adjust
+motor2 = throttle + roll_adjust + pitch_adjust - yaw_adjust
+motor3 = throttle - roll_adjust + pitch_adjust + yaw_adjust
+motor4 = throttle + roll_adjust - pitch_adjust + yaw_adjust
+
+参考：
+https://www.youtube.com/watch?v=CHSYgLfhwUo&t=1200s
+
+=== 3 Rate PID Controller(Speed of motors)
+//respectively for roll_adjust/pitch_adjust/yaw_adjust
+#define KP 2.0
+#define KI 2.0
+
+float error = desired_pitch - current_pitch;
+proportional = KP * error;
+integral += KI * error * dt;
+output = proportional + integral;
+
+参考：
+https://www.youtube.com/watch?v=CHSYgLfhwUo&t=1200s
+
+=== 3 Stabilize PID Controller(Angle on X/Y/Z)
+//respectively for rotational angle on x, y and z;
+
+参考：
+https://github.com/cTn-dev/Phoenix-FlightController
+https://github.com/baselsw/BlueCopter
+
+

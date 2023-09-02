@@ -1,0 +1,16 @@
+== Remote control
+
+=== RC signal scope
+
+[cols="1,1,1,1"]
+|===
+| Channel   | Function  | Min/Max       | Mapped
+| 1         | Roll      | 1000us,2000us | -25,25  
+| 2         | Pitch     | 1000us,2000us | -25,25  
+| 3         | Throttle  | 1000us,2000us | 1000,2000  
+| 4         | Yaw       | 1000us,2000us | -50,50
+|===
+
+    参考：
+    http://rcarduino.blogspot.com/2012/01/how-to-read-rc-receiver-with.html
+    https://www.youtube.com/watch?v=CHSYgLfhwUo&t=1200s

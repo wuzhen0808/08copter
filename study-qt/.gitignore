@@ -2,6 +2,6 @@
 .waf*
 .lock-waf*
 .vscode
-.gradle
-*/build
-*/bin
+build
+build/config.log
+

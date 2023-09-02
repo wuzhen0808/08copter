@@ -1,0 +1,20 @@
+
+
+# https://waf.io/apidocs/tools/qt5.html
+
+waflib.Tools.qt5.set_qt5_libs_dir("/usr/lib/qt5")
+
+
+def options(opt):
+        opt.load("compiler_cxx qt5")
+        
+def configure(cfg):
+        cfg.load("compiler_cxx qt5")
+
+def build(bld):
+        bld(
+                features = "qt5 cxx cxxprogram",
+                uselib = "QT5CORE QT5GUI QT5OPENGL QT5SVG",
+                source = "main.cpp",
+                target = "window"
+            )
