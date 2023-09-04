@@ -6,20 +6,7 @@ import java.awt.Graphics;
 
 public class SignalSeqView extends Canvas {
 
-    static interface DataProvider {
-        float[] getData();
-    }
-
-    static public class MyDataProvider implements DataProvider {
-
-        @Override
-        public float[] getData() {
-            return new float[] { 1, 2, 3, 0 };
-        }
-
-    }
-
-    DataProvider dataProvider = new MyDataProvider();
+    SignalSource dataProvider = new MySignalSource();
     int width;
     int height;
     int leftMargin = 40;
