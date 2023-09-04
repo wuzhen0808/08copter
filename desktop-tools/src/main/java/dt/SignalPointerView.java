@@ -21,6 +21,7 @@ public class SignalPointerView extends Canvas implements SignalWindow.Listener {
     SignalWindow window;
     Image offImage;
     int seqNum;
+
     public SignalPointerView(int seqNum, float min, float max, SignalWindow window) {
         this.seqNum = seqNum;
         this.min = min;
@@ -43,6 +44,7 @@ public class SignalPointerView extends Canvas implements SignalWindow.Listener {
 
     @Override
     public void paint(Graphics g) {
+        long start = System.currentTimeMillis();
         this.width = this.getWidth();
         this.height = this.getHeight();
         this.radius = Math.min(this.width - leftMargin - rightMargin, this.height - topMargin - botMargin) / 2;
@@ -56,11 +58,13 @@ public class SignalPointerView extends Canvas implements SignalWindow.Listener {
         // draw circleF
         g.drawOval(x0 - radius, y0 - radius, radius * 2, radius * 2);
         // draw dashes
+
         drawDash(g, 0);
         drawDash(g, 90);
         drawDash(g, 180);
         drawDash(g, 270);
-
+        long end = System.currentTimeMillis();
+        g.drawString("" + (end - start), x0, y0);
     }
 
     void drawDash(Graphics g, int degree) {

@@ -12,7 +12,7 @@ public class SerialSignalWindow implements SignalWindow, SerialPortMessageListen
     SerialPort port;
     int nextIdx = 0;
     int length = 0;
-    int windowSize = 100;
+    int windowSize = 10;
     float[][] window = new float[3][windowSize];
     List<Listener> listeners = new ArrayList<>();
 
@@ -54,8 +54,8 @@ public class SerialSignalWindow implements SignalWindow, SerialPortMessageListen
         String msg = new String(messageB);
         String[] fields = msg.split(",");
         SerialSignalWindow.this.window[0][nextIdx] = Float.parseFloat(fields[0]);
-        //SerialSignalWindow.this.window[1][nextIdx] = Float.parseFloat(fields[1]);
-        //SerialSignalWindow.this.window[2][nextIdx] = Float.parseFloat(fields[2]);
+        SerialSignalWindow.this.window[1][nextIdx] = Float.parseFloat(fields[1]);
+        SerialSignalWindow.this.window[2][nextIdx] = Float.parseFloat(fields[2]);
         nextIdx++;
         if (nextIdx == windowSize) {
             nextIdx = 0;

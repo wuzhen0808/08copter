@@ -15,9 +15,9 @@ void loop() {
         unsigned long now = millis();
         if(now - lastSend > 10){
           lastSend = now;
-          Serial.print(mpu.getYaw()); Serial.print(",");
+          Serial.print(mpu.getRoll()); Serial.print(",");
           Serial.print(mpu.getPitch()); Serial.print(",");
-          Serial.print(mpu.getRoll()); Serial.print("\r\n");
+          Serial.print(mpu.getYaw()); Serial.print("\r\n");
         }
     }
 }
