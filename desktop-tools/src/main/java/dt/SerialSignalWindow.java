@@ -7,18 +7,19 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortEvent;
 import com.fazecast.jSerialComm.SerialPortMessageListener;
 
-public class SerialSignalSource implements SignalWindow, SerialPortMessageListener {
+public class SerialSignalWindow implements SignalWindow, SerialPortMessageListener {
 
     SerialPort port;
     int nextIdx = 0;
     int length = 0;
-    float[] window = new float[100];
+    int windowSize = 100;
+    float[][] window = new float[3][windowSize];
     List<Listener> listeners = new ArrayList<>();
 
-    public SerialSignalSource() {
+    public SerialSignalWindow() {
     }
 
-    public SerialSignalSource connect() {
+    public SerialSignalWindow connect() {
         SerialPort port = SerialPort.getCommPort("COM4");
         port.setComPortParameters(9600, 8, 1, 0);
         port.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
@@ -28,15 +29,8 @@ public class SerialSignalSource implements SignalWindow, SerialPortMessageListen
         return this;
     }
 
-    public static void main(String[] args) throws Exception {
-        SerialSignalSource sss = new SerialSignalSource().connect();
-        while (true) {
-            Thread.sleep(1000);
-        }
-    }
-
     @Override
-    public float[] getData() {
+    public float[][] getData() {
         return this.window;
     }
 
@@ -53,17 +47,22 @@ public class SerialSignalSource implements SignalWindow, SerialPortMessageListen
     @Override
     public void serialEvent(SerialPortEvent event) {
         byte[] messageB = event.getReceivedData();
+        processMessage(messageB);
+    }
+
+    protected void processMessage(byte[] messageB){
         String msg = new String(messageB);
         String[] fields = msg.split(",");
-        SerialSignalSource.this.window[nextIdx] = Float.parseFloat(fields[0]);
+        SerialSignalWindow.this.window[0][nextIdx] = Float.parseFloat(fields[0]);
+        //SerialSignalWindow.this.window[1][nextIdx] = Float.parseFloat(fields[1]);
+        //SerialSignalWindow.this.window[2][nextIdx] = Float.parseFloat(fields[2]);
         nextIdx++;
-        if (nextIdx == window.length) {
+        if (nextIdx == windowSize) {
             nextIdx = 0;
         }
         for (Listener listener : this.listeners) {
             listener.onData();
         }
-
     }
 
     @Override

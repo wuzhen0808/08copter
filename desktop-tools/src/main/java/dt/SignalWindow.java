@@ -5,7 +5,7 @@ interface SignalWindow {
         void onData();
     }
 
-    float[] getData();
+    float[][] getData();
 
     void addListener(Listener listener);
 }

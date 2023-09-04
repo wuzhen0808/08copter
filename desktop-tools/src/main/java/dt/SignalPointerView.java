@@ -2,6 +2,7 @@ package dt;
 
 import java.awt.Canvas;
 import java.awt.Graphics;
+import java.awt.Image;
 
 public class SignalPointerView extends Canvas implements SignalWindow.Listener {
     int width;
@@ -18,8 +19,10 @@ public class SignalPointerView extends Canvas implements SignalWindow.Listener {
     float currentValue;
 
     SignalWindow window;
-
-    public SignalPointerView(float min, float max, SignalWindow window) {
+    Image offImage;
+    int seqNum;
+    public SignalPointerView(int seqNum, float min, float max, SignalWindow window) {
+        this.seqNum = seqNum;
         this.min = min;
         this.max = max;
         this.currentValue = min;
@@ -29,7 +32,13 @@ public class SignalPointerView extends Canvas implements SignalWindow.Listener {
 
     @Override
     public void update(Graphics g) {
-        super.update(g);
+        if (this.offImage == null) {
+            this.offImage = this.createImage(this.getWidth(), this.getHeight());
+        }
+        Graphics g2 = this.offImage.getGraphics();
+        g2.clearRect(0, 0, this.getWidth(), this.getHeight());
+        this.paint(g2);
+        g.drawImage(this.offImage, 0, 0, null);
     }
 
     @Override
@@ -84,8 +93,8 @@ public class SignalPointerView extends Canvas implements SignalWindow.Listener {
 
     @Override
     public void onData() {
-        float[] data = this.window.getData();
-        this.currentValue = data[data.length - 1];
+        float[][] data = this.window.getData();
+        this.currentValue = data[seqNum][data.length - 1];
         this.repaint();
     }
 

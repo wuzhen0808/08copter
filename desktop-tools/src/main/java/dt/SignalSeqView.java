@@ -3,8 +3,10 @@ package dt;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Image;
 
 public class SignalSeqView extends Canvas implements SignalWindow.Listener {
+    static Color[] BGS = new Color[]{Color.RED, Color.GREEN, Color.BLUE};
 
     SignalWindow window;
     int width;
@@ -13,15 +15,71 @@ public class SignalSeqView extends Canvas implements SignalWindow.Listener {
     int rightMargin = 40;
     int topMargin = 40;
     int botMargin = 40;
-    float min;
-    float max;
+    float min = Float.MAX_VALUE;
+    float max = Float.MIN_VALUE;
     int seqWindow = 100;
-    int pointSize = 3;
+    int pointSize = 2;
 
-    SignalSeqView(SignalWindow window){
+    Image offImage;
+
+    SignalSeqView(SignalWindow window) {
         this.window = window;
         this.window.addListener(this);
     }
+
+    @Override
+    public void update(Graphics g) {
+        if (this.offImage == null) {
+            this.offImage = this.createImage(this.getWidth(), this.getHeight());
+        }
+        Graphics g2 = this.offImage.getGraphics();
+        g2.clearRect(0, 0, this.getWidth(), this.getHeight());
+        this.paint(g2);
+        g.drawImage(this.offImage, 0, 0, null);
+    }
+
+    @Override
+    public void paint(Graphics g) {
+
+        width = this.getWidth();
+        height = this.getHeight();
+        this.setBackground(Color.WHITE);
+        
+        float[][] list = window.getData();
+        for (int i = 0; i < list.length; i++) {
+
+            for (int j = 0; j < list[i].length; j++) {
+                if (list[i][j] > max) {
+                    max = list[i][j];
+                }
+                if (list[i][j] < min) {
+                    min = list[i][j];
+                }
+            }
+        }
+        
+        g.setColor(Color.BLACK);
+        drawYAxis(g);
+
+        for (int i = 0; i < list.length; i++) {
+            
+            g.setColor(BGS[i]);
+            
+            for (int j = 0; j < list[i].length; j++) {
+                int xI = translateToX(j);
+                int yI = translateToYForDraw(list[i][j]);
+                g.drawOval(xI, yI, pointSize, pointSize);
+                // g.fillOval(xI, yI, pointSize, pointSize);
+            }
+        }
+
+    }
+
+    @Override
+    public void onData() {
+       this.repaint();
+    }
+
     void drawYAxis(Graphics g) {
 
         int dashLength = 20;
@@ -58,45 +116,6 @@ public class SignalSeqView extends Canvas implements SignalWindow.Listener {
         int offsetX = (int) (((float) seq / (float) seqWindow) * graphRangeX);
         int xValue = leftMargin + offsetX;
         return xValue;
-    }
-
-    @Override
-    public void paint(Graphics g) {
-
-        width = this.getWidth();
-        height = this.getHeight();
-        this.setBackground(Color.WHITE);
-        this.setForeground(Color.BLACK);
-        float[] list = window.getData();
-        if (list.length == 0) {
-            min = Float.MIN_VALUE;
-            max = Float.MAX_VALUE;
-        } else {
-            min = Float.MAX_VALUE;
-            max = Float.MIN_VALUE;
-
-            for (int i = 0; i < list.length; i++) {
-                if (list[i] > max) {
-                    max = list[i];
-                }
-                if (list[i] < max) {
-                    min = list[i];
-                }
-            }
-        }
-
-        drawYAxis(g);
-
-        for (int i = 0; i < list.length; i++) {
-            int xI = translateToX(i);
-            int yI = translateToYForDraw(list[i]);
-            g.drawOval(xI, yI, pointSize, pointSize);
-            g.fillOval(xI, yI, pointSize, pointSize);
-        }
-    }
-    @Override
-    public void onData() {
-        this.repaint();
     }
 
 }
