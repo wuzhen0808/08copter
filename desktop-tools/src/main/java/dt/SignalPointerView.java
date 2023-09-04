@@ -3,7 +3,7 @@ package dt;
 import java.awt.Canvas;
 import java.awt.Graphics;
 
-public class SignalPointerView extends Canvas {
+public class SignalPointerView extends Canvas implements SignalWindow.Listener {
     int width;
     int height;
     int leftMargin = 40;
@@ -17,22 +17,26 @@ public class SignalPointerView extends Canvas {
 
     float currentValue;
 
-    public SignalPointerView(float min, float max) {
+    SignalWindow window;
+
+    public SignalPointerView(float min, float max, SignalWindow window) {
         this.min = min;
         this.max = max;
         this.currentValue = min;
+        this.window = window;
+        this.window.addListener(this);
     }
 
     @Override
-    public void update(Graphics g){
+    public void update(Graphics g) {
         super.update(g);
     }
-    
+
     @Override
     public void paint(Graphics g) {
         this.width = this.getWidth();
         this.height = this.getHeight();
-        this.radius = Math.min(this.width - leftMargin - rightMargin, this.height-topMargin-botMargin) / 2;
+        this.radius = Math.min(this.width - leftMargin - rightMargin, this.height - topMargin - botMargin) / 2;
         double angular = 2f * Math.PI * this.currentValue / (this.max - this.min);
 
         int x0 = this.width / 2;
@@ -76,6 +80,13 @@ public class SignalPointerView extends Canvas {
     int translateY(float y) {
         int centerY = this.height / 2;
         return centerY - (int) y;
+    }
+
+    @Override
+    public void onData() {
+        float[] data = this.window.getData();
+        this.currentValue = data[data.length - 1];
+        this.repaint();
     }
 
 }

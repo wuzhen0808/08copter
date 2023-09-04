@@ -14,6 +14,6 @@ void loop() {
     if (mpu.update()) {
         Serial.print(mpu.getYaw()); Serial.print(", ");
         Serial.print(mpu.getPitch()); Serial.print(", ");
-        Serial.println(mpu.getRoll());
+        Serial.print(mpu.getRoll()); Serial.print("\r\n");
     }
 }

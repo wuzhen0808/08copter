@@ -4,9 +4,9 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Graphics;
 
-public class SignalSeqView extends Canvas {
+public class SignalSeqView extends Canvas implements SignalWindow.Listener {
 
-    SignalSource dataProvider = new MySignalSource();
+    SignalWindow window;
     int width;
     int height;
     int leftMargin = 40;
@@ -18,6 +18,10 @@ public class SignalSeqView extends Canvas {
     int seqWindow = 100;
     int pointSize = 3;
 
+    SignalSeqView(SignalWindow window){
+        this.window = window;
+        this.window.addListener(this);
+    }
     void drawYAxis(Graphics g) {
 
         int dashLength = 20;
@@ -63,7 +67,7 @@ public class SignalSeqView extends Canvas {
         height = this.getHeight();
         this.setBackground(Color.WHITE);
         this.setForeground(Color.BLACK);
-        float[] list = dataProvider.getData();
+        float[] list = window.getData();
         if (list.length == 0) {
             min = Float.MIN_VALUE;
             max = Float.MAX_VALUE;
@@ -89,6 +93,10 @@ public class SignalSeqView extends Canvas {
             g.drawOval(xI, yI, pointSize, pointSize);
             g.fillOval(xI, yI, pointSize, pointSize);
         }
+    }
+    @Override
+    public void onData() {
+        this.repaint();
     }
 
 }
