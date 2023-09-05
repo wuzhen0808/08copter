@@ -4,9 +4,11 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class SignalSeqView extends Canvas implements SignalWindow.Listener {
-    static Color[] BGS = new Color[]{Color.RED, Color.GREEN, Color.BLUE};
+    static Color[] BGS = new Color[] { Color.RED, Color.GREEN, Color.BLUE };
 
     SignalWindow window;
     int width;
@@ -25,6 +27,12 @@ public class SignalSeqView extends Canvas implements SignalWindow.Listener {
     SignalSeqView(SignalWindow window) {
         this.window = window;
         this.window.addListener(this);
+        this.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent event) {
+                offImage = null;
+            }
+        });
     }
 
     @Override
@@ -44,7 +52,7 @@ public class SignalSeqView extends Canvas implements SignalWindow.Listener {
         width = this.getWidth();
         height = this.getHeight();
         this.setBackground(Color.WHITE);
-        
+
         float[][] list = window.getData();
         for (int i = 0; i < list.length; i++) {
 
@@ -57,14 +65,14 @@ public class SignalSeqView extends Canvas implements SignalWindow.Listener {
                 }
             }
         }
-        
+
         g.setColor(Color.BLACK);
         drawYAxis(g);
 
         for (int i = 0; i < list.length; i++) {
-            
+
             g.setColor(BGS[i]);
-            
+
             for (int j = 0; j < list[i].length; j++) {
                 int xI = translateToX(j);
                 int yI = translateToYForDraw(list[i][j]);
@@ -77,7 +85,7 @@ public class SignalSeqView extends Canvas implements SignalWindow.Listener {
 
     @Override
     public void onData() {
-       this.repaint();
+        this.repaint();
     }
 
     void drawYAxis(Graphics g) {

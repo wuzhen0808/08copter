@@ -3,6 +3,10 @@ package dt;
 import java.awt.Canvas;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+
+import dt.MyApp.DegreeMode;
 
 public class SignalPointerView extends Canvas implements SignalWindow.Listener {
     int width;
@@ -13,8 +17,7 @@ public class SignalPointerView extends Canvas implements SignalWindow.Listener {
     int botMargin = 40;
     int radius;
 
-    float min;
-    float max;
+    DegreeMode degreeMode;
 
     float currentValue;
 
@@ -22,17 +25,23 @@ public class SignalPointerView extends Canvas implements SignalWindow.Listener {
     Image offImage;
     int seqNum;
 
-    public SignalPointerView(int seqNum, float min, float max, SignalWindow window) {
+    public SignalPointerView(int seqNum, DegreeMode degreeMode, SignalWindow window) {
         this.seqNum = seqNum;
-        this.min = min;
-        this.max = max;
-        this.currentValue = min;
+        this.degreeMode = degreeMode;
+        this.currentValue = degreeMode.min;
         this.window = window;
         this.window.addListener(this);
+        this.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent event) {
+                offImage = null;
+            }
+        });
     }
 
     @Override
     public void update(Graphics g) {
+
         if (this.offImage == null) {
             this.offImage = this.createImage(this.getWidth(), this.getHeight());
         }
@@ -48,7 +57,7 @@ public class SignalPointerView extends Canvas implements SignalWindow.Listener {
         this.width = this.getWidth();
         this.height = this.getHeight();
         this.radius = Math.min(this.width - leftMargin - rightMargin, this.height - topMargin - botMargin) / 2;
-        double angular = 2f * Math.PI * this.currentValue / (this.max - this.min);
+        double angular = this.degreeMode.getAngular(this.currentValue);
 
         int x0 = this.width / 2;
         int y0 = this.height / 2;
@@ -100,6 +109,10 @@ public class SignalPointerView extends Canvas implements SignalWindow.Listener {
         float[][] data = this.window.getData();
         this.currentValue = data[seqNum][data.length - 1];
         this.repaint();
+    }
+
+    public void updateDegreeMode(DegreeMode mode) {
+        this.degreeMode = mode;
     }
 
 }
