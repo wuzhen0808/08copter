@@ -19,6 +19,9 @@
 
 === Ardupilot
     飞控系统
+    
+=== ARM
+    Acorn RISC Machine
 
 === Barometer
     气压表，用于测量高度；
@@ -46,6 +49,10 @@
 
 === ECU
 
+=== ELC
+    ELC(Event Link Controller) is a peripheral which allows us to directly link peripherals in hardware on RA micro controllers.
+    参考：
+    https://www.renesas.com/us/en/blogs/event-link-controller-automatically-manage-low-level-system-tasks-ra-mcus
 === ESC（Electronic Speed Controls）
     外设，电调
     参考：
@@ -56,6 +63,14 @@
 === ESP32
 
 === FMU
+
+=== FSP
+    Renesas Flexible Software Package
+
+    参考：
+    https://www.renesas.com/us/en/software-tool/flexible-software-package-fsp
+    https://github.com/renesas/fsp
+    
 === GCS
     地面站，可选配置，建议配置；
     地面站通过遥测(Telemetry)和无人机通讯；
@@ -115,6 +130,9 @@
     参考：
     https://mavlink.io/en/about/overview.html
     最多16个通道；
+=== MCU
+
+=== MDK
 
 === MMA
     Mixing Motor Algorithm
@@ -149,6 +167,10 @@
 === RTL
 
 === ROS
+=== SAM 
+    SAM Microcontrollers Based on Arm Cortex-M Cores.
+    参考：
+    https://www.microchip.com/en-us/products/microcontrollers-and-microprocessors/32-bit-mcus/sam-32-bit-mcus
 
 === SBUS
     SBUS is a 100kbaud inverted UART protocol; 
@@ -165,7 +187,11 @@
 
     某些主板的设计在这里：
     https://github.com/ArduPilot/Schematics
-    
+
+=== STM32
+    STM 32 family of 32-bit microcontrollers based on the Arm Cortext-M processor.
+    参考：
+    https://www.st.com/en/microcontrollers-microprocessors/stm32-32-bit-arm-cortex-mcus.html
 === UAV
     无人机
 
