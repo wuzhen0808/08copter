@@ -1,9 +1,10 @@
-#include "a8/ServosControl.hpp"
+#include "a8/core/ServosControl.hpp"
 #include <Servo.h>
 
 #define MIN_PULSE 1000
 #define MAX_PULSE 2000
 namespace a8 {
+namespace core {
 ServosControl::ServosControl(Copter *copter) : Component(copter) {
     (*this).totalServos = (*copter).getServoCount();
     (*this).servos = new Servo *[totalServos];
@@ -38,4 +39,5 @@ void ServosControl::setVelocity(int servoId, float velocity) {
 
     (*((*this).servos)[servoId]).writeMicroseconds(pulseWidth);
 }
+} // namespace core
 } // namespace a8

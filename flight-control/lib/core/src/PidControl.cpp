@@ -1,8 +1,8 @@
-#include "a8/PidControl.hpp"
-#include "a8/thread.hpp"
+#include "a8/core/PidControl.hpp"
+#include "a8/rtos/Thread.hpp"
 #include <Arduino.h>
 namespace a8 {
-
+namespace core {
 // https://www.youtube.com/watch?v=NVLXCwc8HzM
 PidControl::PidControl(float kp, float ki, float kd) {
     // init as the default arguments.
@@ -23,4 +23,5 @@ float PidControl::update(float desirePosition, float actualPosition) {
     float d = kd * (error - lastError) / deltaTime; // speed plus
     return p + i + d;
 }
+} // namespace core
 } // namespace a8

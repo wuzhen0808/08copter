@@ -18,7 +18,7 @@ int myServo2Enable = 0;
 int myServo3Enable = 0;
 int myServo4Enable = 0;
 
-void setup2() {
+void setup1() {
     // put your setup code here, to run once:
     Serial.begin(9600);
     while (Serial.read() >= 0) {

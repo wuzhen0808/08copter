@@ -1,8 +1,9 @@
 #ifndef a8_ATTITUDE_SENSOR__
 #define a8_ATTITUDE_SENSOR__
-#include "a8/Component.hpp"
+#include "a8/core/Component.hpp"
 
 namespace a8 {
+namespace core {
 
 class AttitudeSensor : public Component {
 public:
@@ -13,5 +14,6 @@ public:
     virtual float getPitch() = 0;
     virtual float getYaw() = 0;
 };
+} // namespace core
 } // namespace a8
 #endif

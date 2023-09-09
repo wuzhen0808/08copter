@@ -1,6 +1,7 @@
-#include "a8/Scheduler.hpp"
+#include "a8/rtos/Scheduler.hpp"
 
 namespace a8 {
+namespace rtos {
 Scheduler::Scheduler() {
 }
 void Scheduler::startSchedule() {
@@ -15,4 +16,5 @@ Thread *Scheduler::schedule(Runnable *runnable) {
 Thread *Scheduler::getCurrentThread() {
     return Thread::getCurrentThread();
 }
+} // namespace rtos
 } // namespace a8

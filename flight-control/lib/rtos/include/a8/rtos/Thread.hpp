@@ -1,8 +1,9 @@
 #ifndef THREAD__
 #define THREAD__
-#include "a8/Runnable.hpp"
+#include "a8/rtos/Runnable.hpp"
 #include <Arduino_FreeRTOS.h>
 namespace a8 {
+namespace rtos {
 class Thread {
 public:
     Thread(Runnable *runnable);
@@ -24,5 +25,6 @@ private:
     Runnable *runnable;
     static void taskFunction(void *pvParameters);
 };
+} // namespace rtos
 } // namespace a8
 #endif

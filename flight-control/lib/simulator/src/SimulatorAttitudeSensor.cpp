@@ -1,5 +1,6 @@
-#include "a8/SimulatorAttitudeSensor.hpp"
+#include "a8/simulator/SimulatorAttitudeSensor.hpp"
 namespace a8 {
+namespace simulator {
 
 SimulatorAttitudeSensor::SimulatorAttitudeSensor(Copter *copter) : AttitudeSensor(copter) {
 }
@@ -17,4 +18,5 @@ float SimulatorAttitudeSensor::getYaw() {
     return .0f;
 }
 
+} // namespace simulator
 } // namespace a8

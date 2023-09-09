@@ -1,11 +1,12 @@
 #ifndef MPU9250_ATTITUDE_SENSOR__
 #define MPU9250_ATTITUDE_SENSOR__
-#include "a8/AttitudeSensor.hpp"
-#include "a8/Component.hpp"
-#include "a8/Copter.hpp"
+#include "a8/core/AttitudeSensor.hpp"
+#include "a8/core/Component.hpp"
+#include "a8/core/Copter.hpp"
 #include <MPU9250.h>
 namespace a8 {
 namespace mpu9250 {
+using namespace a8::core;
 
 class Mpu9250AttitudeSensor : public AttitudeSensor {
 public:

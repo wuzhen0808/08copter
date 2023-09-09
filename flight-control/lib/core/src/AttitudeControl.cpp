@@ -1,7 +1,7 @@
+#include "a8/core/AttitudeControl.hpp"
+#include "a8/core/ServosControl.hpp"
+#include "a8/rtos/Thread.hpp"
 #include <FreeRTOSConfig.h>
-#include "a8/AttitudeControl.hpp"
-#include "a8/ServosControl.hpp"
-#include "a8/Thread.hpp"
 /**
  * (M1) (M2)
  *   \   /
@@ -10,7 +10,7 @@
  * (M4) (M3)
  */
 namespace a8 {
-
+namespace core {
 AttitudeControl::AttitudeControl(Copter *copter,
                                  ServosControl *servosControl,
                                  AttitudeSensor *attitudeSensor) : Component(copter) {
@@ -56,6 +56,8 @@ void AttitudeControl::run() {
         servosControl->setVelocity(SERVO_BOTTOM_LEFT, m4);
         log("going to delayUtil");
         copter->getScheduler()->getCurrentThread()->delayUtil(1);
+        // do not delay the current thread? use semaphore to communication ?
     }
 }
+} // namespace core
 } // namespace a8

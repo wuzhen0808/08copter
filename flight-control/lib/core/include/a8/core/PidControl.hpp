@@ -1,10 +1,10 @@
 #ifndef __PID_CONTROLLER__
 #define __PID_CONTROLLER__
-// Reference: 
+// Reference:
 // https://github.com/bitcraze/crazyflie-firmware.git
 namespace a8 {
-class PidControl
-{
+namespace core {
+class PidControl {
 public:
     PidControl(float kp, float ki, float kd);
     ~PidControl();
@@ -13,10 +13,10 @@ public:
 private:
     float kp;
     float ki;
-    float kd;        
+    float kd;
     unsigned long lastUpdateTimeInMs;
     float lastError;
-
 };
-}
+} // namespace core
+} // namespace a8
 #endif

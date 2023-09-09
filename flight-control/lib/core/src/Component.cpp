@@ -1,6 +1,6 @@
-#include "a8/Component.hpp"
+#include "a8/core/Component.hpp"
 namespace a8 {
-
+namespace core {
 Component::Component(Copter *copter) {
     this->copter = copter;
 }
@@ -21,4 +21,5 @@ void Component::log(String msg) {
     copter->log(msg);
 }
 
+} // namespace core
 } // namespace a8

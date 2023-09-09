@@ -1,13 +1,13 @@
 #ifndef ATTITUDE_CONTROL__
 #define ATTITUDE_CONTROL__
-#include "a8/AttitudeSensor.hpp"
-#include "a8/Component.hpp"
-#include "a8/Copter.hpp"
-#include "a8/PidControl.hpp"
-#include "a8/Runnable.hpp"
-#include "a8/ServosControl.hpp"
+#include "a8/core/AttitudeSensor.hpp"
+#include "a8/core/Component.hpp"
+#include "a8/core/Copter.hpp"
+#include "a8/core/PidControl.hpp"
+#include "a8/rtos/Runnable.hpp"
+#include "a8/core/ServosControl.hpp"
 namespace a8 {
-
+namespace  core {
 class AttitudeControl : public Runnable, public Component {
 public:
     AttitudeControl(Copter *copter,
@@ -23,5 +23,6 @@ private:
     AttitudeSensor *attitudeSensor;
     ServosControl *servosControl;
 };
+}
 } // namespace a8
 #endif

@@ -1,11 +1,11 @@
-#include "a8/Thread.hpp"
+#include "a8/rtos/Thread.hpp"
 #include <Arduino.h>
 #include <Arduino_FreeRTOS.h>
 
 #define LOCAL_THIS 0
 #define LOCAL_LAST_WAKE 1
 namespace a8 {
-
+namespace rtos {
 Thread::Thread(Runnable *pvRunnable) : runnable(pvRunnable) {
 }
 
@@ -27,7 +27,7 @@ Thread *Thread::start() {
 
     if (result != pdPASS) {
         Serial.println("Failed to create a thread");
-        //throw std::invalid_argument("failed");
+        // throw std::invalid_argument("failed");
         return 0;
     }
     vTaskSetThreadLocalStoragePointer(handle, LOCAL_THIS, this);
@@ -64,5 +64,5 @@ void Thread::taskFunction(void *pvParameters) {
 
     thread->runnable->run();
 }
-
+} // namespace rtos
 } // namespace a8
