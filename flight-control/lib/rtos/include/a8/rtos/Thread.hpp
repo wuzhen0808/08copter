@@ -9,8 +9,6 @@ public:
     Thread(Runnable *runnable);
     ~Thread();
     Thread *start();
-    Thread *delayUtil(TickType_t frequency);
-
     // static
     static Thread *start(Runnable *runnable) {
         Thread *thread = new Thread(runnable);

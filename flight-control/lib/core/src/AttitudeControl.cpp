@@ -24,40 +24,35 @@ AttitudeControl::AttitudeControl(Copter *copter,
 AttitudeControl::~AttitudeControl() {
 }
 
-void AttitudeControl::run() {
-    log("AttitudeControl::run");
+void AttitudeControl::call() {
+    log("AttitudeControl::call");
 
-    while (true) {
-        (*attitudeSensor).update();
+    (*attitudeSensor).update();
 
-        float actualRoll = (*attitudeSensor).getRoll();
-        float actualPitch = (*attitudeSensor).getPitch();
-        float actualYaw = (*attitudeSensor).getYaw();
+    float actualRoll = (*attitudeSensor).getRoll();
+    float actualPitch = (*attitudeSensor).getPitch();
+    float actualYaw = (*attitudeSensor).getYaw();
 
-        float desiredRoll = 0.0f;
-        float desiredPitch = 0.0f;
-        float desiredYaw = 0.0f;
+    float desiredRoll = 0.0f;
+    float desiredPitch = 0.0f;
+    float desiredYaw = 0.0f;
 
-        float rollGain = (*rollControl).update(desiredRoll, actualRoll);
-        float pitchGain = (*pitchControl).update(desiredPitch, actualPitch);
-        float yawGain = (*yawControl).update(desiredYaw, actualYaw);
+    float rollGain = (*rollControl).update(desiredRoll, actualRoll);
+    float pitchGain = (*pitchControl).update(desiredPitch, actualPitch);
+    float yawGain = (*yawControl).update(desiredYaw, actualYaw);
 
-        float throttle = 0.0f;
-        float motors[4] = {};
+    float throttle = 0.0f;
+    float motors[4] = {};
 
-        float m1 = throttle - rollGain - pitchGain - yawGain; // top left
-        float m2 = throttle + rollGain - pitchGain + yawGain; // top right
-        float m3 = throttle + rollGain + pitchGain - yawGain; // bottom right
-        float m4 = throttle - rollGain + pitchGain + yawGain; // bottom left
+    float m1 = throttle - rollGain - pitchGain - yawGain; // top left
+    float m2 = throttle + rollGain - pitchGain + yawGain; // top right
+    float m3 = throttle + rollGain + pitchGain - yawGain; // bottom right
+    float m4 = throttle - rollGain + pitchGain + yawGain; // bottom left
 
-        servosControl->setVelocity(SERVO_TOP_LEFT, m1);
-        servosControl->setVelocity(SERVO_TOP_RIGHT, m2);
-        servosControl->setVelocity(SERVO_BOTTOM_RIGHT, m3);
-        servosControl->setVelocity(SERVO_BOTTOM_LEFT, m4);
-        log("going to delayUtil");
-        copter->getScheduler()->getCurrentThread()->delayUtil(1);
-        // do not delay the current thread? use semaphore to communication ?
-    }
+    servosControl->setVelocity(SERVO_TOP_LEFT, m1);
+    servosControl->setVelocity(SERVO_TOP_RIGHT, m2);
+    servosControl->setVelocity(SERVO_BOTTOM_RIGHT, m3);
+    servosControl->setVelocity(SERVO_BOTTOM_LEFT, m4);
 }
 } // namespace core
 } // namespace a8

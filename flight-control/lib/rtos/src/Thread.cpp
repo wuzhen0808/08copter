@@ -2,10 +2,13 @@
 #include <Arduino.h>
 #include <Arduino_FreeRTOS.h>
 
-#define LOCAL_THIS 0
-#define LOCAL_LAST_WAKE 1
+
 namespace a8 {
 namespace rtos {
+static int LOCAL_THIS = 0;
+static int STACK_DEPTH = 521 / 4;
+static int DEFAULT_PRIORITY = 1;
+static const char *DEFAULT_THREAD_NAME = static_cast<const char *>("My Thread");
 Thread::Thread(Runnable *pvRunnable) : runnable(pvRunnable) {
 }
 
@@ -16,13 +19,13 @@ Thread::~Thread() {
  */
 Thread *Thread::start() {
 
-    auto const result = xTaskCreate(
+    BaseType_t result = xTaskCreate(
         taskFunction,
-        static_cast<const char *>("My Thread"),
-        512 / 4, /* usStackDepth in words */
-        this,    /* pvParameters */
-        1,       /* uxPriority */
-        &handle  /* pxCreatedTask */
+        DEFAULT_THREAD_NAME,
+        STACK_DEPTH,      /* usStackDepth in words */
+        this,             /* pvParameters */
+        DEFAULT_PRIORITY, /* uxPriority */
+        &handle           /* pxCreatedTask */
     );
 
     if (result != pdPASS) {
@@ -32,14 +35,6 @@ Thread *Thread::start() {
     }
     vTaskSetThreadLocalStoragePointer(handle, LOCAL_THIS, this);
     return this;
-}
-/**
- * Periodical execution.
- */
-Thread *Thread::delayUtil(TickType_t frequency) {
-    void *pv = pvTaskGetThreadLocalStoragePointer((*this).handle, LOCAL_LAST_WAKE);
-    TickType_t *lastWakeTime = static_cast<TickType_t *>(pv);
-    vTaskDelayUntil(lastWakeTime, frequency);
 }
 
 void Thread::startScheduler() {
@@ -56,11 +51,8 @@ Thread *Thread::getCurrentThread() {
 }
 
 void Thread::taskFunction(void *pvParameters) {
-    Serial.println("taskFunction");
 
     Thread *thread = static_cast<Thread *>(pvParameters);
-    TickType_t lastWakeTime = xTaskGetTickCount();
-    vTaskSetThreadLocalStoragePointer((*thread).handle, LOCAL_LAST_WAKE, &lastWakeTime);
 
     thread->runnable->run();
 }

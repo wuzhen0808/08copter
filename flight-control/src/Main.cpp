@@ -30,8 +30,10 @@ void setup() {
     AttitudeSensor *attitudeSensor = new SimulatorAttitudeSensor(copter);
     AttitudeControl *attitudeControl = new AttitudeControl(copter, servosControl, attitudeSensor);
     copter->log("active copter ....");
+    Timer* attitudeTimer = scheduler->scheduleTimer(attitudeControl, 1000);
+    scheduler->startSchedule();
     // scheduler->schedule(attitudeControl);
-    attitudeControl->run();
+    //attitudeControl->run();
     //copter->log("done of active copter.");
 }
 

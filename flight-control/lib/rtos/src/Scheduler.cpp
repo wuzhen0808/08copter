@@ -13,6 +13,11 @@ Thread *Scheduler::schedule(Runnable *runnable) {
     return Thread::start(runnable);
 }
 
+Timer *Scheduler::scheduleTimer(Callback *callback, ulong ticks) {
+    return Timer::start(callback, ticks);
+}
+
+
 Thread *Scheduler::getCurrentThread() {
     return Thread::getCurrentThread();
 }
