@@ -1,6 +1,9 @@
-#include "PidControl.h"
-#include "thread.h"
+#include "a8/PidControl.hpp"
+#include "a8/thread.hpp"
 #include <Arduino.h>
+namespace a8 {
+
+// https://www.youtube.com/watch?v=NVLXCwc8HzM
 PidControl::PidControl(float kp, float ki, float kd) {
     // init as the default arguments.
     (*this).kp = kp;
@@ -12,11 +15,12 @@ PidControl::~PidControl() {
 }
 
 float PidControl::update(float desirePosition, float actualPosition) {
-    
+
     float error = desirePosition - actualPosition;
     float deltaTime = millis() - lastUpdateTimeInMs;
-    float p = kp * error;//speed
-    float i = ki * error * deltaTime;//
-    float d = kd * (error - lastError) / deltaTime;//speed plus
+    float p = kp * error;                           // speed
+    float i = ki * error * deltaTime;               //
+    float d = kd * (error - lastError) / deltaTime; // speed plus
     return p + i + d;
 }
+} // namespace a8

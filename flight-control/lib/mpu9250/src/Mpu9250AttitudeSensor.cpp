@@ -1,7 +1,9 @@
-#include "Mpu9250AttitudeSensor.h"
+#include "a8/mpu9250/Mpu9250AttitudeSensor.hpp" /
 #include <MPU9250.h>
+namespace a8 {
+namespace mpu9250 {
 
-Mpu9250AttitudeSensor::Mpu9250AttitudeSensor(Copter *copter) : Component(copter) {
+Mpu9250AttitudeSensor::Mpu9250AttitudeSensor(Copter *copter) : AttitudeSensor(copter) {
     mpu.setup(0x68);
 }
 
@@ -23,3 +25,6 @@ float Mpu9250AttitudeSensor::getPitch() {
 float Mpu9250AttitudeSensor::getYaw() {
     return mpu.getYaw();
 }
+} // namespace mpu9250
+
+} // namespace a8

@@ -1,8 +1,7 @@
-#include "AttitudeControl.h"
-#include "FreeRTOSConfig.h"
-#include "Mpu9250AttitudeSensor.h"
-#include "ServosControl.h"
-#include "Thread.h"
+#include <FreeRTOSConfig.h>
+#include "a8/AttitudeControl.hpp"
+#include "a8/ServosControl.hpp"
+#include "a8/Thread.hpp"
 /**
  * (M1) (M2)
  *   \   /
@@ -10,13 +9,16 @@
  *    /  \
  * (M4) (M3)
  */
+namespace a8 {
 
-AttitudeControl::AttitudeControl(Copter *copter) : Component(copter) {
+AttitudeControl::AttitudeControl(Copter *copter,
+                                 ServosControl *servosControl,
+                                 AttitudeSensor *attitudeSensor) : Component(copter) {
     rollControl = new PidControl(2.0f, 1.0f, 1.0f);
     pitchControl = new PidControl(2.0f, 1.0f, 1.0f);
     yawControl = new PidControl(2.0f, 1.0f, 1.0f);
-    attitudeSensor = new Mpu9250AttitudeSensor(copter);
-    servosControl = new ServosControl(copter);
+    this->attitudeSensor = attitudeSensor;
+    this->servosControl = servosControl;
 }
 
 AttitudeControl::~AttitudeControl() {
@@ -24,7 +26,7 @@ AttitudeControl::~AttitudeControl() {
 
 void AttitudeControl::run() {
     log("AttitudeControl::run");
-    servosControl->active();
+
     while (true) {
         (*attitudeSensor).update();
 
@@ -43,16 +45,17 @@ void AttitudeControl::run() {
         float throttle = 0.0f;
         float motors[4] = {};
 
-        float m1 = throttle - rollGain - pitchGain - yawGain;
-        float m2 = throttle + rollGain - pitchGain + yawGain;
-        float m3 = throttle + rollGain + pitchGain - yawGain;
-        float m4 = throttle - rollGain + pitchGain + yawGain;
+        float m1 = throttle - rollGain - pitchGain - yawGain; // top left
+        float m2 = throttle + rollGain - pitchGain + yawGain; // top right
+        float m3 = throttle + rollGain + pitchGain - yawGain; // bottom right
+        float m4 = throttle - rollGain + pitchGain + yawGain; // bottom left
 
         servosControl->setVelocity(SERVO_TOP_LEFT, m1);
         servosControl->setVelocity(SERVO_TOP_RIGHT, m2);
         servosControl->setVelocity(SERVO_BOTTOM_RIGHT, m3);
         servosControl->setVelocity(SERVO_BOTTOM_LEFT, m4);
         log("going to delayUtil");
-        Thread::getCurrentThread()->delayUtil(1);
+        copter->getScheduler()->getCurrentThread()->delayUtil(1);
     }
 }
+} // namespace a8

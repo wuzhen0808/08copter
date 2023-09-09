@@ -2,7 +2,7 @@
 #define __PID_CONTROLLER__
 // Reference: 
 // https://github.com/bitcraze/crazyflie-firmware.git
-
+namespace a8 {
 class PidControl
 {
 public:
@@ -18,4 +18,5 @@ private:
     float lastError;
 
 };
+}
 #endif
