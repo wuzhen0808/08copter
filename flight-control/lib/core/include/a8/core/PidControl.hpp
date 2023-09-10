@@ -14,7 +14,7 @@ private:
     float kp;
     float ki;
     float kd;
-    unsigned long lastUpdateTimeInMs;
+    unsigned long lastUpdateTimeInMs = 0;
     float lastError;
 };
 } // namespace core

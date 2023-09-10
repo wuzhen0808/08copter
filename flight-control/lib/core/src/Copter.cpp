@@ -24,9 +24,10 @@ int Copter::getServoCount() {
 int Copter::getServoAttachPin(int servoId) {
     return (*this).servoAttachPins[servoId];
 }
-void Copter::log(String message) {
+void Copter::log(char* message) {
     Serial.println(message);
 }
+
 
 } // namespace core
 } // namespace a8

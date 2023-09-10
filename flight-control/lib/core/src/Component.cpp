@@ -17,7 +17,7 @@ util::Attributes *Component::getAttributes() {
     return attributes;
 }
 
-void Component::log(String msg) {
+void Component::log(char* msg) {
     copter->log(msg);
 }
 

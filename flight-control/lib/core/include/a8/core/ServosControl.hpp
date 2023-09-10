@@ -13,10 +13,12 @@ public:
     ~ServosControl();
     ServosControl *attachAll();
     void setVelocity(int servoId, float velocity);
+    void setVelocities(int id1, float vel1,int id2, float vel2,int id3, float vel3,int id4, float vel4);
 
 private:
     int totalServos;
     Servo **servos;
+    float lastVelocities[4] = {};
 };
 } // namespace core
 } // namespace a8

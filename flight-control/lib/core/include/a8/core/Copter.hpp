@@ -19,7 +19,10 @@ public:
     int getServoCount();
     int getServoAttachPin(int servoId);
     void destroy();
-    void log(String message);
+    void log(char* message);
+    void log(char* m1, char* m2);
+    void log(char* m1, char* m2, char* m3);
+    void log(char* m1, float m2, char* m3, char* m4);
     Scheduler *getScheduler();
 
 private:

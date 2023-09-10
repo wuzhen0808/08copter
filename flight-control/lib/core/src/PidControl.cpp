@@ -17,10 +17,19 @@ PidControl::~PidControl() {
 float PidControl::update(float desirePosition, float actualPosition) {
 
     float error = desirePosition - actualPosition;
-    float deltaTime = millis() - lastUpdateTimeInMs;
-    float p = kp * error;                           // speed
-    float i = ki * error * deltaTime;               //
-    float d = kd * (error - lastError) / deltaTime; // speed plus
+    unsigned long now = millis();
+    if (lastUpdateTimeInMs == 0) {
+        lastUpdateTimeInMs = now;
+    }
+    float deltaTime = now - lastUpdateTimeInMs;
+    float p = kp * error;             // speed
+    float i = ki * error * deltaTime; //
+    float d = 0.0f;
+    if (deltaTime >= 1.0f) {
+        d = kd * (error - lastError) / deltaTime; // speed plus
+    }
+
+    lastUpdateTimeInMs = now;
     return p + i + d;
 }
 } // namespace core
