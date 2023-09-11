@@ -3,7 +3,7 @@
 #define INC (10)
 namespace a8 {
 namespace util {
-using namespace a8::core::hal;
+using namespace a8::core;
 
 Logger::Logger(string name) {
     this->name = name;
@@ -13,7 +13,7 @@ Logger::~Logger(){
     
 }
 void Logger::info(string msg) {
-    println(msg.getText());
+    Hal::println(msg.getText());
 }
 
 } // namespace util

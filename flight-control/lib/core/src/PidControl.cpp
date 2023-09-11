@@ -3,7 +3,7 @@
 
 namespace a8 {
 namespace core {
-using namespace a8::core::hal;
+using namespace a8::core;
 
 // https://www.youtube.com/watch?v=NVLXCwc8HzM
 PidControl::PidControl(float kp, float ki, float kd) {
@@ -19,7 +19,7 @@ PidControl::~PidControl() {
 float PidControl::update(float desirePosition, float actualPosition) {
 
     float error = desirePosition - actualPosition;
-    unsigned long now = a8::core::hal::millis();
+    unsigned long now = Hal::millis();
     if (lastUpdateTimeInMs == 0) {
         lastUpdateTimeInMs = now;
     }

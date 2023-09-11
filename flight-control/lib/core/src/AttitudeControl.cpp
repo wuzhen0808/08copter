@@ -26,7 +26,9 @@ AttitudeControl::~AttitudeControl() {
 }
 
 void AttitudeControl::call() {
-    log("AttitudeControl::call");
+    //string msg;
+
+    //log(msg);
 
     attitudeSensor->update();
 
@@ -42,7 +44,7 @@ void AttitudeControl::call() {
     float pitchGain = pitchControl->update(desiredPitch, actualPitch);
     float yawGain = yawControl->update(desiredYaw, actualYaw);
 
-    log(string("actualRoll:") + string(actualRoll) + string(",rollGain:") + string(rollGain));
+    //log(string("actualRoll:") + string(actualRoll) + string(",rollGain:") + string(rollGain));
 
     float throttle = 0.0f;
     float motors[4] = {};

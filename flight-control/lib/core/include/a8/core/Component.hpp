@@ -2,14 +2,14 @@
 #define COPTER_COM__
 
 #include "a8/core/Copter.hpp"
-#include "a8/util/Attributes.hpp"
+#include <a8/util/Attributes.hpp>
 namespace a8 {
 namespace core {
 class Component {
 public:
     Component(Copter *copter);
     ~Component();
-    void log(string msg);    
+    void log(string& msg);    
     util::Attributes *getAttributes();
 
 protected:

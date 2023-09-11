@@ -1,6 +1,5 @@
-#ifndef String__
-#define String__
-#include "a8/util/Shared.hpp"
+#ifndef string__
+#define string__
 
 namespace a8 {
 namespace util {
@@ -8,6 +7,7 @@ namespace util {
 class string {
 public:
     string();
+    //string(char text[]);
     string(char *text);
     string(string &str); // copy constructor
     string(float fValue);

@@ -5,13 +5,13 @@
 namespace a8 {
 namespace ardui {
 using namespace a8::util;
-using namespace a8::core::hal;
+using namespace a8::core;
 static int SERVO_MIN_PULSE = 1000;
 static int SERVO_MAX_PULSE = 2000;
 
 long convertToPulseWidth(float velocity) {
 
-    long pulseWidth = map(velocity * 1000, 0, 1000, SERVO_MIN_PULSE, SERVO_MAX_PULSE);
+    long pulseWidth = Hal::map(velocity * 1000, 0, 1000, SERVO_MIN_PULSE, SERVO_MAX_PULSE);
     return pulseWidth;
 }
 ArduinoServosControl::ArduinoServosControl(Copter *copter) : ServosControl(copter) {
@@ -23,15 +23,15 @@ ArduinoServosControl::ArduinoServosControl(Copter *copter) : ServosControl(copte
 }
 
 void ArduinoServosControl::attachAll() {
-    log("ServosControl::active");
+    //log("ServosControl::active");
     for (int i = 0; i < this->totalServos; i++) {
         int pin = copter->getServoAttachPin(i);
         uint8_t isOk = this->servos[i]->attach(pin);
         if (isOk) {
 
-            log("Servo[%i] is Successfully attached to:%i");
+            //log("Servo[%i] is Successfully attached to:%i");
         } else {
-            log("Failed for Servo[%i] to be attached to:%i");
+           // log("Failed for Servo[%i] to be attached to:%i");
         }
 
         this->servos[i]->writeMicroseconds(SERVO_MIN_PULSE); // initialize

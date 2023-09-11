@@ -10,7 +10,7 @@ Mpu9250AttitudeSensor::Mpu9250AttitudeSensor(Copter *copter) : AttitudeSensor(co
 Mpu9250AttitudeSensor::~Mpu9250AttitudeSensor() {
 }
 void Mpu9250AttitudeSensor::update() {
-    log("Mpu9250AttitudeSensor::update");
+    //log("Mpu9250AttitudeSensor::update");
     mpu.update();
 }
 

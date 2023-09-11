@@ -6,7 +6,7 @@
 #define TOTAL_COMPONENTS 10
 namespace a8 {
 namespace core {
-using namespace a8::core::hal;
+using namespace a8::core;
 
 Copter::Copter(Scheduler *scheduler) {
     this->scheduler = scheduler;
@@ -31,7 +31,7 @@ void Copter::log(string message) {
 }
 
 void Copter::log(char *message) {
-    println(message);
+    Hal::println(message);
 }
 
 } // namespace core

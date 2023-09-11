@@ -9,8 +9,7 @@ string::string() {
 
     this->init(new char[1]{'\0'}, UNKNOWN);
 }
-
-string::string(char *text) {
+string::string(char* text) {
     this->init(text, UNKNOWN);
 }
 
