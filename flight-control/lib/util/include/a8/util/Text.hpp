@@ -4,24 +4,24 @@
 namespace a8 {
 namespace util {
 
-class string {
+class Text {
 public:
-    string();
+    Text();
     //string(char text[]);
-    string(char *text);
-    string(string &str); // copy constructor
-    string(float fValue);
-    string(int iValue);
-    ~string();
+    Text(char *text);
+    //Text(Text &str); // copy constructor
+    Text(float fValue);
+    Text(int iValue);
+    ~Text();
     int getLength() ;
 
     char *getText() ;
 
-    string operator +(string const &str2) {
-        string ret;   
+    // Text operator +(Text const &str2) {
+    //     Text ret;   
 
-        return  ret;
-    }
+    //     return  ret;
+    // }
     static int const UNKNOWN = -1;
 private:
     int length = UNKNOWN;

@@ -1,17 +1,18 @@
 #include "a8/ardui/ArduinoServosControl.hpp"
-#include "a8/core/Hal.hpp"
+#include "a8/Hal.hpp"
 #include "a8/util/Chars.hpp"
 
 namespace a8 {
 namespace ardui {
 using namespace a8::util;
 using namespace a8::core;
+using namespace a8::hal;
 static int SERVO_MIN_PULSE = 1000;
 static int SERVO_MAX_PULSE = 2000;
 
 long convertToPulseWidth(float velocity) {
 
-    long pulseWidth = Hal::map(velocity * 1000, 0, 1000, SERVO_MIN_PULSE, SERVO_MAX_PULSE);
+    long pulseWidth = map(velocity * 1000, 0, 1000, SERVO_MIN_PULSE, SERVO_MAX_PULSE);
     return pulseWidth;
 }
 ArduinoServosControl::ArduinoServosControl(Copter *copter) : ServosControl(copter) {

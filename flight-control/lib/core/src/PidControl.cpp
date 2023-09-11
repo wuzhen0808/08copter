@@ -1,9 +1,9 @@
-#include "a8/core/Hal.hpp"
+#include "a8/Hal.hpp"
 #include "a8/core/PidControl.hpp"
 
 namespace a8 {
 namespace core {
-using namespace a8::core;
+using namespace a8::hal;
 
 // https://www.youtube.com/watch?v=NVLXCwc8HzM
 PidControl::PidControl(float kp, float ki, float kd) {
@@ -19,7 +19,7 @@ PidControl::~PidControl() {
 float PidControl::update(float desirePosition, float actualPosition) {
 
     float error = desirePosition - actualPosition;
-    unsigned long now = Hal::millis();
+    unsigned long now = millis();
     if (lastUpdateTimeInMs == 0) {
         lastUpdateTimeInMs = now;
     }

@@ -1,19 +1,27 @@
-#include "a8/util/string.hpp"
+#include "a8/util/Text.hpp"
+#include "a8/Hal.hpp"
 #include "stdio.h"
 
 #define INC (10)
 namespace a8 {
 namespace util {
+using namespace a8::hal;
 
-string::string() {
-
-    this->init(new char[1]{'\0'}, UNKNOWN);
+Text::Text() {
+    // println("Text::Text()");
+    // this->init(new char[1]{'\0'}, UNKNOWN);
 }
-string::string(char* text) {
+
+// Text::Text(Text &text) {
+//     println("Text::Text(Text &text)");
+//     this->init(text.text, text.getLength());
+// }
+
+Text::Text(char *text) {
     this->init(text, UNKNOWN);
 }
 
-string::string(float fValue) {
+Text::Text(float fValue) {
     char *buf = new char[100];
     int len = snprintf(buf, 100, "%f", fValue);
     if (len < 0) {
@@ -24,7 +32,7 @@ string::string(float fValue) {
     this->init(buf, len);
 }
 
-string::string(int iValue) {
+Text::Text(int iValue) {
     char *buf = new char[100];
     int len = snprintf(buf, 100, "%i", iValue);
     if (len < 0) {
@@ -35,21 +43,21 @@ string::string(int iValue) {
     this->init(buf, len);
 }
 
-string::string(string &string) {
-    this->init(string.text, string.getLength());
-}
-
-void string::init(char *text, int len) {
+void Text::init(char *text, int len) {
+    println("inti");
     this->text = text;
     this->length = length;
 }
-char *string::getText() {
+char *Text::getText() {
     return this->text;
 }
-int string::getLength() {
+int Text::getLength() {
     if (this->length == UNKNOWN) {
+
         for (int i = 0;; i++) {
+            println("getLength():");
             if (this->text[i] == '\0') {
+                println(i);
                 this->length = i;
                 break;
             }
@@ -58,8 +66,12 @@ int string::getLength() {
     return this->length;
 }
 
-string::~string() {
-    delete this->text;
+Text::~Text() {
+    println("Text::~Text()");
+    if (this->text != 0) {
+        delete this->text;
+    }
+    println("delete this->text");
     this->text = 0;
     this->length = 0;
 }

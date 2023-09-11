@@ -1,4 +1,4 @@
-#include "a8/core/Hal.hpp"
+#include "a8/Hal.hpp"
 #include "a8/core/Copter.hpp"
 #include "a8/core/AttitudeControl.hpp"
 #include "a8/core/Runnable.hpp"
@@ -6,6 +6,7 @@
 #define TOTAL_COMPONENTS 10
 namespace a8 {
 namespace core {
+using namespace a8::hal;
 using namespace a8::core;
 
 Copter::Copter(Scheduler *scheduler) {
@@ -31,7 +32,7 @@ void Copter::log(string message) {
 }
 
 void Copter::log(char *message) {
-    Hal::println(message);
+    println(message);
 }
 
 } // namespace core

@@ -1,14 +1,27 @@
-#include "a8/core/Hal.hpp"
 
+#include "a8/Hal.hpp"
+#include <iostream>
+#ifndef HAL_CPP
+#define HAL_CPP
 namespace a8 {
-namespace core {
-int Hal::map(int value, int from1, int to1, int from2, int to2) {
+namespace hal {
+using namespace std;
+int map(int value, int from1, int to1, int from2, int to2) {
     return 0;
 }
-ulong Hal::millis() {
+unsigned long millis() {
     return 0;
 }
-void Hal::print(char *msg) {}
-void Hal::println(char *msg) {}
-} // namespace core
+void print(char *msg) {
+    cout << msg;
+}
+void println(int ivalue) {
+    cout << ivalue << endl;
+}
+void println(char *msg) {
+    cout << msg << endl;
+}
+} // namespace hal
 } // namespace a8
+
+#endif
