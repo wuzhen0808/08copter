@@ -1,11 +1,13 @@
+#include "a8/core/Hal.hpp"
 #include "a8/core/Copter.hpp"
 #include "a8/core/AttitudeControl.hpp"
-#include "a8/rtos/Runnable.hpp"
-#include "a8/rtos/Thread.hpp"
+#include "a8/core/Runnable.hpp"
+#include "a8/core/Thread.hpp"
 #define TOTAL_COMPONENTS 10
 namespace a8 {
 namespace core {
-using namespace a8::rtos;
+using namespace a8::core::hal;
+
 Copter::Copter(Scheduler *scheduler) {
     this->scheduler = scheduler;
 }
@@ -24,10 +26,13 @@ int Copter::getServoCount() {
 int Copter::getServoAttachPin(int servoId) {
     return (*this).servoAttachPins[servoId];
 }
-void Copter::log(char* message) {
-    Serial.println(message);
+void Copter::log(string message) {
+    log(message);
 }
 
+void Copter::log(char *message) {
+    println(message);
+}
 
 } // namespace core
 } // namespace a8

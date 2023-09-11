@@ -1,8 +1,8 @@
 #ifndef FLIGHT_CONFIG__
 #define FLIGHT_CONFIG__
 
-#include "a8/rtos/Scheduler.hpp"
-#include <Arduino.h>
+#include "a8/core/Scheduler.hpp"
+#include "a8/util/string.hpp"
 
 #define SERVO_TOP_LEFT 0
 #define SERVO_TOP_RIGHT 1
@@ -11,7 +11,7 @@
 
 namespace a8 {
 namespace core {
-using namespace a8::rtos;
+using namespace a8::util;
 class Copter {
 public:
     Copter(Scheduler *scheduler);
@@ -20,9 +20,7 @@ public:
     int getServoAttachPin(int servoId);
     void destroy();
     void log(char* message);
-    void log(char* m1, char* m2);
-    void log(char* m1, char* m2, char* m3);
-    void log(char* m1, float m2, char* m3, char* m4);
+    void log(string message);
     Scheduler *getScheduler();
 
 private:

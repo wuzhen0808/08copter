@@ -1,7 +1,7 @@
 #ifndef Runnable__
 #define Runnable__
 namespace a8 {
-namespace rtos {
+namespace core {
 
 class Runnable {
 public:

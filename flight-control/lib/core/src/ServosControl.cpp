@@ -1,67 +1,11 @@
 #include "a8/core/ServosControl.hpp"
-#include <Servo.h>
-#include "a8/util/Chars.hpp"
-
 namespace a8 {
 namespace core {
-using namespace a8::util;
-
-static int SERVO_MIN_PULSE = 1000;
-static int SERVO_MAX_PULSE = 2000;
-
-long convertToPulseWidth(float velocity) {
-
-    long pulseWidth = map(velocity * 1000, 0, 1000, SERVO_MIN_PULSE, SERVO_MAX_PULSE);
-    return pulseWidth;
-}
 ServosControl::ServosControl(Copter *copter) : Component(copter) {
-    (*this).totalServos = (*copter).getServoCount();
-    (*this).servos = new Servo *[totalServos];
-    for (int i = 0; i < (*this).totalServos; i++) {
-        (*this).servos[i] = new Servo();
-    }
 }
-ServosControl *ServosControl::attachAll() {
-    log("ServosControl::active");
-    for (int i = 0; i < (*this).totalServos; i++) {
-        int pin = (*copter).getServoAttachPin(i);
-        uint8_t isOk = (*(*this).servos[i]).attach(pin);
-        if (isOk) {
-
-            log("Servo[%i] is Successfully attached to:%i");
-        } else {
-            log("Failed for Servo[%i] to be attached to:%i");
-        }
-
-        this->servos[i]->writeMicroseconds(SERVO_MIN_PULSE); // initialize
-    }
-    return this;
-}
-
 ServosControl::~ServosControl() {
 }
 
-void ServosControl::setVelocity(int servoId, float velocity) {
-    long pulseWidth = convertToPulseWidth(velocity);
-    // long pulseWidth = 1200;
-    this->servos[servoId]->writeMicroseconds(pulseWidth);
-    lastVelocities[servoId] = velocity;
-    char buf[100];
-    //sprintf(buf, "%f",velocity);
-    //log("pulseWidth:" );
-}
-
-void ServosControl::setVelocities(int id1, float vel1, int id2, float vel2, int id3, float vel3, int id4, float vel4) {
-    // log("serVelocities:[" +
-    // String(id1) + ":" + String(vel1) + "," +
-    // String(id2) + ":" + String(vel2) + "," +
-    // String(id3) + ":" + String(vel3) + "," +
-    // String(id4) + ":" + String(vel4) + "]");
-    setVelocity(id1, vel1);
-    setVelocity(id2, vel2);
-    setVelocity(id3, vel3);
-    setVelocity(id4, vel4);
-}
-
 } // namespace core
+
 } // namespace a8

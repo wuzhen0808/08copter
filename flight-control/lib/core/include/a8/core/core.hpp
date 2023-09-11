@@ -1,7 +1,7 @@
 #ifndef RTOS__
 #define RTOS__
 namespace a8 {
-namespace rtos {
+namespace core {
 
 typedef long ulong;
 

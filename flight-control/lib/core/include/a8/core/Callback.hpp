@@ -1,7 +1,7 @@
 #ifndef Callback__
 #define Callback__
 namespace a8 {
-namespace rtos {
+namespace core {
 
 class Callback {
 public:

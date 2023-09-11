@@ -1,18 +1,18 @@
 #include <Arduino.h>
 #include <Arduino_FreeRTOS.h>
 
-#include <exception>
-
 #include <a8/core/AttitudeControl.hpp>
 #include "a8/core/Copter.hpp"
-#include "a8/rtos/Runnable.hpp"
+#include "a8/core/Runnable.hpp"
 #include "a8/mpu9250/Mpu9250AttitudeSensor.hpp"
 #include <a8/simulator/SimulatorAttitudeSensor.hpp>
+#include "a8/ardui/ArduinoScheduler.hpp"
+#include "a8/ardui/ArduinoServosControl.hpp"
 
 void setup() {
     using namespace a8::core;
     using namespace a8::simulator;
-    using namespace a8::rtos;
+    using namespace a8::ardui;
     {
         
     } // namespace a8::rtos;
@@ -20,9 +20,9 @@ void setup() {
     Serial.begin(9600);
     while (!Serial) {
     }
-    Scheduler *scheduler = new Scheduler();
+    Scheduler *scheduler = new ArduinoScheduler();
     Copter *copter = new Copter(scheduler);
-    ServosControl *servosControl = new ServosControl(copter);
+    ServosControl *servosControl = new ArduinoServosControl(copter);
     servosControl->attachAll();
     servosControl->setVelocity(0, 1.0f);
     /*

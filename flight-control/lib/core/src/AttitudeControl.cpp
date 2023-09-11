@@ -1,7 +1,7 @@
 #include "a8/core/AttitudeControl.hpp"
 #include "a8/core/ServosControl.hpp"
-#include "a8/rtos/Thread.hpp"
-#include <FreeRTOSConfig.h>
+#include "a8/core/Thread.hpp"
+#include "a8/util/string.hpp"
 /**
  * (M1) (M2)
  *   \   /
@@ -11,6 +11,7 @@
  */
 namespace a8 {
 namespace core {
+using namespace a8::util;
 AttitudeControl::AttitudeControl(Copter *copter,
                                  ServosControl *servosControl,
                                  AttitudeSensor *attitudeSensor) : Component(copter) {
@@ -41,7 +42,7 @@ void AttitudeControl::call() {
     float pitchGain = pitchControl->update(desiredPitch, actualPitch);
     float yawGain = yawControl->update(desiredYaw, actualYaw);
 
-    //log("actualRoll:" + String(actualRoll) + ",rollGain:" + String(rollGain));
+    log(string("actualRoll:") + string(actualRoll) + string(",rollGain:") + string(rollGain));
 
     float throttle = 0.0f;
     float motors[4] = {};

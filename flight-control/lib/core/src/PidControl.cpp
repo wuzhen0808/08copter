@@ -1,8 +1,10 @@
+#include "a8/core/Hal.hpp"
 #include "a8/core/PidControl.hpp"
-#include "a8/rtos/Thread.hpp"
-#include <Arduino.h>
+
 namespace a8 {
 namespace core {
+using namespace a8::core::hal;
+
 // https://www.youtube.com/watch?v=NVLXCwc8HzM
 PidControl::PidControl(float kp, float ki, float kd) {
     // init as the default arguments.
@@ -17,7 +19,7 @@ PidControl::~PidControl() {
 float PidControl::update(float desirePosition, float actualPosition) {
 
     float error = desirePosition - actualPosition;
-    unsigned long now = millis();
+    unsigned long now = a8::core::hal::millis();
     if (lastUpdateTimeInMs == 0) {
         lastUpdateTimeInMs = now;
     }

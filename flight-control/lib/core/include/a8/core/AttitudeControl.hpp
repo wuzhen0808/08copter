@@ -4,7 +4,7 @@
 #include "a8/core/Component.hpp"
 #include "a8/core/Copter.hpp"
 #include "a8/core/PidControl.hpp"
-#include "a8/rtos/Callback.hpp"
+#include "a8/core/Callback.hpp"
 #include "a8/core/ServosControl.hpp"
 namespace a8 {
 namespace  core {

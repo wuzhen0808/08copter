@@ -9,7 +9,7 @@ class Component {
 public:
     Component(Copter *copter);
     ~Component();
-    void log(char* msg);    
+    void log(string msg);    
     util::Attributes *getAttributes();
 
 protected:

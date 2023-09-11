@@ -1,0 +1,10 @@
+{
+    "name": "ardui",
+    "version": "0.1",
+    "description": "None",
+    "author": [],
+    "license": "MIT",
+    "dependencies": {},
+    "frameworks": "arduino",
+    "platforms": "*"
+}
