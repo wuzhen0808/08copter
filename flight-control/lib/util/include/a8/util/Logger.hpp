@@ -1,23 +1,20 @@
-#ifndef LOGGER__
-#define LOGGER__
+#pragma once
 
 #include "a8/util/Shared.hpp"
-#include "a8/util/Text.hpp"
+#include "a8/util/String.hpp"
 
-namespace a8 {
-namespace util {
+using namespace a8::util;
+
+namespace a8::util {
 
 class Logger {
 public:
-    Logger(Text name);
+    Logger(String name);
     ~Logger();
-    void info(Text msg);
+    void info(String msg);
 
 private:
-    Text name;
+    String name;
 };
-} // namespace util
 
-} // namespace a8
-
-#endif
+} // namespace a8::util

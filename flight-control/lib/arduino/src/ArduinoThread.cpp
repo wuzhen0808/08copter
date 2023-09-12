@@ -1,9 +1,9 @@
-#include "a8/ardui/ArduinoThread.hpp"
+#include "a8/arduino/ArduinoThread.hpp"
 #include <Arduino.h>
 #include <Arduino_FreeRTOS.h>
 
 namespace a8 {
-namespace ardui {
+namespace arduino {
 static int LOCAL_THIS = 0;
 static int STACK_DEPTH = 521 / 4;
 static int DEFAULT_PRIORITY = 1;

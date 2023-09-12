@@ -1,9 +1,9 @@
-#include "a8/ardui/ArduinoServosControl.hpp"
+#include "a8/arduino/ArduinoServosControl.hpp"
 #include "a8/Hal.hpp"
 #include "a8/util/Chars.hpp"
 
 namespace a8 {
-namespace ardui {
+namespace arduino {
 using namespace a8::util;
 using namespace a8::core;
 using namespace a8::hal;

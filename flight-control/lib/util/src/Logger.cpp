@@ -1,19 +1,21 @@
-#include "a8/Hal.hpp"
+#include "a8/hal/Hal.hpp"
 #include "a8/util/Logger.hpp"
 #define INC (10)
-namespace a8 {
-namespace util {
+
 using namespace a8::hal;
 
-Logger::Logger(Text name) {
+namespace a8 {
+namespace util {
+
+Logger::Logger(String name) {
     this->name = name;
 }
 
 Logger::~Logger(){
     
 }
-void Logger::info(Text msg) {
-    println(msg.getText());
+void Logger::info(String msg) {
+    S->out->println(msg);
 }
 
 } // namespace util

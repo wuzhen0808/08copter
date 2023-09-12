@@ -2,7 +2,7 @@
 #include "a8/core/Timer.hpp"
 #include <Arduino_FreeRTOS.h>
 namespace a8 {
-namespace ardui {
+namespace arduino {
 using namespace a8::core;
 
 class ArduinoTimer : public Timer {

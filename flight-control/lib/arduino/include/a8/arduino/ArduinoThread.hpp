@@ -5,7 +5,7 @@
 #include <Arduino.h>
 #include <Arduino_FreeRTOS.h>
 namespace a8 {
-namespace ardui {
+namespace arduino {
 using namespace a8::core;
 
 class ArduinoThread : public Thread {

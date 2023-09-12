@@ -1,4 +1,4 @@
-#include "a8/Hal.hpp"
+#include "a8/hal/Hal.hpp"
 #include "a8/core/PidControl.hpp"
 
 namespace a8 {
@@ -19,7 +19,7 @@ PidControl::~PidControl() {
 float PidControl::update(float desirePosition, float actualPosition) {
 
     float error = desirePosition - actualPosition;
-    unsigned long now = millis();
+    unsigned long now = S->millis();
     if (lastUpdateTimeInMs == 0) {
         lastUpdateTimeInMs = now;
     }

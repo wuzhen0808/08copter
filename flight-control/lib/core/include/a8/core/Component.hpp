@@ -3,13 +3,16 @@
 
 #include "a8/core/Copter.hpp"
 #include <a8/util/Attributes.hpp>
+
+using namespace a8::util;
+
 namespace a8 {
 namespace core {
 class Component {
 public:
     Component(Copter *copter);
     ~Component();
-    void log(string& msg);    
+    void log(String msg);    
     util::Attributes *getAttributes();
 
 protected:

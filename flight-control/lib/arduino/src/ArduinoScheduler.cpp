@@ -1,9 +1,9 @@
-#include "a8/ardui/ArduinoScheduler.hpp"
-#include "a8/ardui/ArduinoTimer.hpp"
-#include "a8/ardui/ArduinoThread.hpp"
-#include "a8/ardui/ArduinoScheduler.hpp"
+#include "a8/arduino/ArduinoScheduler.hpp"
+#include "a8/arduino/ArduinoTimer.hpp"
+#include "a8/arduino/ArduinoThread.hpp"
+#include "a8/arduino/ArduinoScheduler.hpp"
 namespace a8 {
-namespace ardui {
+namespace arduino {
 using namespace a8::core;
 
 

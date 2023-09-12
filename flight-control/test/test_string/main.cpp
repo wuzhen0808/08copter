@@ -1,23 +1,26 @@
-#include "a8/Hal.hpp"
+#include "a8/hal/Hal.hpp"
+#include "TestSystem.h"
+#include "a8/native/NativeSystem.h"
 #include "a8/util/Buffer.hpp"
-#include "a8/util/Text.hpp"
-#include "native/Hal.cpp"
+#include "a8/util/String.hpp"
 #include <gtest/gtest.h>
 
 using namespace a8::util;
 using namespace a8::hal;
+
+System *a8::hal::S = new TestSystem();
 
 // TEST(TestBuffer, smokeTest) {
 //     //Buffer<char> *buffer = new Buffer<char>();
 //     //EXPECT_EQ(buffer->getLength(), 0);
 
 // }
-void log(Text msg) {
+void log(String msg) {
     // a8::hal::println(msg.getText());
 }
 
 TEST(TestString, smockTest) {
-    Text s1;
+    String s1;
     cout << "SizeOf" << endl;
 
     // Text s2 = s1;

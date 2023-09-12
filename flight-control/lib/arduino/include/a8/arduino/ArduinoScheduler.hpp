@@ -1,8 +1,7 @@
 #ifndef ARDUINO_SCHEDULER_H__
 #define ARDUINO_SCHEDULER_H__
 #include "a8/core/Scheduler.hpp"
-namespace a8 {
-namespace ardui {
+namespace a8::arduino {
 using namespace a8::core;
 
 class ArduinoScheduler : public Scheduler {
@@ -19,6 +18,6 @@ public:
 
     virtual Thread *getCurrentThread();
 };
-} // namespace ardui
-} // namespace a8
+
+} // namespace a8::arduino
 #endif

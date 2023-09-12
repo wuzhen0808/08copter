@@ -2,30 +2,29 @@
 #define FLIGHT_CONFIG__
 
 #include "a8/core/Scheduler.hpp"
-#include "a8/util/string.hpp"
+#include "a8/util/String.hpp"
 
 #define SERVO_TOP_LEFT 0
 #define SERVO_TOP_RIGHT 1
 #define SERVO_BOTTOM_RIGHT 2
 #define SERVO_BOTTOM_LEFT 3
 
+using namespace a8::util;
 namespace a8 {
 namespace core {
-using namespace a8::util;
 class Copter {
 public:
-    Copter(Scheduler *scheduler);
-    ~Copter();
+    Copter(int servoCount, Scheduler* scheduler);
+    ~Copter();    
+    virtual void start();
+    virtual void stop();
     int getServoCount();
-    int getServoAttachPin(int servoId);
-    void destroy();
-    void log(char* message);
-    void log(string message);
+    int getServoAttachPin(int servoId);    
+    virtual void log(String message);
     Scheduler *getScheduler();
 
 private:
-    int servoCount = 4;
-    int *servoAttachPins = new int[4]{3, 5, 9, 11};
+    int servoCount ;    
     Scheduler *scheduler;
 };
 } // namespace core

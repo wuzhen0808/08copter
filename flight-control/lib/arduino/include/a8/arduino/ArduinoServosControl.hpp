@@ -3,7 +3,7 @@
 #include "a8/core/ServosControl.hpp"
 #include <Servo.h>
 namespace a8 {
-namespace ardui {
+namespace arduino {
 using namespace a8::core;
 
 class ArduinoServosControl : public ServosControl {

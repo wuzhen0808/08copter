@@ -1,12 +1,12 @@
 
-#include "a8/ardui/ArduinoTimer.hpp"
+#include "a8/arduino/ArduinoTimer.hpp"
 #include <Arduino.h>
 #include <Arduino_FreeRTOS.h>
 
 #define LOCAL_THIS 0
 #define LOCAL_LAST_WAKE 1
 namespace a8 {
-namespace ardui {
+namespace arduino {
 ArduinoTimer::ArduinoTimer(Callback *pvRunnable, ulong ticks) : callback(pvRunnable),
                                                                 ticks(ticks) {
     handle = xTimerCreate(
