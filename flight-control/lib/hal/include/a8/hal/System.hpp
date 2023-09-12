@@ -9,7 +9,6 @@ class System {
 public:
     Output *out;
     virtual long millis() = 0;
-    virtual void memcpy(void *to, const void *from, int size) = 0;
 };
 
 } // namespace hal

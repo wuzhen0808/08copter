@@ -6,18 +6,14 @@
 #define TOTAL_COMPONENTS 10
 namespace a8 {
 namespace core {
-using namespace a8::hal;
-using namespace a8::core;
+using a8::core::Copter;
+using a8::hal::S;
 
-Copter::Copter(int servoCount, Scheduler *scheduler) {
-    this->scheduler = scheduler;
+Copter::Copter(int servoCount) {
     this->servoCount = servoCount;
 }
 
 Copter::~Copter() {
-}
-Scheduler *Copter::getScheduler() {
-    return scheduler;
 }
 
 void Copter::start() {
@@ -29,7 +25,7 @@ int Copter::getServoCount() {
 }
 
 void Copter::log(String message) {
-    log(message);
+    S->out->println(message);
 }
 
 } // namespace core

@@ -1,6 +1,6 @@
-#include "a8/arduino/ArduinoThread.hpp"
 #include <Arduino.h>
 #include <Arduino_FreeRTOS.h>
+#include "a8/arduino/ArduinoThread.hpp"
 
 namespace a8 {
 namespace arduino {

@@ -7,7 +7,7 @@ using namespace a8::util;
 namespace a8::util {
 
 void Output::print(int ivalue){
-    String fmt;
+    String fmt("123");
     String str = Format::format(fmt, ivalue);
     this->print(str);
 }

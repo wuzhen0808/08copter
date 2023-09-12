@@ -6,22 +6,31 @@ namespace util {
 class String {
 public:
     String();
-
-    String(const char *str);
-    //String(String &str); // Copy constructor    
+    String(const char buf[]);
+    String(const char *str, int len);
+    String(const String &str); // Copy constructor
     ~String();
-    int getLength();
 
-    char *getText();
+    char *getText() const;
+    char getChar(int idx) const;
+    int getLength() const;
 
-    static char *copy(const char *str);
+    // static member funcs
+    static int getLength(const char *str);
+    static void copy(const char *str, int from1, int len, char *buff, int from2);
+
+    // operators
+    String& operator=(const char str1[]);
+    friend String operator+(const String &str1, const String &str);
+    friend bool operator==(const String &str1, const String &str2);
 
 private:
     static int const UNKNOWN = -1;
     int length = UNKNOWN;
-    char *string;
-    void init(char *content, int length);
+    char *text;
 };
+
+bool operator==(const String &str1, const String &str2);
 
 } // namespace util
 

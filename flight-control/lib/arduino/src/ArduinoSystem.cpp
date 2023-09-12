@@ -1,14 +1,10 @@
-#include "a8/hal/System.hpp"
+#include "a8/arduino/ArduinoSystem.h"
 #include <Arduino.h>
 
-namespace a8 {
-namespace arduino {
+namespace a8::arduino {
 
-unsigned long ArduinoSystem::millis() {
-    millis();
+long ArduinoSystem::millis() {
+    return ::millis();
 }
 
-}
-
-} // namespace hal
-} // namespace a8
+} // namespace a8::arduino

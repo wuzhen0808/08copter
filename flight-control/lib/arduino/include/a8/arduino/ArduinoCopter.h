@@ -1,21 +1,23 @@
 #pragma once
 #include "a8/core/Copter.hpp"
 
-using namespace std;
-using namespace a8::util;
+using a8::core::Copter;
+using a8::core::Scheduler;
+
 namespace a8::arduino {
 
 class ArduinoCopter : public Copter {
 public:
-    ArduinoCopter(int servoCount, Scheduler *scheduler);
+    ArduinoCopter();
+    ~ArduinoCopter();
     virtual void start();
     virtual void stop();
-    virtual int getServoAttachPin(int servoId) {
-        return servoAttachPins[servoId];
-    }
-    
+    virtual int getServoAttachPin(int servoId);
+    virtual Scheduler* getScheduler();
+
 private:
-    int[] servoAttachPins = new int[] { 3, 5, 9, 11 }
-}
+    int *servoAttachPins;
+    Scheduler *scheduler;
+};
 
 } // namespace a8::arduino

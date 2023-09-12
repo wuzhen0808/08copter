@@ -7,7 +7,7 @@ using namespace a8::util;
 
 namespace a8 ::native {
 
-NativeCopter::NativeCopter() : Copter(0, 0) {
+NativeCopter::NativeCopter() : Copter(0) {
 }
 void NativeCopter::start() {
 }

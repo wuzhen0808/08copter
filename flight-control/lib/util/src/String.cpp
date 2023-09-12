@@ -2,67 +2,102 @@
 
 #define INC (10)
 
-namespace a8 ::util {
+namespace a8::util {
 
 String::String() {
-    this->string = new char[1]{'\0'};
+    this->text = new char[1]{'\0'};
+    this->length = 0;
 }
 
-// String::String(String &str) {
-//   this->string = copy(str.string);
-// this->length = str.length;
-//}
-
-String::String(const char *str) {
-    this->string = copy(str);
+String::String(const char buf[]) {
+    int len = String::getLength(buf);
+    char *buf2 = new char[len + 1]{0};
+    String::copy(buf, 0, len + 1, buf2, 0);
+    this->text = buf2;
+    this->length = len;
 }
 
-char *String::getText() {
-    return this->string;
+String::String(const String &str) {
+
+    int len = str.length;
+    char *buff = new char[len + 1]{0};
+    String::copy(str.text, 0, len + 1, buff, 0);
+    this->text = buff;
+    this->length = len;
 }
-int String::getLength() {
-    if (this->length == UNKNOWN) {
 
-        for (int i = 0;; i++) {
+String::String(const char *text, int len) {
+    char *buff = new char[len + 1]{0};
+    copy(text, 0, len + 1, buff, 0);
+    this->text = buff;
+    this->length = len;
+}
 
-            if (this->string[i] == '\0') {
+char *String::getText() const {
+    return this->text;
+}
 
-                this->length = i;
-                break;
-            }
+int String::getLength(const char *str) {
+    for (int i = 0;; i++) {
+        if (str[i] == '\0') {
+            return i;
         }
     }
+}
+
+void String::copy(const char *str, int from1, int len, char *buff, int from2) {
+    for (int i = 0; i < len; i++) {
+        buff[from2 + i] = str[from1 + i];
+    }
+}
+String::~String() {
+    delete[] this->text;
+    this->text = 0;
+    this->length = 0;
+}
+
+int String::getLength() const {
     return this->length;
 }
 
-char *String::copy(const char *str) {
+char String::getChar(int idx) const {
+    return this->text[idx];
+}
 
-    int inc = 100;
-    int len = inc;
-    char *buf = new char[len]{0};
+String operator+(String const &str1, String const &str2) {
+    int len1 = str1.getLength();
+    int len2 = str2.getLength();
+    char *buf = new char[len1 + len2 + 1]{0};
+    char *text1 = str1.getText();
+    char *text2 = str2.getText();
+    String::copy(text1, 0, len1, buf, 0);
+    String::copy(text2, 0, len2, buf, len1);
+    String ret(buf, len1 + len2);
+    return ret;
+}
 
-    for (int i = 0;; i++) {
-        if (i >= len) {
-            int len2 = len + inc;
-            char *buf2 = new char[len2]{0};
-            for (int j = 0; j < len; j++) {
-                buf2[j] = buf[j];
-            }
-            delete[] buf;
-            buf = buf2;
-            len = len2;
-        }
-        buf[i] = str[i];
-        if (buf[i] == '\0') {
-            break;
+bool operator==(String const &str1, String const &str2) {
+    int len1 = str1.getLength();
+    int len2 = str2.getLength();
+    if (len1 != len2) {
+        return false;
+    }
+    for (int i = 0; i < len1; i++) {
+        if (str1.getChar(i) != str2.getChar(i)) {
+            return false;
         }
     }
-    return buf;
+    return true;
 }
-String::~String() {
-    delete[] this->string;
-    this->string = 0;
-    this->length = 0;
+
+String& String::operator=(const char str[]) {
+    delete[] text;
+    int len = getLength(str);
+    char *buff = new char[len + 1]{0};
+    copy(text, 0, len + 1, buff, 0);
+    this->text = buff;
+    this->length = len;
+    return (*this);
 }
 
 } // namespace a8::util
