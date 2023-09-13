@@ -1,8 +1,8 @@
 #include "a8/arduino/ArduinoCopter.h"
-#include "a8/arduino/ArduinoScheduler.hpp"
-#include "a8/arduino/ArduinoServosControl.hpp"
-#include "a8/core/core_all.hpp"
-#include "a8/simulator/SimulatorAttitudeSensor.hpp"
+#include "a8/arduino/ArduinoScheduler.h"
+#include "a8/arduino/ArduinoServosControl.h"
+#include "a8/core/core_all.h"
+#include "a8/simulator/SimulatorAttitudeSensor.h"
 #include <Arduino.h>
 
 using a8::core::AttitudeControl;
@@ -38,6 +38,7 @@ void ArduinoCopter::start() {
     Serial.begin(9600);
     while (!Serial) {
     }
+    S->out->println("ArduinoCopter::start()");
 
     ServosControl *servosControl = new ArduinoServosControl(this);
     servosControl->attachAll();

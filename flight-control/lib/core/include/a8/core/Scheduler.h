@@ -1,9 +1,9 @@
 #ifndef SCHEDULER__
 #define SCHEDULER__
-#include "a8/core/Runnable.hpp"
-#include "a8/core/Thread.hpp"
-#include "a8/core/Timer.hpp"
-#include "a8/core/core.hpp"
+#include "a8/core/Runnable.h"
+#include "a8/core/Thread.h"
+#include "a8/core/Timer.h"
+#include "a8/core/core.h"
 
 namespace a8 {
 namespace core {

@@ -1,12 +1,14 @@
 #pragma once
-#include "a8/core/Copter.h"
-
+#include "a8/util/Output.h"
+#include <iostream>
 using namespace std;
-using namespace a8::util;
+using a8::util::String;
 namespace a8::native {
-    
-class NativeCopter : public Copter {
-    
-}
+
+class NativeOutput : public Output {
+    virtual void print(String msg) {
+        cout << msg.getText();
+    }
+};
 
 } // namespace a8::native

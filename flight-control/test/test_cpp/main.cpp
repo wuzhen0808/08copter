@@ -1,6 +1,6 @@
-#include "a8/hal/System.hpp"
-#include "a8/util/Buffer.hpp"
-#include "a8/util/String.hpp"
+#include "a8/hal/System.h"
+#include "a8/util/Buffer.h"
+#include "a8/util/String.h"
 #include <gtest/gtest.h>
 #include <iostream>
 

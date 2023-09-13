@@ -1,6 +1,6 @@
 #pragma once
 #include "a8/util/Output.h"
-#include "a8/util/String.hpp"
+#include "a8/util/String.h"
 
 namespace a8 {
 namespace hal {

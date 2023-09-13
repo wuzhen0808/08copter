@@ -1,7 +1,7 @@
 #ifndef A8_TIMER__
 #define A8_TIMER__
-#include "a8/core/core.hpp"
-#include "a8/core/Callback.hpp"
+#include "a8/core/core.h"
+#include "a8/core/Callback.h"
 
 namespace a8 {
 namespace core {

@@ -1,7 +1,7 @@
-#include "a8/core/AttitudeControl.hpp"
-#include "a8/core/ServosControl.hpp"
-#include "a8/core/Thread.hpp"
-#include "a8/util/string.hpp"
+#include "a8/core/AttitudeControl.h"
+#include "a8/core/ServosControl.h"
+#include "a8/core/Thread.h"
+#include "a8/util/string.h"
 /**
  * (M1) (M2)
  *   \   /

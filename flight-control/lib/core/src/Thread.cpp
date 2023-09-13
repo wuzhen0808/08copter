@@ -1,5 +1,5 @@
 
-#include "a8/core/Thread.hpp"
+#include "a8/core/Thread.h"
 namespace a8 {
 namespace core {
 Thread::Thread() {

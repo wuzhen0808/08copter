@@ -1,5 +1,5 @@
 #pragma once
-#include "a8/core/Copter.hpp"
+#include "a8/core/Copter.h"
 
 using a8::core::Copter;
 using a8::core::Scheduler;

@@ -1,8 +1,8 @@
 #ifndef FLIGHT_CONFIG__
 #define FLIGHT_CONFIG__
-#include "a8/core/Scheduler.hpp"
-#include "a8/hal/Hal.hpp"
-#include "a8/util/String.hpp"
+#include "a8/core/Scheduler.h"
+#include "a8/hal/Hal.h"
+#include "a8/util/String.h"
 
 #define SERVO_TOP_LEFT 0
 #define SERVO_TOP_RIGHT 1

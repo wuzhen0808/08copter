@@ -1,8 +1,8 @@
 #pragma once
 #include "ArduinoCopter.h"
 #include "ArduinoOutput.h"
-#include "ArduinoScheduler.hpp"
-#include "ArduinoServosControl.hpp"
+#include "ArduinoScheduler.h"
+#include "ArduinoServosControl.h"
 #include "ArduinoSystem.h"
-#include "ArduinoThread.hpp"
-#include "ArduinoTimer.hpp"
+#include "ArduinoThread.h"
+#include "ArduinoTimer.h"

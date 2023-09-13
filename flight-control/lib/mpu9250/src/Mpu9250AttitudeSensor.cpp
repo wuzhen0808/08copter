@@ -1,4 +1,4 @@
-#include "a8/mpu9250/Mpu9250AttitudeSensor.hpp" /
+#include "a8/mpu9250/Mpu9250AttitudeSensor.h" /
 #include <MPU9250.h>
 namespace a8 {
 namespace mpu9250 {

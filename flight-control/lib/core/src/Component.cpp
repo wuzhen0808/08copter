@@ -1,4 +1,4 @@
-#include "a8/core/Component.hpp"
+#include "a8/core/Component.h"
 namespace a8 {
 namespace core {
 Component::Component(Copter *copter) {

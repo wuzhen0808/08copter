@@ -1,19 +1,15 @@
 #include "a8/native/NativeSystem.h"
-#include <iostream>
+#include "a8/native/NativeOutput.h"
 
 namespace a8 {
 namespace native {
 using namespace std;
 
 NativeSystem::NativeSystem(){
-
+    out = new NativeOutput();
 }
 long NativeSystem::millis() {
     return 0;
-}
-
-void NativeSystem::memcpy(void * to, const void * from, int size){
-    //memcpy(to, from, size);
 }
 
 } // namespace hal

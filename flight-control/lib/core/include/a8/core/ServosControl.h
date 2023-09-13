@@ -1,6 +1,6 @@
 #ifndef SERVOS_CONTROL__
 #define SERVOS_CONTROL__
-#include "a8/core/Component.hpp"
+#include "a8/core/Component.h"
 #include <stdlib.h>
 namespace a8 {
 namespace core {

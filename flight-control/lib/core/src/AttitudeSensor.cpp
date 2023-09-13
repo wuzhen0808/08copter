@@ -1,4 +1,4 @@
-#include "a8/core/AttitudeSensor.hpp"
+#include "a8/core/AttitudeSensor.h"
 namespace a8 {
 namespace core {
 AttitudeSensor::AttitudeSensor(Copter *copter) : Component(copter) {

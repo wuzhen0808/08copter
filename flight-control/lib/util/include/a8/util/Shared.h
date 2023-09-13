@@ -1,6 +1,6 @@
 #ifndef Shared__
 #define Shared__
-#include "a8/util/Counter.hpp"
+#include "a8/util/Counter.h"
 namespace a8 {
 namespace util {
 

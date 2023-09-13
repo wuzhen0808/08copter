@@ -1,11 +1,11 @@
 #ifndef ATTITUDE_CONTROL__
 #define ATTITUDE_CONTROL__
-#include "a8/core/AttitudeSensor.hpp"
-#include "a8/core/Component.hpp"
-#include "a8/core/Copter.hpp"
-#include "a8/core/PidControl.hpp"
-#include "a8/core/Callback.hpp"
-#include "a8/core/ServosControl.hpp"
+#include "a8/core/AttitudeSensor.h"
+#include "a8/core/Component.h"
+#include "a8/core/Copter.h"
+#include "a8/core/PidControl.h"
+#include "a8/core/Callback.h"
+#include "a8/core/ServosControl.h"
 namespace a8 {
 namespace  core {
 class AttitudeControl : public Callback, public Component {

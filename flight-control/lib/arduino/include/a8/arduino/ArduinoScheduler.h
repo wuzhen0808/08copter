@@ -1,6 +1,6 @@
 #ifndef ARDUINO_SCHEDULER_H__
 #define ARDUINO_SCHEDULER_H__
-#include "a8/core/Scheduler.hpp"
+#include "a8/core/Scheduler.h"
 namespace a8::arduino {
 using namespace a8::core;
 

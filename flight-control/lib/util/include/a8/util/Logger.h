@@ -1,7 +1,7 @@
 #pragma once
 
-#include "a8/util/Shared.hpp"
-#include "a8/util/String.hpp"
+#include "a8/util/Shared.h"
+#include "a8/util/String.h"
 
 using namespace a8::util;
 

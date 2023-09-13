@@ -1,8 +1,8 @@
-#include "a8/core/Copter.hpp"
-#include "a8/core/AttitudeControl.hpp"
-#include "a8/core/Runnable.hpp"
-#include "a8/core/Thread.hpp"
-#include "a8/hal/System.hpp"
+#include "a8/core/Copter.h"
+#include "a8/core/AttitudeControl.h"
+#include "a8/core/Runnable.h"
+#include "a8/core/Thread.h"
+#include "a8/hal/System.h"
 #define TOTAL_COMPONENTS 10
 namespace a8 {
 namespace core {
@@ -11,6 +11,7 @@ using a8::hal::S;
 
 Copter::Copter(int servoCount) {
     this->servoCount = servoCount;
+    
 }
 
 Copter::~Copter() {

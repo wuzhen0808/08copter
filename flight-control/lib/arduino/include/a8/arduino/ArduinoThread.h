@@ -1,7 +1,7 @@
 #ifndef ARDUINO_THREAD_H__
 #define ARDUINO_THREAD_H__
-#include "a8/core/Thread.hpp"
-#include "a8/core/Runnable.hpp"
+#include "a8/core/Thread.h"
+#include "a8/core/Runnable.h"
 #include <Arduino.h>
 #include <Arduino_FreeRTOS.h>
 namespace a8 {

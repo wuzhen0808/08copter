@@ -1,7 +1,7 @@
 #ifndef Chars__
 #define Chars__
-#include "a8/util/Buffer.hpp"
-#include "a8/util/Shared.hpp"
+#include "a8/util/Buffer.h"
+#include "a8/util/Shared.h"
 namespace a8 {
 namespace util {
 

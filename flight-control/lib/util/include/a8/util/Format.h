@@ -1,6 +1,6 @@
 #ifndef string__
 #define string__
-#include "a8/util/String.hpp"
+#include "a8/util/String.h"
 
 namespace a8 {
 namespace util {

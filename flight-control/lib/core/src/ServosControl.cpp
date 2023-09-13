@@ -1,4 +1,4 @@
-#include "a8/core/ServosControl.hpp"
+#include "a8/core/ServosControl.h"
 namespace a8 {
 namespace core {
 ServosControl::ServosControl(Copter *copter) : Component(copter) {

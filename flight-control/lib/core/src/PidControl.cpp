@@ -1,5 +1,5 @@
-#include "a8/hal/Hal.hpp"
-#include "a8/core/PidControl.hpp"
+#include "a8/hal/Hal.h"
+#include "a8/core/PidControl.h"
 
 namespace a8 {
 namespace core {

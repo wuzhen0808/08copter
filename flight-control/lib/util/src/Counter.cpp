@@ -1,4 +1,4 @@
-#include "a8/util/Counter.hpp"
+#include "a8/util/Counter.h"
 
 #define INC (10)
 namespace a8 {

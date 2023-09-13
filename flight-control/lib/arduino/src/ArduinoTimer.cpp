@@ -1,5 +1,5 @@
 
-#include "a8/arduino/ArduinoTimer.hpp"
+#include "a8/arduino/ArduinoTimer.h"
 #include <Arduino.h>
 #include <Arduino_FreeRTOS.h>
 

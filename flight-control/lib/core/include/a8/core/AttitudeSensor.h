@@ -1,6 +1,6 @@
 #ifndef a8_ATTITUDE_SENSOR__
 #define a8_ATTITUDE_SENSOR__
-#include "a8/core/Component.hpp"
+#include "a8/core/Component.h"
 
 namespace a8 {
 namespace core {

@@ -3,13 +3,13 @@
 #include <Arduino.h>
 
 using namespace std;
-using namespace a8::util;
+
 namespace a8::arduino {
     
 class ArduinoOutput : public Output {
-    void print(String msg) {
-        Serial.print(msg.getText());
+    void print(a8::util::String msg) {
+        Serial.write(msg.getText(), msg.getLength());
     }
-}
+};
 
 } // namespace a8::native

@@ -1,4 +1,4 @@
-#include "a8/simulator/SimulatorAttitudeSensor.hpp"
+#include "a8/simulator/SimulatorAttitudeSensor.h"
 namespace a8::simulator {
 
 SimulatorAttitudeSensor::SimulatorAttitudeSensor(Copter *copter) : AttitudeSensor(copter) {

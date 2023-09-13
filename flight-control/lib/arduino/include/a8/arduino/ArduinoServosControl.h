@@ -1,6 +1,6 @@
 #ifndef ARDUINO_SERVOS_CONTROL_H__
 #define ARDUINO_SERVOS_CONTROL_H__
-#include "a8/core/ServosControl.hpp"
+#include "a8/core/ServosControl.h"
 #include <Servo.h>
 namespace a8 {
 namespace arduino {

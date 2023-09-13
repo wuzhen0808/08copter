@@ -1,5 +1,5 @@
-#include "a8/hal/Hal.hpp"
-#include "a8/util/Logger.hpp"
+#include "a8/hal/Hal.h"
+#include "a8/util/Logger.h"
 #define INC (10)
 
 using namespace a8::hal;

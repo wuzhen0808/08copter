@@ -1,6 +1,6 @@
-#include "a8/arduino/ArduinoServosControl.hpp"
-#include "a8/hal/Hal.hpp"
-#include "a8/util/Chars.hpp"
+#include "a8/arduino/ArduinoServosControl.h"
+#include "a8/hal/Hal.h"
+#include "a8/util/Chars.h"
 #include "a8/util/Math.h"
 
 namespace a8 {

@@ -1,8 +1,8 @@
 #ifndef COPTER_COM__
 #define COPTER_COM__
 
-#include "a8/core/Copter.hpp"
-#include <a8/util/Attributes.hpp>
+#include "a8/core/Copter.h"
+#include "a8/util/Attributes.h"
 
 using namespace a8::util;
 
