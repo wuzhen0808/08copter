@@ -1,7 +1,5 @@
 
 #include "a8/arduino/ArduinoTimer.h"
-#include <Arduino.h>
-#include <Arduino_FreeRTOS.h>
 
 #define LOCAL_THIS 0
 #define LOCAL_LAST_WAKE 1

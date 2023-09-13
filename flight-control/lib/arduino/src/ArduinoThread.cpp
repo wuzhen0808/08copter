@@ -1,5 +1,6 @@
 #include <Arduino.h>
-#include <Arduino_FreeRTOS.h>
+#include <FreeRTOS.h>
+#include <task.h>
 #include "a8/arduino/ArduinoThread.h"
 
 namespace a8 {

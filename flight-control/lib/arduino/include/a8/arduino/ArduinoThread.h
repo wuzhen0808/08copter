@@ -3,7 +3,7 @@
 #include "a8/core/Thread.h"
 #include "a8/core/Runnable.h"
 #include <Arduino.h>
-#include <Arduino_FreeRTOS.h>
+#include <FreeRTOS.h>
 namespace a8 {
 namespace arduino {
 using namespace a8::core;

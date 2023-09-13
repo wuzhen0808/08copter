@@ -1,0 +1,10 @@
+
+See the Demo/WIN32-MingW/ project under git repository below.
+
+https://github.com/FreeRTOS/FreeRTOS.git
+
+1. Issue:
+    What's the difference between the two Demo projects: WIN32-MingW and WIN32-MSVC ?
+    
+
+

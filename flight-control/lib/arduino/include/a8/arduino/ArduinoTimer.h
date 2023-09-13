@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
-#include <Arduino_FreeRTOS.h>
+#include <FreeRTOS.h>
+#include <timers.h>
 #include "a8/core/Timer.h"
 namespace a8 {
 namespace arduino {

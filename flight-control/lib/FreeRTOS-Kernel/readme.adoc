@@ -1,0 +1,7 @@
+All source code in this folder is copy from here:
+
+https://github.com/FreeRTOS/FreeRTOS-Kernel.git
+
+Only the kernel files copied.
+
+
