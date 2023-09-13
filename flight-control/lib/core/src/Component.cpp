@@ -1,8 +1,8 @@
 #include "a8/core/Component.h"
 namespace a8 {
 namespace core {
-Component::Component(Copter *copter) {
-    this->copter = copter;
+Component::Component(void *copter) {
+    this->context = copter;
 }
 
 Component::~Component() {
@@ -17,8 +17,8 @@ util::Attributes *Component::getAttributes() {
     return attributes;
 }
 
-void Component::log(String msg) {
-    copter->log(msg);
+void Component::log(a8::util::String msg) {
+    a8::hal::S->out->println(msg);
 }
 
 } // namespace core

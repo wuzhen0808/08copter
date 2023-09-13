@@ -7,7 +7,7 @@ namespace core {
 class ServosControl : public Component {
 
 public:
-    ServosControl(Copter *copter);
+    ServosControl(void *copter);
     ~ServosControl();
     virtual void attachAll() = 0;
     virtual void setVelocity(int servoId, float velocity) =0;

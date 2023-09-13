@@ -1,30 +1,30 @@
-#include <Arduino.h>
+#include "a8/hal/Hal.h"
+#include "a8/freertos/FreeRtosThread.h"
 #include <FreeRTOS.h>
 #include <task.h>
-#include "a8/arduino/ArduinoThread.h"
 
-namespace a8 {
-namespace arduino {
+namespace a8::freertos {
+using ::a8::hal::S;
 static int LOCAL_THIS = 0;
 static int STACK_DEPTH = 521 / 4;
 static int DEFAULT_PRIORITY = 1;
 static const char *DEFAULT_THREAD_NAME = static_cast<const char *>("My Thread");
-ArduinoThread::ArduinoThread(Runnable *pvRunnable) {
+FreeRtosThread::FreeRtosThread(Runnable *pvRunnable) {
     this->runnable = pvRunnable;
 }
 
-ArduinoThread::~ArduinoThread() {
+FreeRtosThread::~FreeRtosThread() {
 }
 
-Thread *ArduinoThread::start(Runnable *task) {
-    ArduinoThread *thread = new ArduinoThread(task);
+Thread *FreeRtosThread::start(Runnable *task) {
+    FreeRtosThread *thread = new FreeRtosThread(task);
     thread->start();
     return thread;
 }
 /**
  * create thread
  */
-void ArduinoThread::start() {
+void FreeRtosThread::start() {
 
     BaseType_t result = xTaskCreate(
         taskFunction,
@@ -36,24 +36,24 @@ void ArduinoThread::start() {
     );
 
     if (result != pdPASS) {
-        Serial.println("Failed to create a thread");
+        a8::hal::S->out->println("Failed to create a thread");
         // throw std::invalid_argument("failed");
     }
     vTaskSetThreadLocalStoragePointer(handle, LOCAL_THIS, this);
 }
 
-Thread *ArduinoThread::getCurrentThread() {
+Thread *FreeRtosThread::getCurrentThread() {
     TaskHandle_t currentHandle = xTaskGetCurrentTaskHandle();
     void *pv = pvTaskGetThreadLocalStoragePointer(currentHandle, LOCAL_THIS);
     Thread *thread = static_cast<Thread *>(pv);
     return thread;
 }
 
-void ArduinoThread::taskFunction(void *pvParameters) {
+void FreeRtosThread::taskFunction(void *pvParameters) {
 
-    ArduinoThread *thread = static_cast<ArduinoThread *>(pvParameters);
+    FreeRtosThread *thread = static_cast<FreeRtosThread *>(pvParameters);
 
     thread->runnable->run();
 }
-} // namespace ardui
-} // namespace a8
+
+} // namespace a8::freertos

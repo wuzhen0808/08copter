@@ -19,6 +19,7 @@ long convertToPulseWidth(float velocity) {
     return pulseWidth;
 }
 ArduinoServosControl::ArduinoServosControl(Copter *copter) : ServosControl(copter) {
+    this->copter = copter;
     this->totalServos = copter->getServoCount();
     this->servos = new Servo *[totalServos];
     for (int i = 0; i < (*this).totalServos; i++) {

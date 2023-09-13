@@ -7,7 +7,7 @@ namespace core {
 
 class AttitudeSensor : public Component {
 public:
-    AttitudeSensor(Copter *copter);
+    AttitudeSensor(void *context);
     ~AttitudeSensor();
     virtual void update() = 0;
     virtual float getRoll() = 0;

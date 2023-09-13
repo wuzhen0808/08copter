@@ -1,23 +1,23 @@
 #ifndef COPTER_COM__
 #define COPTER_COM__
-
-#include "a8/core/Copter.h"
+#include "a8/util/String.h"
 #include "a8/util/Attributes.h"
+#include "a8/hal/Hal.h"
 
-using namespace a8::util;
+using a8::util::Attributes;
 
 namespace a8 {
 namespace core {
 class Component {
 public:
-    Component(Copter *copter);
+    Component(void *context);
     ~Component();
-    void log(String msg);    
-    util::Attributes *getAttributes();
+    void log(a8::util::String msg);
+    Attributes *getAttributes();
 
 protected:
-    Copter *copter;
-    util::Attributes *attributes;
+    void *context;
+    Attributes *attributes;
 };
 } // namespace core
 } // namespace a8

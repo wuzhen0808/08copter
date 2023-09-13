@@ -1,0 +1,15 @@
+= About the source doe from FreeRTOS.
+== See the Demo/WIN32-MingW/ project under git repository below.
+    https://github.com/FreeRTOS/FreeRTOS.git
+== Note:
+    Run-time-stats-utils.c. this file is from the git repository above.
+= Trouble shooting
+== Q:
+    What's the difference between the two Demo projects: WIN32-MingW and WIN32-MSVC ?
+
+== Q:
+    ulGetRunTimeCounterValue    
+
+        
+
+

@@ -1,9 +1,9 @@
 #pragma once
 #include "a8/util/String.h"
 
-using namespace a8::util;
-
 namespace a8::util {
+
+using a8::util::String;
 
 class Output {
 public:

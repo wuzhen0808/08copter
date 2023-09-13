@@ -1,24 +1,23 @@
 #include "a8/arduino/ArduinoCopter.h"
-#include "a8/arduino/ArduinoScheduler.h"
+#include "a8/freertos/FreeRtosScheduler.h"
 #include "a8/arduino/ArduinoServosControl.h"
-#include "a8/core/core_all.h"
 #include "a8/simulator/SimulatorAttitudeSensor.h"
 #include <Arduino.h>
 
+using a8::freertos::FreeRtosScheduler;
+using a8::arduino::ArduinoServosControl;
 using a8::core::AttitudeControl;
 using a8::core::AttitudeSensor;
 using a8::core::ServosControl;
 using a8::core::Thread;
 using a8::core::Timer;
-using a8::arduino::ArduinoScheduler;
-using a8::arduino::ArduinoServosControl;
 using a8::simulator::SimulatorAttitudeSensor;
 namespace a8 {
 namespace arduino {
 
-ArduinoCopter::ArduinoCopter() : Copter(4) {
+ArduinoCopter::ArduinoCopter(Scheduler* scheduler) : Copter(4, scheduler) {
     this->servoAttachPins = new int[4]{3, 5, 9, 11};
-    this->scheduler = new ArduinoScheduler();
+    this->scheduler = new FreeRtosScheduler();
 }
 
 int ArduinoCopter::getServoAttachPin(int idx) {
@@ -30,29 +29,22 @@ Scheduler *ArduinoCopter::getScheduler() {
 ArduinoCopter::~ArduinoCopter() {
     delete[] this->servoAttachPins;
 }
+
 void ArduinoCopter::stop() {
 }
 
+ServosControl *ArduinoCopter::newServosControl() {
+    return new ArduinoServosControl(this);
+}
+
+AttitudeSensor *ArduinoCopter::newAttitudeSensor() {
+    return new SimulatorAttitudeSensor(this);
+}
+AttitudeControl *ArduinoCopter::newAttitudeControl(ServosControl* servosControl, AttitudeSensor* attitudeSensor) {
+    return new AttitudeControl(this, servosControl, attitudeSensor);
+}
 void ArduinoCopter::start() {
-
-    Serial.begin(9600);
-    while (!Serial) {
-    }
-    S->out->println("ArduinoCopter::start()");
-
-    ServosControl *servosControl = new ArduinoServosControl(this);
-    servosControl->attachAll();
-    servosControl->setVelocity(0, 1.0f);
-
-    AttitudeSensor *attitudeSensor = new SimulatorAttitudeSensor(this);
-    AttitudeControl *attitudeControl = new AttitudeControl(this, servosControl, attitudeSensor);
-    this->log("active copter ....");
-
-    Timer *attitudeTimer = scheduler->scheduleTimer(attitudeControl, 1000);
-    scheduler->startSchedule();
-    // scheduler->schedule(attitudeControl);
-    // attitudeControl->run();
-    // copter->log("done of active copter.");
+    Copter::start();
 }
 
 } // namespace arduino

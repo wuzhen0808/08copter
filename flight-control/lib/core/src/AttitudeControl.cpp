@@ -2,6 +2,7 @@
 #include "a8/core/ServosControl.h"
 #include "a8/core/Thread.h"
 #include "a8/util/string.h"
+#include "a8/core/Copter.h"
 /**
  * (M1) (M2)
  *   \   /
@@ -12,9 +13,9 @@
 namespace a8 {
 namespace core {
 using namespace a8::util;
-AttitudeControl::AttitudeControl(Copter *copter,
+AttitudeControl::AttitudeControl(void *context,
                                  ServosControl *servosControl,
-                                 AttitudeSensor *attitudeSensor) : Component(copter) {
+                                 AttitudeSensor *attitudeSensor) : Component(context) {
     rollControl = new PidControl(2.0f, 1.0f, 1.0f);
     pitchControl = new PidControl(.0f, .0f, .0f);
     yawControl = new PidControl(.0f, .0f, .0f);

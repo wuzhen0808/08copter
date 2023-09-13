@@ -1,16 +1,14 @@
 #pragma once
-#include <Arduino.h>
+#include "a8/core/Timer.h"
 #include <FreeRTOS.h>
 #include <timers.h>
-#include "a8/core/Timer.h"
-namespace a8 {
-namespace arduino {
+namespace a8::freertos {
 using namespace a8::core;
 
-class ArduinoTimer : public Timer {
+class FreeRtosTimer : public Timer {
 public:
-    ArduinoTimer(Callback *callback, ulong ticks);
-    ~ArduinoTimer();
+    FreeRtosTimer(Callback *callback, ulong ticks);
+    ~FreeRtosTimer();
     virtual Timer *start();
     static Timer *start(Callback *callback, ulong ticks);
 
@@ -20,5 +18,5 @@ private:
     TimerHandle_t handle;
     static void timerCallbackFunction(TimerHandle_t handle);
 };
-} // namespace ardui
-} // namespace a8
+
+} // namespace a8::freertos

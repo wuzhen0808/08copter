@@ -10,13 +10,18 @@ using namespace a8::core;
 namespace a8::native {
 
 class NativeCopter : public Copter {
+protected:
+    virtual ServosControl *newServosControl();
+    virtual AttitudeSensor *newAttitudeSensor();
+    virtual AttitudeControl *newAttitudeControl(ServosControl *sc, AttitudeSensor *as);
+
 public:
-    NativeCopter();
+    NativeCopter(Scheduler *scheduler);
+
+    virtual void setup();
     virtual void start();
     virtual void stop();
-    virtual int getServoAttachPin(int servoId) {
-        return 0;
-    }
+    virtual int getServoAttachPin(int servoId);
 };
 
 } // namespace a8::native

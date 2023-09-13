@@ -5,6 +5,8 @@
 namespace a8 {
 namespace hal {
 
+using a8::util::Output;
+
 class System {
 public:
     Output *out;

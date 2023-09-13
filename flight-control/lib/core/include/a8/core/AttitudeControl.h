@@ -2,7 +2,6 @@
 #define ATTITUDE_CONTROL__
 #include "a8/core/AttitudeSensor.h"
 #include "a8/core/Component.h"
-#include "a8/core/Copter.h"
 #include "a8/core/PidControl.h"
 #include "a8/core/Callback.h"
 #include "a8/core/ServosControl.h"
@@ -10,7 +9,7 @@ namespace a8 {
 namespace  core {
 class AttitudeControl : public Callback, public Component {
 public:
-    AttitudeControl(Copter *copter,
+    AttitudeControl(void *copter,
                     ServosControl *servosControl,
                     AttitudeSensor *attitudeSensor);
     ~AttitudeControl();

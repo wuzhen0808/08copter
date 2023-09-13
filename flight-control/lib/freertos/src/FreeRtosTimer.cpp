@@ -1,12 +1,12 @@
 
-#include "a8/arduino/ArduinoTimer.h"
+#include "a8/freertos/FreeRtosTimer.h"
 
 #define LOCAL_THIS 0
 #define LOCAL_LAST_WAKE 1
-namespace a8 {
-namespace arduino {
-ArduinoTimer::ArduinoTimer(Callback *pvRunnable, ulong ticks) : callback(pvRunnable),
-                                                                ticks(ticks) {
+
+namespace a8::freertos {
+FreeRtosTimer::FreeRtosTimer(Callback *pvRunnable, ulong ticks) : callback(pvRunnable),
+                                                                  ticks(ticks) {
     handle = xTimerCreate(
         static_cast<const char *>("My Timer"), // name
         ticks,                                 /*  */
@@ -15,17 +15,17 @@ ArduinoTimer::ArduinoTimer(Callback *pvRunnable, ulong ticks) : callback(pvRunna
         timerCallbackFunction);
 }
 
-ArduinoTimer::~ArduinoTimer() {
+FreeRtosTimer::~FreeRtosTimer() {
 }
-Timer *ArduinoTimer::start(Callback *callback, ulong ticks) {
-    Timer* timer = new ArduinoTimer(callback, ticks);
+Timer *FreeRtosTimer::start(Callback *callback, ulong ticks) {
+    Timer *timer = new FreeRtosTimer(callback, ticks);
     timer->start();
     return timer;
 }
 /**
  * create thread
  */
-Timer *ArduinoTimer::start() {
+Timer *FreeRtosTimer::start() {
 
     BaseType_t isOk = xTimerStart(handle, 0);
     if (isOk != pdPASS) {
@@ -34,11 +34,10 @@ Timer *ArduinoTimer::start() {
     return this;
 }
 
-void ArduinoTimer::timerCallbackFunction(TimerHandle_t handle) {
+void FreeRtosTimer::timerCallbackFunction(TimerHandle_t handle) {
     void *timerId = pvTimerGetTimerID(handle);
-    ArduinoTimer *timer = static_cast<ArduinoTimer *>(timerId);
+    FreeRtosTimer *timer = static_cast<FreeRtosTimer *>(timerId);
     timer->callback->call();
 }
 
-} // namespace ardui
-} // namespace a8
+} // namespace a8::freertos

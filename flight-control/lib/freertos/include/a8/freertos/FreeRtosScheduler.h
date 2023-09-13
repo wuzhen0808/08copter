@@ -1,13 +1,13 @@
 #ifndef ARDUINO_SCHEDULER_H__
 #define ARDUINO_SCHEDULER_H__
 #include "a8/core/Scheduler.h"
-namespace a8::arduino {
+namespace a8::freertos {
 using namespace a8::core;
 
-class ArduinoScheduler : public Scheduler {
+class FreeRtosScheduler : public Scheduler {
 public:
-    ArduinoScheduler();
-    ~ArduinoScheduler();
+    FreeRtosScheduler();
+    ~FreeRtosScheduler();
     virtual void startSchedule();
 
     virtual void endSchedule();

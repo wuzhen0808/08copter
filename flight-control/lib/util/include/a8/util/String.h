@@ -4,6 +4,12 @@ namespace a8 {
 namespace util {
 
 class String {
+    
+private:
+    static int const UNKNOWN = -1;
+    int length = UNKNOWN;
+    char *text;
+    
 public:
     String();
     String(const char buf[]);
@@ -24,10 +30,6 @@ public:
     friend String operator+(const String &str1, const String &str);
     friend bool operator==(const String &str1, const String &str2);
 
-private:
-    static int const UNKNOWN = -1;
-    int length = UNKNOWN;
-    char *text;
 };
 
 bool operator==(const String &str1, const String &str2);
