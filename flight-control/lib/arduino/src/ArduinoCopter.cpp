@@ -38,11 +38,9 @@ ServosControl *ArduinoCopter::newServosControl() {
 }
 
 AttitudeSensor *ArduinoCopter::newAttitudeSensor() {
-    return new SimulatorAttitudeSensor(this);
+    return new ArduinoAttitudeSensor(this);
 }
-AttitudeControl *ArduinoCopter::newAttitudeControl(ServosControl* servosControl, AttitudeSensor* attitudeSensor) {
-    return new AttitudeControl(this, servosControl, attitudeSensor);
-}
+
 void ArduinoCopter::start() {
     Copter::start();
 }

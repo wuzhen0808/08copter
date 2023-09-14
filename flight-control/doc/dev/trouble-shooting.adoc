@@ -1,0 +1,11 @@
+== Q
+** Issue desc.
+[source]
+---
+*** [.pio\build\native\program.exe] Implicit dependency `C:\Users\user\.platformio\platforms\native\builder\lib\FreeRTOS-MSVC-MingW\src\port.c' not found, needed by target `.pio\build\native\program.exe'.
+---
+** Root Cause:
+
+** Solution:
+
+

@@ -1,37 +1,43 @@
-== Background
-This aim of this project is learning how to build a quad copter drone. Building a copter from nothing is a long task to go along with. It may take you month or more to learn the necessary concepts in background. Hence this project are trying to get the path and structure clearly illustrated.
+= The A8 Quad Copter Project Guide
+:toc:
 
-There are a lot of information around web about how to build a copter from scratch. Basically a copter is made up with a frame, four motors, a micro controller board and 
-several sensor peripherals.
+// Chapter  1
+== Chapter {counter:chapter}. Background
+The aim of this project is learning how to build a quad copter. Building a copter from nothing is a long task to go along with. It may take you month or more to learn the necessary concepts in background. So here this project are trying to get the study curve clear.
 
-A8 is only a short name with out special meaning. We need a word short enough as the namespace in C++ code typing. If you want assign it some meaning you can think it as a project is on top of Arduino and is started at the Autumn and August of 2003. August is also the 8th month of each year.So there a a lot of words start with A. Eight is also a lucky number in many people's mind.
+There are a lot of information around web about how to build a copter from scratch. Basically a copter is made up with a `frame`, `several motors`, a `micro controller board` , one or more peripherals as `sensors` and a `battery`. In order to implement the attitude control often an inertial measurement unit is necessary as the basic peripheral to provide the ability of sensing position, angular rate and magnet.
 
-We are paying efforts to make the code structurally clean and easy to read. We do not care much the performance at this moment. Please note the size of the MPU's flash and SRAM memories. Currently the size of the firmware is <todo>.
+Beside the necessary parts above, there are still tools and small components around where to be prepared. Such staff will be listed at the appendix part.
 
-We prefer to use C++ in this project and avoid using C language in this project. You will see some code actually is C source code which ended with a '.c' suffix. They all come from 3rd party 
-and we normally do not touch them unless necessary.
+We are paying efforts to make the code structurally clean and easy to read. We do not care much the performance at this moment. Please note the size of the MPU's flash and SRAM memories. You must make sure it's enough for the firmware to be located. Currently the size of the target firmware built here is around ?k.
 
-== Basic structure of a typical quad copter
-=== Frame
+Why we call this project A8? Primarily we need a short name. A word short enough when we type code in the namespace of C++. But we still can assign it some meaning. For example you can think it as a project that is built on top of Arduino. And it actually is started at the Autumn of 2003. It is August as well. There are a lot of words started with A. How about the 8? Then August is the 8th month. Additionally if you rotate the arduino board you will see the 8-like infinity sign printed on the board.
+
+
+== Chapter {counter:chapter}. Basic structure of a typical quad copter
+=== {chapter}.{counter:structure}. Frame
 The frame may not so much worth to introduce, it is not a abstract component to build a copter.Basically we need a four arms to install the motors and have a center platform to fix the PCB boards.
 
-=== Motors and ESCs
+=== {chapter}.{counter:structure}. Motors and ESCs
 A brush less motor need an ESC(electric speed controller) to drive itself. In this project we rely on four brush less motors and four ESCs. We don't know how to work with plain brush-having motors. It should be similar with brush less ones. If you are buying the motors please pay attention the arguments of the motor product.
 
-=== Main board & MPU
+=== {chapter}.{counter:structure}. Main board & MPU
 
 The board during the development of this project is Arduino-UNO-R4-MINIMA. It contains a Cortex-M4 architecture MPU and the model is RA4M1 from Renesas.
 
-=== IMU
+=== {chapter}.{counter:structure}. IMU
 Here we adopt MPU-9250 as the IMU(Inertial Measurement Unit) peripheral which contains three sensors of accelerometer, gyro and magnetometer.
 
-=== RC
+=== {chapter}.{counter:structure}. RC
 Remote control.
-== Code structure
+// Chapter  2
 
-=== lib/core
+== Chapter {counter:chapter}. Code structure introduction
+TODO a box graph here.
 
-=== lib/FreeRTOS-Kernel
+=== {chapter}.{counter:folder}. lib/core
+
+=== {chapter}.{counter:folder}. lib/FreeRTOS-Kernel
 Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
 
 This folder contains only the core code of FreeRTOS functions. We are using the thread/task and timer part of FreeRTOS.
@@ -45,55 +51,57 @@ For example the below parameter is defined in the file of FreeRTOSConfig.h locat
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS (5)
 ----
 
-=== lib/FreeRTOS-MemMang-heap4
+=== {chapter}.{counter:folder}. lib/FreeRTOS-MemMang-heap4
 Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
 
 This folder contains one of the memory management policy which adopted here for the UNO  environment. You can find this is enabled by the settings of environment of uno_r4_minima in the platformIO configuration file 'platformio.ini'.
 
-=== lib/FreeRTOS-MemMang-heap5
+===  {chapter}.{counter:folder}. lib/FreeRTOS-MemMang-heap5
 Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
 
 Alternatively this folder contains another implementation of the memory management provide by and for FreeRTOS. It is adopted for the native/MingW environment. Why don't we use the same memory management policy? Actually we don't know the detail about the difference between these two.The heep4 is adopted by the Arduino_FreeRTOS library which is provided by the arduino-renesas framework. Be the way, you can find more libraries under the lib folder of this framework. We have copied the FreeRTOSConfig.h from that library and then that's the reason.
 
 Why we don't use the Arduino_FreeRTOS.h which provided by the arduino-renesas framework itself? It's because we are trying to get the code structure clean, clear and then easy understandable. So we need the code independent with each part and as less as possible to depend 3rd party code or library.
 
-=== lib/FreeRTOS-MSVC-MingW
+=== {chapter}.{counter:folder}. lib/FreeRTOS-MSVC-MingW
 Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
 
 For the purpose of porting FreeRTOS to the native/MingW environment.
 
-=== lib/FreeRTOS-ArduinoRenesas-UNO
+=== {chapter}.{counter:folder}. lib/FreeRTOS-ArduinoRenesas-UNO
 Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
 
 The port to target environment to run the FreeRTOS. 
 
-=== hal
+=== {chapter}.{counter:folder}. hal
 In order isolate the core code from the hardware environment we introduce this lib as the hardware abstract layer for defines of any environment related interfaces.
 
 Please note the code below has defined a external global variable with type System. System is the interface to access the hardware part of the copters. 
 
-[source,c++]
+[source,cpp]
 ----
+//file:lib/hal/include/a8/hal/Hal.h
 namespace a8::hal {
     extern System *S;
 }
 ----
 
 In each environment, you should provide the initialization code for this global variable. For example the code block showing below come from the src/arduino/main.cpp source code file.
-[source,c++]
+[source,cpp]
 ----
+#include "a8/hal/Hal.h"
 System * a8::hal::S = new ArduinoSystem();
 ----
 
-=== arduino
-This is the top most application layer by which all the layers underneath are combined for a final firmware to be built on.
+=== {chapter}.{counter:folder}. arduino
+This is the top most application layer by which all the layers underneath are mixed here for a final firmware under building. Actually it's not very accurate to say it the top most layer because we have put the main function in another folder/file. It is file `src/arduino/main.cpp`. 
 
-Actually it's not very accurate to say this is the top most layer because we have put the main function in another folder and file which is src/arduino/main.cpp. Why doing so? Why don't provide a callback function like that provide by arduino. Arduino's entry file contain no such main function and instead of it by two function setup() and loop(). Here we think it bringing  less sense and we hope return the freedom of making decision to the end user.
+Why we not providing a callback function? Like the way adopted by arduino framework in which the main function is replaced by two function `setup()` and `loop()`. May be arduino framework have a good reason for such design but here we believe in our context user should own the decision-making freedom. There are already a main wheel in hand we do not have a good reason to hide it and invent another one.
 
-=== native
+=== {chapter}.{counter:folder}. native
 As the function of folder arduino, native environment is defined here.
 
-=== src
+=== {chapter}.{counter:folder}. src
 There folder contains the main entry function for each environment. How to distinguish them? The answer is by the building filter which is defined in the platformio.ini file.
 
 For example the code below defines the filter when building firmware for arduino environment.
@@ -103,15 +111,35 @@ For example the code below defines the filter when building firmware for arduino
     build_src_filter = +<arduino/>
 ----
 
-== Building the code
+// Chapter  3
+== Chapter {counter:chapter}. Building the code
 
-At the moment this project only tested under Windows OS. Some additional work is required if you are going to build it on top of linux. I don't know for now which part of the code is involved and how much such work is.
+We rely on platformIO to build this project. File platformio.ini is the entry point to build code. 
 
-We have two environments configured, uno_r4_minima & native. 
+We have two environments configured as uno_r4_minima & native through platformIO. 
 
-The former one(uno_r4_minima) is the target environment. If you have no such a board and related peripherals you may need the later environment to validate the code.
+Environment uno_r4_minima is the target environment currently supported. 
 
-=== Prerequisite
+Most possible you have no such a board in hand. You can validate the code by building the code in native environment. Actually what we are doing and pay effort most is this part because the purpose of this project is learning and will not stop at a flyable copter. So a simulator is most important here than a physical drone. In this sense we can reversely speaking that the native environment is the target one and the arduino_r4_minima is for the purpose of validation.
+
+The native environment actually is not designed here to be uploaded into a physical copter. So we hope it as the foundation of building a simulator/virtual copter.We are going to make it possible to 'upload the native firmware' into a virtual copter which is running in the same native environment. In another words, it should be a library and able to be embedded into a simulator. To achieve this goal there still a long way to go from now on. 
+
+At the moment the native environment only support Windows platform. Additional work is definitely required if you are going to build it on top of linux or other ones. I even don't know for now the detail part of the code to be modified is involved and how much the effort is. But what we are keeping in mind is that the modification must be constrained in a certain place instead of being scattered around the whole project folders.
+
+=== {chapter}.{counter:build}. Environments for building.
+
+
+For native environment:
+[source]
+----
+todo
+----
+For Arduino-UNO-Minima environment:
+[source]
+----
+todo
+----
+=== {chapter}.{counter:build}. Prerequisite
 
 [cols="1,1"]
 |===
@@ -122,29 +150,102 @@ The former one(uno_r4_minima) is the target environment. If you have no such a b
 |UCRT       | No    | Unified C Run Time for building the code for windows platform.
 |===
 
-=== Build for native(MingW) environment
-
-```
-$ cd <path-to-project>
-$ pio run -e native
-```
-=== Build for Arduino UNO R4 Minima board in CLI
+=== {chapter}.{counter:build}. Build program for native(MingW) environment by MSYS CLI
+Change directory to the project home folder and run command below.
 
 [source,shell]
 ----
-$ cd <path-to-project>
+$ pio run -e native
+----
+
+=== {chapter}.{counter:build}. Build for Arduino UNO R4 Minima board by MSYS CLI
+Change directory to the project home folder and run command below.
+
+[source,shell]
+----
 $ pio run -e uno_r4_minima
 ----
 
-== Upload firmware
+// Chapter  4
 
-== Tuning 
+== Chapter {counter:chapter}. Tuning
+
+This part describe how to test the code with a real board. Please note there are dangerous if this is the first time to upload the firmware into a board with the motors connected. Do not install the propellers at the first evaluation and tuning the arguments step by step.
+
+=== {chapter}.{counter:tune}. Connect all the components but not propellers.
+
+*** Setup frame.
+*** Fix the board with frame.
+*** Install and setup the four motors.
+*** Fix and connect the four ESCs with motors
+*** Connect each ESC with the board. 
+*** Fix and connect the IMU.
+*** Fix and connect the battery.
+
+=== {chapter}.{counter:tune}. Upload firmware
+
 
 After you upload the firmware into the board.
 
-== Appendix
+// Chapter  5
+== Chapter {counter:chapter}. Testing
 
-=== Hardware List
+The test case currently only runnable with the native environment.
+
+=== {chapter}.{counter:test}. Running a testing case
+
+Example to run the test case test_cpp with in native environment.
+[source, shell]
+----
+$ pio test -e native -f test_cpp
+----
+
+== Chapter {counter:chapter}. Debug 
+=== {chapter}.{counter:debug}. Debug arduino_uno_minima
+
+<TODO>
+
+=== {chapter}.{counter:debug}. Debug the native program
+
+[source, shell]
+----
+$ gdb -ex run .pio/build/native/program.exe
+----
+
+The -g option is enabled for native env. 
+[source]
+----
+build_flags = 		
+	-std=gnu++11
+	-lwinmm	
+	-g
+    ...
+----
+
+Following command is used to show the stack strace in case any exception encountered when running the program with gdb.
+
+[source,shell]
+----
+(gdb) bt full
+(gdb) bt full
+#0  0x00007ff9f8acf61e in ucrtbase!abort () from C:\WINDOWS\System32\ucrtbase.dll
+No symbol table info available.
+... ...
+#7  0x00007ff65e8eb5f6 in a8::core::Copter::setup (this=0x718c50) at lib\core\src\Copter.cpp:25
+No locals.
+#8  0x00007ff65e8e1f46 in a8::native::NativeCopter::setup (this=0x718c50)
+    at lib\native\src\NativeCopter.cpp:14
+No locals.
+... ...
+#10 0x00007ff65e8e2201 in main () at lib\native\src\main.c:194
+----
+
+== Chapter {counter:chapter}. Modify code 
+
+=== {chapter}.{counter:modify}. About C/C++ 
+We prefer to use C++ in this project and avoid using C language in this project. You will see some code actually is C source code which ended with a '.c' suffix. They all come from 3rd party and we normally do not touch them unless necessary. Don't forget add the the `extern C{}` instruction if you have a c header to be included by a cpp source file.
+
+== Appendix {counter:apx}. Hardware list
 [cols="1,1"]
 |===
 | Type  | Model                 | Vendor    | Link      | Price
@@ -154,7 +255,9 @@ After you upload the firmware into the board.
 | ||||
 |===
 
-=== Reference List
+== Appendix {counter:apx}. Tools list
+
+== Appendix {counter:apx}. Reference list
 
 
 

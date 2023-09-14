@@ -15,7 +15,7 @@ namespace core {
 using namespace a8::util;
 AttitudeControl::AttitudeControl(void *context,
                                  ServosControl *servosControl,
-                                 AttitudeSensor *attitudeSensor) : Component(context) {
+                                 AttitudeSensor *attitudeSensor) : Component() {
     rollControl = new PidControl(2.0f, 1.0f, 1.0f);
     pitchControl = new PidControl(.0f, .0f, .0f);
     yawControl = new PidControl(.0f, .0f, .0f);

@@ -9,24 +9,45 @@ namespace core {
 using a8::core::Copter;
 using a8::hal::S;
 
-Copter::Copter(int servoCount, Scheduler *Scheduler) {
-    this->servoCount = servoCount;
+Copter::Copter(Scheduler *Scheduler) {
     this->scheduler = scheduler;
+}
+void Copter::configServos(int totalServos, int *servoAttachPins) {
+    if (this->servoAttachPins) {
+        // throw exception, re-config unsupported.
+    }
+    this->totalServos = totalServos;
+    this->servoAttachPins = new int[totalServos]{0};
+    for (int i = 0; i < totalServos; i++) {
+        this->servoAttachPins[i] = servoAttachPins[i];
+    }
 }
 
 Copter::~Copter() {
 }
-Scheduler* Copter::getScheduler(){
+
+Scheduler *Copter::getScheduler() {
     return this->scheduler;
 }
 void Copter::setup() {
+
     this->log(">>Copter::setup()");
-    servosControl = newServosControl();
+    servosControl = newServosControl(this->totalServos, this->servoAttachPins);
     servosControl->attachAll();
     servosControl->setVelocity(0, 1.0f);
     attitudeSensor = newAttitudeSensor();
-    attitudeControl = newAttitudeControl(servosControl, attitudeSensor);
-    attitudeTimer = scheduler->scheduleTimer(attitudeControl, 1000);
+    attitudeControl = new AttitudeControl(this, servosControl, attitudeSensor);
+    if (scheduler == 0) {
+        this->log("scheduler is null");
+    } else {
+        this->log("scheduler is NOT null");
+    }
+    long ticks = 1000;
+    Callback *callback = static_cast<Callback *>(attitudeControl);
+
+    //attitudeTimer = scheduler->scheduleTimer(callback, ticks);
+    
+    attitudeTimer = scheduler->tmpTimer();
     this->log("<<Copter::setup()");
 }
 
@@ -41,7 +62,7 @@ void Copter::start() {
 void Copter::stop() {
 }
 int Copter::getServoCount() {
-    return this->servoCount;
+    return this->totalServos;
 }
 
 void Copter::log(String message) {

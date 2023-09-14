@@ -1,4 +1,6 @@
 #include "a8/native/NativeCopter.h"
+#include "a8/native/NativeAttitudeSensor.h"
+#include "a8/native/NativeServosControl.h"
 #include <iostream>
 
 namespace a8 ::native {
@@ -7,7 +9,9 @@ using namespace a8::core;
 using namespace a8::util;
 using a8::core::Scheduler;
 
-NativeCopter::NativeCopter(Scheduler *scheduler) : Copter(0, scheduler) {
+NativeCopter::NativeCopter(Scheduler *scheduler) : Copter(scheduler) {
+    int pins[] = {1, 2, 3, 4};
+    this->configServos(4, pins);
 }
 void NativeCopter::setup() {
     Copter::setup();
@@ -21,11 +25,11 @@ void NativeCopter::stop() {
 int NativeCopter::getServoAttachPin(int servoId) {
     return 4;
 }
-ServosControl *NativeCopter::newServosControl() {
-    return 0;
+ServosControl *NativeCopter::newServosControl(int totalServos, int *servoAttachPins) {
+    return new NativeServosControl(totalServos, servoAttachPins);
 }
 AttitudeSensor *NativeCopter::newAttitudeSensor() {
-    return 0;
+    return new NativeAttitudeSensor();
 }
 AttitudeControl *NativeCopter::newAttitudeControl(ServosControl *sc, AttitudeSensor *as) {
     return 0;

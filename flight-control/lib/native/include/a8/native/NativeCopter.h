@@ -11,7 +11,7 @@ namespace a8::native {
 
 class NativeCopter : public Copter {
 protected:
-    virtual ServosControl *newServosControl();
+    virtual ServosControl *newServosControl(int totalServos, int *servoAttachPins);
     virtual AttitudeSensor *newAttitudeSensor();
     virtual AttitudeControl *newAttitudeControl(ServosControl *sc, AttitudeSensor *as);
 

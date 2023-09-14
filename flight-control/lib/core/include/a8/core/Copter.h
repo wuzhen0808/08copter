@@ -4,7 +4,6 @@
 #include "a8/core/AttitudeSensor.h"
 #include "a8/core/Scheduler.h"
 #include "a8/core/ServosControl.h"
-#include "a8/core/AttitudeSensor.h"
 #include "a8/hal/Hal.h"
 #include "a8/util/String.h"
 
@@ -20,29 +19,31 @@ namespace core {
 using a8::util::String;
 class Copter {
 private:
-    int servoCount;
-
 protected:
+    // members
+    int totalServos;
+    int *servoAttachPins;
     Scheduler *scheduler;
-    AttitudeSensor * attitudeSensor;
-    ServosControl * servosControl;
-    AttitudeControl * attitudeControl;
-    Timer * attitudeTimer;
+    AttitudeSensor *attitudeSensor;
+    ServosControl *servosControl;
+    AttitudeControl *attitudeControl;
+    Timer *attitudeTimer;
+    // member functions
+    virtual ServosControl *newServosControl(int totalServos, int *servoAttachPins) = 0;
+    virtual AttitudeSensor *newAttitudeSensor() = 0;
+    AttitudeControl *newAttitudeControl(ServosControl *sc, AttitudeSensor *as);
+    void configServos(int totalServos, int *servoAttachPins);
+
 public:
-    Copter(int servoCount, Scheduler* scheduler);
+    Copter(Scheduler *scheduler);
     ~Copter();
     virtual void setup();
     virtual void start();
-    virtual void stop() ;
+    virtual void stop();
     int getServoCount();
     virtual int getServoAttachPin(int servoId) = 0;
     void log(a8::util::String message);
-    virtual Scheduler *getScheduler() ;
-
-protected:
-    virtual ServosControl *newServosControl() = 0;
-    virtual AttitudeSensor *newAttitudeSensor() = 0;
-    virtual AttitudeControl *newAttitudeControl(ServosControl *sc, AttitudeSensor *as) = 0;
+    virtual Scheduler *getScheduler();
 };
 } // namespace core
 } // namespace a8

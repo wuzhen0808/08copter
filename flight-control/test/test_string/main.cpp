@@ -21,15 +21,6 @@ using ::testing::UnitTest;
 
 System *a8::hal::S = new TestSystem();
 
-// TEST(TestBuffer, smokeTest) {
-//     //Buffer<char> *buffer = new Buffer<char>();
-//     //EXPECT_EQ(buffer->getLength(), 0);
-
-// }
-void log(String msg) {
-    // a8::hal::println(msg.getText());
-}
-
 TEST(TestString, smockTest1) {
 
     String s1;
@@ -55,6 +46,33 @@ TEST(TestString, smockTest2) {
     String s3 = s1 + s2;
     EXPECT_EQ(s3.getLength(), 2);
     EXPECT_EQ(s3, "A8");
+}
+
+
+TEST(TestString, formatIntTest) {
+    String s31 = String::format("A%d", 8);
+    EXPECT_EQ(s31, "A8");
+
+    String s32 = String::format("A%d", 123);
+    EXPECT_EQ(s32, "A123");
+
+    cout << INT32_MAX << endl; // 2147483647
+    cout << INT32_MIN << endl; //-2147483648
+
+    String s33 = String::format("A%d", 1234567890);
+    EXPECT_EQ(s33, "A1234567890");
+
+    String s34 = String::format("A%d", INT32_MAX);
+    EXPECT_EQ(s34, "A2147483647");
+
+    String s35 = String::format("A%d", INT32_MIN);
+    EXPECT_EQ(s35, "A-2147483648");
+
+    EXPECT_TRUE(true);
+}
+
+void log(String msg) {
+    // a8::hal::println(msg.getText());
 }
 
 int main(int argc, char **argv) {

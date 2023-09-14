@@ -1,8 +1,8 @@
 #include "a8/freertos/FreeRtosScheduler.h"
 #include "a8/freertos/FreeRtosThread.h"
 #include "a8/freertos/FreeRtosTimer.h"
+
 namespace a8::freertos {
-using namespace a8::core;
 
 FreeRtosScheduler::FreeRtosScheduler() : Scheduler() {
 }
@@ -21,7 +21,7 @@ Thread *FreeRtosScheduler::schedule(Runnable *runnable) {
     return FreeRtosThread::start(runnable);
 }
 
-Timer *FreeRtosScheduler::scheduleTimer(Callback *callback, ulong ticks) {
+Timer *FreeRtosScheduler::scheduleTimer(Callback *callback, long ticks) {
     return FreeRtosTimer::start(callback, ticks);
 }
 

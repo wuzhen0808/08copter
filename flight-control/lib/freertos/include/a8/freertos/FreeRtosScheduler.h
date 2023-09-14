@@ -1,5 +1,4 @@
-#ifndef ARDUINO_SCHEDULER_H__
-#define ARDUINO_SCHEDULER_H__
+#pragma once
 #include "a8/core/Scheduler.h"
 namespace a8::freertos {
 using namespace a8::core;
@@ -8,16 +7,18 @@ class FreeRtosScheduler : public Scheduler {
 public:
     FreeRtosScheduler();
     ~FreeRtosScheduler();
-    virtual void startSchedule();
+    virtual Timer* tmpTimer() override {
+        return 0;
+    }
+    virtual void startSchedule() override;
 
-    virtual void endSchedule();
+    virtual void endSchedule() override;
 
-    virtual Thread *schedule(Runnable *runnable);
+    virtual Thread *schedule(Runnable *runnable) override;
 
-    virtual Timer *scheduleTimer(Callback *callback, ulong ticks);
+    virtual Timer *scheduleTimer(Callback *callback, long ticks) override;
 
-    virtual Thread *getCurrentThread();
+    virtual Thread *getCurrentThread() override;
 };
 
-} // namespace a8::arduino
-#endif
+} // namespace a8::freertos

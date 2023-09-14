@@ -3,8 +3,10 @@
 #include "a8/core/Copter.h"
 #include "a8/freertos/FreeRtosScheduler.h"
 #include "a8/hal/Hal.h"
-#include "a8/native/NativeSystem.h"
 #include "a8/native/NativeCopter.h"
+#include "a8/native/NativeFreeRtosInitializer.h"
+#include "a8/native/NativeSystem.h"
+
 #include "a8/util/Buffer.h"
 #include "a8/util/String.h"
 
@@ -12,8 +14,6 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
-using namespace a8::util;
-using namespace a8::hal;
 using ::testing::EmptyTestEventListener;
 using ::testing::InitGoogleTest;
 using ::testing::Test;
@@ -22,19 +22,36 @@ using ::testing::TestEventListeners;
 using ::testing::TestInfo;
 using ::testing::TestPartResult;
 using ::testing::UnitTest;
+//
+using ::a8::core::Copter;
+using ::a8::freertos::FreeRtosScheduler;
+using ::a8::native::NativeFreeRtosInitializer;
 
 System *a8::hal::S = new TestSystem();
-using ::a8::freertos::FreeRtosScheduler;
-using ::a8::core::Copter;
-Scheduler * scheduler = new FreeRtosScheduler();
-Copter *copter = new NativeCopter(scheduler);
-TEST(TestCopter, smockTest1) {
+
+using ::a8::hal::S;
+void initialize() {
+
+    S->out->println("Rtos initializing...");
+    NativeFreeRtosInitializer *rtos = new NativeFreeRtosInitializer();
+    rtos->initialize();
+    S->out->println("Rtos ready.");
+    Scheduler *scheduler = new FreeRtosScheduler();
+    Copter *copter = new NativeCopter(scheduler);
     copter->setup();
     copter->start();
+    cout << "Hello,main()";
+}
+
+TEST(TestCopter, smockTest1) {
 }
 
 int main(int argc, char **argv) {
+
     InitGoogleTest(&argc, argv);
+
+    initialize();
+
     int ret = RUN_ALL_TESTS();
     return 0;
 }

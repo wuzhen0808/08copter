@@ -10,13 +10,12 @@ namespace a8 {
 namespace core {
 class Component {
 public:
-    Component(void *context);
+    Component();
     ~Component();
     void log(a8::util::String msg);
     Attributes *getAttributes();
 
-protected:
-    void *context;
+protected:    
     Attributes *attributes;
 };
 } // namespace core

@@ -1,8 +1,7 @@
 #include "a8/core/Component.h"
 namespace a8 {
 namespace core {
-Component::Component(void *copter) {
-    this->context = copter;
+Component::Component() {
 }
 
 Component::~Component() {

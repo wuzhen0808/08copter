@@ -8,5 +8,6 @@ Scheduler::Scheduler() {
 
 Scheduler::~Scheduler() {
 }
+
 } // namespace core
 } // namespace a8
