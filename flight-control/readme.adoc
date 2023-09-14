@@ -1,0 +1,161 @@
+== Background
+This aim of this project is learning how to build a quad copter drone. Building a copter from nothing is a long task to go along with. It may take you month or more to learn the necessary concepts in background. Hence this project are trying to get the path and structure clearly illustrated.
+
+There are a lot of information around web about how to build a copter from scratch. Basically a copter is made up with a frame, four motors, a micro controller board and 
+several sensor peripherals.
+
+A8 is only a short name with out special meaning. We need a word short enough as the namespace in C++ code typing. If you want assign it some meaning you can think it as a project is on top of Arduino and is started at the Autumn and August of 2003. August is also the 8th month of each year.So there a a lot of words start with A. Eight is also a lucky number in many people's mind.
+
+We are paying efforts to make the code structurally clean and easy to read. We do not care much the performance at this moment. Please note the size of the MPU's flash and SRAM memories. Currently the size of the firmware is <todo>.
+
+We prefer to use C++ in this project and avoid using C language in this project. You will see some code actually is C source code which ended with a '.c' suffix. They all come from 3rd party 
+and we normally do not touch them unless necessary.
+
+== Basic structure of a typical quad copter
+=== Frame
+The frame may not so much worth to introduce, it is not a abstract component to build a copter.Basically we need a four arms to install the motors and have a center platform to fix the PCB boards.
+
+=== Motors and ESCs
+A brush less motor need an ESC(electric speed controller) to drive itself. In this project we rely on four brush less motors and four ESCs. We don't know how to work with plain brush-having motors. It should be similar with brush less ones. If you are buying the motors please pay attention the arguments of the motor product.
+
+=== Main board & MPU
+
+The board during the development of this project is Arduino-UNO-R4-MINIMA. It contains a Cortex-M4 architecture MPU and the model is RA4M1 from Renesas.
+
+=== IMU
+Here we adopt MPU-9250 as the IMU(Inertial Measurement Unit) peripheral which contains three sensors of accelerometer, gyro and magnetometer.
+
+=== RC
+Remote control.
+== Code structure
+
+=== lib/core
+
+=== lib/FreeRTOS-Kernel
+Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
+
+This folder contains only the core code of FreeRTOS functions. We are using the thread/task and timer part of FreeRTOS.
+
+You know the kernel part of FreeRTOS must be configured before it's application to concrete project. Actually you must provide a header file(FreeRTOSConfig.h) and set arguments by C language's preprocessing instructions. 
+
+For example the below parameter is defined in the file of FreeRTOSConfig.h located in the lib/arduino/include folder.
+
+[source,c++]
+----
+#define configNUM_THREAD_LOCAL_STORAGE_POINTERS (5)
+----
+
+=== lib/FreeRTOS-MemMang-heap4
+Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
+
+This folder contains one of the memory management policy which adopted here for the UNO  environment. You can find this is enabled by the settings of environment of uno_r4_minima in the platformIO configuration file 'platformio.ini'.
+
+=== lib/FreeRTOS-MemMang-heap5
+Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
+
+Alternatively this folder contains another implementation of the memory management provide by and for FreeRTOS. It is adopted for the native/MingW environment. Why don't we use the same memory management policy? Actually we don't know the detail about the difference between these two.The heep4 is adopted by the Arduino_FreeRTOS library which is provided by the arduino-renesas framework. Be the way, you can find more libraries under the lib folder of this framework. We have copied the FreeRTOSConfig.h from that library and then that's the reason.
+
+Why we don't use the Arduino_FreeRTOS.h which provided by the arduino-renesas framework itself? It's because we are trying to get the code structure clean, clear and then easy understandable. So we need the code independent with each part and as less as possible to depend 3rd party code or library.
+
+=== lib/FreeRTOS-MSVC-MingW
+Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
+
+For the purpose of porting FreeRTOS to the native/MingW environment.
+
+=== lib/FreeRTOS-ArduinoRenesas-UNO
+Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
+
+The port to target environment to run the FreeRTOS. 
+
+=== hal
+In order isolate the core code from the hardware environment we introduce this lib as the hardware abstract layer for defines of any environment related interfaces.
+
+Please note the code below has defined a external global variable with type System. System is the interface to access the hardware part of the copters. 
+
+[source,c++]
+----
+namespace a8::hal {
+    extern System *S;
+}
+----
+
+In each environment, you should provide the initialization code for this global variable. For example the code block showing below come from the src/arduino/main.cpp source code file.
+[source,c++]
+----
+System * a8::hal::S = new ArduinoSystem();
+----
+
+=== arduino
+This is the top most application layer by which all the layers underneath are combined for a final firmware to be built on.
+
+Actually it's not very accurate to say this is the top most layer because we have put the main function in another folder and file which is src/arduino/main.cpp. Why doing so? Why don't provide a callback function like that provide by arduino. Arduino's entry file contain no such main function and instead of it by two function setup() and loop(). Here we think it bringing  less sense and we hope return the freedom of making decision to the end user.
+
+=== native
+As the function of folder arduino, native environment is defined here.
+
+=== src
+There folder contains the main entry function for each environment. How to distinguish them? The answer is by the building filter which is defined in the platformio.ini file.
+
+For example the code below defines the filter when building firmware for arduino environment.
+
+[source]
+----
+    build_src_filter = +<arduino/>
+----
+
+== Building the code
+
+At the moment this project only tested under Windows OS. Some additional work is required if you are going to build it on top of linux. I don't know for now which part of the code is involved and how much such work is.
+
+We have two environments configured, uno_r4_minima & native. 
+
+The former one(uno_r4_minima) is the target environment. If you have no such a board and related peripherals you may need the later environment to validate the code.
+
+=== Prerequisite
+
+[cols="1,1"]
+|===
+|Item       |Mandatory    | Desc
+|Windows OS | Yes    | 
+|PlatformIO | Yes    | 
+|MSYS       | Yes       | This tool as the command line to run building command. And install additional packages necessarily if you want build a executable for windows.
+|UCRT       | No    | Unified C Run Time for building the code for windows platform.
+|===
+
+=== Build for native(MingW) environment
+
+```
+$ cd <path-to-project>
+$ pio run -e native
+```
+=== Build for Arduino UNO R4 Minima board in CLI
+
+[source,shell]
+----
+$ cd <path-to-project>
+$ pio run -e uno_r4_minima
+----
+
+== Upload firmware
+
+== Tuning 
+
+After you upload the firmware into the board.
+
+== Appendix
+
+=== Hardware List
+[cols="1,1"]
+|===
+| Type  | Model                 | Vendor    | Link      | Price
+| Board | Arduino UNO R4 Minima |           | |
+| ||||
+| ||||
+| ||||
+|===
+
+=== Reference List
+
+
+
+

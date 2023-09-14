@@ -12,7 +12,9 @@ System *a8::hal::S = new NativeSystem();
 
 // int main_blinky(int argc, char **argv) {
 extern "C" {
-
+/**
+ * see lib/native/src/main.c
+*/
 void main_blinky(void) {
     S->out->println("Hello, String");
     Scheduler *scheduler = new FreeRtosScheduler();
