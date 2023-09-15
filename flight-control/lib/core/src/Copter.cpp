@@ -9,51 +9,47 @@ namespace core {
 using a8::core::Copter;
 using a8::hal::S;
 
-Copter::Copter(Scheduler *Scheduler) {
-    this->scheduler = scheduler;
+Copter::Copter(Scheduler *scheduler) {
+    this->scheduler_ = scheduler;
 }
 void Copter::configServos(int totalServos, int *servoAttachPins) {
-    if (this->servoAttachPins) {
+    
+    if (this->servoAttachPins_) {
         // throw exception, re-config unsupported.
     }
-    this->totalServos = totalServos;
-    this->servoAttachPins = new int[totalServos]{0};
-    for (int i = 0; i < totalServos; i++) {
-        this->servoAttachPins[i] = servoAttachPins[i];
+    this->totalServos_ = totalServos;
+    this->servoAttachPins_ = new int[totalServos];
+    for (int i = 0; i < totalServos_; i++) {
+        this->servoAttachPins_[i] = servoAttachPins[i];
     }
+    
 }
 
 Copter::~Copter() {
 }
 
 Scheduler *Copter::getScheduler() {
-    return this->scheduler;
+    return this->scheduler_;
 }
 void Copter::setup() {
 
-    this->log(">>Copter::setup()");
-    servosControl = newServosControl(this->totalServos, this->servoAttachPins);
-    servosControl->attachAll();
-    servosControl->setVelocity(0, 1.0f);
-    attitudeSensor = newAttitudeSensor();
-    attitudeControl = new AttitudeControl(this, servosControl, attitudeSensor);
-    if (scheduler == 0) {
-        this->log("scheduler is null");
-    } else {
-        this->log("scheduler is NOT null");
-    }
-    long ticks = 1000;
-    Callback *callback = static_cast<Callback *>(attitudeControl);
+    this->log(String::format(">>Copter::setup(),totalServos:%i", totalServos_));
+    servosControl_ = newServosControl(this->totalServos_, this->servoAttachPins_);
+    servosControl_->attachAll();
+    servosControl_->setVelocity(0, 1.0f);
+    attitudeSensor_ = newAttitudeSensor();
+    attitudeControl_ = new AttitudeControl(this, servosControl_, attitudeSensor_);
 
-    //attitudeTimer = scheduler->scheduleTimer(callback, ticks);
-    
-    attitudeTimer = scheduler->tmpTimer();
+    long ticks = 1000;
+
+    attitudeTimer_ = scheduler_->scheduleTimer(attitudeControl_, ticks);
+
     this->log("<<Copter::setup()");
 }
 
 void Copter::start() {
     S->out->println(">>Copter::start()");
-    scheduler->startSchedule();
+    scheduler_->startSchedule();
     // scheduler->schedule(attitudeControl);
     // attitudeControl->run();
     // copter->log("done of active copter.");
@@ -62,7 +58,7 @@ void Copter::start() {
 void Copter::stop() {
 }
 int Copter::getServoCount() {
-    return this->totalServos;
+    return this->totalServos_;
 }
 
 void Copter::log(String message) {

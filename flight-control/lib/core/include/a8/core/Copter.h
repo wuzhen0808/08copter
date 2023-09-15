@@ -21,13 +21,13 @@ class Copter {
 private:
 protected:
     // members
-    int totalServos;
-    int *servoAttachPins;
-    Scheduler *scheduler;
-    AttitudeSensor *attitudeSensor;
-    ServosControl *servosControl;
-    AttitudeControl *attitudeControl;
-    Timer *attitudeTimer;
+    int totalServos_;
+    int *servoAttachPins_;
+    Scheduler *scheduler_;
+    AttitudeSensor *attitudeSensor_;
+    ServosControl *servosControl_;
+    AttitudeControl *attitudeControl_;
+    Timer *attitudeTimer_;
     // member functions
     virtual ServosControl *newServosControl(int totalServos, int *servoAttachPins) = 0;
     virtual AttitudeSensor *newAttitudeSensor() = 0;

@@ -17,8 +17,8 @@ protected:
 
 public:
     NativeCopter(Scheduler *scheduler);
-
-    virtual void setup();
+    ~NativeCopter();
+    //virtual void setup();
     virtual void start();
     virtual void stop();
     virtual int getServoAttachPin(int servoId);

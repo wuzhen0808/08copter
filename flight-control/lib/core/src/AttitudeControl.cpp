@@ -29,7 +29,7 @@ AttitudeControl::~AttitudeControl() {
 void AttitudeControl::call() {
     //string msg;
 
-    //log(msg);
+    log(">>AttitudeControl::call()");
 
     attitudeSensor->update();
 
@@ -56,6 +56,7 @@ void AttitudeControl::call() {
     float m4 = throttle - rollGain + pitchGain + yawGain; // bottom left
 
     servosControl->setVelocities(SERVO_TOP_LEFT, m1, SERVO_TOP_RIGHT, m2, SERVO_BOTTOM_RIGHT, m3, SERVO_BOTTOM_LEFT, m4);
+    log("<<AttitudeControl::call()");
 }
 } // namespace core
 } // namespace a8

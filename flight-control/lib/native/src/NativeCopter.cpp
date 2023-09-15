@@ -10,12 +10,15 @@ using namespace a8::util;
 using a8::core::Scheduler;
 
 NativeCopter::NativeCopter(Scheduler *scheduler) : Copter(scheduler) {
+
     int pins[] = {1, 2, 3, 4};
     this->configServos(4, pins);
 }
-void NativeCopter::setup() {
-    Copter::setup();
+NativeCopter::~NativeCopter() {
 }
+// void NativeCopter::setup() {
+//     Copter::setup();
+// }
 void NativeCopter::start() {
     Copter::start();
 }

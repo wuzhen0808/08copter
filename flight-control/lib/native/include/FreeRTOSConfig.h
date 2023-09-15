@@ -66,18 +66,18 @@ priority is configMAX_PRIORITIES - 1.  The priority of the timer task is
 deliberately set higher to ensure it is correctly capped back to
 configMAX_PRIORITIES - 1. */
 #define configUSE_TIMERS 1
+#define configMAX_PRIORITIES (7)
 #define configTIMER_TASK_PRIORITY (configMAX_PRIORITIES - 1)
 #define configTIMER_QUEUE_LENGTH 20
 #define configTIMER_TASK_STACK_DEPTH (configMINIMAL_STACK_SIZE * 2)
 
-#define configMAX_PRIORITIES (7)
 
 /* Run time stats gathering configuration options. */
 unsigned long ulGetRunTimeCounterValue(void); /* Prototype of function that returns run time counter. */
 void vConfigureTimerForRunTimeStats(void);    /* Prototype of function that initialises the run time counter. */
-#define configGENERATE_RUN_TIME_STATS 1
-#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() vConfigureTimerForRunTimeStats()
-#define portGET_RUN_TIME_COUNTER_VALUE() ulGetRunTimeCounterValue()
+#define configGENERATE_RUN_TIME_STATS 0 /*A8++*/
+//#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() vConfigureTimerForRunTimeStats()
+//#define portGET_RUN_TIME_COUNTER_VALUE() ulGetRunTimeCounterValue()
 
 /* Co-routine related configuration options. */
 #define configUSE_CO_ROUTINES 0

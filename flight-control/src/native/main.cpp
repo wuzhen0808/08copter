@@ -13,21 +13,32 @@ using a8::freertos::FreeRtosInitializer;
 System *a8::hal::S = new NativeSystem();
 
 // int main_blinky(int argc, char **argv) {
-extern "C" {
+
 /**
  * see lib/native/src/main.c
 */
+
+
+void setup(Scheduler *scheduler){
+    scheduler->tmpTimer();
+}
 int main(int argc, char ** argv) {
-    S->out->println("Hello!");
-    FreeRtosInitializer * rtos = new FreeRtosInitializer();
-    rtos->initialize();
-    S->out->println("RTOS initialized!");
+     // S->out->println("Hello!");
+    //FreeRtosInitializer * rtos = new FreeRtosInitializer();
+    //rtos->initialize();
+    //S->out->println("RTOS initialized!");
     
     Scheduler *scheduler = new FreeRtosScheduler();
+    scheduler->tmpTimer();
+    scheduler->tmpTimer();
     Copter *copter = new NativeCopter(scheduler);
+    Scheduler * scheduler2 = copter->getScheduler();
+    scheduler2->tmpTimer();
+    setup(scheduler);
     copter->setup();
     copter->start();
     cout << "Hello,main()";
 
 }
-}
+
+

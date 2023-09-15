@@ -166,7 +166,7 @@ static void prvInitialiseHeap( void )
     /* The heap has not been initialised yet so expect stats to all be zero. */
     vPortGetHeapStats( &xHeapStats );
 
-    vPortDefineHeapRegions( xHeapRegions );
+    //vPortDefineHeapRegions( xHeapRegions );
 
     /* Sanity check vTaskGetHeapStats(). */
     prvExerciseHeapStats();
