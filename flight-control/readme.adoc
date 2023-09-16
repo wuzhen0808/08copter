@@ -126,7 +126,18 @@ The native environment actually is not designed here to be uploaded into a physi
 
 At the moment the native environment only support Windows platform. Additional work is definitely required if you are going to build it on top of linux or other ones. I even don't know for now the detail part of the code to be modified is involved and how much the effort is. But what we are keeping in mind is that the modification must be constrained in a certain place instead of being scattered around the whole project folders.
 
-=== {chapter}.{counter:build}. Environments for building.
+=== {chapter}.{counter:build}. Dependencies
+
+*** MSYS2
+
+
+*** Building JSBSim lib for MingW env.
+Please find the detail in appendix.
+
+
+
+
+=== {chapter}.{counter:build}. Environments.
 
 
 For native environment:
@@ -244,21 +255,74 @@ No locals.
 
 === {chapter}.{counter:modify}. About C/C++ 
 We prefer to use C++ in this project and avoid using C language in this project. You will see some code actually is C source code which ended with a '.c' suffix. They all come from 3rd party and we normally do not touch them unless necessary. Don't forget add the the `extern C{}` instruction if you have a c header to be included by a cpp source file.
+== Appendix Building JSBSim static lib
 
-== Appendix {counter:apx}. Hardware list
-[cols="1,1"]
-|===
-| Type  | Model                 | Vendor    | Link      | Price
-| Board | Arduino UNO R4 Minima |           | |
-| ||||
-| ||||
-| ||||
-|===
+You should get the lib file located here <some-path>/jsbsim/build/src/libJSBSim.a
 
-== Appendix {counter:apx}. Tools list
+[source,shell]
+----
+$ https://github.com/JSBSim-Team/jsbsim.git
+$ 
+$ mkdir jsbsim/build
+$ cd jsbsim/build
+$ cmake -G "MinGW Makefiles" ..
+$ cd build
+$ mingw-32-make 
+----
+More reference:
+http://paul.chavent.free.fr/jsbsim.html
 
-== Appendix {counter:apx}. Reference list
+== Appendix {counter:apx}. Related Hardware list
+
+== Appendix {counter:apx}. Lib/tool list
+
+=== FreeRTOS
+https://www.freertos.org/RTOS.html
+
+=== JSBSim
+https://github.com/JSBSim-Team/jsbsim.git
+
+https://discuss.ardupilot.org/t/simulate-arducopter-with-jsbsim/82235/12
+
+https://jsbsim-team.github.io/jsbsim/
+
+=== MSYS2
+
+=== Cmake
+In order to build JSBSim manually for the MingW env. The officially lib delivered is windows format JSBSim.lib which is not recognizable by the gcc compiler.
+
+[source,shell]
+----
+$ pacman -S mingw-w64-ucrt-x86_64-cmake
+----
 
 
+== Appendix {counter:apx}. More References
 
+=== AirSim
+https://github.com/microsoft/AirSim
+
+=== ArduPilot
+*** Data Flow using JSBSim + FlightGear
+
+https://ardupilot.org/dev/docs/sitl-with-jsbsim.html#sitl-with-jsbsim
+
+=== FlightGear
+https://www.flightgear.org/
+
+https://ardupilot.org/dev/docs/flightgear-hardware-in-the-loop-simulation.html
+
+https://wiki.flightgear.org/Menubar#How_to_Change_the_Default_Menubar_Font_Size
+
+https://flightgear.sourceforge.net/manual/2020.3/en/getstart-en.html
+
+=== Gym-JSBSim
+Gym-JSBSim provides reinforcement learning environments for the control of fixed-wing aircraft using the JSBSim flight dynamics model. Gym-JSBSim requires a Unix-like OS and Python 3.6.
+https://github.com/Gor-Ren/gym-jsbsim
+
+=== Simulators provider list
+https://ardupilot.org/dev/docs/simulation-2.html#simulation-2
+
+=== About gcc and make
+https://www3.ntu.edu.sg/home/ehchua/programming/cpp/gcc_make.html
 

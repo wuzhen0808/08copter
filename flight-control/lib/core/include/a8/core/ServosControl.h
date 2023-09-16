@@ -1,5 +1,4 @@
-#ifndef SERVOS_CONTROL__
-#define SERVOS_CONTROL__
+#pragma once
 #include "a8/core/Component.h"
 #include "a8/hal/Servo.h"
 
@@ -23,4 +22,3 @@ public:
 };
 
 } // namespace a8::core
-#endif
