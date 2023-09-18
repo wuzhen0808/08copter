@@ -288,7 +288,12 @@ Edit file:<path-to-jsbsm>/airacraft/c172x/c172x.xml.
 *** Open flight gear with fdm option to listening port on 5500.
 [source,shell]
 ----
-$ fgfs --fg-root=<path-to-flight.gear>/data --language=en --fdm=external --native-fdm=socket,in,30,localhost,5500,tcp
+$ fgfs --fg-root=/path-to/flight.gear/data \
+    --language=en \
+    --fdm=external \
+    --native-fdm=socket,in,30,localhost,5500,tcp \
+    --airport=PHBK \
+    --timeofday=noon 
 ----
 
 *** Start jsbsim with scripts provide by official release.

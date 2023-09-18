@@ -57,7 +57,7 @@ INCLUDES
 #include "models/propulsion/FGTurboProp.h"
 #include "models/propulsion/FGTank.h"
 #include "input_output/FGModelLoader.h"
-
+#include "models/propulsion/FGBrushLessDCMotor.h"
 using namespace std;
 
 namespace JSBSim {
@@ -422,6 +422,9 @@ bool FGPropulsion::Load(Element* el)
         if (!IsBound) bind();
         Element *element = engine_element->FindElement("electric_engine");
         Engines.push_back(new FGElectric(FDMExec, element, numEngines, in));
+      } else if (engine_element->FindElement("brushless_dc_motor")) {
+        Element *element = engine_element->FindElement("brushless_dc_motor");
+        Engines.push_back(new FGBrushLessDCMotor(FDMExec, element, numEngines, in));        
       } else {
         cerr << engine_element->ReadFrom() << " Unknown engine type" << endl;
         return false;
