@@ -278,7 +278,7 @@ CLASS DOCUMENTATION
 IMPLEMENTATION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-int main(int argc, char* argv[])
+int jsbsim_main(int argc, char* argv[])
 {
 #if defined(_MSC_VER) || defined(__MINGW32__)
   _clearfp();

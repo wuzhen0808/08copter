@@ -272,6 +272,33 @@ $ mingw-32-make
 More reference:
 http://paul.chavent.free.fr/jsbsim.html
 
+== Appendix {counter:apx}. Related Guidance
+
+=== How to connect jsbsim with flight gear.
+
+*** Setting output for jsbsm for aircraft c172x as below.
+
+Edit file:<path-to-jsbsm>/airacraft/c172x/c172x.xml.
+[source,xml]
+----
+<!---->
+<output name="localhost" type="FLIGHTGEAR" port="5500" protocol="TCP" rate="30"/>
+----
+
+*** Open flight gear with fdm option to listening port on 5500.
+[source,shell]
+----
+$ fgfs --fg-root=<path-to-flight.gear>/data --language=en --fdm=external --native-fdm=socket,in,30,localhost,5500,tcp
+----
+
+*** Start jsbsim with scripts provide by official release.
+[source,shell]
+----
+$ jsbsim --script=scripts/c172_elevation_test --realtime
+----
+
+*** You will see the plane in flight gear screen start moving.
+
 == Appendix {counter:apx}. Related Hardware list
 
 == Appendix {counter:apx}. Lib/tool list
@@ -296,6 +323,13 @@ In order to build JSBSim manually for the MingW env. The officially lib delivere
 $ pacman -S mingw-w64-ucrt-x86_64-cmake
 ----
 
+=== Ghost-Script ??
+
+mingw-w64-ucrt-x86_64-ghostscript
+[source,shell]
+----
+$ pacman -S mingw-w64-ucrt-x86_64-ghostscript
+----
 
 == Appendix {counter:apx}. More References
 
@@ -315,6 +349,7 @@ https://ardupilot.org/dev/docs/flightgear-hardware-in-the-loop-simulation.html
 https://wiki.flightgear.org/Menubar#How_to_Change_the_Default_Menubar_Font_Size
 
 https://flightgear.sourceforge.net/manual/2020.3/en/getstart-en.html
+
 
 === Gym-JSBSim
 Gym-JSBSim provides reinforcement learning environments for the control of fixed-wing aircraft using the JSBSim flight dynamics model. Gym-JSBSim requires a Unix-like OS and Python 3.6.

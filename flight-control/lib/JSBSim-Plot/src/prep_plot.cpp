@@ -155,7 +155,7 @@ int prep_plot_main(int argc, char **argv) {
     unsigned int TICS_FONT_SZ = 10;
 
     string start_time = "", end_time = "";
-    cout << "argc:" << argc << endl;
+    //cout << "argc:" << argc << endl;
 
     if (argc == 1 || string(argv[1]) == "--help") {
         cout << endl
