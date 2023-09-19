@@ -41,21 +41,28 @@ void AttitudeControl::call() {
     float desiredPitch = 0.0f;
     float desiredYaw = 0.0f;
 
-    float rollGain = rollControl->update(desiredRoll, actualRoll);
-    float pitchGain = pitchControl->update(desiredPitch, actualPitch);
-    float yawGain = yawControl->update(desiredYaw, actualYaw);
+    float cmdRoll = rollControl->update(desiredRoll, actualRoll);
+    float cmdPitch = pitchControl->update(desiredPitch, actualPitch);
+    float cmdYaw = yawControl->update(desiredYaw, actualYaw);
 
     //log(string("actualRoll:") + string(actualRoll) + string(",rollGain:") + string(rollGain));
 
-    float throttle = 0.0f;
+    float heave = 0.0f;
     float motors[4] = {};
 
-    float m1 = throttle - rollGain - pitchGain - yawGain; // top left
-    float m2 = throttle + rollGain - pitchGain + yawGain; // top right
-    float m3 = throttle + rollGain + pitchGain - yawGain; // bottom right
-    float m4 = throttle - rollGain + pitchGain + yawGain; // bottom left
+    // float m2 = throttle + cmdRoll - cmdPitch + cmdYaw; // FR: Front right
+    // float m4 = throttle - cmdRoll + cmdPitch + cmdYaw; // AL: After left
+    // float m1 = throttle - cmdRoll - cmdPitch - cmdYaw; // FL: Front left
+    // float m3 = throttle + cmdRoll + cmdPitch - cmdYaw; // AR: After right
 
-    servosControl->setVelocities(SERVO_TOP_LEFT, m1, SERVO_TOP_RIGHT, m2, SERVO_BOTTOM_RIGHT, m3, SERVO_BOTTOM_LEFT, m4);
+    float fr = heave - cmdRoll + cmdPitch + cmdYaw; // FR: Front right
+    float al = heave + cmdRoll - cmdPitch + cmdYaw; // AL: After left
+    float fl = heave + cmdRoll + cmdPitch - cmdYaw; // FL: Front left
+    float ar = heave - cmdRoll - cmdPitch - cmdYaw; // AR: After right
+
+
+
+    servosControl->setVelocities(SERVO_FRONT_LEFT, fl, SERVO_FRONT_RIGHT, fr, SERVO_AFTER_RIGHT, ar, SERVO_AFTER_LEFT, al);
     log("<<AttitudeControl::call()");
 }
 } // namespace core

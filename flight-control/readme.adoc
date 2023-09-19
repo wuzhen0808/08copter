@@ -14,25 +14,56 @@ We are paying efforts to make the code structurally clean and easy to read. We d
 Why we call this project A8? Primarily we need a short name. A word short enough when we type code in the namespace of C++. But we still can assign it some meaning. For example you can think it as a project that is built on top of Arduino. And it actually is started at the Autumn of 2003. It is August as well. There are a lot of words started with A. How about the 8? Then August is the 8th month. Additionally if you rotate the arduino board you will see the 8-like infinity sign printed on the board.
 
 
-== Chapter {counter:chapter}. Basic structure of a typical quad copter
-=== {chapter}.{counter:structure}. Frame
+== Chapter {counter:chapter}. Quad Copter Design
+=== {chapter}.{counter:structure}. Hard wares
+==== {chapter}.{structure}.{counter:hard}. Frame
 The frame may not so much worth to introduce, it is not a abstract component to build a copter.Basically we need a four arms to install the motors and have a center platform to fix the PCB boards.
 
-=== {chapter}.{counter:structure}. Motors and ESCs
+==== {chapter}.{structure}.{counter:hard}. Motors and ESCs
 A brush less motor need an ESC(electric speed controller) to drive itself. In this project we rely on four brush less motors and four ESCs. We don't know how to work with plain brush-having motors. It should be similar with brush less ones. If you are buying the motors please pay attention the arguments of the motor product.
 
-=== {chapter}.{counter:structure}. Main board & MPU
+==== {chapter}.{structure}.{counter:hard}. Main board & MPU
 
 The board during the development of this project is Arduino-UNO-R4-MINIMA. It contains a Cortex-M4 architecture MPU and the model is RA4M1 from Renesas.
 
-=== {chapter}.{counter:structure}. IMU
+==== {chapter}.{structure}.{counter:hard}. IMU
 Here we adopt MPU-9250 as the IMU(Inertial Measurement Unit) peripheral which contains three sensors of accelerometer, gyro and magnetometer.
 
-=== {chapter}.{counter:structure}. RC
+==== {chapter}.{structure}.{counter:hard}. RC
 Remote control.
-// Chapter  2
 
-== Chapter {counter:chapter}. Code structure introduction
+=== {chapter}.{counter:structure}. Software - Flight Control
+
+==== {chapter}.{structure}.{counter:flight}. Attitude commands on axises.
+    An aileron command actually a instruction of rolling the vehicle to a desired attitude or called position(in certain coming time).The command value being clip to a value between -1 to 1. For a quad copter, aileron command can finally lead to a moving left or right.
+
+==== {chapter}.{structure}.{counter:flight}. Desired RPS on axises.
+    After ths the command value on one axis is normalized, we then consider time variable and convert the abstract command to a concrete action. For example if the attitude is -0.5 in the dimension of roll, then we can tell the FC to turn the vehicle around the X axis at a speed of -0.5*0.75 revolutions per second. 
+
+==== {chapter}.{structure}.{counter:flight}. Error between the reference RPS and the actual ones.
+    The IMU sensor report the current RPS on each axis. For example if the current RPS on X axis is 0, then the error on X axis is -0.5*0.75 - 0 = -0.375 rps. 
+
+==== {chapter}.{structure}.{counter:flight}. PID controllers - generate command to execute.
+    After the error rps are got, we should not directly use it as the immediate instruction for the FC to execute with. We should more forward-seeable and provide a better value based on prediction. That is the job of PID controller to take up.
+    
+==== {chapter}.{structure}.{counter:flight}. Mixing the speed for each servo.
+    We have the formulas to calculate the speed of the servo on different positions of the quad copter frame. Note that here we use NED(North-East-Down) frame in which the Z axis is downward and point to ground. And the positive rotation direction follows the law of right-hand.
+[source,c++]
+----
+    float fr = heave - cmdRoll + cmdPitch + cmdYaw; // FR: Front right
+    float al = heave + cmdRoll - cmdPitch + cmdYaw; // AL: After left
+    float fl = heave + cmdRoll + cmdPitch - cmdYaw; // FL: Front left
+    float ar = heave - cmdRoll - cmdPitch - cmdYaw; // AR: After right
+----
+
+    Rolling right command will decrease the speed of the right two propellers and increase the left two ones.
+    Pitch back command will decrease the speed of the after two propellers and increase the front two ones.
+    Yaw will decrease the two propellers with reverse rotation directions and increase the other two with same rotation direction.Here we assume the rotation direction of the front right and after-left propeller is clockwise in which a reaction force in the opposite direction will applied to the frame of the vehicle.
+
+==== {chapter}.{structure}.{counter:flight}. ESC controllers.
+    According the output from above step, each ESC controller will update the servo with a speed required.
+
+== Chapter {counter:chapter}. Code structure
 TODO a box graph here.
 
 === {chapter}.{counter:folder}. lib/core
