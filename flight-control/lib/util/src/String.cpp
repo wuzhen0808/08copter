@@ -66,14 +66,25 @@ void String::copy(const char *str, int from1, int len, char *buff, int from2) {
         buff[from2 + i] = str[from1 + i];
     }
 }
+
 String String::format(const char formatStr[], int arg) {
+    return formatAny<int>(formatStr, arg);
+}
+
+String String::format(const char formatStr[], float arg) {
+    return formatAny<float>(formatStr, arg);
+}
+
+template<typename T>
+String String::formatAny(const char formatStr[], T arg) {
 
     char buf[100] = {0};
     int len = snprintf(buf, 100, formatStr, arg);
     if (len < 0) {
         String ret(formatStr);
         LOG(ret.getText());
-        return ret; // Failed to format? need to throw a exception?
+        
+        return ret; // Failed to format? need to throw a exception? or realloc more memory and try again?
     } else {
         String ret(buf);
         LOG(ret.getText());

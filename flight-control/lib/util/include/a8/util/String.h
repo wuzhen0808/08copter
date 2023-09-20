@@ -25,6 +25,9 @@ public:
     static int getLength(const char *str);
     static void copy(const char *str, int from1, int len, char *buff, int from2);
     static String format(const char formatStr[], int arg) ;
+    static String format(const char formatStr[], float arg) ;
+    template<typename T>
+    static String formatAny(const char formatStr[], T arg) ;
     // operators
     String& operator=(const char str1[]);
     friend String operator+(const String &str1, const String &str);
