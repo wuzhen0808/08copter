@@ -1,21 +1,36 @@
 #include "a8/hal/socket.h"
 namespace a8::hal::socket::native {
-using a8::hal::socket::Connection;
 
-class NativeConnection : public Connection {
+using a8::hal::socket::Socket;
+using a8::hal::socket::SocketFactory;
+
+class NativeSocket;
+
+class NativeSocketFactory : public SocketFactory {
 private:
-    int sock;
-    int clientFileDescriptor;
-    
+    int startUpError;
 
 public:
-    virtual NativeConnection *connect(String host, int port);
-    
-    virtual void close();
+    NativeSocketFactory();
+    ~NativeSocketFactory();
+    bool isReady();
+    virtual Socket *socket();
+};
 
-    virtual int send(const char *buf, int size);
+class NativeSocket : public Socket {
+private:
+    int sock;
 
-    virtual void receive();
+public:
+    NativeSocket(int sock);
+    ~NativeSocket();
+    virtual bool connect(String host, int port);
+
+    virtual bool setBlocking(bool blocking);
+
+    virtual bool send(String *str);
+
+    virtual int receive(char *buf, int bufLen);
 };
 
 } // namespace a8::hal::socket::native

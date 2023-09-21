@@ -4,15 +4,20 @@
 #include "a8/hal/socket/native/NativeSocket.h"
 #include "a8/native/NativeCopter.h"
 #include "a8/native/NativeSystem.h"
+#include "a8/util/Finally.h"
 #include <iostream>
 #include <stdio.h>
 
 using a8::freertos::FreeRtosInitializer;
 using a8::freertos::FreeRtosScheduler;
-using a8::hal::socket::Connection;
-using a8::hal::socket::native::NativeConnection;
+
+using a8::hal::socket::Socket;
+using a8::hal::socket::SocketFactory;
+using a8::hal::socket::native::NativeSocket;
 using a8::native::NativeCopter;
 using a8::native::NativeSystem;
+using a8::util::String;
+
 System *a8::hal::S = new NativeSystem();
 
 // int main_blinky(int argc, char **argv) {
@@ -29,40 +34,80 @@ float normalizePwm(int pwm) {
     return (pwm - 1500) / 500.0f;
 }
 
-void sendServo(Connection *con) {
+void sendServo(Socket *con) {
     // refer to the SIM_JSBSim.cpp from ArduPilot project.
-    float aileron = normalizePwm(1500);  // roll
-    float elevator = normalizePwm(1500); // pitch
-    float rudder = normalizePwm(1500);   // yaw
-    float throttle = normalizePwm(1500); // heave
-
-    String message =
-        String::format("set fcs/aileron-cmd-norm %f\n", aileron)     //
-        + String::format("set fcs/elevator-cmd-norm %f\n", elevator) //
-        + String::format("set fcs/rudder-cmd-norm %f\n", rudder)     //
-        + String::format("set fcs/throttle-cmd-norm %f\n", throttle) //
-        + String("iterate 1\n")                                      //
-        ;
-    int sent = con->send(message.getText(), message.getLength());
-    S->out->println(String::format("sent:%i", sent));
+    /*
+    String sb;
+    for (int i = 0; i < 4; i++) {
+        float throttleI = normalizePwm(2000);
+        String tmp = String::format("set fcs/throttle-cmd-norm[%i] %f\n", i, throttleI);
+        sb.append(&tmp);
+    }
+    sb.append("iterate 1\n");
+    */
+    for (int i = 0; i < 4; i++) {
+        String sb = String::format("set fcs/throttle-cmd-norm[%i] %f\n", i, 1.0f);
+        int sent = con->send(&sb);
+    }
 }
-void open(Connection *con) {
-    String startup =
-        "info\n"
-        "resume\n"
-        "iterate 1\n"
-        "set atmosphere/turb-type 4\n";
-    con->send(startup.getText(), startup.getLength());
-
+void resume(Socket *socket) {
+    String msg = String("resume\n");
+    socket->send(&msg);
 }
+
 int main(int argc, char **argv) {
-    Connection *con = new NativeConnection();
-    String host = "localhost";
+
+    SocketFactory *fac = new a8::hal::socket::native::NativeSocketFactory();
+    a8::util::Finally releaseSocket([&]() {
+        S->out->println("Going to delete socket factory.");
+        delete fac;
+    });
+
+    String host = "127.0.0.1";
     int port = 5126;
-    con->connect(host, port);
-    open(con);
-    sendServo(con);
-    con->close();
+
+    Socket *socket = fac->socket();
+    socket->connect(host, port);
+
+    if (!socket) {
+        return -1;
+    }
+
+    a8::util::Finally closeSocket([&]() {
+        delete socket;
+    });
+
+    // resume(socket);
+
+    sendServo(socket);
+    int loops = 0;
+    while (true) {
+        loops++;
+        if (loops == 2) {
+            // sendServo(socket);
+        }
+        char buf[100];
+        // socket->send("\n", 1);
+        // S->out->print("Receiving message...");
+        int len = socket->receive(buf, 100);
+        // S->out->print("Processing message received...");
+        if (len <= 0) {
+            if (len == 0) {
+                S->out->println("Socket connect closed by server.");
+            } else {
+                int error = WSAGetLastError();
+                S->out->println(String::format("Failed with error:%i", error));
+            }
+            break; // end loop
+        }
+
+        String received = String(buf, len);
+        if (received.endWith("JSBSim>")) {
+            // sendServo(socket);
+        }
+        S->out->println(":" + received);
+    }
+    //
     return 0;
 }
 

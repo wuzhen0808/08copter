@@ -21,6 +21,41 @@ using ::testing::UnitTest;
 
 System *a8::hal::S = new TestSystem();
 
+TEST(TestString, testEndWith) {
+    String msg = "ABCDEF";
+    EXPECT_TRUE(msg.endWith("F"));
+    EXPECT_TRUE(msg.endWith("EF"));
+    EXPECT_TRUE(msg.endWith("DEF"));
+    EXPECT_TRUE(msg.endWith("ABCDEF"));
+    EXPECT_FALSE(msg.endWith("A"));
+}
+TEST(TestString, testAppend) {
+    String msg;
+    msg.append("ABC");
+    msg.append("DEF");
+    EXPECT_EQ("ABCDEF", msg);
+}
+TEST(TestString, testAssign) {
+    String msg = "abc";
+    EXPECT_EQ(msg, "abc");
+    // msg = String("DEF");
+    // EXPECT_EQ(msg, "DEF");
+}
+
+TEST(TestString, testFormat) {
+    String msg = "[0]";
+    EXPECT_EQ(3, msg.getLength());
+
+    String msg2 = String::format("msg:%s", msg.getText());
+    cout << msg2.getText() << endl;
+    EXPECT_EQ(7, msg2.getLength());
+    EXPECT_EQ(msg2, "msg:[0]");
+
+    char buf[] = "set fcs/throttle-cmd-norm[0] 1\n";
+    String msg3 = String::format("sending... message:%s", buf);
+    EXPECT_EQ(msg3, "sending... message:set fcs/throttle-cmd-norm[0] 1\n");
+}
+
 TEST(TestString, smockTest1) {
 
     String s1;
@@ -47,7 +82,6 @@ TEST(TestString, smockTest2) {
     EXPECT_EQ(s3.getLength(), 2);
     EXPECT_EQ(s3, "A8");
 }
-
 
 TEST(TestString, formatIntTest) {
     String s31 = String::format("A%d", 8);

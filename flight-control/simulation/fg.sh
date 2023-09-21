@@ -1,8 +1,8 @@
 ##
-## Start flight gear view to listen the log output from jsbsim.
-## You need config the output in the test script of JSBSim. 
-## Some thing like below.
-##  <output name="localhost" type="FLIGHTGEAR" port="5500" protocol="TCP" rate="10"/>
+# Start flight gear view to listen the log output from jsbsim.
+# You need config the output in the test script of JSBSim. 
+# Some thing like below.
+#  <output name="localhost" type="FLIGHTGEAR" port="5500" protocol="TCP" rate="10"/>
 ##
 #export A8_HOME=parent folder of this file located.
 export A8_AIRCRAFT=arducopter

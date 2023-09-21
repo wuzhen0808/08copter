@@ -1,13 +1,15 @@
 #include "a8/util/String.h"
 #include <stdio.h>
-
+// #define A8_DEBUG_STRING
 #ifdef A8_DEBUG_STRING
 #include <iostream>
 using std::cout;
 using std::endl;
 #define LOG(msg) cout << msg << endl;
+#define LOG2(msg, msg2) cout << msg << msg2 << endl;
 #else
 #define LOG(msg)
+#define LOG2(msg, msg2)
 #endif
 #define INC (10)
 
@@ -21,13 +23,13 @@ String::String() {
 }
 
 String::String(const char buf[]) {
-    LOG(">>String::String(const char buf)");
+    LOG2(">>String::String(const char buf), buf:", buf);
     int len = String::getLength(buf);
     char *buf2 = new char[len + 1]{0};
     String::copy(buf, 0, len + 1, buf2, 0);
     this->text = buf2;
     this->length = len;
-    LOG("<<String::String(const char buf)");
+    LOG2("<<String::String(const char buf),text:", this->text);
 }
 
 String::String(const String &str) {
@@ -61,36 +63,12 @@ int String::getLength(const char *str) {
     }
 }
 
-void String::copy(const char *str, int from1, int len, char *buff, int from2) {
+void String::copy(const char *sourceStr, int from1, int len, char *toBuff, int from2) {
     for (int i = 0; i < len; i++) {
-        buff[from2 + i] = str[from1 + i];
+        toBuff[from2 + i] = sourceStr[from1 + i];
     }
 }
 
-String String::format(const char formatStr[], int arg) {
-    return formatAny<int>(formatStr, arg);
-}
-
-String String::format(const char formatStr[], float arg) {
-    return formatAny<float>(formatStr, arg);
-}
-
-template<typename T>
-String String::formatAny(const char formatStr[], T arg) {
-
-    char buf[100] = {0};
-    int len = snprintf(buf, 100, formatStr, arg);
-    if (len < 0) {
-        String ret(formatStr);
-        LOG(ret.getText());
-        
-        return ret; // Failed to format? need to throw a exception? or realloc more memory and try again?
-    } else {
-        String ret(buf);
-        LOG(ret.getText());
-        return ret; // success
-    }
-}
 String::~String() {
     delete[] this->text;
     this->text = 0;
@@ -103,6 +81,39 @@ int String::getLength() const {
 
 char String::getChar(int idx) const {
     return this->text[idx];
+}
+
+void String::append(const char *str) {
+    append(str, getLength(str));
+}
+
+void String::append(const String *str) {
+    append(str->getText(), str->getLength());
+}
+
+void String::append(const char *str, int len) {
+
+    char *buf = new char[length + len + 1]{0};
+    String::copy(text, 0, length, buf, 0);
+    String::copy(str, 0, len, buf, length);
+    delete[] text;
+    text = buf;
+    length = length + len;
+}
+
+bool String::endWith(const char *str) {
+    int len = getLength(str);
+    if (this->length < len) {
+        return false;
+    }
+
+    for (int i = 0; i < len; i++) {
+        int idx = this->length - len + i;
+        if (text[idx] != str[i]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 String operator+(String const &str1, String const &str2) {
@@ -129,16 +140,6 @@ bool operator==(String const &str1, String const &str2) {
         }
     }
     return true;
-}
-
-String &String::operator=(const char str[]) {
-    delete[] text;
-    int len = getLength(str);
-    char *buff = new char[len + 1]{0};
-    copy(text, 0, len + 1, buff, 0);
-    this->text = buff;
-    this->length = len;
-    return (*this);
 }
 
 } // namespace a8::util
