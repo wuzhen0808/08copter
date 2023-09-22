@@ -1,16 +1,17 @@
-#include "a8/native/NativeServo.h"
+#include "a8/hal/native/NativeServo.h"
 
-namespace a8::native {
-
-NativeServo::NativeServo() {
-}
+namespace a8::hal::native {
+using a8::util::String;
 
 void NativeServo::writeMicroseconds(int pw) {
-    // TODO
+
+    String sb = String::format("set fcs/throttle-cmd-norm[%i] %f\n", this->id, 1.0f);
+    int sent = socket_->send(&sb);
+
 }
 
-void NativeServo::attach(int pin) {
-    // TODO attach to a simulator servo by port listening?
+void NativeServo::setup() {
+    
 }
 
-} // namespace a8::native
+} // namespace a8::hal::native

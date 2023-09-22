@@ -1,7 +1,9 @@
 #include "a8/core/Component.h"
-namespace a8 {
-namespace core {
+
+namespace a8::core {
+
 Component::Component() {
+    this->tasks = new Buffer<Runnable *>();
 }
 
 Component::~Component() {
@@ -9,7 +11,11 @@ Component::~Component() {
     attributes = 0;
 }
 
-util::Attributes *Component::getAttributes() {
+void Component::add(Runnable *task) {
+    this->tasks->append(task);
+}
+
+Attributes *Component::getAttributes() {
     if (attributes == 0) {
         attributes = new util::Attributes();
     }
@@ -20,5 +26,4 @@ void Component::log(a8::util::String msg) {
     a8::hal::S->out->println(msg);
 }
 
-} // namespace core
-} // namespace a8
+} // namespace a8::core

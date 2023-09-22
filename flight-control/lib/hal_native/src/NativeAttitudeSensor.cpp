@@ -1,5 +1,5 @@
-#include "a8/native/NativeAttitudeSensor.h"
-namespace a8::native {
+#include "a8/hal/native/NativeAttitudeSensor.h"
+namespace a8::hal::native {
 // TODO move the code into a separated project which should be called simulator.
 // All the code finally should be same regard less the copter is real or virtual.
 // The difference should be constrained into a configuration part.

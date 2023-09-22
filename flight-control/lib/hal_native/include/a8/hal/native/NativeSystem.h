@@ -8,7 +8,7 @@
 using namespace std;
 using namespace a8::util;
 using namespace a8::hal;
-namespace a8::native {
+namespace a8::hal::native {
 
 class NativeSystem : public System {
 public:

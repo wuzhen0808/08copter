@@ -24,33 +24,34 @@ String::String() {
 
 String::String(const char buf[]) {
     LOG2(">>String::String(const char buf), buf:", buf);
-    int len = String::getLength(buf);
-    char *buf2 = new char[len + 1]{0};
-    String::copy(buf, 0, len + 1, buf2, 0);
-    this->text = buf2;
-    this->length = len;
+    replace(buf, -1, false);
     LOG2("<<String::String(const char buf),text:", this->text);
 }
 
 String::String(const String &str) {
     LOG(">>String::String(const String &str)");
-    int len = str.length;
-    char *buff = new char[len + 1]{0};
-    String::copy(str.text, 0, len + 1, buff, 0);
-    this->text = buff;
-    this->length = len;
+    replace(str.text, str.length, false);
     LOG("<<String::String(const String &str)");
 }
 
-String::String(const char *text, int len) {
-    LOG(">>String::String(const char *text, int len)");
-    char *buff = new char[len + 1]{0};
-    copy(text, 0, len + 1, buff, 0);
-    this->text = buff;
-    this->length = len;
-    LOG("<<String::String(const char *text, int len)");
+String::String(const char *buf, int len) {
+    LOG(">>String::String(const char *buf, int len)");
+    replace(buf, len, false);
+    LOG("<<String::String(const char *buf, int len)");
 }
 
+void String::replace(const char *buf, int len, bool deleteText) {
+    if (deleteText) {
+        delete[] text;
+    }
+    if (len == -1) {
+        len = String::getLength(buf);
+    }
+    char *buf2 = new char[len + 1]{0};
+    String::copy(buf, 0, len + 1, buf2, 0);
+    this->text = buf2;
+    this->length = len;
+}
 char *String::getText() const {
     return this->text;
 }
@@ -116,6 +117,27 @@ bool String::endWith(const char *str) {
     return true;
 }
 
+String &String::operator=(const char *buf) {
+    replace(buf, -1, true);
+    return *this;
+}
+
+String &String::operator=(const String &str) {
+    replace(str.text, str.length, true);
+    return *this;
+}
+
+String &String::operator=(const int iValue) {
+    String str = String::format("%i", iValue);
+    replace(str.text, str.length, true);
+    return *this;
+}
+
+String &String::operator=(const float fValue) {
+    String str = String::format("%e", fValue);
+    replace(str.text, str.length, true);
+    return *this;
+}
 String operator+(String const &str1, String const &str2) {
     int len1 = str1.getLength();
     int len2 = str2.getLength();

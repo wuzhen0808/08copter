@@ -1,7 +1,5 @@
-#ifndef Buffer__
-#define Buffer__
-namespace a8 {
-namespace util {
+#pragma once
+namespace a8::util {
 
 template <typename T>
 class Buffer {
@@ -14,7 +12,7 @@ public:
     ~Buffer();
     int getLength();
     T get(int idx);
-    T* getAll();
+    T *getAll();
     int remove(int from);
     Buffer<T> *append(T element);
     Buffer<T> *appendAll(T *elements, int length);
@@ -23,11 +21,11 @@ private:
     void init(int cap);
     int capacity;
     int length;
-    T *buffer;
+    T *buffer = 0;
     void ensureCapacity(int capacity);
 };
 
-//implementation
+// implementation
 
 template <typename T>
 Buffer<T>::Buffer() {
@@ -61,7 +59,7 @@ void Buffer<T>::init(int capacity) {
 template <typename T>
 Buffer<T>::~Buffer() {
 
-    delete this->buffer;
+    delete[] this->buffer;
     this->buffer = 0;
 
     this->capacity = 0;
@@ -83,9 +81,8 @@ void Buffer<T>::ensureCapacity(int capacity) {
 
         this->buffer = tmp2;
         this->capacity = cap2;
-        delete tmp1;
+        delete[] tmp1;
     }
-    
 }
 
 template <typename T>
@@ -133,8 +130,4 @@ int Buffer<T>::remove(int from) {
     return removed;
 }
 
-} // namespace util
-
-} // namespace a8
-
-#endif
+} // namespace a8::util

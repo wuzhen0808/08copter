@@ -38,8 +38,16 @@ TEST(TestString, testAppend) {
 TEST(TestString, testAssign) {
     String msg = "abc";
     EXPECT_EQ(msg, "abc");
-    // msg = String("DEF");
-    // EXPECT_EQ(msg, "DEF");
+    msg = String("DEF");
+    EXPECT_EQ(msg, "DEF");
+    msg = "GHI";
+    EXPECT_EQ(msg, "GHI");
+    msg = 1;
+    EXPECT_EQ(msg, "1");
+    msg = 1.1f;
+    cout<<msg.getText()<<endl;
+    EXPECT_EQ(msg, "1.100000e+00");
+    
 }
 
 TEST(TestString, testFormat) {

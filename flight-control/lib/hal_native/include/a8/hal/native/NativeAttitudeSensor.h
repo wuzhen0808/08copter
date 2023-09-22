@@ -2,7 +2,7 @@
 #include "a8/core/AttitudeSensor.h"
 #include "a8/core/Copter.h"
 
-namespace a8::native {
+namespace a8::hal::native {
 using namespace a8::core;
 class NativeAttitudeSensor : public AttitudeSensor {
 public:

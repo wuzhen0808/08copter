@@ -1,4 +1,4 @@
-#include "a8/hal/socket/native/NativeSocket.h"
+#include "a8/hal/native/socket/NativeSocket.h"
 #include "a8/hal/Hal.h"
 
 #if defined(_WIN32)
@@ -13,8 +13,56 @@
 #define GET_SOCKET_ERRNO() (errno)
 #endif
 
-namespace a8::hal::socket::native {
+namespace a8::hal::native::socket {
 using a8::hal::socket::Socket;
+
+//////////////////////////////////////////////////
+// NativeSocket::
+NativeSocket::NativeSocket(int sock) {
+    this->sock = sock;
+}
+
+NativeSocket::~NativeSocket() {
+    ::closesocket(sock);
+}
+
+Result NativeSocket::connect(String host, int port) {
+    struct sockaddr_in serv_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = inet_addr(host.getText());
+    serv_addr.sin_port = htons(port);
+
+    int cRst = ::connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+    if (cRst == SOCKET_ERROR) {        
+        return Result(cRst, String::format("Connection failed to host:%s with port:%i", host.getText(), port));
+    }
+
+    return true;
+}
+
+bool NativeSocket::setBlocking(bool blocking) {
+    return false;
+}
+
+bool NativeSocket::send(String *str) {
+    S->out->println(String::format("sending... message:%s", str->getText()));
+    int sRst = ::send(sock, str->getText(), str->getLength(), 0);
+    if (sRst == SOCKET_ERROR) {
+        S->out->println(String::format("failed to send, rst:%i", sRst));
+        return false;
+    } else {
+        S->out->println(String::format("success of send, rst:%i", sRst));
+        return true;
+    }
+}
+
+int NativeSocket::receive(char *buf, int bufLen) {
+    return ::recv(sock, buf, bufLen, 0);
+}
+
+int NativeSocket::getLastError() {
+    return WSAGetLastError();
+}
 //////////////////////////////////////////////////
 // NativeSocketFactory
 //
@@ -45,51 +93,6 @@ Socket *NativeSocketFactory::socket() {
         return 0;
     }
     return new NativeSocket(sock);
-}
-
-//////////////////////////////////////////////////
-// NativeSocket::
-NativeSocket::NativeSocket(int sock) {
-    this->sock = sock;
-}
-
-NativeSocket::~NativeSocket() {
-    ::closesocket(sock);
-}
-
-bool NativeSocket::connect(String host, int port) {
-    struct sockaddr_in serv_addr;
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = inet_addr(host.getText());
-    serv_addr.sin_port = htons(port);
-
-    int cRst = ::connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
-    if (cRst == SOCKET_ERROR) {
-        S->out->println(String::format("Connection failed to host:%s with port:%i", host.getText(), port));
-        return false;
-    }
-
-    return true;
-}
-
-bool NativeSocket::setBlocking(bool blocking) {
-    return false;
-}
-
-bool NativeSocket::send(String *str) {
-    S->out->println(String::format("sending... message:%s", str->getText()));
-    int sRst = ::send(sock, str->getText(), str->getLength(), 0);
-    if (sRst == SOCKET_ERROR) {
-        S->out->println(String::format("failed to send, rst:%i", sRst));
-        return false;
-    } else {
-        S->out->println(String::format("success of send, rst:%i", sRst));
-        return true;
-    }
-}
-
-int NativeSocket::receive(char *buf, int bufLen) {
-    return ::recv(sock, buf, bufLen, 0);
 }
 
 } // namespace a8::hal::socket::native

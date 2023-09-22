@@ -8,6 +8,7 @@ class String {
 private:
     int length;
     char *text;
+    void replace(const char* buf, int len, bool deleteText);
     static int getLength(char *str) {
         for (int i = 0;; i++) {
             if (str[i] == '\0') {
@@ -29,7 +30,17 @@ public:
     void append(const String *str);
     void append(const char *str);
     void append(const char *str, int len);
-    bool endWith(const char * str);
+    bool endWith(const char *str);
+
+    String &operator=(const char *buf);
+    String &operator=(const String &str);
+    String &operator=(const int iValue);
+    /*
+    Use format "%e" to format the float value.
+    For example 1.1 will convert to '1.100000e+00';
+    
+    */
+    String &operator=(const float fValue);
 
     // static member funcs
     static int getLength(const char *str);

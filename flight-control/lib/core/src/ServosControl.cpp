@@ -16,29 +16,28 @@ long convertToPulseWidth(float velocity) {
     long pulseWidth = Math::map(velocity * 1000, 0, 1000, SERVO_MIN_PULSE, SERVO_MAX_PULSE);
     return pulseWidth;
 }
-ServosControl::ServosControl(int totalServos, int *servoAttachPins) {
+
+ServosControl::ServosControl(int totalServos) {
 
     this->totalServos = totalServos;
-    this->servoAttachPins = servoAttachPins;
     this->lastVelocities = new float[totalServos]{0};
 }
 ServosControl::~ServosControl() {
     delete[] this->lastVelocities;
 }
 
-void ServosControl::attachAll() {
-    log(String::format(">>attachAll, totalServos:%i", totalServos));
+Result ServosControl::setup() {
+    log(String::format(">>setup, totalServos:%i", totalServos));
+
     this->servos = new Servo *[totalServos];
     for (int i = 0; i < (*this).totalServos; i++) {
-        this->servos[i] = newServo(i);
+        this->servos[i] = setupServo(i);
     }
     // log("ServosControl::active");
     for (int i = 0; i < this->totalServos; i++) {
-        int pin = servoAttachPins[i];
-        this->servos[i]->attach(pin);
-
-        this->servos[i]->writeMicroseconds(SERVO_MIN_PULSE); // initialize
+        this->servos[i]->writeMicroseconds(SERVO_MIN_PULSE); // initial velocity
     }
+    return true;
 }
 
 void ServosControl::setVelocity(int servoId, float velocity) {

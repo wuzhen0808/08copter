@@ -1,16 +1,38 @@
-#include "a8/native/NativeServosControl.h"
-#include "a8/native/NativeServo.h"
-#include "a8/jsbsim/JsbsimServo.h"
-namespace a8::native {
+#include "a8/hal/native/NativeServosControl.h"
+#include "a8/hal/native/NativeServo.h"
+#include "a8/hal/native/socket/SocketReader.h"
+namespace a8::hal::native {
+using a8::hal::socket::Socket;
+using a8::hal::native::socket::SocketReader;
 
-NativeServosControl::NativeServosControl(int totalServos, int *servoAttachPins) : ServosControl(totalServos, servoAttachPins) {
+void setupTheSocketReaderThread(Scheduler *scheduler) {
+    
 }
+NativeServosControl::NativeServosControl(int totalServos, Socket *socket, String host, int port) : ServosControl(totalServos) {
+    this->socket = socket;
+    this->host = host;
+    this->port = port;
+}
+
 NativeServosControl::~NativeServosControl() {
+
 }
 
-Servo *NativeServosControl::newServo(int servoId) {
-    //return new NativeServo();
-    return new a8::jsbsim::JsbsimServo();
+Result NativeServosControl::setup(){
+    Result connected = this->socket->connect(host, port);
+    if (connected.error) {
+        return connected;
+    }
+
+    this->add(new SocketReader(this->socket));
+
+    ServosControl::setup();
+
+    return true;
+}
+Servo *NativeServosControl::setupServo(int servoId) {
+    // return new NativeServo();
+    return new NativeServo(socket, servoId);
 }
 
-} // namespace a8::native
+} // namespace a8::hal::native

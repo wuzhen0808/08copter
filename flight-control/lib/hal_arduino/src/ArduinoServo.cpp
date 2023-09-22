@@ -11,8 +11,9 @@ void ArduinoServo::writeMicroseconds(int pw) {
     this->servo->writeMicroSeconds(pw);
 }
 
-void ArduinoServo::attach(int pin) {
+void ArduinoServo::setup() {
     this->servo->attach(pin);
+    Servo::setup();    
 }
 
 } // namespace a8

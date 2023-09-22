@@ -1,6 +1,6 @@
 #pragma once
 #include "a8/freertos/FreeRtosInitializer.h"
-namespace a8::native {
+namespace a8::hal::native {
 
 using a8::freertos::FreeRtosInitializer;
 

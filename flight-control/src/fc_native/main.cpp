@@ -1,21 +1,26 @@
 #include "a8/core/Copter.h"
 #include "a8/freertos/FreeRtosInitializer.h"
 #include "a8/freertos/FreeRtosScheduler.h"
-#include "a8/hal/socket/native/NativeSocket.h"
-#include "a8/native/NativeCopter.h"
-#include "a8/native/NativeSystem.h"
+#include "a8/hal/native/NativeCopter.h"
+#include "a8/hal/native/NativeSystem.h"
+#include "a8/hal/native/socket/NativeSocket.h"
 #include "a8/util/Finally.h"
+#include "a8/util/Result.h"
+
 #include <iostream>
 #include <stdio.h>
 
 using a8::freertos::FreeRtosInitializer;
 using a8::freertos::FreeRtosScheduler;
 
+using a8::core::Copter;
+using a8::core::Scheduler;
+
+using a8::hal::native::NativeCopter;
+using a8::hal::native::NativeSystem;
+using a8::hal::native::socket::NativeSocket;
 using a8::hal::socket::Socket;
 using a8::hal::socket::SocketFactory;
-using a8::hal::socket::native::NativeSocket;
-using a8::native::NativeCopter;
-using a8::native::NativeSystem;
 using a8::util::String;
 
 System *a8::hal::S = new NativeSystem();
@@ -25,10 +30,6 @@ System *a8::hal::S = new NativeSystem();
 /**
  * see lib/native/src/main.c
  */
-
-void setup(Scheduler *scheduler) {
-    scheduler->tmpTimer();
-}
 
 float normalizePwm(int pwm) {
     return (pwm - 1500) / 500.0f;
@@ -55,18 +56,19 @@ void resume(Socket *socket) {
     socket->send(&msg);
 }
 
-int main(int argc, char **argv) {
+int mainx(int argc, char **argv) {
 
-    SocketFactory *fac = new a8::hal::socket::native::NativeSocketFactory();
+    SocketFactory *fac = new a8::hal::native::socket::NativeSocketFactory();
     a8::util::Finally releaseSocket([&]() {
         S->out->println("Going to delete socket factory.");
         delete fac;
     });
 
+    Socket *socket = fac->socket();
+
     String host = "127.0.0.1";
     int port = 5126;
 
-    Socket *socket = fac->socket();
     socket->connect(host, port);
 
     if (!socket) {
@@ -111,22 +113,28 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-int mainx(int argc, char **argv) {
+int main(int argc, char **argv) {
 
     // S->out->println("Hello!");
     // FreeRtosInitializer * rtos = new FreeRtosInitializer();
     // rtos->initialize();
     // S->out->println("RTOS initialized!");
-
+    SocketFactory *sFac = new a8::hal::native::socket::NativeSocketFactory();
+    Socket *socket = sFac->socket();
     Scheduler *scheduler = new FreeRtosScheduler();
-    scheduler->tmpTimer();
-    scheduler->tmpTimer();
-    Copter *copter = new NativeCopter(scheduler);
-    Scheduler *scheduler2 = copter->getScheduler();
-    scheduler2->tmpTimer();
-    setup(scheduler);
-    copter->setup();
-    copter->start();
+    Copter *copter = new NativeCopter(scheduler, sFac, "127.0.0.1", 5126);
+
+    Result rst = copter->setup();
+    if (rst.error) {
+        cout << "failed to setup the copter, the error message:" << rst.message.getText() << endl;
+        return rst.error;
+    }
+    rst = copter->start();
+    if (rst.error) {
+        cout << "failed to startup the copter, the error message:" << rst.message.getText() << endl;
+        return rst.error;
+    }
+
     cout << "Hello,main()";
     return 0;
 }

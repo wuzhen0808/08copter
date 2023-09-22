@@ -1,40 +1,47 @@
-#include "a8/native/NativeCopter.h"
-#include "a8/native/NativeAttitudeSensor.h"
-#include "a8/native/NativeServosControl.h"
+#include "a8/hal/native/NativeCopter.h"
+#include "a8/hal/native/NativeAttitudeSensor.h"
+#include "a8/hal/native/NativeServosControl.h"
 #include <iostream>
 
-namespace a8 ::native {
+namespace a8::hal::native {
 using namespace std;
 using namespace a8::core;
 using namespace a8::util;
 using a8::core::Scheduler;
 
-NativeCopter::NativeCopter(Scheduler *scheduler) : Copter(scheduler) {
+NativeCopter::NativeCopter(Scheduler *scheduler, SocketFactory *sFac, String host, int port) : Copter(4, scheduler) {
 
-    int pins[] = {1, 2, 3, 4};
-    this->configServos(4, pins);
+    this->socketFactory_ = sFac;
+    this->host = host;
+    this->port = port;
 }
 NativeCopter::~NativeCopter() {
 }
-// void NativeCopter::setup() {
-//     Copter::setup();
-// }
-void NativeCopter::start() {
-    Copter::start();
+
+Result NativeCopter::setup() {
+    this->socket_ = socketFactory_->socket();
+    return Copter::setup();
+}
+Result NativeCopter::start() {
+    return Copter::start();
 }
 void NativeCopter::stop() {
     Copter::stop();
 }
-int NativeCopter::getServoAttachPin(int servoId) {
-    return 4;
+
+ServosControl *NativeCopter::setupServosControl() {
+    ServosControl *servos = new NativeServosControl(totalServos_, this->socket_, this->host, this->port);
+    Result setupRst = servos->setup();
+    if (setupRst.error) {
+        log(setupRst.toString());
+        return 0;
+    }
+    return servos;
 }
-ServosControl *NativeCopter::newServosControl(int totalServos, int *servoAttachPins) {
-    return new NativeServosControl(totalServos, servoAttachPins);
-}
-AttitudeSensor *NativeCopter::newAttitudeSensor() {
+AttitudeSensor *NativeCopter::setupAttitudeSensor() {
     return new NativeAttitudeSensor();
 }
-AttitudeControl *NativeCopter::newAttitudeControl(ServosControl *sc, AttitudeSensor *as) {
+AttitudeControl *NativeCopter::setupAttitudeControl(ServosControl *sc, AttitudeSensor *as) {
     return 0;
 }
-} // namespace a8::native
+} // namespace a8::hal::native
