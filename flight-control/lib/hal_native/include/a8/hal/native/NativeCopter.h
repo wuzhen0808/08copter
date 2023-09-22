@@ -1,35 +1,36 @@
 
 #pragma once
 #include "a8/core/Copter.h"
-#include "a8/hal/Socket.h"
+#include "a8/hal/native/JSBSimIO.h"
 #include "a8/util/Result.h"
+#include "a8/util/Socket.h"
 #include <iostream>
 
-namespace a8::hal::native {
+using namespace a8::hal::native;
 using namespace std;
 using namespace a8::util;
 using namespace a8::core;
-using a8::hal::socket::Socket;
-using a8::hal::socket::SocketFactory;
+
+namespace a8::hal::native {
 
 class NativeCopter : public Copter {
 private:
-    SocketFactory *socketFactory_;
-    Socket *socket_;
-    
+    JSBSimIO *jsbSimIo;
     String host;
     int port;
 
 protected:
-    virtual ServosControl *setupServosControl();
-    virtual AttitudeSensor *setupAttitudeSensor();
-    virtual AttitudeControl *setupAttitudeControl(ServosControl *sc, AttitudeSensor *as);
+    virtual ServosControl *setupServosControl(Context * context) override;
+    virtual AttitudeSensor *setupAttitudeSensor(Context * context) override;
 
 public:
-    NativeCopter(Scheduler *scheduler, SocketFactory *sFac, String host, int port);
-    ~NativeCopter();
-    virtual Result setup();
-    virtual Result start();
+    NativeCopter(JSBSimIO *jio) : Copter(4) {
+        this->jsbSimIo = jio;
+    }
+    ~NativeCopter(){}
+
+    virtual void setup(Context *context);
+    virtual void start(Context *context);
     virtual void stop();
 };
 

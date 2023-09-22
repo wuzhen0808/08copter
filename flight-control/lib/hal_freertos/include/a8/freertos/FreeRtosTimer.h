@@ -1,20 +1,22 @@
 #pragma once
-#include "a8/core/Timer.h"
+#include "a8/util/Timer.h"
 #include <FreeRTOS.h>
 #include <timers.h>
+
+using namespace a8::util;
+
 namespace a8::freertos {
-using namespace a8::core;
 
 class FreeRtosTimer : public Timer {
 public:
-    FreeRtosTimer(Callback *callback, ulong ticks);
+    FreeRtosTimer(Callback *callback, long ticks);
     ~FreeRtosTimer();
     virtual Timer *start();
-    static Timer *start(Callback *callback, ulong ticks);
+    static Timer *start(Callback *callback, long ticks);
 
 private:
     Callback *callback;
-    ulong ticks;
+    long ticks;
     TimerHandle_t handle;
     static void timerCallbackFunction(TimerHandle_t handle);
 };

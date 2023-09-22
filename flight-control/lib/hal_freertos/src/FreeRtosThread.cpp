@@ -3,8 +3,9 @@
 #include <FreeRTOS.h>
 #include <task.h>
 
-namespace a8::freertos {
 using ::a8::hal::S;
+
+namespace a8::freertos {
 static int LOCAL_THIS = 0;
 static int STACK_DEPTH = 521 / 4;
 static int DEFAULT_PRIORITY = 1;

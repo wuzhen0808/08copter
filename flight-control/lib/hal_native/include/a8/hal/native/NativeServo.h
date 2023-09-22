@@ -1,22 +1,25 @@
 #pragma once
+#include "a8/hal/native/JSBSimIO.h"
 #include "a8/hal/Servo.h"
-#include "a8/hal/Socket.h"
+#include "a8/util/Socket.h"
+
+using namespace a8::util;
+
 namespace a8::hal::native {
-using a8::hal::socket::Socket;
 
 class NativeServo : public a8::hal::Servo {
+
 private:
-    Socket *socket_;
-    int id;
+    JSBSimIO *jio;
 
 public:
-    NativeServo(Socket *socket, int id) : Servo(id) {
-        this->socket_ = socket;
-        this->id = id;
+    NativeServo(JSBSimIO *jio, int id) : Servo(id) {
+        this->jio = jio;
     }
+
     ~NativeServo() {}
 
-    virtual void writeMicroseconds(int pw);
+    virtual void setThrottleNorm(float throttle);
     virtual void setup();
 };
 

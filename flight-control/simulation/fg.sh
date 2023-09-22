@@ -2,17 +2,17 @@
 # Start flight gear view to listen the log output from jsbsim.
 # You need config the output in the test script of JSBSim. 
 # Some thing like below.
-#  <output name="localhost" type="FLIGHTGEAR" port="5500" protocol="TCP" rate="10"/>
+#  <output name="localhost" type="FLIGHTGEAR" port="5501" protocol="TCP" rate="10"/>
 ##
 #export A8_HOME=parent folder of this file located.
 export A8_AIRCRAFT=arducopter
-export A8_JSBSIM_OUTPUT_PART=5500
+export A8_JSBSIM_OUTPUT_PORT=5501
 #export A8_AIRCRAFT=F450
 fgfs \
 	--fg-root=$FG_HOME/data \
 	--language=en \
 	--fdm=external \
-	--native-fdm=socket,in,10,localhost,$A8_JSBSIM_OUTPUT_PART,tcp \
+	--native-fdm=socket,in,10,localhost,$A8_JSBSIM_OUTPUT_PORT,tcp \
 	--airport=PHBK \
 	--timeofday=noon \
 	--fg-aircraft="$A8_HOME/simulation/aircraft" \

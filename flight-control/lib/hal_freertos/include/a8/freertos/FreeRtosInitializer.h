@@ -1,9 +1,10 @@
 #pragma once
-#include "a8/core/Timer.h"
+#include "a8/util/Timer.h"
 #include <FreeRTOS.h>
 #include <timers.h>
+
+using namespace a8::util;
 namespace a8::freertos {
-using namespace a8::core;
 
 class FreeRtosInitializer {
 public:

@@ -1,17 +1,16 @@
 #pragma once
-#include "a8/core/Runnable.h"
-#include "a8/core/Thread.h"
-#include "a8/core/Timer.h"
-#include "a8/core/core.h"
+#include "a8/util/Callback.h"
+#include "a8/util/Runnable.h"
+#include "a8/util/Thread.h"
+#include "a8/util/Timer.h"
 
-namespace a8 {
-namespace core {
+namespace a8::util {
 
 class Scheduler {
 public:
     Scheduler();
     ~Scheduler();
-    virtual Timer * tmpTimer() = 0;
+    virtual Timer *tmpTimer() = 0;
     virtual void startSchedule() = 0;
     virtual void endSchedule() = 0;
     virtual Thread *schedule(Runnable *runnable) = 0;
@@ -20,5 +19,4 @@ public:
 
     virtual Thread *getCurrentThread() = 0;
 };
-} // namespace core
-} // namespace a8
+} // namespace a8::util

@@ -7,30 +7,19 @@ namespace a8::hal::native {
 using namespace std;
 using namespace a8::core;
 using namespace a8::util;
-using a8::core::Scheduler;
 
-NativeCopter::NativeCopter(Scheduler *scheduler, SocketFactory *sFac, String host, int port) : Copter(4, scheduler) {
-
-    this->socketFactory_ = sFac;
-    this->host = host;
-    this->port = port;
+void NativeCopter::setup(Context *context) {
+    Copter::setup(context);
 }
-NativeCopter::~NativeCopter() {
-}
-
-Result NativeCopter::setup() {
-    this->socket_ = socketFactory_->socket();
-    return Copter::setup();
-}
-Result NativeCopter::start() {
-    return Copter::start();
+void NativeCopter::start(Context *context) {
+    Copter::start(context);
 }
 void NativeCopter::stop() {
     Copter::stop();
 }
 
-ServosControl *NativeCopter::setupServosControl() {
-    ServosControl *servos = new NativeServosControl(totalServos_, this->socket_, this->host, this->port);
+ServosControl *NativeCopter::setupServosControl(Context * context) {
+    ServosControl *servos = new NativeServosControl(totalServos_, jsbSimIo);
     Result setupRst = servos->setup();
     if (setupRst.error) {
         log(setupRst.toString());
@@ -38,10 +27,8 @@ ServosControl *NativeCopter::setupServosControl() {
     }
     return servos;
 }
-AttitudeSensor *NativeCopter::setupAttitudeSensor() {
-    return new NativeAttitudeSensor();
+AttitudeSensor *NativeCopter::setupAttitudeSensor(Context * context) {
+    return new NativeAttitudeSensor(this->jsbSimIo);
 }
-AttitudeControl *NativeCopter::setupAttitudeControl(ServosControl *sc, AttitudeSensor *as) {
-    return 0;
-}
+
 } // namespace a8::hal::native

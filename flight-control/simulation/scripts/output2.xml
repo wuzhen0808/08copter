@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<output name="127.0.0.1" type="SOCKET" port="5502" protocol="TCP" rate="10">
+    <time type="simulation" resolution="1e-6" />
+</output>

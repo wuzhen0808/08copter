@@ -8,15 +8,6 @@ using namespace a8::core;
 using namespace a8::hal;
 using a8::util::Math;
 
-static int SERVO_MIN_PULSE = 1000;
-static int SERVO_MAX_PULSE = 2000;
-
-long convertToPulseWidth(float velocity) {
-
-    long pulseWidth = Math::map(velocity * 1000, 0, 1000, SERVO_MIN_PULSE, SERVO_MAX_PULSE);
-    return pulseWidth;
-}
-
 ServosControl::ServosControl(int totalServos) {
 
     this->totalServos = totalServos;
@@ -35,31 +26,27 @@ Result ServosControl::setup() {
     }
     // log("ServosControl::active");
     for (int i = 0; i < this->totalServos; i++) {
-        this->servos[i]->writeMicroseconds(SERVO_MIN_PULSE); // initial velocity
+        this->servos[i]->setThrottleNorm(-1.0f); // initial velocity
     }
     return true;
 }
 
-void ServosControl::setVelocity(int servoId, float velocity) {
-    long pulseWidth = convertToPulseWidth(velocity);
+void ServosControl::setThrottleNorm(int servoId, float velocity) {
     // long pulseWidth = 1200;
-    this->servos[servoId]->writeMicroseconds(pulseWidth);
-    lastVelocities[servoId] = velocity;
-    char buf[100];
-    // sprintf(buf, "%f",velocity);
-    // log("pulseWidth:" );
+    this->servos[servoId]->setThrottleNorm(velocity);
+    lastVelocities[servoId] = velocity;    
 }
 
-void ServosControl::setVelocities(int id1, float vel1, int id2, float vel2, int id3, float vel3, int id4, float vel4) {
+void ServosControl::setThrottleNorm(int id1, float vel1, int id2, float vel2, int id3, float vel3, int id4, float vel4) {
     // log("serVelocities:[" +
     // String(id1) + ":" + String(vel1) + "," +
     // String(id2) + ":" + String(vel2) + "," +
     // String(id3) + ":" + String(vel3) + "," +
     // String(id4) + ":" + String(vel4) + "]");
-    setVelocity(id1, vel1);
-    setVelocity(id2, vel2);
-    setVelocity(id3, vel3);
-    setVelocity(id4, vel4);
+    setThrottleNorm(id1, vel1);
+    setThrottleNorm(id2, vel2);
+    setThrottleNorm(id3, vel3);
+    setThrottleNorm(id4, vel4);
 }
 
 } // namespace a8::core

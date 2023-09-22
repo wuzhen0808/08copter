@@ -1,14 +1,14 @@
 #ifndef COPTER_COM__
 #define COPTER_COM__
-#include "a8/core/Runnable.h"
-#include "a8/hal/Hal.h"
 #include "a8/util/Attributes.h"
 #include "a8/util/Buffer.h"
+#include "a8/util/Context.h"
+#include "a8/util/Runnable.h"
 #include "a8/util/String.h"
 
-using a8::util::Attributes;
-using a8::util::Buffer;
-namespace a8::core {
+using namespace a8::util;
+
+namespace a8::util {
 
 class Component {
 
@@ -30,7 +30,20 @@ public:
     }
 
     void log(a8::util::String msg);
+
     Attributes *getAttributes();
+
+    virtual void populate(Context* context) {
+
+    }
+
+    virtual void setup(Context* context) {
+
+    }
+    
+    virtual void start(Context* context) {
+
+    }
 };
-} // namespace a8::core
+} // namespace a8::util
 #endif

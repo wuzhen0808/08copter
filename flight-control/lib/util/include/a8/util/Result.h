@@ -10,6 +10,10 @@ public:
     int error;
     String message;
     void *data;
+    Result(int error) {
+        this->error = error;
+    }
+
     Result(bool success) {
         init(success);
     }
@@ -18,7 +22,7 @@ public:
         this->error = error;
         this->message = message;
     }
-    
+
     String toString() {
         return String::format("error:%i, message:%s", error, message.getText());
     }
@@ -39,6 +43,11 @@ public:
     }
     Result &operator=(bool success) {
         init(success);
+        return *this;
+    }
+
+    Result &operator=(int error) {
+        this->error = error;
         return *this;
     }
 

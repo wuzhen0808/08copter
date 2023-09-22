@@ -1,13 +1,13 @@
 #ifndef FLIGHT_CONFIG__
 #define FLIGHT_CONFIG__
 
-#include "a8/util/String.h"
-#include "a8/util/Result.h"
 #include "a8/core/AttitudeControl.h"
 #include "a8/core/AttitudeSensor.h"
-#include "a8/core/Scheduler.h"
 #include "a8/core/ServosControl.h"
 #include "a8/hal/Hal.h"
+#include "a8/util/Result.h"
+#include "a8/util/Scheduler.h"
+#include "a8/util/String.h"
 
 #define SERVO_FRONT_LEFT 0
 #define SERVO_FRONT_RIGHT 1
@@ -15,38 +15,32 @@
 #define SERVO_AFTER_LEFT 3
 
 using a8::hal::S;
+using namespace a8::util;
+namespace a8::core {
 
-namespace a8 {
-namespace core {
-using a8::util::String;
-using a8::util::Result;
-
-class Copter {
+class Copter : public Component {
 private:
 protected:
     // members
     int totalServos_;
-    Scheduler *scheduler_;
     AttitudeSensor *attitudeSensor_;
     ServosControl *servosControl_;
     AttitudeControl *attitudeControl_;
     Timer *attitudeTimer_;
     // member functions
-    virtual ServosControl *setupServosControl() = 0;
-    virtual AttitudeSensor *setupAttitudeSensor() = 0;
-    AttitudeControl *setupAttitudeControl(ServosControl *sc, AttitudeSensor *as);
+    virtual ServosControl *setupServosControl(Context * context) = 0;
+    virtual AttitudeSensor *setupAttitudeSensor(Context * context) = 0;
 
 public:
-    Copter(Scheduler *scheduler);
-    Copter(int totalServos, Scheduler *scheduler);
+    Copter();
+    Copter(int totalServos);
     ~Copter();
-    virtual Result setup();
-    virtual Result start();
+    virtual void setup(Context * context);
+    virtual void start(Context * context);
     virtual void stop();
     int getServoCount();
     void log(a8::util::String message);
-    virtual Scheduler *getScheduler();
 };
-} // namespace core
-} // namespace a8
+
+} // namespace a8::core
 #endif

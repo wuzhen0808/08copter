@@ -1,6 +1,6 @@
 #pragma once
 #include "a8/core/Copter.h"
-#include "a8/core/Scheduler.h"
+#include "a8/util/Scheduler.h"
 #include "a8/core/ServosControl.h"
 #include "a8/core/AttitudeSensor.h"
 

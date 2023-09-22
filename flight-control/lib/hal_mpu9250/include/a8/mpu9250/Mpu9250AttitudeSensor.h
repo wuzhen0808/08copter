@@ -1,7 +1,7 @@
 #ifndef MPU9250_ATTITUDE_SENSOR__
 #define MPU9250_ATTITUDE_SENSOR__
 #include "a8/core/AttitudeSensor.h"
-#include "a8/core/Component.h"
+#include "a8/util/Component.h"
 #include "a8/core/Copter.h"
 #include <MPU9250.h>
 namespace a8 {

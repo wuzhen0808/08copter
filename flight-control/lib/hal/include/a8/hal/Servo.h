@@ -2,7 +2,7 @@
 namespace a8::hal {
 
 class Servo {
-private:
+protected:
     int id;
 
 public:
@@ -12,8 +12,12 @@ public:
     int getId() {
         return this->id;
     }
+
     virtual void setup() = 0;
-    virtual void writeMicroseconds(int pw) = 0;
+    /**
+     * Velocity here a normalized scope: (-1, 1)
+     */
+    virtual void setThrottleNorm(float norm) = 0;
 };
 
 } // namespace a8::hal

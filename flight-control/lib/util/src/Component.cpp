@@ -1,6 +1,6 @@
-#include "a8/core/Component.h"
+#include "a8/util/Component.h"
 
-namespace a8::core {
+namespace a8::util {
 
 Component::Component() {
     this->tasks = new Buffer<Runnable *>();
@@ -23,7 +23,7 @@ Attributes *Component::getAttributes() {
 }
 
 void Component::log(a8::util::String msg) {
-    a8::hal::S->out->println(msg);
+    //a8::hal::S->out->println(msg);TODO
 }
 
 } // namespace a8::core

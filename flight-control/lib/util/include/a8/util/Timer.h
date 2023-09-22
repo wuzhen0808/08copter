@@ -1,17 +1,14 @@
 #ifndef A8_TIMER__
 #define A8_TIMER__
-#include "a8/core/core.h"
-#include "a8/core/Callback.h"
+#include "a8/util/Callback.h"
 
-namespace a8 {
-namespace core {
+namespace a8::util {
 class Timer {
 public:
     Timer(){};
     ~Timer(){};
     virtual Timer *start() = 0;
 };
-} // namespace rtos
-} // namespace a8
+} // namespace a8::util
 
 #endif

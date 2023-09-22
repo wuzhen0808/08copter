@@ -4,7 +4,8 @@ namespace a8::hal::native {
 // All the code finally should be same regard less the copter is real or virtual.
 // The difference should be constrained into a configuration part.
 
-NativeAttitudeSensor::NativeAttitudeSensor() : AttitudeSensor() {
+NativeAttitudeSensor::NativeAttitudeSensor(JSBSimIO * jio) : AttitudeSensor() {
+    this->jio = jio;
 }
 NativeAttitudeSensor::~NativeAttitudeSensor() {
 }

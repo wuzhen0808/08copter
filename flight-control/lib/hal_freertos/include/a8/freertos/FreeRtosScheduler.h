@@ -1,7 +1,9 @@
 #pragma once
-#include "a8/core/Scheduler.h"
+#include "a8/util/Scheduler.h"
+
+using namespace a8::util;
+
 namespace a8::freertos {
-using namespace a8::core;
 
 class FreeRtosScheduler : public Scheduler {
 public:

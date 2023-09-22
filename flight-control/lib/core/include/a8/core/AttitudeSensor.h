@@ -1,9 +1,8 @@
 #ifndef a8_ATTITUDE_SENSOR__
 #define a8_ATTITUDE_SENSOR__
-#include "a8/core/Component.h"
-
-namespace a8 {
-namespace core {
+#include "a8/util/Component.h"
+using namespace a8::util;
+namespace a8::core {
 
 class AttitudeSensor : public Component {
 public:
@@ -14,6 +13,5 @@ public:
     virtual float getPitch() = 0;
     virtual float getYaw() = 0;
 };
-} // namespace core
-} // namespace a8
+} // namespace a8::core
 #endif

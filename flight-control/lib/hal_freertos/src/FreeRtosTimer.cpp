@@ -5,7 +5,7 @@
 #define LOCAL_LAST_WAKE 1
 
 namespace a8::freertos {
-FreeRtosTimer::FreeRtosTimer(Callback *pvRunnable, ulong ticks) : callback(pvRunnable),
+FreeRtosTimer::FreeRtosTimer(Callback *pvRunnable, long ticks) : callback(pvRunnable),
                                                                   ticks(ticks) {
     handle = xTimerCreate(
         static_cast<const char *>("My Timer"), // name
@@ -17,7 +17,7 @@ FreeRtosTimer::FreeRtosTimer(Callback *pvRunnable, ulong ticks) : callback(pvRun
 
 FreeRtosTimer::~FreeRtosTimer() {
 }
-Timer *FreeRtosTimer::start(Callback *callback, ulong ticks) {
+Timer *FreeRtosTimer::start(Callback *callback, long ticks) {
     Timer *timer = new FreeRtosTimer(callback, ticks);
     timer->start();
     return timer;

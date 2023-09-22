@@ -1,6 +1,6 @@
 #include "a8/core/AttitudeControl.h"
 #include "a8/core/ServosControl.h"
-#include "a8/core/Thread.h"
+#include "a8/util/Thread.h"
 #include "a8/util/string.h"
 #include "a8/core/Copter.h"
 /**
@@ -47,7 +47,7 @@ void AttitudeControl::call() {
 
     //log(string("actualRoll:") + string(actualRoll) + string(",rollGain:") + string(rollGain));
 
-    float heave = 0.0f;
+    float heave = 1.0f;
     float motors[4] = {};
 
     // float m2 = throttle + cmdRoll - cmdPitch + cmdYaw; // FR: Front right
@@ -62,7 +62,7 @@ void AttitudeControl::call() {
 
 
 
-    servosControl->setVelocities(SERVO_FRONT_LEFT, fl, SERVO_FRONT_RIGHT, fr, SERVO_AFTER_RIGHT, ar, SERVO_AFTER_LEFT, al);
+    servosControl->setThrottleNorm(SERVO_FRONT_LEFT, fl, SERVO_FRONT_RIGHT, fr, SERVO_AFTER_RIGHT, ar, SERVO_AFTER_LEFT, al);
     log("<<AttitudeControl::call()");
 }
 } // namespace core

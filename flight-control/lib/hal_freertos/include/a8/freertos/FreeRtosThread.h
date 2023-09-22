@@ -1,12 +1,13 @@
 #ifndef ARDUINO_THREAD_H__
 #define ARDUINO_THREAD_H__
-#include "a8/core/Runnable.h"
-#include "a8/core/Thread.h"
+#include "a8/util/Runnable.h"
+#include "a8/util/Thread.h"
 
 #include <FreeRTOS.h>
 #include <task.h>
+
+using namespace a8::util;
 namespace a8::freertos {
-using namespace a8::core;
 
 class FreeRtosThread : public Thread {
 private:

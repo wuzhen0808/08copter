@@ -1,38 +1,22 @@
 #include "a8/hal/native/NativeServosControl.h"
 #include "a8/hal/native/NativeServo.h"
-#include "a8/hal/native/socket/SocketReader.h"
+#include "a8/util/SocketReader.h"
+
+using namespace a8::util;
+
 namespace a8::hal::native {
-using a8::hal::socket::Socket;
-using a8::hal::native::socket::SocketReader;
 
 void setupTheSocketReaderThread(Scheduler *scheduler) {
     
 }
-NativeServosControl::NativeServosControl(int totalServos, Socket *socket, String host, int port) : ServosControl(totalServos) {
-    this->socket = socket;
-    this->host = host;
-    this->port = port;
-}
 
-NativeServosControl::~NativeServosControl() {
-
-}
-
-Result NativeServosControl::setup(){
-    Result connected = this->socket->connect(host, port);
-    if (connected.error) {
-        return connected;
-    }
-
-    this->add(new SocketReader(this->socket));
-
+Result NativeServosControl::setup(){    
     ServosControl::setup();
-
     return true;
 }
 Servo *NativeServosControl::setupServo(int servoId) {
     // return new NativeServo();
-    return new NativeServo(socket, servoId);
+    return new NativeServo(jio, servoId);
 }
 
 } // namespace a8::hal::native

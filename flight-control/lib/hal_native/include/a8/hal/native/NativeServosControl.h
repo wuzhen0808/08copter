@@ -1,25 +1,26 @@
 #pragma once
+#include "a8/hal/native/JSBSimIO.h"
 #include "a8/core/Copter.h"
 #include "a8/core/ServosControl.h"
 #include "a8/hal/Servo.h"
-#include "a8/hal/Socket.h"
+#include "a8/util/Socket.h"
+using namespace a8::core;
+using namespace a8::util;
 
 namespace a8::hal::native {
-using namespace a8::core;
-using a8::hal::socket::Socket;
 
 class NativeServosControl : public ServosControl {
 
 private:
-    Socket* socket;
-    String host;
-    int port;
-    
+    JSBSimIO *jio;
+
 public:
-    NativeServosControl(int totalServos, Socket* socket, String host, int port);
-    ~NativeServosControl();
+    NativeServosControl(int totalServos, JSBSimIO *jio) : ServosControl(totalServos) {
+        this->jio = jio;
+    }
+    ~NativeServosControl() {}
     virtual Result setup();
     virtual Servo *setupServo(int servoId);
 };
 
-} // namespace a8::arduino
+} // namespace a8::hal::native
