@@ -9,11 +9,6 @@
 #include "a8/util/Scheduler.h"
 #include "a8/util/String.h"
 
-#define SERVO_FRONT_LEFT 0
-#define SERVO_FRONT_RIGHT 1
-#define SERVO_AFTER_RIGHT 2
-#define SERVO_AFTER_LEFT 3
-
 using a8::hal::S;
 using namespace a8::util;
 namespace a8::core {
@@ -28,18 +23,51 @@ protected:
     AttitudeControl *attitudeControl_;
     Timer *attitudeTimer_;
     // member functions
-    virtual ServosControl *setupServosControl(Context * context) = 0;
-    virtual AttitudeSensor *setupAttitudeSensor(Context * context) = 0;
+    virtual ServosControl *createServosControl(Context &context) = 0;
+    virtual AttitudeSensor *createAttitudeSensor(Context &context) = 0;
 
 public:
-    Copter();
-    Copter(int totalServos);
-    ~Copter();
-    virtual void setup(Context * context);
-    virtual void start(Context * context);
-    virtual void stop();
-    int getServoCount();
-    void log(a8::util::String message);
+    Copter() {
+        this->totalServos_ = 4;
+    }
+    Copter(int totalServos) {
+        this->totalServos_ = totalServos;
+    }
+    ~Copter() {
+    }
+
+    virtual void populate(Context &context) override {
+        Component::populate(context);
+        this->log(String::format(">>Copter::setup(),totalServos:%i", totalServos_));
+        
+        attitudeSensor_ = createAttitudeSensor(context);
+        this->addChild(attitudeSensor_, context);
+        
+        servosControl_ = createServosControl(context);
+        this->addChild(servosControl_, context);
+
+        attitudeControl_ = new AttitudeControl(this, servosControl_, attitudeSensor_);
+        this->addChild(attitudeControl_, context);
+        //
+
+        long ticks = 1000;
+
+        attitudeTimer_ = context.scheduler->scheduleTimer(attitudeControl_, ticks);
+        this->log("<<Copter::setup()");
+    }
+    virtual void setup(Context &context) override {
+        Component::setup(context);
+    }
+    virtual void start(Context &context) override {
+        Component::start(context);
+    }
+
+    int getServoCount() {
+        return this->totalServos_;
+    }
+
+    virtual void stop() override {
+    }
 };
 
 } // namespace a8::core

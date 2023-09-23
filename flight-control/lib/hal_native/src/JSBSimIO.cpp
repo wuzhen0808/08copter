@@ -7,10 +7,10 @@ using namespace a8::util;
 
 namespace a8::hal::native {
 
-void JSBSimIO::populate(Context *context) {
+void JSBSimIO::populate(Context &context) {
 }
 
-void JSBSimIO::setup(Context *context) {
+void JSBSimIO::setup(Context &context) {
     // TODO configurable
     this->setBindPort(5502);
     this->setConnectionAddress("127.0.0.1", 5126);
@@ -20,14 +20,14 @@ void JSBSimIO::setup(Context *context) {
 
     Result bResult = this->server->bind(address, this->bindPort); //
     if (bResult.error != 0) {
-        context->stop(String::format("cannot bind to port:%i, error:%i", bindPort, bResult.error));
+        context.stop(String::format("cannot bind to port:%i, error:%i", bindPort, bResult.error));
         return;
     }
 
     Result lResult = this->server->listen();
 
     if (lResult.error != 0) {
-        context->stop(String::format("cannot listen on port:%i", bindPort));
+        context.stop(String::format("cannot listen on port:%i", bindPort));
         return;
     }
 
@@ -35,7 +35,7 @@ void JSBSimIO::setup(Context *context) {
 
     this->socketIn = this->server->accept();
     if (!this->socketIn) {
-        context->stop("cannot accept connect.");
+        context.stop("cannot accept connect.");
         return;
     }
     S->out->println("JSBSim connected in.");
@@ -44,13 +44,15 @@ void JSBSimIO::setup(Context *context) {
     S->out->println("Connecting to JSBSim ...");
     Result connected = this->client->connect(connectHost, connectPort);
     if (connected.error) {
-        context->stop("Failed connect to JSBSim");
+        context.stop("Failed connect to JSBSim");
         return;
     }
     S->out->println("Successfully connected to JSBSim.");
 
-    context->schedule(new ReadWriteRunner(new SocketReader(client), consoleWriter));
-    context->schedule(new ReadWriteRunner(new SocketReader(socketIn), dataFileWriter));
+    this->runner = new FGSocketOuputReadRunner(socketIn);
+
+    context.schedule(new ReadWriteRunner(new SocketReader(client), consoleWriter));
+    context.schedule(this->runner);
 }
 
 

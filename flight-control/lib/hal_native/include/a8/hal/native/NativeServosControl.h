@@ -1,9 +1,11 @@
 #pragma once
-#include "a8/hal/native/JSBSimIO.h"
 #include "a8/core/Copter.h"
 #include "a8/core/ServosControl.h"
 #include "a8/hal/Servo.h"
+#include "a8/hal/native/JSBSimIO.h"
 #include "a8/util/Socket.h"
+#include "a8/hal/native/NativeServo.h"
+
 using namespace a8::core;
 using namespace a8::util;
 
@@ -19,8 +21,9 @@ public:
         this->jio = jio;
     }
     ~NativeServosControl() {}
-    virtual Result setup();
-    virtual Servo *setupServo(int servoId);
+    virtual Servo *createServo(int servoId) override{
+        return new NativeServo(jio, servoId);
+    }
 };
 
 } // namespace a8::hal::native

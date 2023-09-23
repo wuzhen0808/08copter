@@ -10,13 +10,5 @@ void setupTheSocketReaderThread(Scheduler *scheduler) {
     
 }
 
-Result NativeServosControl::setup(){    
-    ServosControl::setup();
-    return true;
-}
-Servo *NativeServosControl::setupServo(int servoId) {
-    // return new NativeServo();
-    return new NativeServo(jio, servoId);
-}
 
 } // namespace a8::hal::native

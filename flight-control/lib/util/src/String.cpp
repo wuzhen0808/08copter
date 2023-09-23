@@ -33,7 +33,9 @@ String::String(const String &str) {
     replace(str.text, str.length, false);
     LOG("<<String::String(const String &str)");
 }
-
+String::String(const Buffer<char> &buf) {
+    replace(buf.getAll(), buf.getLength(), false);
+}
 String::String(const char *buf, int len) {
     LOG(">>String::String(const char *buf, int len)");
     replace(buf, len, false);
@@ -138,6 +140,12 @@ String &String::operator=(const float fValue) {
     replace(str.text, str.length, true);
     return *this;
 }
+
+String &String::operator=(const Buffer<char> &buf) {
+    replace(buf.getAll(), buf.getLength(), true);
+    return *this;
+}
+
 String operator+(String const &str1, String const &str2) {
     int len1 = str1.getLength();
     int len2 = str2.getLength();

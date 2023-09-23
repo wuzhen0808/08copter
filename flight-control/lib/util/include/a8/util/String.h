@@ -1,4 +1,5 @@
 #pragma once
+#include "a8/util/Buffer.h"
 #include <stdio.h>
 namespace a8 {
 namespace util {
@@ -8,7 +9,7 @@ class String {
 private:
     int length;
     char *text;
-    void replace(const char* buf, int len, bool deleteText);
+    void replace(const char *buf, int len, bool deleteText);
     static int getLength(char *str) {
         for (int i = 0;; i++) {
             if (str[i] == '\0') {
@@ -22,6 +23,7 @@ public:
     String(const char buf[]);
     String(const char *str, int len);
     String(const String &str); // Copy constructor
+    String(const Buffer<char> &buf);
     ~String();
 
     char *getText() const;
@@ -38,9 +40,10 @@ public:
     /*
     Use format "%e" to format the float value.
     For example 1.1 will convert to '1.100000e+00';
-    
+
     */
     String &operator=(const float fValue);
+    String &operator=(const Buffer<char> &iValue);
 
     // static member funcs
     static int getLength(const char *str);

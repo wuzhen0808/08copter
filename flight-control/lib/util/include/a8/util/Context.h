@@ -2,6 +2,7 @@
 
 #include "a8/util/Buffer.h"
 #include "a8/util/Callback2.h"
+#include "a8/util/LoggerFactory.h"
 #include "a8/util/Runnable.h"
 #include "a8/util/Scheduler.h"
 #include "a8/util/String.h"
@@ -16,8 +17,10 @@ private:
 
 public:
     Scheduler *scheduler;
+    LoggerFactory *loggerFactory;
 
-    Context(Scheduler *scheduler) {
+    Context(Scheduler *scheduler, LoggerFactory *loggerFactory) {
+        this->loggerFactory = loggerFactory;
         this->scheduler = scheduler;
     }
 
@@ -28,12 +31,12 @@ public:
     }
 
     void stop(String errorMessage) {
-        this->message = errorMessage;
-        this->stop_ = true;
+        message = errorMessage;
+        stop_ = true;
     }
 
     void schedule(Runnable *task) {
-        this->scheduler->schedule(task);
+        scheduler->schedule(task);
     }
 
     String getMessage() {

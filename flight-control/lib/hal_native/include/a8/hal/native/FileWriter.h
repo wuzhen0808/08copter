@@ -16,7 +16,7 @@ public:
         this->file = file;
     }
 
-    virtual void write(char *buf, int bufLen) override {
+    virtual void write(const char *buf, int bufLen) override {
         if (!ofstream.is_open()) {
             ofstream.open(file.getText(), std::ios::out);            
         }

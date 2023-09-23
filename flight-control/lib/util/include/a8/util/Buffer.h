@@ -3,19 +3,6 @@ namespace a8::util {
 
 template <typename T>
 class Buffer {
-public:
-    static const int INC = 100;
-    Buffer<T>();
-    Buffer<T>(int capacity);
-    Buffer<T>(T *buffer, int length);
-    Buffer<T>(T *buffer, int length, int capacity);
-    ~Buffer();
-    int getLength();
-    T get(int idx);
-    T *getAll();
-    int remove(int from);
-    Buffer<T> *append(T element);
-    Buffer<T> *appendAll(T *elements, int length);
 
 private:
     void init(int cap);
@@ -23,6 +10,40 @@ private:
     int length;
     T *buffer = 0;
     void ensureCapacity(int capacity);
+
+public:
+    static const int INC = 100;
+    Buffer<T>();
+    Buffer<T>(int capacity);
+    Buffer<T>(T *buffer, int length);
+    Buffer<T>(T *buffer, int length, int capacity);
+    ~Buffer();
+    int getLength() const;
+    T get(int idx) const;
+    T *getAll() const;
+    int remove(int from);
+
+    Buffer<T> *append(const T element) {
+        return append(&element, 1);
+    }
+
+    Buffer<T> *append(const T *elements, int length) {
+        return append(elements, 0, length);
+    }
+
+    Buffer<T> *append(const Buffer<T> &buffer) {
+        return append(buffer.buff, 0, buffer.length);
+    }
+
+    Buffer<T> *append(const T *elements, int from, int length) {
+        int length2 = this->length + length;
+        ensureCapacity(length2);
+        for (int i = 0; i < length; i++) {
+            this->buffer[this->length + i] = elements[from + i];
+        }
+        this->length = length2;
+        return this;
+    }
 };
 
 // implementation
@@ -86,7 +107,7 @@ void Buffer<T>::ensureCapacity(int capacity) {
 }
 
 template <typename T>
-T Buffer<T>::get(int idx) {
+T Buffer<T>::get(int idx) const {
 
     if (idx < 0 || idx >= this->length) {
         return 0;
@@ -94,28 +115,12 @@ T Buffer<T>::get(int idx) {
     return this->buffer[idx];
 }
 template <typename T>
-int Buffer<T>::getLength() {
+int Buffer<T>::getLength() const {
     return this->length;
 }
 
 template <typename T>
-Buffer<T> *Buffer<T>::append(T element) {
-    return appendAll(&element, 1);
-}
-
-template <typename T>
-Buffer<T> *Buffer<T>::appendAll(T *elements, int length) {
-    int length2 = this->length + length;
-    ensureCapacity(length2);
-    for (int i = 0; i < length; i++) {
-        this->buffer[this->length + i] = elements[i];
-    }
-    this->length = length2;
-    return this;
-}
-
-template <typename T>
-T *Buffer<T>::getAll() {
+T *Buffer<T>::getAll() const {
     return this->buffer;
 }
 

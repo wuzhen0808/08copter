@@ -1,5 +1,5 @@
-#include "a8/hal/Hal.h"
 #include "a8/core/PidControl.h"
+#include "a8/hal/Hal.h"
 
 namespace a8 {
 namespace core {
@@ -23,12 +23,13 @@ float PidControl::update(float desirePosition, float actualPosition) {
     if (lastUpdateTimeInMs == 0) {
         lastUpdateTimeInMs = now;
     }
+    float p = kp * error;             // P
+    //
     float deltaTime = now - lastUpdateTimeInMs;
-    float p = kp * error;             // speed
-    float i = ki * error * deltaTime; //
+    float i = ki * error * deltaTime; // I
     float d = 0.0f;
     if (deltaTime >= 1.0f) {
-        d = kd * (error - lastError) / deltaTime; // speed plus
+        d = kd * (error - lastError) / deltaTime; // D
     }
 
     lastUpdateTimeInMs = now;

@@ -8,14 +8,23 @@ using namespace a8::util;
 namespace a8::util {
 
 class Logger {
+
+private:
+    String name;
+
 protected:
 public:
-    Logger(String name);
-    ~Logger();
-    
+    Logger(String name) {
+        this->name = name;
+    }
+
+    ~Logger() {
+    }
+
     virtual void log(int level, const String &msg){
 
-    };
+    }
+    
     void error(const String &msg) {
         log(1, msg);
     }
@@ -35,9 +44,6 @@ public:
     void trace(String &msg) {
         log(5, msg);
     }
-
-private:
-    String name;
 };
 
 } // namespace a8::util

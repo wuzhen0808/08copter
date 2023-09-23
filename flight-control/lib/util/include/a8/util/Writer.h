@@ -11,7 +11,7 @@ public:
     ~Writer() {
     }
 
-    virtual void write(char *buf, int bufLen) = 0;
+    virtual void write(const char *buf, int bufLen) = 0;
 
 };
 

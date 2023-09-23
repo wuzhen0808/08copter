@@ -9,7 +9,7 @@ namespace a8::hal::native {
 class ConsoleWriter : public Writer {
 private:
 public:
-    virtual void write(char *buf, int bufLen) override {
+    virtual void write(const char *buf, int bufLen) override {
         S->out->print(String(buf, bufLen));
     }
 };
