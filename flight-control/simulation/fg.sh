@@ -5,7 +5,7 @@
 #  <output name="localhost" type="FLIGHTGEAR" port="5501" protocol="TCP" rate="10"/>
 ##
 #export A8_HOME=parent folder of this file located.
-export A8_AIRCRAFT=arducopter
+export A8_AIRCRAFT=qc2309
 export A8_JSBSIM_OUTPUT_PORT=5501
 #export A8_AIRCRAFT=F450
 fgfs \

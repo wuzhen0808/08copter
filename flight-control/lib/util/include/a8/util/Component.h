@@ -17,7 +17,9 @@ enum Stage {
     Setup,
     PostSetup,
     Start,
-    PostStart
+    PostStart,    
+    Shutdown,
+    PostShutdown
 };
 
 class Component {
@@ -97,7 +99,7 @@ public:
             }
         }
     }
-    
+
     virtual void stageTo(Stage stage2, Context &context) {
 
         switch (this->stage) {
