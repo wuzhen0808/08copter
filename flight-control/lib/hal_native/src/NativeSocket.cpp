@@ -30,13 +30,13 @@ bool NativeSocket::setBlocking(bool blocking) {
 }
 
 bool NativeSocket::send(String *str) {
-    S->out->println(String::format("sending... message:%s", str->getText()));
+    //S->out->println(String::format("sending... message:%s", str->getText()));
     int sRst = ::send(sock, str->getText(), str->getLength(), 0);
     if (sRst == SOCKET_ERROR) {
         S->out->println(String::format("failed to send, rst:%i", sRst));
         return false;
     } else {
-        S->out->println(String::format("success of send, rst:%i", sRst));
+        //S->out->println(String::format("success of send, rst:%i", sRst));
         return true;
     }
 }

@@ -1,40 +1,26 @@
 #pragma once
+#include "a8/util/Logger.h"
+#include "a8/util/Reader.h"
 #include "a8/util/Runnable.h"
-#include "a8/hal/Hal.h"
 #include "a8/util/Socket.h"
 #include "a8/util/String.h"
 
 using namespace a8::util;
 namespace a8::util {
 
-class SocketReader : public Runnable {
+class SocketReader : public Reader {
 private:
     Socket *socket;
-    bool running = true;
-
 public:
     SocketReader(Socket *socket) {
         this->socket = socket;
     }
 
-    virtual void run() {
-        while (running) {
-            char buf[100];
-            int len = socket->receive(buf, 100);
-            if (len <= 0) {
-                if (len == 0) {
-                    // S->out->println("Socket connect closed by server.");
-                } else {
-                    int error = socket->getLastError();
-                    // S->out->println(String::format("Failed with error:%i", error));
-                }
-                break; // end loop
-            }
+    ~SocketReader() {
+    }
 
-            String received = String(buf, len);
-            // S->out->println(":" + received);
-        }
-        // S->out->println("Socket reader stop working.");
+    virtual int read(char *buf, int bufLen) {
+        return socket->receive(buf, bufLen);
     }
 };
 } // namespace a8::util

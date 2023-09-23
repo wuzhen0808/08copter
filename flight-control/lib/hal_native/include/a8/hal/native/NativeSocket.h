@@ -21,6 +21,9 @@ public:
     virtual int receive(char *buf, int bufLen) override;
 
     virtual int getLastError() override;
+    virtual int getDescriptor() override {
+        return this->sock;
+    }
 };
 
 class NativeSocketClient : public NativeSocket, public SocketClient {

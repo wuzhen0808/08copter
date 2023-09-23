@@ -1,5 +1,7 @@
 #pragma once
 #include "a8/hal/Hal.h"
+#include "a8/hal/native/FileWriter.h"
+#include "a8/hal/native/ConsoleWriter.h"
 #include "a8/util/Component.h"
 #include "a8/util/Result.h"
 #include "a8/util/Socket.h"
@@ -20,9 +22,17 @@ private:
 
     int bindPort;
     Socket *socketIn;
+    String dataFile;
+    Writer* dataFileWriter;
+    Writer* consoleWriter;
 
 public:
-    JSBSimIO(SocketFactory *socketFactory);
+    JSBSimIO(SocketFactory *socketFactory, String dataFile) {
+        this->socketFactory = socketFactory;
+        this->dataFile = dataFile;
+        this->dataFileWriter = new FileWriter(dataFile);
+        this->consoleWriter = new ConsoleWriter();
+    }
     void setConnectionAddress(String host, int port) {
         this->connectHost = host;
         this->connectPort = port;

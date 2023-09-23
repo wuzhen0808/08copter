@@ -6,10 +6,15 @@ namespace a8::util {
 using a8::util::String;
 
 class Result {
+private:    
 public:
     int error;
     String message;
     void *data;
+    Result() {
+        this->error = 0;
+    }
+
     Result(int error) {
         this->error = error;
     }
@@ -22,7 +27,10 @@ public:
         this->error = error;
         this->message = message;
     }
-
+    void set(int error, String message) {
+        this->error = error;
+        this->message = message;
+    }
     String toString() {
         return String::format("error:%i, message:%s", error, message.getText());
     }
@@ -41,6 +49,7 @@ public:
             this->message = "Unkown Error.";
         }
     }
+
     Result &operator=(bool success) {
         init(success);
         return *this;

@@ -27,7 +27,7 @@ protected:
     void populate(Context *context) override {
         sFac = new NativeSocketFactory();
 
-        jio = new JSBSimIO(sFac);
+        jio = new JSBSimIO(sFac,"D:/tmp/jsbsim.out.log");
         copter = new NativeCopter(jio);
         this->add(jio);
         this->add(copter);

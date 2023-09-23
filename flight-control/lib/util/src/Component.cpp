@@ -3,16 +3,12 @@
 namespace a8::util {
 
 Component::Component() {
-    this->tasks = new Buffer<Runnable *>();
+ 
 }
 
 Component::~Component() {
     delete[] attributes;
     attributes = 0;
-}
-
-void Component::add(Runnable *task) {
-    this->tasks->append(task);
 }
 
 Attributes *Component::getAttributes() {

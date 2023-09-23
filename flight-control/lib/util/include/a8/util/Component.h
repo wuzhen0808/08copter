@@ -1,5 +1,4 @@
-#ifndef COPTER_COM__
-#define COPTER_COM__
+#pragma once
 #include "a8/util/Attributes.h"
 #include "a8/util/Buffer.h"
 #include "a8/util/Context.h"
@@ -14,20 +13,10 @@ class Component {
 
 protected:
     Attributes *attributes;
-    Buffer<Runnable *> *tasks;
 
 public:
     Component();
     ~Component();
-    void add(Runnable *task);
-
-    int getTotalTasks() {
-        return this->tasks->getLength();
-    }
-
-    Runnable *getTask(int idx) {
-        return this->tasks->get(idx);
-    }
 
     void log(a8::util::String msg);
 
@@ -46,4 +35,4 @@ public:
     }
 };
 } // namespace a8::util
-#endif
+

@@ -14,6 +14,8 @@ public:
     virtual int receive(char *buf, int bufLen) = 0;
 
     virtual int getLastError() = 0;
+    
+    virtual int getDescriptor() = 0;
 };
 
 class SocketClient : virtual public Socket {
@@ -34,4 +36,4 @@ public:
     virtual SocketServer *socketServer() = 0;
 };
 
-} // namespace a8::hal::socket
+} // namespace a8::util
