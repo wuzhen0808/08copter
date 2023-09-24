@@ -46,7 +46,7 @@ public:
         servosControl_ = createServosControl(context);
         this->addChild(servosControl_, context);
 
-        attitudeControl_ = new AttitudeControl(this, servosControl_, attitudeSensor_);
+        attitudeControl_ = new AttitudeControl(servosControl_, attitudeSensor_);
         this->addChild(attitudeControl_, context);
         //
 

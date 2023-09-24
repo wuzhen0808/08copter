@@ -3,6 +3,7 @@
 #include "a8/util/Buffer.h"
 #include "a8/util/Callback2.h"
 #include "a8/util/LoggerFactory.h"
+#include "a8/util/Properties.h"
 #include "a8/util/Runnable.h"
 #include "a8/util/Scheduler.h"
 #include "a8/util/String.h"
@@ -16,10 +17,11 @@ private:
     bool stop_ = false;
 
 public:
+    Properties &properties;
     Scheduler *scheduler;
     LoggerFactory *loggerFactory;
 
-    Context(Scheduler *scheduler, LoggerFactory *loggerFactory) {
+    Context(Properties &properties, Scheduler *scheduler, LoggerFactory *loggerFactory) : properties(properties) {
         this->loggerFactory = loggerFactory;
         this->scheduler = scheduler;
     }

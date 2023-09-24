@@ -3,15 +3,12 @@
 #include "a8/core/AttitudeSensor.h"
 #include "a8/core/PidControl.h"
 #include "a8/core/ServosControl.h"
+#include "a8/core/defines.h"
 #include "a8/util/Callback.h"
 #include "a8/util/Component.h"
 #include "a8/util/Writer.h"
 
-//TODO configurable
-#define SERVO_AFTER_RIGHT 0
-#define SERVO_FRONT_LEFT 1
-#define SERVO_AFTER_LEFT 2
-#define SERVO_FRONT_RIGHT 3
+#define FR_SPIN_DIRECTION LEFT_HAND
 
 using namespace a8::util;
 
@@ -26,10 +23,18 @@ private:
     AttitudeSensor *attitudeSensor;
     ServosControl *servosControl;
     Writer *dataLog;
+    int servoIdxFR;
+    int servoIdxFL;
+    int servoIdxAR;
+    int servoIdxAL;
+    // how the Front Right propeller spin, the default direction is clockwise(left hand mode NEG frame).
+    // In left hand mode(NEG frame), the quad copter frame inversely have a willing to rotate
+    // right hand. Which is the positive direction of angular velocity.
+
+    bool servoFRSpinLeftHand = true;
 
 public:
-    AttitudeControl(void *context,
-                    ServosControl *servosControl,
+    AttitudeControl(ServosControl *servosControl,
                     AttitudeSensor *attitudeSensor) : Component() {
         rollControl = new PidControl(.0f, 0.0f, 0.0f);
         pitchControl = new PidControl(2.0f, .0f, .0f);
@@ -40,17 +45,29 @@ public:
     }
     ~AttitudeControl() {
     }
+
+    virtual void boot(Context &context) override {
+        Component::boot(context);
+        servoIdxAR = context.properties.getInt(P_fcs_servo_idx_ar, 0);
+        servoIdxFL = context.properties.getInt(P_fcs_servo_idx_fl, 1);
+        servoIdxAL = context.properties.getInt(P_fcs_servo_idx_al, 2);
+        servoIdxFR = context.properties.getInt(P_fcs_servo_idx_fr, 3);
+        log(String::format("ar:%i,fl:%i,al:%i,fr:%i,", servoIdxAR, servoIdxFL, servoIdxAL, servoIdxFR));
+    }
+    virtual void setup(Context &context) override {
+        Component::setup(context);
+    }
     virtual void call() {
         // string msg;
 
         log(">>AttitudeControl::call()");
 
-        Vector3f sensorAngVelDegSec = attitudeSensor->getAngVel();
-        Vector3f desireAngVelDegSec = Vector3f(0.0, 0.5, 0.0);
+        Vector3f aVel1 = attitudeSensor->getAngVel();
+        Vector3f aVel2 = Vector3f(0.0, 0.5, 0.0);
 
-        float cmdRoll = rollControl->update(desireAngVelDegSec.a, sensorAngVelDegSec.a);
-        float cmdPitch = pitchControl->update(desireAngVelDegSec.b, sensorAngVelDegSec.b);
-        float cmdYaw = yawControl->update(desireAngVelDegSec.c, sensorAngVelDegSec.c);
+        float cmdRoll = rollControl->update(aVel2.x, aVel1.x);
+        float cmdPitch = pitchControl->update(aVel2.y, aVel1.y);
+        float cmdYaw = yawControl->update(aVel2.z, aVel1.z);
 
         // log(string("actualRoll:") + string(actualRoll) + string(",rollGain:") + string(rollGain));
 
@@ -60,24 +77,24 @@ public:
         // float m4 = throttle - cmdRoll + cmdPitch + cmdYaw; // AL: After left
         // float m1 = throttle - cmdRoll - cmdPitch - cmdYaw; // FL: Front left
         // float m3 = throttle + cmdRoll + cmdPitch - cmdYaw; // AR: After right
+        float yawFactor = this->servoFRSpinLeftHand ? 1.0f : -1.0f;
+        float fr = heave - cmdRoll + cmdPitch + yawFactor * cmdYaw; // FR: Front right
+        float al = heave + cmdRoll - cmdPitch + yawFactor * cmdYaw; // AL: After left
+        float fl = heave + cmdRoll + cmdPitch - yawFactor * cmdYaw; // FL: Front left
+        float ar = heave - cmdRoll - cmdPitch - yawFactor * cmdYaw; // AR: After right
 
-        float fr = heave - cmdRoll + cmdPitch + cmdYaw; // FR: Front right
-        float al = heave + cmdRoll - cmdPitch + cmdYaw; // AL: After left
-        float fl = heave + cmdRoll + cmdPitch - cmdYaw; // FL: Front left
-        float ar = heave - cmdRoll - cmdPitch - cmdYaw; // AR: After right
-        
-        servosControl->setThrottleNorm(SERVO_FRONT_LEFT, fl, SERVO_FRONT_RIGHT, fr, SERVO_AFTER_RIGHT, ar, SERVO_AFTER_LEFT, al);
+        servosControl->setThrottleNorm(servoIdxFL, fl, servoIdxFR, fr, servoIdxAR, ar, servoIdxAL, al);
+
         log("<<AttitudeControl::call()");
     }
     void setDataLog(Writer *dataLog) {
         this->dataLog = dataLog;
     }
 
-    void logData(const String& msg){
-        if(this->dataLog ==0){
+    void logData(const String &msg) {
+        if (this->dataLog == 0) {
             return;
         }
-
     }
 };
 

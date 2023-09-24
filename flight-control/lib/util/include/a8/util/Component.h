@@ -11,13 +11,14 @@ using namespace a8::util;
 
 namespace a8::util {
 enum Stage {
-    Boot = 1,
+    Zero = 0,
+    Boot,
     Populate,
     PostPopulate,
     Setup,
     PostSetup,
     Start,
-    PostStart,    
+    PostStart,
     Shutdown,
     PostShutdown
 };
@@ -29,7 +30,7 @@ protected:
     Logger *logger;
     LoggerFactory *loggerFactory;
     Buffer<Component *> *children;
-    Stage stage = Boot;
+    Stage stage = Zero;
 
 public:
     Component() {
@@ -63,10 +64,12 @@ public:
         com->stageTo(this->stage, context);
         this->children->append(com);
     }
-
+    virtual void boot(Context &context) {
+        this->loggerFactory = context.loggerFactory;
+        stageChildrenTo(Boot, context);
+    }
     virtual void populate(Context &context) {
         stageChildrenTo(Populate, context);
-        this->loggerFactory = context.loggerFactory;
     }
 
     virtual void postPopulate(Context &context) {
@@ -103,8 +106,13 @@ public:
     virtual void stageTo(Stage stage2, Context &context) {
 
         switch (this->stage) {
+        case Zero:
+            this->stage = Boot;
+            this->boot(context);
+            if (isStage(stage2)) {
+                break;
+            }
         case Boot:
-            // DO Nothing.
             this->stage = Populate;
             this->populate(context);
             if (isStage(stage2)) {

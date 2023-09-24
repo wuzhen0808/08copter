@@ -4,25 +4,25 @@ namespace a8::util {
 class Vector3f {
 
 public:
-    float a;
-    float b;
-    float c;
+    float x;
+    float y;
+    float z;
     Vector3f() {
-        a = b = c = 0;
+        x = y = z = 0;
     }
-    Vector3f(float a, float b, float c) {
-        this->a = a;
-        this->b = b;
-        this->c = c;
+    Vector3f(float x, float y, float z) {
+        this->x = x;
+        this->y = y;
+        this->z = z;
     }
-    Vector3f &operator=(float x) {
-        a = b = c = x;
+    Vector3f &operator=(float v) {
+        x = y = z = v;
         return *this;
     }
-    Vector3f &operator*(float x) {
-        this->a *= x;
-        this->b *= x;
-        this->c *= x;
+    Vector3f &operator*(float f) {
+        this->x *= f;
+        this->y *= f;
+        this->z *= f;
         return *this;
     }
 };

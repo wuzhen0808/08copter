@@ -1,4 +1,5 @@
 #include "a8/core/Copter.h"
+#include "a8/core/defines.h"
 #include "a8/freertos/FreeRtosInitializer.h"
 #include "a8/freertos/FreeRtosScheduler.h"
 #include "a8/hal/Hal.h"
@@ -25,6 +26,16 @@ private:
     Copter *copter;
 
 protected:
+    void boot(Context &context) {
+
+        context.properties.set(P_fcs_servo_idx_ar, 0);
+        context.properties.set(P_fcs_servo_idx_fl, 1);
+        context.properties.set(P_fcs_servo_idx_al, 2);
+        context.properties.set(P_fcs_servo_idx_fr, 3);
+        context.properties.set(P_fcs_servo_fr_clockwise, true);
+        Application::boot(context);
+    }
+
     void populate(Context &context) override {
         sFac = new NativeSocketFactory();
 
@@ -50,6 +61,5 @@ protected:
     virtual LoggerFactory *createLoggerFactory() override {
         return new NativeLoggerFactory();
     }
-    
 };
 } // namespace a8::hal::native
