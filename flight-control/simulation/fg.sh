@@ -13,8 +13,6 @@ fgfs \
 	--language=en \
 	--fdm=external \
 	--native-fdm=socket,in,10,localhost,$A8_JSBSIM_OUTPUT_PORT,tcp \
-	--airport=PHBK \
-	--timeofday=noon \
 	--fg-aircraft="$A8_HOME/simulation/aircraft" \
 	--aircraft=$A8_AIRCRAFT \
 	--geometry=1920x1080 \
@@ -28,4 +26,9 @@ fgfs \
     --disable-specular-highlight \
     --disable-anti-alias-hud \
     --wind=0@0 \
+    --time-match-local \
+    --lon=121 \
+    --lat=31 \
+#	--airport=PHBK \
+#	--timeofday=noon \
 #    --disable-sound \

@@ -7,10 +7,11 @@
 #include "a8/util/Component.h"
 #include "a8/util/Writer.h"
 
-#define SERVO_FRONT_LEFT 0
-#define SERVO_FRONT_RIGHT 1
-#define SERVO_AFTER_RIGHT 2
-#define SERVO_AFTER_LEFT 3
+//TODO configurable
+#define SERVO_AFTER_RIGHT 0
+#define SERVO_FRONT_LEFT 1
+#define SERVO_AFTER_LEFT 2
+#define SERVO_FRONT_RIGHT 3
 
 using namespace a8::util;
 
@@ -30,8 +31,8 @@ public:
     AttitudeControl(void *context,
                     ServosControl *servosControl,
                     AttitudeSensor *attitudeSensor) : Component() {
-        rollControl = new PidControl(2.0f, 0.0f, 0.0f);
-        pitchControl = new PidControl(.0f, .0f, .0f);
+        rollControl = new PidControl(.0f, 0.0f, 0.0f);
+        pitchControl = new PidControl(2.0f, .0f, .0f);
         yawControl = new PidControl(.0f, .0f, .0f);
         this->attitudeSensor = attitudeSensor;
         this->servosControl = servosControl;
@@ -45,7 +46,7 @@ public:
         log(">>AttitudeControl::call()");
 
         Vector3f sensorAngVelDegSec = attitudeSensor->getAngVel();
-        Vector3f desireAngVelDegSec = Vector3f(0.5, 0.5, 0.5);
+        Vector3f desireAngVelDegSec = Vector3f(0.0, 0.5, 0.0);
 
         float cmdRoll = rollControl->update(desireAngVelDegSec.a, sensorAngVelDegSec.a);
         float cmdPitch = pitchControl->update(desireAngVelDegSec.b, sensorAngVelDegSec.b);

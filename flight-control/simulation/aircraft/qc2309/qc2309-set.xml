@@ -89,10 +89,10 @@ Arducotper UAV Model
       <script>
          setlistener("/sim/signals/fdm-initialized", func {
              var left  = screen.display.new(20, 10);
-             left.add("/apm/motor_right");
-             left.add("/apm/motor_left");
-             left.add("/apm/motor_front");
-             left.add("/apm/motor_back");
+             left.add("/apm/motor_0");
+             left.add("/apm/motor_1");
+             left.add("/apm/motor_2");
+             left.add("/apm/motor_3");
 
              var right = screen.display.new(-250, 20);
              right.add("/apm/altitude");
