@@ -95,7 +95,7 @@ private:
     FGSocketOuputReadRunner *runner;
 
 public:
-    JSBSimIO(SocketFactory *socketFactory, String dataFile) {
+    JSBSimIO(SocketFactory *socketFactory, String dataFile):Component("jsb") {
         this->socketFactory = socketFactory;
         this->dataFile = dataFile;
         this->dataFileWriter = new FileWriter(dataFile);
@@ -131,6 +131,10 @@ public:
         FGNetFDM fdm = runner->getLastFGNetData();
         Vector3f ret = Vector3f(fdm.A_X_pilot, fdm.A_Y_pilot, fdm.A_Z_pilot);
         return Math::feetToMeters(ret);
+    }
+    double getAlt(){
+        FGNetFDM fdm = runner->getLastFGNetData();
+        return fdm.altitude;
     }
 };
 } // namespace a8::hal::native

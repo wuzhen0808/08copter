@@ -21,17 +21,20 @@ protected:
     AttitudeSensor *attitudeSensor_;
     ServosControl *servosControl_;
     AttitudeControl *attitudeControl_;
-    Timer *attitudeTimer_;
     // member functions
     virtual ServosControl *createServosControl(Context &context) = 0;
     virtual AttitudeSensor *createAttitudeSensor(Context &context) = 0;
 
 public:
-    Copter() {
+    Copter(const String & name) : Component(name){
+        this->init();
         this->totalServos_ = 4;
     }
-    Copter(int totalServos) {
+    Copter(const String & name , int totalServos) :Component(name){
+        this->init();
         this->totalServos_ = totalServos;
+    }
+    void init(){
     }
     ~Copter() {
     }
@@ -50,9 +53,6 @@ public:
         this->addChild(attitudeControl_, context);
         //
 
-        long ticks = 1000;
-
-        attitudeTimer_ = context.scheduler->scheduleTimer(attitudeControl_, ticks);
         this->log("<<Copter::setup()");
     }
     virtual void setup(Context &context) override {

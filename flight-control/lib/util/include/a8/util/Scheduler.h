@@ -1,4 +1,5 @@
 #pragma once
+#include "a8/util/Rate.h"
 #include "a8/util/Callback.h"
 #include "a8/util/Runnable.h"
 #include "a8/util/Thread.h"
@@ -15,7 +16,7 @@ public:
     virtual void endSchedule() = 0;
     virtual Thread *schedule(Runnable *runnable) = 0;
 
-    virtual Timer *scheduleTimer(Callback *callback, long ticks) = 0;
+    virtual Timer *scheduleTimer(Callback *callback, const Rate& ticks) = 0;
 
     virtual Thread *getCurrentThread() = 0;
 };

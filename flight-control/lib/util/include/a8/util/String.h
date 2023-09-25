@@ -32,11 +32,16 @@ public:
     void append(const String *str);
     void append(const char *str);
     void append(const char *str, int len);
+    void append(const char ch);
     bool endWith(const char *str);
-
+    Buffer<String> split(const char separator);
+    //
+    // operators
     String &operator=(const char *buf);
     String &operator=(const String &str);
+    String &operator=(const char &buf);
     String &operator=(const int iValue);
+
     /*
     Use format "%e" to format the float value.
     For example 1.1 will convert to '1.100000e+00';

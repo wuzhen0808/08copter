@@ -1,4 +1,6 @@
 #pragma once
+#include "a8/util/Callback3.h"
+#include "a8/util/ForEach.h"
 namespace a8::util {
 
 template <typename T>
@@ -22,8 +24,13 @@ public:
     T get(int idx) const;
     T *getAll() const;
     int remove(int from);
-
-    Buffer<T> *append(const T element) {
+    T *toArray(T *buf) {
+        for (int i = 0; i < this->length; i++) {
+            buf[i] = this->buffer[i];
+        }
+        return buf;
+    }
+    Buffer<T> *append(const T &element) {
         return append(&element, 1);
     }
 
@@ -31,11 +38,11 @@ public:
         return append(elements, 0, length);
     }
 
-    Buffer<T> *append(const Buffer<T> &buffer) {
-        return append(buffer.buff, 0, buffer.length);
+    Buffer<T> *append(const Buffer<T> &buf) {
+        return append(buf.buffer, 0, buf.length);
     }
 
-    Buffer<T> *append(const T *elements, int from, int length) {
+    Buffer<T> *append(const T *elements, const int from, const int length) {
         int length2 = this->length + length;
         ensureCapacity(length2);
         for (int i = 0; i < length; i++) {
@@ -108,10 +115,6 @@ void Buffer<T>::ensureCapacity(int capacity) {
 
 template <typename T>
 T Buffer<T>::get(int idx) const {
-
-    if (idx < 0 || idx >= this->length) {
-        return 0;
-    }
     return this->buffer[idx];
 }
 template <typename T>

@@ -17,10 +17,24 @@ public:
     NativeAttitudeSensor(JSBSimIO *jio) : AttitudeSensor() {
         this->jio = jio;
     }
-    ~NativeAttitudeSensor() {}
+    ~NativeAttitudeSensor() {
+
+    }
+    /**
+     * Altitude in Meter.
+    */
+    virtual double getAlt() {
+        return jio->getAlt();
+    }
+    /**
+     * Angular velocity in Degree.
+    */
     virtual Vector3f getAngVel() override {
         return jio->getAngVel();
     }
+    /**
+     * Acceleration velocity in ?
+    */
     virtual Vector3f getAccVel() override {
         return jio->getAccVel();
     }

@@ -1,5 +1,5 @@
-#ifndef ATTITUDE_CONTROL__
-#define ATTITUDE_CONTROL__
+#pragma once
+
 #include "a8/core/AttitudeSensor.h"
 #include "a8/core/PidControl.h"
 #include "a8/core/ServosControl.h"
@@ -14,12 +14,13 @@ using namespace a8::util;
 
 namespace a8::core {
 
-class AttitudeControl : public Callback, public Component {
+class AttitudeControl : public Component {
 
 private:
-    PidControl *rollControl;
-    PidControl *pitchControl;
-    PidControl *yawControl;
+    PidControl *altitudeControl_;
+    PidControl *rollControl_;
+    PidControl *pitchControl_;
+    PidControl *yawControl_;
     AttitudeSensor *attitudeSensor;
     ServosControl *servosControl;
     Writer *dataLog;
@@ -35,15 +36,21 @@ private:
 
 public:
     AttitudeControl(ServosControl *servosControl,
-                    AttitudeSensor *attitudeSensor) : Component() {
-        rollControl = new PidControl(.0f, 0.0f, 0.0f);
-        pitchControl = new PidControl(2.0f, .0f, .0f);
-        yawControl = new PidControl(.0f, .0f, .0f);
+                    AttitudeSensor *attitudeSensor) : Component("atc") {
+        altitudeControl_ = new PidControl(1.0f, .0f, .0f);
+        rollControl_ = new PidControl(.0f, 0.0f, 0.0f);
+        pitchControl_ = new PidControl(.0f, .0f, .0f);
+        yawControl_ = new PidControl(.0f, .0f, .0f);
         this->attitudeSensor = attitudeSensor;
         this->servosControl = servosControl;
         this->dataLog = 0;
+        this->rate = 1;//hz
     }
     ~AttitudeControl() {
+        delete altitudeControl_;
+        delete rollControl_;
+        delete pitchControl_;
+        delete yawControl_;
     }
 
     virtual void boot(Context &context) override {
@@ -57,21 +64,22 @@ public:
     virtual void setup(Context &context) override {
         Component::setup(context);
     }
-    virtual void call() {
-        // string msg;
 
-        log(">>AttitudeControl::call()");
+    virtual void tick(const long tickTime) override {
 
+        double alt1 = attitudeSensor->getAlt();
         Vector3f aVel1 = attitudeSensor->getAngVel();
+        //
+        double alt2 = 20; // Meter
+
         Vector3f aVel2 = Vector3f(0.0, 0.5, 0.0);
 
-        float cmdRoll = rollControl->update(aVel2.x, aVel1.x);
-        float cmdPitch = pitchControl->update(aVel2.y, aVel1.y);
-        float cmdYaw = yawControl->update(aVel2.z, aVel1.z);
+        float cmdThrottle = altitudeControl_->update(alt2, alt1);
+        float cmdRoll = rollControl_->update(aVel2.x, aVel1.x);
+        float cmdPitch = pitchControl_->update(aVel2.y, aVel1.y);
+        float cmdYaw = yawControl_->update(aVel2.z, aVel1.z);
 
         // log(string("actualRoll:") + string(actualRoll) + string(",rollGain:") + string(rollGain));
-
-        float heave = .0f;
 
         // float m2 = throttle + cmdRoll - cmdPitch + cmdYaw; // FR: Front right
         // float m4 = throttle - cmdRoll + cmdPitch + cmdYaw; // AL: After left
@@ -80,16 +88,14 @@ public:
 
         float yawSign = this->reverseYaw ? -1.0f : 1.0f;
 
-        float fr = heave - cmdRoll + cmdPitch - yawSign * cmdYaw; // FR: Front right
-        float al = heave + cmdRoll - cmdPitch - yawSign * cmdYaw; // AL: After left
-        float fl = heave + cmdRoll + cmdPitch + yawSign * cmdYaw; // FL: Front left
-        float ar = heave - cmdRoll - cmdPitch + yawSign * cmdYaw; // AR: After right
-        fr = al = fl = ar = 0.6;
-        fr = al = 0.6f + yawSign * 0.00005f;
+        float fr = cmdThrottle - cmdRoll + cmdPitch - yawSign * cmdYaw; // FR: Front right
+        float al = cmdThrottle + cmdRoll - cmdPitch - yawSign * cmdYaw; // AL: After left
+        float fl = cmdThrottle + cmdRoll + cmdPitch + yawSign * cmdYaw; // FL: Front left
+        float ar = cmdThrottle - cmdRoll - cmdPitch + yawSign * cmdYaw; // AR: After right
+        // fr = al = fl = ar = 0.6;
+        // fr = al = 0.6f + yawSign * 0.00005f;
 
         servosControl->setThrottleNorm(servoIdxFL, fl, servoIdxFR, fr, servoIdxAR, ar, servoIdxAL, al);
-
-        log("<<AttitudeControl::call()");
     }
 
     void setDataLog(Writer *dataLog) {
@@ -104,4 +110,3 @@ public:
 };
 
 } // namespace a8::core
-#endif

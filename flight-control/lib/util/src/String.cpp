@@ -1,4 +1,5 @@
 #include "a8/util/String.h"
+#include "a8/util/Buffer.h"
 #include <stdio.h>
 // #define A8_DEBUG_STRING
 #ifdef A8_DEBUG_STRING
@@ -21,11 +22,8 @@ String::String() {
     this->length = 0;
     LOG("<<String::String()");
 }
-
 String::String(const char (&buf)[]) {
-    LOG2(">>String::String(const char buf), buf:", buf);
     replace(buf, -1, false);
-    LOG2("<<String::String(const char buf),text:", this->text);
 }
 
 String::String(const String &str) {
@@ -90,6 +88,10 @@ void String::append(const char *str) {
     append(str, getLength(str));
 }
 
+void String::append(const char ch) {
+    append(&ch, 1);
+}
+
 void String::append(const String *str) {
     append(str->getText(), str->getLength());
 }
@@ -119,6 +121,24 @@ bool String::endWith(const char *str) {
     return true;
 }
 
+Buffer<String> String::split(const char separator) {
+
+    Buffer<String> buffer;
+    String str;
+
+    for (int i = 0; i < length; i++) {
+        if (text[i] == separator) {
+            buffer.append(str);
+            str = "";
+        }
+        str.append(text[i]);
+    }
+    buffer.append(str);
+
+    return buffer;
+}
+
+// operators
 String &String::operator=(const char *buf) {
     replace(buf, -1, true);
     return *this;
@@ -126,6 +146,11 @@ String &String::operator=(const char *buf) {
 
 String &String::operator=(const String &str) {
     replace(str.text, str.length, true);
+    return *this;
+}
+
+String &String::operator=(const char &str) {
+    replace(&str, 1, true);
     return *this;
 }
 

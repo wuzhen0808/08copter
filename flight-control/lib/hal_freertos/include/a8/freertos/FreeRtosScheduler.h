@@ -18,7 +18,7 @@ public:
 
     virtual Thread *schedule(Runnable *runnable) override;
 
-    virtual Timer *scheduleTimer(Callback *callback, long ticks) override;
+    virtual Timer *scheduleTimer(Callback *callback, const Rate& ticks) override;
 
     virtual Thread *getCurrentThread() override;
 };

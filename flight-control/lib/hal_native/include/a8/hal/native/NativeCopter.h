@@ -24,7 +24,7 @@ protected:
     virtual AttitudeSensor *createAttitudeSensor(Context &context) override;
 
 public:
-    NativeCopter(JSBSimIO *jio) : Copter(4) {
+    NativeCopter(JSBSimIO *jio) : Copter("cpt",4) {
         this->jsbSimIo = jio;
     }
     ~NativeCopter() {}

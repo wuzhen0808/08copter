@@ -14,8 +14,8 @@ class Context {
 private:
     int lastError;
     String message;
-    bool stop_ = false;
-
+    bool stop_ = false;    
+    
 public:
     Properties &properties;
     Scheduler *scheduler;

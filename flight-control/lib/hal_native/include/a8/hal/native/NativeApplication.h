@@ -33,6 +33,7 @@ protected:
         context.properties.set(P_fcs_servo_idx_al, 2);
         context.properties.set(P_fcs_servo_idx_fr, 3);
         context.properties.set(P_fcs_servo_fr_clockwise, true);
+        context.properties.set(P_fcs_att_tick_rate, 100); // HZ
         Application::boot(context);
     }
 
@@ -60,6 +61,11 @@ protected:
 
     virtual LoggerFactory *createLoggerFactory() override {
         return new NativeLoggerFactory();
+    }
+
+public:
+    NativeApplication() : Application("app") {
+        
     }
 };
 } // namespace a8::hal::native

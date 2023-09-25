@@ -8,7 +8,7 @@ using namespace a8::core;
 using namespace a8::hal;
 using a8::util::Math;
 
-ServosControl::ServosControl(int totalServos) {
+ServosControl::ServosControl(int totalServos) : Component("svc") {
 
     this->totalServos = totalServos;
     this->lastVelocities = new float[totalServos]{0};
@@ -16,7 +16,6 @@ ServosControl::ServosControl(int totalServos) {
 ServosControl::~ServosControl() {
     delete[] this->lastVelocities;
 }
-
 
 void ServosControl::setThrottleNorm(int servoId, float velNorm) {
     log(String::format(">>setThrottleNorm,%i:%f", servoId, velNorm));

@@ -21,8 +21,8 @@ Thread *FreeRtosScheduler::schedule(Runnable *runnable) {
     return FreeRtosThread::start(runnable);
 }
 
-Timer *FreeRtosScheduler::scheduleTimer(Callback *callback, long ticks) {
-    return FreeRtosTimer::start(callback, ticks);
+Timer *FreeRtosScheduler::scheduleTimer(Callback *callback, const Rate& rate) {
+    return FreeRtosTimer::start(callback, rate);
 }
 
 Thread *FreeRtosScheduler::getCurrentThread() {
