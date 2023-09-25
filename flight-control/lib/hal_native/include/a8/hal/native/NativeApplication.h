@@ -39,10 +39,10 @@ protected:
 
     void populate(Context &context) override {
         sFac = new NativeSocketFactory();
-
-        jio = new JSBSimIO(sFac, "D:/tmp/jsbsim.out.log");
+        jio = new JSBSimIO(sFac);
         copter = new NativeCopter(jio);
         this->addChild(jio, context);
+
         this->addChild(copter, context);
         Application::populate(context);
     }

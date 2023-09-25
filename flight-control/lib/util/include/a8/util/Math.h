@@ -3,7 +3,7 @@
 #define M_PI (3.141592653589793238462643383279502884)
 #define FEET_TO_METERS (0.3048)
 #define RAD_TO_DEG (180.0f / M_PI)
-#define NEAR_ZERO_FLOAT (0.000001f)
+#define ZERO_NEAR (0.000001f)
 
 namespace a8::util {
 
@@ -22,9 +22,10 @@ public:
         return radian * RAD_TO_DEG;
     }
 
-    static bool isNearZero(float fValue) {        
-        return -NEAR_ZERO_FLOAT < fValue && fValue < NEAR_ZERO_FLOAT;
+    static bool isNear(float fValue1, float fValue2) {
+        float diff = fValue1 - fValue2;
+        return -ZERO_NEAR < diff && diff < ZERO_NEAR;
     }
-
+    
 };
 } // namespace a8::util

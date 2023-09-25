@@ -25,7 +25,7 @@ enum Stage {
     PostShutdown
 };
 
-class Component {
+class Component : public Runnable {
 
 protected:
     Attributes *attributes;
@@ -113,12 +113,17 @@ public:
      */
     virtual void tick(const long tickTime) {
     }
+    /*
+     * Run method is in a separate thread. It's a loop never end until system shutdown.
+     */
+    virtual void run() override {
+    }
 
     void log(const String &msg) {
         getLogger()->info(msg);
     }
 
-    void addChild(Component *com, Context &context) {        
+    void addChild(Component *com, Context &context) {
         com->stageTo(this->stage, context);
         this->children->append(com);
     }
@@ -162,7 +167,10 @@ public:
     }
 
     virtual void stageTo(Stage stage2, Context &context) {
-
+        if (context.isStop()) {
+            log("Context stoped, cannot stage forward.");
+            return;
+        }
         switch (this->stage) {
         case Zero:
             this->stage = Boot;

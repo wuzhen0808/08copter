@@ -8,8 +8,13 @@ class Rate {
     float hz;
 
 public:
+    static Rate ForEver;
+
     Rate() {
         this->hz = 0.0f;
+    }
+    Rate(float hz) {
+        this->hz = hz;
     }
     float Hz() const {
         return hz;
@@ -54,8 +59,18 @@ public:
         return 1000000000.0f / hz;
     }
 
+    /**
+     * Zero means no frequency.
+     * Do not schedule zero rate.
+     */
     bool isZero() {
-        return Math::isNearZero(hz);
+        return Math::isNear(hz, 0.0f);
+    }
+    /*
+     * ForEver means it's a runner to be called in separate thread.
+     */
+    bool isForEver() {
+        return Math::isNear(hz, -1.0f);
     }
 
     Rate &
@@ -63,11 +78,13 @@ public:
         this->hz = hz;
         return *this;
     }
-    Rate &operator=(float hz) {
+    Rate &operator=(const float hz) {
         this->hz = hz;
         return *this;
     }
 };
+
+
 } // namespace util
 
 } // namespace a8

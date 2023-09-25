@@ -87,14 +87,29 @@ public:
         Properties properties;
         Context *context = new Context(properties, scheduler, loggerFac);
         this->stageTo(PostStart, *context);
+        if (context->isStop()) {
+            log(context->getMessage());
+            return;
+        }
+
         // ticker
         this->rateRunners_ = buildRateRunners(new Buffer<RateRunner *>());
         for (int i = 0; i < rateRunners_->getLength(); i++) {
             RateRunner *runner = rateRunners_->get(i);
-            if (!runner->rate.isZero()) {
-                Timer *timer = context->scheduler->scheduleTimer(runner, runner->rate);
-                runner->timer = timer;
+            if (runner->rate.isZero()) {
+                continue;
             }
+            if (runner->rate.isForEver()) {
+                for (int j = 0; j < runner->components->getLength(); j++) {
+                    Component *com = runner->components->get(j);
+                    Thread *thread = context->scheduler->schedule(com);
+                    // todo storage of thread?
+                }
+
+                continue;
+            }
+            Timer *timer = context->scheduler->scheduleTimer(runner, runner->rate);
+            runner->timer = timer;
         }
         context->scheduler->startSchedule();
     }
