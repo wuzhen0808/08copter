@@ -7,10 +7,12 @@ namespace a8::util {
 typedef void (*ValueDelete)(void *);
 
 enum PropertyType {
-    boolType = 0,
+    zeroType = 0,
+    boolType,
     intType,
     floatType,
-    stringType
+    stringType,
+    externalType,
 };
 
 class Entry {
@@ -18,16 +20,16 @@ public:
     String name;
     void *value;
     int type;
-    Entry(const String &name, void *value, int type) {
+    Entry(const String &name) {
         this->name = name;
-        this->value = value;
-        this->type = type;
+        this->type = zeroType;
+        this->value = 0;
     }
     ~Entry() {
         deleteValue();
     }
     void deleteValue() {
-        if (this->value == 0) {
+        if (type == zeroType || type == externalType || value == 0) {
             return;
         }
         switch (this->type) {
@@ -46,47 +48,86 @@ public:
         default:;
             // exception throw?
         }
+        value = 0;
     }
-    void set(void *value) {
+
+    void set(int type, void *value) {
         deleteValue();
+        this->type = type;
         this->value = value;
+    }
+
+    float getFloat(float defValue) {
+        if (type != floatType || value == 0) {
+            return defValue;
+        }
+        return *(static_cast<float *>(value));
+    }
+
+    int getInt(int defValue) {
+        if (type != intType || value == 0) {
+            return defValue;
+        }
+        return *(static_cast<int *>(value));
+    }
+
+    String getString(const String &defValue) {
+        if (type != stringType || value == 0) {
+            return defValue;
+        }
+        String *sValue = static_cast<String *>(value);
+
+        return *sValue;
+    }
+
+    bool getBool(const bool defValue) {
+        if (type != boolType || value == 0) {
+            return defValue;
+        }
+        return *(static_cast<bool *>(value));
+    }
+
+    void *getExternal(void *defValue) {
+        if (type != externalType || value == 0) {
+            return defValue;
+        }
+        return value;
     }
 };
 
 class Properties {
+    Entry *zeroEntry;
 
     Buffer<Entry *> *buffer;
+
     // TODO use a index tree or hash table.
     void set(const String &name, const int type, void *value) {
 
-        Entry *entry = findEntry(name);
+        Entry *entry = findEntry(name, false);
         if (entry == 0) {
-            entry = new Entry(name, value, type);
+            entry = new Entry(name);
             buffer->append(entry);
-            return;
         }
-        entry->set(value);
+
+        entry->set(type, value);
     }
-    Entry *findEntry(const String &name) {
+
+    Entry *findEntry(const String &name, bool useZeroEntry) {
         for (int i = 0; i < buffer->getLength(); i++) {
             Entry *entry = buffer->get(i);
             if (name == entry->name) {
                 return entry;
             }
         }
-        return 0;
-    }
-    void *get(const String &name, int type) {
-
-        Entry *entry = findEntry(name);
-        if (entry == 0) {
-            return 0;
+        if (useZeroEntry) {
+            return zeroEntry;
         }
-        return entry->value;
+        return 0;
     }
 
 public:
     Properties() {
+        this->zeroEntry = new Entry("0");
         this->buffer = new Buffer<Entry *>();
     }
 
@@ -101,52 +142,44 @@ public:
         buffer = 0;
     }
 
-    void set(const String &name, float value) {
-        this->set(name, floatType, new float(value));
-    }
-
-    float getFloat(const String &name, float defValue) {
-        void *value = this->get(name, floatType);
-        if (value == 0) {
-            return defValue;
-        }
-        return *(static_cast<float *>(value));
-    }
-
     void set(const String &name, int value) {
-        this->set(name, floatType, new int(value));
-    }
-
-    int getInt(const String &name, int defValue) {
-        void *value = this->get(name, floatType);
-        if (value == 0) {
-            return defValue;
-        }
-        return *(static_cast<int *>(value));
+        this->set(name, intType, new int(value));
     }
 
     void set(const String &name, const String &value) {
-        this->set(name, floatType, new String(value));
+        this->set(name, stringType, new String(value));
     }
 
-    String getString(const String &name, const String &defValue) {
-        void *value = this->get(name, floatType);
-        if (value == 0) {
-            return defValue;
-        }
-        return *(static_cast<String *>(value));
+    void set(const String &name, const char (&value)[]) {
+        String *str = new String(value);
+        this->set(name, stringType, str);
     }
 
     void set(const String &name, const bool value) {
         this->set(name, boolType, new bool(value));
     }
 
+    void set(const String &name, const float value) {
+        this->set(name, floatType, new float(value));
+    }
+
+    void *getExternal(const String &name, void *defValue) {
+        return findEntry(name, true)->getExternal(defValue);
+    }
+
+    float getFloat(const String &name, float defValue) {
+        return findEntry(name, true)->getFloat(defValue);
+    }
+
+    int getInt(const String &name, int defValue) {
+        return findEntry(name, true)->getInt(defValue);
+    }
+
+    String getString(const String &name, const String &defValue) {
+        return findEntry(name, true)->getString(defValue);
+    }
     bool getBool(const String &name, const bool defValue) {
-        void *value = this->get(name, floatType);
-        if (value == 0) {
-            return defValue;
-        }
-        return *(static_cast<bool *>(value));
+        return findEntry(name, true)->getBool(defValue);
     }
 };
 

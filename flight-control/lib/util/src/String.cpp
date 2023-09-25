@@ -22,7 +22,7 @@ String::String() {
     LOG("<<String::String()");
 }
 
-String::String(const char buf[]) {
+String::String(const char (&buf)[]) {
     LOG2(">>String::String(const char buf), buf:", buf);
     replace(buf, -1, false);
     LOG2("<<String::String(const char buf),text:", this->text);

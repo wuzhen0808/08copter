@@ -23,6 +23,7 @@
         </event>
 
         
+        <!--
         <event name="Motor Launch">
             <condition> simulation/sim-time-sec ge 1 </condition>
             <set name="fcs/throttle-cmd-norm[0]" value="1" />
@@ -30,7 +31,6 @@
             <set name="fcs/throttle-cmd-norm[2]" value="1" />
             <set name="fcs/throttle-cmd-norm[3]" value="1" />
         </event>
-        <!--
         -->
 
     </run>

@@ -20,7 +20,7 @@ private:
 
 public:
     String();
-    String(const char buf[]);
+    String(const char (&buf)[]);
     String(const char *str, int len);
     String(const String &str); // Copy constructor
     String(const Buffer<char> &buf);

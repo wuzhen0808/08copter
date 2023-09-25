@@ -31,7 +31,7 @@ private:
     // In left hand mode(NEG frame), the quad copter frame inversely have a willing to rotate
     // right hand. Which is the positive direction of angular velocity.
 
-    bool servoFRSpinLeftHand = true;
+    bool reverseYaw = false;
 
 public:
     AttitudeControl(ServosControl *servosControl,
@@ -77,16 +77,21 @@ public:
         // float m4 = throttle - cmdRoll + cmdPitch + cmdYaw; // AL: After left
         // float m1 = throttle - cmdRoll - cmdPitch - cmdYaw; // FL: Front left
         // float m3 = throttle + cmdRoll + cmdPitch - cmdYaw; // AR: After right
-        float yawFactor = this->servoFRSpinLeftHand ? 1.0f : -1.0f;
-        float fr = heave - cmdRoll + cmdPitch + yawFactor * cmdYaw; // FR: Front right
-        float al = heave + cmdRoll - cmdPitch + yawFactor * cmdYaw; // AL: After left
-        float fl = heave + cmdRoll + cmdPitch - yawFactor * cmdYaw; // FL: Front left
-        float ar = heave - cmdRoll - cmdPitch - yawFactor * cmdYaw; // AR: After right
+
+        float yawSign = this->reverseYaw ? -1.0f : 1.0f;
+
+        float fr = heave - cmdRoll + cmdPitch - yawSign * cmdYaw; // FR: Front right
+        float al = heave + cmdRoll - cmdPitch - yawSign * cmdYaw; // AL: After left
+        float fl = heave + cmdRoll + cmdPitch + yawSign * cmdYaw; // FL: Front left
+        float ar = heave - cmdRoll - cmdPitch + yawSign * cmdYaw; // AR: After right
+        fr = al = fl = ar = 0.6;
+        fr = al = 0.6f + yawSign * 0.00005f;
 
         servosControl->setThrottleNorm(servoIdxFL, fl, servoIdxFR, fr, servoIdxAR, ar, servoIdxAL, al);
 
         log("<<AttitudeControl::call()");
     }
+
     void setDataLog(Writer *dataLog) {
         this->dataLog = dataLog;
     }

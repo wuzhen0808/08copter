@@ -104,77 +104,13 @@
   </ground_reactions>
   <!-- the front and rear motors spin clockwise, and the left and right motors spin
   counter-clockwise. -->
+
   <propulsion>
-    <engine file="engine-1" name="front">
-      <location unit="M">
-        <x> -0.283 </x>
-        <y> 0.00 </y>
-        <z> 0.00 </z>
-      </location>
-      <orient unit="DEG">
-        <pitch> 90.00 </pitch>
-        <roll> 0.00 </roll>
-        <yaw> 0.00 </yaw>
-      </orient>
-      <feed>0</feed>
+    <engine file="engine-1" name="After Right">
       <thruster file="prop-1">
         <location unit="M">
-          <x> -0.283 </x>
-          <y> 0.00 </y>
-          <z> 0.125 </z>
-        </location>
-        <orient unit="DEG">
-          <pitch> 90.00 </pitch>
-          <roll> 0.00 </roll>
-          <yaw> 0.00 </yaw>
-        </orient>
-        <sense> 1 </sense>
-        <p_factor> 10 </p_factor>
-      </thruster>
-    </engine>
-    <engine file="engine-1" name="rear">
-      <location unit="M">
-        <x> 0.283 </x>
-        <y> 0.000 </y>
-        <z> 0.000 </z>
-      </location>
-      <orient unit="DEG">
-        <pitch> 90.00 </pitch>
-        <roll> 0.00 </roll>
-        <yaw> 0.00 </yaw>
-      </orient>
-      <feed>0</feed>
-      <thruster file="prop-1">
-        <location unit="M">
-          <x> 0.283 </x>
-          <y> 0.000 </y>
-          <z> 0.125 </z>
-        </location>
-        <orient unit="DEG">
-          <pitch> 90.00 </pitch>
-          <roll> 0.00 </roll>
-          <yaw> 0.00 </yaw>
-        </orient>
-        <sense> 1 </sense>
-        <p_factor> 10 </p_factor>
-      </thruster>
-    </engine>
-    <engine file="engine-1" name="left">
-      <location unit="M">
-        <x> 0.00 </x>
-        <y> 0.283 </y>
-        <z> 0.00 </z>
-      </location>
-      <orient unit="DEG">
-        <pitch> 90.00 </pitch>
-        <roll> 0.00 </roll>
-        <yaw> 0.00 </yaw>
-      </orient>
-      <feed>0</feed>
-      <thruster file="prop-1">
-        <location unit="M">
-          <x> 0.00 </x>
-          <y> 0.283 </y>
+          <x> 0.200 </x>
+          <y> 0.200 </y>
           <z> 0.125 </z>
         </location>
         <orient unit="DEG">
@@ -186,22 +122,11 @@
         <p_factor> 10 </p_factor>
       </thruster>
     </engine>
-    <engine file="engine-1" name="right">
-      <location unit="M">
-        <x> 0.000 </x>
-        <y> -0.283 </y>
-        <z> 0.000 </z>
-      </location>
-      <orient unit="DEG">
-        <pitch> 90.00 </pitch>
-        <roll> 0.00 </roll>
-        <yaw> 0.00 </yaw>
-      </orient>
-      <feed>0</feed>
+    <engine file="engine-1" name="Front Left">
       <thruster file="prop-1">
         <location unit="M">
-          <x> 0.000 </x>
-          <y> -0.283 </y>
+          <x> -0.200 </x>
+          <y> -0.200 </y>
           <z> 0.125 </z>
         </location>
         <orient unit="DEG">
@@ -213,17 +138,38 @@
         <p_factor> 10 </p_factor>
       </thruster>
     </engine>
-    <tank type="FUEL" number="0">
-      <location unit="M">
-        <x> 0.00 </x>
-        <y> 0.00 </y>
-        <z> -0.07 </z>
-      </location>
-      <!--have
-      to have a fuel capacity, so setting it small-->
-      <capacity unit="KG"> 0.00000000001 </capacity>
-      <contents unit="KG"> 0.0 </contents>
-    </tank>
+    <engine file="engine-1" name="After Left">
+      <thruster file="prop-1">
+        <location unit="M">
+          <x> 0.200 </x>
+          <y> -0.200 </y>
+          <z> 0.125 </z>
+        </location>
+        <orient unit="DEG">
+          <pitch> 90.00 </pitch>
+          <roll> 0.00 </roll>
+          <yaw> 0.00 </yaw>
+        </orient>
+        <sense> 1 </sense>
+        <p_factor> 10 </p_factor>
+      </thruster>
+    </engine>
+    <engine file="engine-1" name="Front Right">
+      <thruster file="prop-1">
+        <location unit="M">
+          <x> -0.200 </x>
+          <y> 0.200 </y>
+          <z> 0.125 </z>
+        </location>
+        <orient unit="DEG">
+          <pitch> 90.00 </pitch>
+          <roll> 0.00 </roll>
+          <yaw> 0.00 </yaw>
+        </orient>
+        <sense> 1 </sense>
+        <p_factor> 10 </p_factor>
+      </thruster>
+    </engine>
   </propulsion>
   <aerodynamics>
     <axis name="LIFT">

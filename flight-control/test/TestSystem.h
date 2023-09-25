@@ -1,7 +1,7 @@
-#include "a8/native/NativeSystem.h"
+#include "a8/hal/native/NativeSystem.h"
 
 using namespace std;
-using namespace a8::native;
+using namespace a8::hal::native;
 
 class TestSystem : public NativeSystem {
 };

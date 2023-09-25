@@ -3,9 +3,9 @@
 #include "a8/core/Copter.h"
 #include "a8/freertos/FreeRtosScheduler.h"
 #include "a8/hal/Hal.h"
-#include "a8/native/NativeCopter.h"
-#include "a8/native/NativeFreeRtosInitializer.h"
-#include "a8/native/NativeSystem.h"
+#include "a8/hal/native/NativeCopter.h"
+#include "a8/hal/native/NativeFreeRtosInitializer.h"
+#include "a8/hal/native/NativeSystem.h"
 
 #include "a8/util/Buffer.h"
 #include "a8/util/String.h"
