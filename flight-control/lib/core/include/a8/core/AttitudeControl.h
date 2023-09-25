@@ -24,10 +24,10 @@ private:
     AttitudeSensor *attitudeSensor;
     ServosControl *servosControl;
     Writer *dataLog;
-    int servoIdxFR;
-    int servoIdxFL;
-    int servoIdxAR;
-    int servoIdxAL;
+    int idxFR;
+    int idxFL;
+    int idxAR;
+    int idxAL;
     // how the Front Right propeller spin, the default direction is clockwise(left hand mode NEG frame).
     // In left hand mode(NEG frame), the quad copter frame inversely have a willing to rotate
     // right hand. Which is the positive direction of angular velocity.
@@ -44,7 +44,7 @@ public:
         this->attitudeSensor = attitudeSensor;
         this->servosControl = servosControl;
         this->dataLog = 0;
-        this->rate = 1;//hz
+        this->rate = 1; // hz
     }
     ~AttitudeControl() {
         delete altitudeControl_;
@@ -55,11 +55,11 @@ public:
 
     virtual void boot(Context &context) override {
         Component::boot(context);
-        servoIdxAR = context.properties.getInt(P_fcs_servo_idx_ar, 0);
-        servoIdxFL = context.properties.getInt(P_fcs_servo_idx_fl, 1);
-        servoIdxAL = context.properties.getInt(P_fcs_servo_idx_al, 2);
-        servoIdxFR = context.properties.getInt(P_fcs_servo_idx_fr, 3);
-        log(String::format("ar:%i,fl:%i,al:%i,fr:%i,", servoIdxAR, servoIdxFL, servoIdxAL, servoIdxFR));
+        idxAR = context.properties.getInt(P_fcs_servo_idx_ar, 0);
+        idxFL = context.properties.getInt(P_fcs_servo_idx_fl, 1);
+        idxAL = context.properties.getInt(P_fcs_servo_idx_al, 2);
+        idxFR = context.properties.getInt(P_fcs_servo_idx_fr, 3);
+        log(String::format("ar:%i,fl:%i,al:%i,fr:%i,", idxAR, idxFL, idxAL, idxFR));
     }
     virtual void setup(Context &context) override {
         Component::setup(context);
@@ -71,20 +71,12 @@ public:
         Vector3f aVel1 = attitudeSensor->getAngVel();
         //
         double alt2 = 20; // Meter
+        float cmdThrottle = altitudeControl_->update(alt2, alt1);
 
         Vector3f aVel2 = Vector3f(0.0, 0.5, 0.0);
-
-        float cmdThrottle = altitudeControl_->update(alt2, alt1);
         float cmdRoll = rollControl_->update(aVel2.x, aVel1.x);
         float cmdPitch = pitchControl_->update(aVel2.y, aVel1.y);
         float cmdYaw = yawControl_->update(aVel2.z, aVel1.z);
-
-        // log(string("actualRoll:") + string(actualRoll) + string(",rollGain:") + string(rollGain));
-
-        // float m2 = throttle + cmdRoll - cmdPitch + cmdYaw; // FR: Front right
-        // float m4 = throttle - cmdRoll + cmdPitch + cmdYaw; // AL: After left
-        // float m1 = throttle - cmdRoll - cmdPitch - cmdYaw; // FL: Front left
-        // float m3 = throttle + cmdRoll + cmdPitch - cmdYaw; // AR: After right
 
         float yawSign = this->reverseYaw ? -1.0f : 1.0f;
 
@@ -94,8 +86,10 @@ public:
         float ar = cmdThrottle - cmdRoll - cmdPitch + yawSign * cmdYaw; // AR: After right
         // fr = al = fl = ar = 0.6;
         // fr = al = 0.6f + yawSign * 0.00005f;
-
-        servosControl->setThrottleNorm(servoIdxFL, fl, servoIdxFR, fr, servoIdxAR, ar, servoIdxAL, al);
+        log(String::format("alt:%.2f=>%.2f", alt1, alt2)                                                                  //
+            + String::format(",cmdThrottles:%i:%.2f,%i:%.2f,%i:%.2f,%i:%.2f", idxFL, fl, idxFR, fr, idxAR, ar, idxAL, al) //
+        );
+        servosControl->setThrottleNorm(idxFL, fl, idxFR, fr, idxAR, ar, idxAL, al);
     }
 
     void setDataLog(Writer *dataLog) {

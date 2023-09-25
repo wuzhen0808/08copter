@@ -18,10 +18,10 @@ ServosControl::~ServosControl() {
 }
 
 void ServosControl::setThrottleNorm(int servoId, float velNorm) {
-    log(String::format(">>setThrottleNorm,%i:%f", servoId, velNorm));
+    //log(String::format(">>setThrottleNorm,%i:%f", servoId, velNorm));
     this->servos[servoId]->setThrottleNorm(velNorm);
     lastVelocities[servoId] = velNorm;
-    log(String::format("<<setThrottleNorm"));
+    //log(String::format("<<setThrottleNorm"));
 }
 
 void ServosControl::setThrottleNorm(int id1, float vel1, int id2, float vel2, int id3, float vel3, int id4, float vel4) {
