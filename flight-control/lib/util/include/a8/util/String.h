@@ -7,9 +7,6 @@ namespace util {
 class String {
 
 private:
-    int length;
-    char *text;
-    void replace(const char *buf, int len, bool deleteText);
     static int getLength(char *str) {
         for (int i = 0;; i++) {
             if (str[i] == '\0') {
@@ -17,7 +14,10 @@ private:
             }
         }
     }
-
+    int length;
+    char *text;
+    void replace(const char *buf, int len, bool deleteText);
+    
 public:
     String();
     String(const char (&buf)[]);
@@ -30,25 +30,42 @@ public:
     char getChar(int idx) const;
     int getLength() const;
     void append(const String *str);
+    void append(const String &str);
     void append(const char *str);
     void append(const char *str, int len);
     void append(const char ch);
-    bool endWith(const char *str);
-    Buffer<String> split(const char separator);
+    void append(const float fValue);
+    void append(const double fValue);
+    void append(const int fValue);
+    void append(const long fValue);
+    void append(const unsigned fValue);
+    
     //
     // operators
     String &operator=(const char *buf);
+    //String &operator=(const char (&buf)[]); DO not declare this method, will error of ambiguous.
     String &operator=(const String &str);
     String &operator=(const char &buf);
-    String &operator=(const int iValue);
-
+    String &operator=(const int iValue);    
     /*
     Use format "%e" to format the float value.
     For example 1.1 will convert to '1.100000e+00';
-
     */
     String &operator=(const float fValue);
     String &operator=(const Buffer<char> &iValue);
+
+    String &operator<<(const float fValue);
+    String &operator<<(const double fValue);
+    String &operator<<(const int fValue);
+    String &operator<<(const long fValue);
+    String &operator<<(const char *buf);
+    String &operator<<(const char buf);
+    String &operator<<(const unsigned uValue);    
+    String &operator<<(const String &str);
+
+    // Other methods
+    bool endWith(const char *str);
+    Buffer<String> split(const char separator);
 
     // static member funcs
     static int getLength(const char *str);
@@ -73,7 +90,7 @@ public:
         }
     }
 
-    // operators
+    //Friend operators
     friend String operator+(const String &str1, const String &str);
     friend bool operator==(const String &str1, const String &str2);
 };

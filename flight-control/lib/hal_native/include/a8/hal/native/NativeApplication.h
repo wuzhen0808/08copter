@@ -6,11 +6,12 @@
 #include "a8/hal/native/JSBSimIO.h"
 #include "a8/hal/native/NativeCopter.h"
 #include "a8/hal/native/NativeLoggerFactory.h"
-#include "a8/hal/native/NativeSocket.h"
+#include "a8/hal/native/NativeSockets.h"
 #include "a8/hal/native/NativeSystem.h"
 #include "a8/util/Application.h"
 #include "a8/util/Finally.h"
 #include "a8/util/Result.h"
+#include "a8/util/WrapperComponent.h"
 
 using namespace a8::util;
 using namespace a8::freertos;
@@ -21,7 +22,7 @@ namespace a8::hal::native {
 
 class NativeApplication : public Application {
 private:
-    SocketFactory *sFac;
+    Sockets *sFac;
     JSBSimIO *jio;
     Copter *copter;
 
@@ -33,18 +34,15 @@ protected:
         context.properties.set(P_fcs_servo_idx_al, 2);
         context.properties.set(P_fcs_servo_idx_fr, 3);
         context.properties.set(P_fcs_servo_fr_clockwise, true);
-        context.properties.set(P_fcs_att_tick_rate, 100); // HZ
+        context.properties.set(P_fcs_att_tick_rate, 1000); // HZ
         Application::boot(context);
     }
 
     void populate(Context &context) override {
-        sFac = new NativeSocketFactory();
-        jio = new JSBSimIO(sFac);
-        copter = new NativeCopter(jio);
-        this->addChild(jio, context);
-
-        this->addChild(copter, context);
         Application::populate(context);
+        sFac = this->addChild<WrapperComponent<NativeSockets>>(context, new WrapperComponent<NativeSockets>(new NativeSockets()))->wrapped;
+        jio = this->addChild<JSBSimIO>(context, new JSBSimIO(sFac));
+        copter = this->addChild<NativeCopter>(context, new NativeCopter(jio));
     }
 
     void setup(Context &context) override {
@@ -65,7 +63,6 @@ protected:
 
 public:
     NativeApplication() : Application("app") {
-        
     }
 };
 } // namespace a8::hal::native

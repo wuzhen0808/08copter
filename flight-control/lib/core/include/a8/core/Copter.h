@@ -26,15 +26,15 @@ protected:
     virtual AttitudeSensor *createAttitudeSensor(Context &context) = 0;
 
 public:
-    Copter(const String & name) : Component(name){
+    Copter(const String &name) : Component(name) {
         this->init();
         this->totalServos_ = 4;
     }
-    Copter(const String & name , int totalServos) :Component(name){
+    Copter(const String &name, int totalServos) : Component(name) {
         this->init();
         this->totalServos_ = totalServos;
     }
-    void init(){
+    void init() {
     }
     ~Copter() {
     }
@@ -42,15 +42,12 @@ public:
     virtual void populate(Context &context) override {
         Component::populate(context);
         this->log(String::format(">>Copter::setup(),totalServos:%i", totalServos_));
-        
-        attitudeSensor_ = createAttitudeSensor(context);
-        this->addChild(attitudeSensor_, context);
-        
-        servosControl_ = createServosControl(context);
-        this->addChild(servosControl_, context);
 
-        attitudeControl_ = new AttitudeControl(servosControl_, attitudeSensor_);
-        this->addChild(attitudeControl_, context);
+        attitudeSensor_ = this->addChild<AttitudeSensor>(context, createAttitudeSensor(context));
+
+        servosControl_ = this->addChild<ServosControl>(context, createServosControl(context));
+
+        attitudeControl_ = this->addChild<AttitudeControl>(context, new AttitudeControl(servosControl_, attitudeSensor_));
         //
 
         this->log("<<Copter::setup()");

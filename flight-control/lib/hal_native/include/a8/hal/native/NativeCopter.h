@@ -3,7 +3,7 @@
 #include "a8/core/Copter.h"
 #include "a8/hal/native/JSBSimIO.h"
 #include "a8/util/Result.h"
-#include "a8/util/Socket.h"
+#include "a8/util/Sockets.h"
 #include <iostream>
 
 using namespace a8::hal::native;

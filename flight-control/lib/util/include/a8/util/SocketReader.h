@@ -2,7 +2,7 @@
 #include "a8/util/Logger.h"
 #include "a8/util/Reader.h"
 #include "a8/util/Runnable.h"
-#include "a8/util/Socket.h"
+#include "a8/util/Sockets.h"
 #include "a8/util/String.h"
 
 using namespace a8::util;
@@ -10,17 +10,20 @@ namespace a8::util {
 
 class SocketReader : public Reader {
 private:
-    Socket *socket;
+    Sockets *sockets;
+    SOCK socket;
+
 public:
-    SocketReader(Socket *socket) {
-        this->socket = socket;
+    SocketReader(Sockets *sockets, SOCK sock) {
+        this->sockets = sockets;
+        this->socket = sock;
     }
 
     ~SocketReader() {
     }
 
     virtual int read(char *buf, int bufLen) {
-        return socket->receive(buf, bufLen);
+        return sockets->receive(socket, buf, bufLen);
     }
 };
 } // namespace a8::util

@@ -7,6 +7,7 @@
 #include <fstream>
 #include <gtest/gtest.h>
 #include <iostream>
+#include "input_output/net_fdm.hxx"
 
 using namespace a8::util;
 using namespace a8::hal;
@@ -20,7 +21,30 @@ using ::testing::TestPartResult;
 using ::testing::UnitTest;
 
 System *a8::hal::S = new TestSystem();
+TEST(TestString, testAppendOperator) {
 
+    String line = "";
+    int i = 1;
+    line << i << "/";
+    EXPECT_EQ(line, "1/");
+
+    line = "";
+    float f = 1.2f;
+    line << f << "/";
+    EXPECT_EQ(line, "1.200000e+00/");
+
+    line = "";
+    double d = 0.123456789D;
+    line << d << "/";
+    cout << line.getText() << endl;
+    EXPECT_EQ(line, "1.234568e-01/");
+
+    line = "";
+    String abc("abc");
+    line << abc << "/";
+    cout << line.getText() << endl;
+    EXPECT_EQ(line, "abc/");
+}
 TEST(TestString, testEndWith) {
     String msg = "ABCDEF";
     EXPECT_TRUE(msg.endWith("F"));
@@ -45,9 +69,8 @@ TEST(TestString, testAssign) {
     msg = 1;
     EXPECT_EQ(msg, "1");
     msg = 1.1f;
-    cout<<msg.getText()<<endl;
+    cout << msg.getText() << endl;
     EXPECT_EQ(msg, "1.100000e+00");
-    
 }
 
 TEST(TestString, testFormat) {

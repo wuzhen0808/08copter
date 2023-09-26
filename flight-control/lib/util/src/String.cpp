@@ -92,6 +92,26 @@ void String::append(const char ch) {
     append(&ch, 1);
 }
 
+void String::append(const float fValue) {
+    append(String::format("%e", fValue));
+}
+
+void String::append(const double fValue) {
+    append(String::format("%e", fValue));
+}
+
+void String::append(const int fValue) {
+    append(String::format("%i", fValue));
+}
+
+void String::append(const long fValue) {
+    append(String::format("%i", fValue));
+}
+
+void String::append(const unsigned fValue) {
+    append(String::format("%i", fValue));
+}
+
 void String::append(const String *str) {
     append(str->getText(), str->getLength());
 }
@@ -105,6 +125,87 @@ void String::append(const char *str, int len) {
     text = buf;
     length = length + len;
 }
+void String::append(const String &str) {
+    append(str.text, str.length);
+}
+
+// operators
+/**
+String &String::operator=(const char (&buf)[]) {
+    replace(buf, -1, true);
+    return *this;
+}
+*/
+
+String &String::operator=(const char *buf) {
+    replace(buf, -1, true);
+    return *this;
+}
+
+String &String::operator=(const String &str) {
+    replace(str.text, str.length, true);
+    return *this;
+}
+
+String &String::operator=(const char &str) {
+    replace(&str, 1, true);
+    return *this;
+}
+
+String &String::operator=(const int iValue) {
+    String str = String::format("%i", iValue);
+    replace(str.text, str.length, true);
+    return *this;
+}
+
+String &String::operator=(const float fValue) {
+    String str;
+    str.append(fValue);
+    this->operator=(str);
+    return *this;
+}
+
+String &String::operator=(const Buffer<char> &buf) {
+    replace(buf.getAll(), buf.getLength(), true);
+    return *this;
+}
+
+String &String::operator<<(const float fValue) {
+    append(fValue);
+    return *this;
+}
+String &String::operator<<(const double fValue) {
+    append(fValue);
+    return *this;
+}
+String &String::operator<<(const int fValue) {
+    append(fValue);
+    return *this;
+}
+String &String::operator<<(const long fValue) {
+    append(fValue);
+    return *this;
+}
+String &String::operator<<(const unsigned fValue) {
+    append(fValue);
+    return *this;
+}
+
+String &String::operator<<(const char *buf) {
+    append(buf);
+    return *this;
+}
+
+String &String::operator<<(const char ch) {
+    append(ch);
+    return *this;
+}
+
+String &String::operator<<(const String &str) {
+    append(str);
+    return *this;
+}
+// other
 
 bool String::endWith(const char *str) {
     int len = getLength(str);
@@ -138,39 +239,7 @@ Buffer<String> String::split(const char separator) {
     return buffer;
 }
 
-// operators
-String &String::operator=(const char *buf) {
-    replace(buf, -1, true);
-    return *this;
-}
-
-String &String::operator=(const String &str) {
-    replace(str.text, str.length, true);
-    return *this;
-}
-
-String &String::operator=(const char &str) {
-    replace(&str, 1, true);
-    return *this;
-}
-
-String &String::operator=(const int iValue) {
-    String str = String::format("%i", iValue);
-    replace(str.text, str.length, true);
-    return *this;
-}
-
-String &String::operator=(const float fValue) {
-    String str = String::format("%e", fValue);
-    replace(str.text, str.length, true);
-    return *this;
-}
-
-String &String::operator=(const Buffer<char> &buf) {
-    replace(buf.getAll(), buf.getLength(), true);
-    return *this;
-}
-
+// friend static member
 String operator+(String const &str1, String const &str2) {
     int len1 = str1.getLength();
     int len2 = str2.getLength();

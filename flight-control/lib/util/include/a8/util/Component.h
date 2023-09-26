@@ -123,10 +123,13 @@ public:
         getLogger()->info(msg);
     }
 
-    void addChild(Component *com, Context &context) {
+    template <class T>
+    T *addChild(Context &context, Component *com) {
         com->stageTo(this->stage, context);
         this->children->append(com);
+        return static_cast<T *>(com);
     }
+
     virtual void boot(Context &context) {
         this->loggerFactory = context.loggerFactory;
         stageChildrenTo(Boot, context);

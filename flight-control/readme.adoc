@@ -7,47 +7,58 @@
 
 === {chapter}.{counter:bg}. Introduction
 
-The aim of this project is learning how to build a quad copter. Building a copter from nothing is a long task to go along with. It may take you month or more to learn the necessary concepts in background. So here this project are trying to get the study curve clear.
+The aim of this project is learning how to build a quad copter. 
 
-There are a lot of information around web about how to build a copter from scratch. Basically a copter is made up with a `frame`, `several motors`, a `micro controller board` , one or more peripherals as `sensors` and a `battery`. In order to implement the attitude control often an inertial measurement unit is necessary as the basic peripheral to provide the ability of sensing position, angular rate and magnet.
+Building a copter from nothing is a long run. It may take you several month to get your idea flyable. So here we are trying to get the study curve clear.
 
-Beside the necessary parts above, there are still tools and small components around where to be prepared. Such staff will be listed at the appendix part.
+Hardwares - a drone copter is composed with a `Frame`, several `Motors`, a `Micro Controller Board` , one or more `Sensors` , a `Battery`. 
 
-We are paying efforts to make the code structurally clean and easy to read. We do not care much the performance at this moment. Please note the size of the MPU's flash and SRAM memories. You must make sure it's enough for the firmware to be located. Currently the size of the target firmware built here is around ?k.
+Software - a drone copter need a `Flight Control System` and a `Remote Control System`.
 
-Why we call this project A8? Primarily we need a short name. A word short enough when we type code in the namespace of C++. But we still can assign it some meaning. For example you can think it as a project that is built on top of Arduino. And it actually is started at the Autumn of 2003. It is August as well. There are a lot of words started with A. How about the 8? Then August is the 8th month. Additionally if you rotate the arduino board you will see the 8-like infinity sign printed on the board.
-=== {chapter}.{counter:bg}. Concepts in background
+Attitude control is the core of the flight control system. In order to achieve self balance, an `Inertial Measurement Unit` is adopted as the basic peripheral to provide the ability of knowing the actual attitude of the copter. 
 
-==== {chapter}.{bg}.{counter:hard}. IMU sensors.
+There are a set of tools as well for you to develop and tuning the software parameters.
 
-==== {chapter}.{bg}.{counter:hard}. PID controller
+One principal here is focusing on the readability of the source code but not the performance. Because the goal of this project is not a flyable copter but the procedure to build one. 
 
-==== {chapter}.{bg}.{counter:hard}. Others
+A8 stand for what? Because Arduino UNO R4 is adopted here as the main board of the FCS. Another reason is that this project started from Autumn and August of 2003. You know august is the 8th month of a year.
 
-=== {chapter}.{counter:bg}. Quad copter hard ware
-==== {chapter}.{bg}.{counter:hard}. Frame
+== {counter:chapter}. Concepts framework
+This section introduce the concepts involved. If you already know the background about how an copter is composed you can skip this section.
+
+=== {chapter}.{counter:cf}. Hardware
+
+==== {chapter}.{cf}.{counter:hard}. Frame
 The frame may not so much worth to introduce, it is not a abstract component to build a copter.Basically we need a four arms to install the motors and have a center platform to fix the PCB boards.
 
-==== {chapter}.{bg}.{counter:hard}. Brush-less Motors
+==== {chapter}.{cf}.{counter:hard}. Brush-less Motors
 
-==== {chapter}.{bg}.{counter:hard}. ESC(electric speed controller)
+==== {chapter}.{cf}.{counter:hard}. ESC(electric speed controller)
 A brush less motor need an ESC to drive itself. A quad copter need 4 brush less motors and 4 ESCs. We don't know how to work with plain brush-having motors. 
 
 
-==== {chapter}.{bg}.{counter:hard}. Board
+==== {chapter}.{cf}.{counter:hard}. Board
 
 The board during the development of this project is Arduino-UNO-R4-MINIMA. The MPU is Cortex-M4 architecture and the model is RA4M1 from Renesas.
 
-==== {chapter}.{bg}.{counter:hard}. IMU
+==== {chapter}.{cf}.{counter:hard}. IMU
 Here we adopt MPU-9250 as the IMU(Inertial Measurement Unit) peripheral which contains three sensors which are accelerometer, gyro and magnetometer.
 
-==== {chapter}.{bg}.{counter:hard}. RC
+==== {chapter}.{cf}.{counter:hard}. RC
 Remote control.
 
-=== {chapter}.{counter:bg}. Software - Flight Control
+=== {chapter}.{counter:cf}. Software - Flight Control
+==== {chapter}.{cf}.{counter:flight}. PID controller
+An general approach to deal with auto-control problem. 
 
-==== {chapter}.{bg}.{counter:flight}. Attitude control
-Attitude control is the most important part in a flight control system. A typical process flow is as below.
+*** P
+
+*** I
+
+*** D
+
+==== {chapter}.{cf}.{counter:flight}. Attitude control
+Attitude control is the most important part in a flight control system. A typical activity flow is as below.
 
 *** Attitude commands.
     An aileron command actually a instruction of rolling the vehicle to a desired attitude or called position(in certain coming time).The command value being clip to a value between -1 to 1. For a quad copter, aileron command can finally lead to a moving left or right.
@@ -82,11 +93,12 @@ Attitude control is the most important part in a flight control system. A typica
 *** ESC controllers.
     According the output from above step, each ESC controller will update the servo with a speed required.
 
-=== {chapter}.{counter:bg}. Software - RC
+=== {chapter}.{counter:cf}. Software - RC
 
-==== {chapter}.{bg}.{counter:rc}. TODO
+==== {chapter}.{cf}.{counter:rc}. TODO
 
 == {counter:chapter}. Dependencies
+This section introduce the external tools and libs.
 
 === {chapter}.{counter:dep}. Tools
 
@@ -112,9 +124,16 @@ Run pio to build.
 $ pio run -e arduino_uno_minima
 ----
 
+
+==== {chapter}.{dep}.{counter:tools}. JSBSim[optional]
+This tool is used to simulate and tuning the FCS under development.
+
+==== {chapter}.{dep}.{counter:tools}. Flight gear[optional]
+This tool is used to simulate and tuning the FCS under development.
+
 ==== {chapter}.{dep}.{counter:tools}. gnuplot[optional]
 
-This tool is optional and only needed in case you are going to plot data. 
+This tool is optional and is used to plot data and tuning FCS.
 
 How to install gnuplot?
 
@@ -123,13 +142,11 @@ How to install gnuplot?
 pacman -S ...
 ----
 
-==== {chapter}.{dep}.{counter:libs}. JSBSim-Plot[optional]
+==== {chapter}.{dep}.{counter:tools}. JSBSim-Plot[optional]
 
-This tool is optional and only needed in case you are going to plot data. 
+The code under folder lib/JSBSim-Plot is come from the git repository.
 
-This tool is for the purpose of automatically processing and calling gnuplot to plot data produced by JSBSim.
-
-==== {chapter}.{dep}.{counter:libs}. Flight-Gear[optional]
+This tool automatically process and call gnuplot to plot data produced by JSBSim.
 
 
 ==== {chapter}.{dep}.{counter:tools}. vscode[optional]
@@ -152,14 +169,75 @@ $ pio.exe project init --ide vscode --environment fc_native
 
 ==== {chapter}.{dep}.{counter:libs}. JSBSim-Kernel
 
-==== {chapter}.{dep}.{counter:libs}. JSBSim-Plot
-
 == {counter:chapter}. Architecture
-TODO a box graph here.
 
-=== {chapter}.{counter:folder}. lib/core
+=== {chapter}.{counter:arch}. Diagram
+A diagram to illustrate the dependence relation between parts of code.
 
-=== {chapter}.{counter:folder}. lib/FreeRTOS-Kernel
+
+=== {chapter}.{counter:arch}. Folder structure
+
+==== {chapter}.{arch}.{counter:folder}. lib/util
+Utility code which itself does not have any dependence.
+
+It's the real kernel.
+
+==== {chapter}.{arch}.{counter:folder}. lib/hal
+Hardware abstract layer.
+
+In order to minimize the external dependence this layer take the role of isolating the core code from the external env. 
+
+Note the code below has defined a global variable with type System. System is the interface to access external env. 
+
+[source,cpp]
+----
+//file:lib/hal/include/a8/hal/Hal.h
+namespace a8::hal {
+    extern System *S;
+}
+----
+
+In each environment's application layer, you should provide the initialization the S variable. For example the code below is for arduino env.
+
+[source,cpp]
+----
+#include "a8/hal/Hal.h"
+System * a8::hal::S = new ArduinoSystem();
+----
+
+==== {chapter}.{arch}.{counter:folder}. lib/cil
+
+Configuration interface layer.
+
+Developer interface to select env and parameter settings.
+
+Provide a plugin mechanism to get all the unknown env plugin-enabled by a package of code.
+
+==== {chapter}.{arch}.{counter:folder}. lib/core
+
+Implement all concept about a quad copter.
+
+Have two external dependence, lib/util and lib/hal.
+
+==== {chapter}.{counter:folder}. lib/hal_arduino
+
+Env of the real world supported by arduino framework. Here we mix all external stuff such as Arduino UNO R4, IMU9250 and so on.
+
+This part of code depends on lib/util.
+
+Should not depend on lib/core, but currently not meet this rule. We should minimize such dependence and finally remove all such code into the src/arduino folder. Finally it should be serval lines of such code and all env related code should become some form of configuration.
+
+==== {chapter}.{arch}.{counter:folder}. lib/hal_native
+End of simulation with all necessary external stuff such as JSBSim, Flight Gear etc.
+
+Depends on lib/util.
+
+Should not depend on lib/core, but currently not meet this rule.
+
+
+==== {chapter}.{arch}.{counter:folder}. lib/cil_x
+
+==== {chapter}.{arch}.{counter:folder}. lib/FreeRTOS-Kernel
 Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
 
 This folder contains only the core code of FreeRTOS functions. We are using the thread/task and timer part of FreeRTOS.
@@ -173,52 +251,24 @@ For example the below parameter is defined in the file of FreeRTOSConfig.h locat
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS (5)
 ----
 
-=== {chapter}.{counter:folder}. lib/FreeRTOS-MemMang-heap4
+==== {chapter}.{arch}.{counter:folder}. lib/FreeRTOS-MemMang-heap4
 Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
 
 This folder contains one of the memory management policy which we adopted for both Arduino UNO and native environment. This is enabled by the settings of environment of uno_r4_minima in the platformIO configuration file 'platformio.ini'.
 
 Why we don't use the Arduino_FreeRTOS.h which provided by the arduino-renesas framework itself? It's because we are trying to get the code structure clean, clear and then easy understandable. So we need the code independent with each part and as less as possible to depend 3rd party code or library.
 
-=== {chapter}.{counter:folder}. lib/FreeRTOS-MSVC-MingW
+==== {chapter}.{arch}.{arch}.{counter:folder}. lib/FreeRTOS-MSVC-MingW
 Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
 
 For the purpose of porting FreeRTOS to the native(MingW) environment.
 
-=== {chapter}.{counter:folder}. lib/FreeRTOS-ArduinoRenesas-UNO
+==== {chapter}.{arch}.{counter:folder}. lib/FreeRTOS-ArduinoRenesas-UNO
 Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
 
 For the purpose of porting FreeRTOS to the arduino_uno_minima environment.
 
-=== {chapter}.{counter:folder}. hal
-In order isolate the core code from the hardware environment we introduce this lib as the hardware abstract layer for defines of any environment related interfaces.
-
-Please note the code below has defined a external global variable with type System. System is the interface to access the hardware part of the copters. 
-
-[source,cpp]
-----
-//file:lib/hal/include/a8/hal/Hal.h
-namespace a8::hal {
-    extern System *S;
-}
-----
-
-In each environment's application layer, you should provide the initialization code for this global variable. For example the code block showing below come from the src/arduino/main.cpp source code file.
-[source,cpp]
-----
-#include "a8/hal/Hal.h"
-System * a8::hal::S = new ArduinoSystem();
-----
-
-=== {chapter}.{counter:folder}. hal_arduino
-This is the top most application layer by which all the layers underneath are mixed here for a final firmware under building. Actually it's not very accurate to say it the top most layer because we have put the main function in another folder/file. It is file `src/arduino/main.cpp`. 
-
-Why we not providing a callback function? Like the way adopted by arduino framework in which the main function is replaced by two function `setup()` and `loop()`. May be arduino framework have a good reason for such design but here we believe in our context user should own the decision-making freedom. There are already a main wheel in hand we do not have a good reason to hide it and invent another one.
-
-=== {chapter}.{counter:folder}. hal_native
-As the function of folder arduino, native environment is defined here.
-
-=== {chapter}.{counter:folder}. src
+==== {chapter}.{arch}.{counter:folder}. src
 There folder contains the main entry function for each environment. How to distinguish them? The answer is by the building filter which is defined in the platformio.ini file.
 
 For example the code below defines the filter when building firmware for arduino environment.
@@ -227,7 +277,7 @@ For example the code below defines the filter when building firmware for arduino
 ----
     build_src_filter = +<arduino/>
 ----
-=== {chapter}.{counter:folder}. simulation
+==== {chapter}.{arch}.{counter:folder}. simulation
 This folder contains the model file and command script that necessary to run flight gear as the 3D viewer.
 
 All the files under the folder simulation/aircraft/arducopter are copied from the ArduCopter project.
@@ -235,25 +285,13 @@ All the files under the folder simulation/aircraft/arducopter are copied from th
 //  3
 == {counter:chapter}. Building
 
-We have different environments configured through platformIO, they are fc_uno_r4_minima & fc_native etc.
+We have mainly two env configured in platformio.ini, `fc_uno_r4_minima` & `fc_native`.
 
-Environment fc_uno_r4_minima is the target environment for the flight control system to be deployed on. 
+Env fc_uno_r4_minima is the target environment for the flight control system to be deployed on. 
 
-The fc_native environment is designed here to support running the code in a simulation environment. In certain sense a simulator is actually more important here than a physical drone. 
+Env fc_native is to support running the code in a simulation environment.
 
-At the moment the native environment only support MingW platform. 
-
-
-Building for native environment:
-[source,shell]
-----
-todo
-----
-Building for Arduino-UNO-Minima environment:
-[source,shell]
-----
-todo
-----
+At the moment the native environment only support building with MingW under Windows. 
 
 === {chapter}.{counter:build}. Build program for native(MingW) environment
 Change directory to the project home folder and run command below.

@@ -3,7 +3,6 @@
 #include "a8/core/ServosControl.h"
 #include "a8/hal/Servo.h"
 #include "a8/hal/native/JSBSimIO.h"
-#include "a8/util/Socket.h"
 #include "a8/hal/native/NativeServo.h"
 
 using namespace a8::core;
