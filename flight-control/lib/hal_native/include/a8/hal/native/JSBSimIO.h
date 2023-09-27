@@ -1,7 +1,8 @@
 #pragma once
 #include "a8/hal/Hal.h"
 #include "a8/hal/native/ConsoleWriter.h"
-#include "a8/hal/native/FGSocketOutputReader.h"
+#include "a8/hal/native/FGSocketLineReader.h"
+#include "a8/hal/native/FGSocketStructReader.h"
 #include "a8/hal/native/FileWriter.h"
 #include "a8/util/Component.h"
 #include "a8/util/Math.h"
@@ -11,6 +12,9 @@
 #include "a8/util/Sockets.h"
 #include "a8/util/String.h"
 #include "a8/util/Vector3f.h"
+#include "a8/util/ReadWriteRunner.h"
+#include "a8/util/RunnerComponent.h"
+
 
 using namespace a8::util;
 using namespace a8::hal;
@@ -24,7 +28,7 @@ private:
 
     Writer *consoleWriter;
 
-    FGSocketOuputReader *fgSocketReader;
+    FGSocketReader *fgSocketReader;
 
 public:
     JSBSimIO(Sockets *socketFactory) : Component("jsb") {
@@ -38,26 +42,54 @@ public:
         // TODO release runner from scheduler, and delete it here;
     }
 
-    void populate(Context &context) override;
-    void setup(Context &context) override;
+    void populate(Context &context) override {
+        Component::populate(context);
+    }
+    void setup(Context &context) override {
+
+        this->fgSocketReader = this->addChild<FGSocketReader>(context, new FGSocketLineReader(this->sockets));
+
+        client = this->sockets->socket();
+        if (client == 0) {
+            context.stop("Error, cannot create socket.");
+            return;
+        }
+        log("Connecting to JSBSim ...");
+        String connectHost = context.properties.getString("todo", "127.0.0.1");
+        int connectPort = context.properties.getInt("todo", 5126);
+
+        Result connected = this->sockets->connect(client, connectHost, connectPort);
+        if (connected.error) {
+            context.stop("Failed connect to JSBSim");
+            return;
+        }
+        log("Successfully connected to JSBSim.");
+
+        Runnable *runner2 = new ReadWriteRunner(new SocketReader(sockets, client), consoleWriter);
+        Component *com = this->addChild<RunnerComponent>(context, new RunnerComponent("rwr", runner2));
+    }
 
     void setThrottleNorm(int id, float throttle) {
         String sb = String::format("set fcs/throttle-cmd-norm[%i] %f\n", id, throttle);
         int sent = sockets->send(client, sb);
     }
     Vector3f getAngVel() {
-        FGNetFDM fdm = fgSocketReader->getLastFGNetData();
-        Vector3f ret = Vector3f(fdm.phi, fdm.theta, fdm.psi);
+        SocketData *fdm = fgSocketReader->getLastData();
+        Vector3f ret = Vector3f(fdm->phi, fdm->theta, fdm->psi);
         return Math::radian2Degree(ret);
     }
     Vector3f getAccVel() {
-        FGNetFDM fdm = fgSocketReader->getLastFGNetData();
-        Vector3f ret = Vector3f(fdm.A_X_pilot, fdm.A_Y_pilot, fdm.A_Z_pilot);
+        SocketData *fdm = fgSocketReader->getLastData();
+        Vector3f ret = Vector3f(fdm->A_X_pilot, fdm->A_Y_pilot, fdm->A_Z_pilot);
         return Math::feetToMeters(ret);
     }
+    double getAgl() {
+        SocketData *fdm = fgSocketReader->getLastData();
+        return fdm->agl;
+    }
     double getAlt() {
-        FGNetFDM fdm = fgSocketReader->getLastFGNetData();
-        return fdm.altitude;
+        SocketData *fdm = fgSocketReader->getLastData();
+        return fdm->altitude;
     }
 };
 } // namespace a8::hal::native

@@ -1,7 +1,7 @@
 #pragma once
+#include "a8/util/Callback2.h"
 #include "a8/util/Result.h"
 #include "a8/util/String.h"
-
 namespace a8::util {
 
 typedef int SOCK;
@@ -9,7 +9,8 @@ typedef int SOCK;
 class Sockets {
 
 public:
-    virtual Result setBlocking(SOCK sock, bool blocking) = 0;
+    
+    // virtual Result setBlocking(SOCK sock, bool blocking) = 0;
 
     virtual bool send(SOCK sock, String &str) = 0;
 
@@ -29,8 +30,9 @@ public:
 
     virtual SOCK socket() = 0;
 
-    virtual int select(Buffer<SOCK> *readSockets, Buffer<SOCK> *writeSockets, Buffer<SOCK> *exceptionSockets) = 0;
+    virtual int select(Buffer<SOCK> &readSockets, Buffer<SOCK> &writeSockets, Buffer<SOCK> &exceptionSockets) = 0;
 
+    virtual int select(SOCK &sock) = 0;
 };
 
 } // namespace a8::util

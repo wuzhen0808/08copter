@@ -1,3 +1,4 @@
+#include "a8/util/Util.h"
 #include "a8/util/String.h"
 #include "a8/util/Buffer.h"
 #include <stdio.h>
@@ -208,7 +209,7 @@ String &String::operator<<(const String &str) {
 // other
 
 bool String::endWith(const char *str) {
-    int len = getLength(str);
+    int len = Util::strLength(str);
     if (this->length < len) {
         return false;
     }

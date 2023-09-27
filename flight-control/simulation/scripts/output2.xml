@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
-<output name="127.0.0.1" type="SOCKET" port="5502" protocol="TCP" rate="10">
+<output name="127.0.0.1" type="SOCKET" port="5502" protocol="TCP" rate="100">
     <time type="simulation" resolution="1e-6" />
-    <aerosurfaces>ON</aerosurfaces>
+    <!--
+        see code below to find the subSystem names.
+        bool FGOutputType::Load(Element* element)
+        <aerosurfaces>ON</aerosurfaces>
+    -->
+    <position>ON</position>
 </output>

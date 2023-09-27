@@ -1,3 +1,6 @@
+// clang-comment off
+#include "a8/hal/native/NativeSockets.h"
+// clang-comment on
 #include "a8/core/Copter.h"
 #include "a8/core/defines.h"
 #include "a8/freertos/FreeRtosInitializer.h"
@@ -6,7 +9,6 @@
 #include "a8/hal/native/JSBSimIO.h"
 #include "a8/hal/native/NativeCopter.h"
 #include "a8/hal/native/NativeLoggerFactory.h"
-#include "a8/hal/native/NativeSockets.h"
 #include "a8/hal/native/NativeSystem.h"
 #include "a8/util/Application.h"
 #include "a8/util/Finally.h"
@@ -41,7 +43,13 @@ protected:
     void populate(Context &context) override {
         Application::populate(context);
         sFac = this->addChild<WrapperComponent<NativeSockets>>(context, new WrapperComponent<NativeSockets>(new NativeSockets()))->wrapped;
+        if (context.isStop()) {
+            return;
+        }
         jio = this->addChild<JSBSimIO>(context, new JSBSimIO(sFac));
+        if (context.isStop()) {
+            return;
+        }
         copter = this->addChild<NativeCopter>(context, new NativeCopter(jio));
     }
 

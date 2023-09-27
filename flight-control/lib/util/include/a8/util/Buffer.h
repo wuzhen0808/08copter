@@ -1,6 +1,8 @@
 #pragma once
 #include "a8/util/Callback3.h"
 #include "a8/util/ForEach.h"
+#include "a8/util/Util.h"
+
 namespace a8::util {
 
 template <typename T>
@@ -24,11 +26,35 @@ public:
     T get(int idx) const;
     T *getAll() const;
     int remove(int from);
+
+    int indexOf(T ele) {
+        for (int i = 0; i < length; i++) {
+            if (ele == buffer[i]) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    int read(int from1, T *buf, int len) {
+        if (from1 >= this->length) {
+            return -1;
+        }
+        if (len > this->length - from1) {
+            len = this->length - from1;
+        }
+        Util::copy<T>(this->buffer, from1, buf, 0, len);
+        return len;
+    }
+
     T *toArray(T *buf) {
         for (int i = 0; i < this->length; i++) {
             buf[i] = this->buffer[i];
         }
         return buf;
+    }
+    void clear() {
+        this->length = 0;
     }
     Buffer<T> *append(const T &element) {
         return append(&element, 1);

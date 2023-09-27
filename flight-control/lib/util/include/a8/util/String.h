@@ -6,14 +6,7 @@ namespace util {
 
 class String {
 
-private:
-    static int getLength(char *str) {
-        for (int i = 0;; i++) {
-            if (str[i] == '\0') {
-                return i;
-            }
-        }
-    }
+private:    
     int length;
     char *text;
     void replace(const char *buf, int len, bool deleteText);

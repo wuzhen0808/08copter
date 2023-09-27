@@ -165,15 +165,19 @@ public:
             for (int i = 0; i < count; i++) {
                 Component *com = children->get(i);
                 com->stageTo(stage2, context);
+                if (context.isStop()) {
+                    break;
+                }
             }
         }
     }
 
     virtual void stageTo(Stage stage2, Context &context) {
+
         if (context.isStop()) {
-            log("Context stoped, cannot stage forward.");
             return;
         }
+
         switch (this->stage) {
         case Zero:
             this->stage = Boot;

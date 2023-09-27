@@ -12,15 +12,15 @@ protected:
     int from = 0;
 
 public:
-    StringReader(String str) {
-        buffer.append(str.getText(), str.getLength());
+    StringReader(const char *str) {
+        buffer.append(str, Util::strLength(str));
     }
 
     ~StringReader() {
     }
 
     virtual int read(char *buf, int bufLen) override {
-        return -1;
+        return buffer.read(from, buf, bufLen);
     };
 };
 

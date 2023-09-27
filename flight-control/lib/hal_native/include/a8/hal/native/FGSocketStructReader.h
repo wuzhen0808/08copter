@@ -1,33 +1,14 @@
 #pragma once
-#include "a8/core/defines.h"
-#include "a8/hal/Hal.h"
-#include "a8/hal/native/ConsoleWriter.h"
-#include "a8/hal/native/FileWriter.h"
-#include "a8/util/Component.h"
-#include "a8/util/Math.h"
-#include "a8/util/Rate.h"
-#include "a8/util/Result.h"
-#include "a8/util/Runnable.h"
-#include "a8/util/Sockets.h"
-#include "a8/util/String.h"
-#include "a8/util/Vector3f.h"
-#include "input_output/net_fdm.hxx"
-#include "winsock.h"
+
+#include "a8/hal/native/FGSocketReader.h"
 
 using namespace a8::util;
 using namespace a8::hal;
 
 namespace a8::hal::native {
-class FGSocketOuputReader : public Component {
+class FGSocketStructReader : public FGSocketReader {
 
 private:
-    Sockets *sockets;
-    SOCK server;
-    SOCK sockIn;
-    FGNetFDM lastFGNetData;
-    uint32_t cur_us;
-    Writer *dataFileWriter;
-
     static void byteSwap(char *buffer, int len) {
         uint32_t *buf = (uint32_t *)buffer;
         for (int i = 0; i < len / 4; i++) {
@@ -45,75 +26,16 @@ private:
     }
 
 public:
-    FGSocketOuputReader(Sockets *socketFactory) : Component("sor") {
-        rate = Rate::ForEver;
-        this->sockets = socketFactory;
-        this->server = 0;
-        this->sockIn = 0;
-    }
-
-    FGNetFDM getLastFGNetData() {
-        return lastFGNetData;
+    FGSocketStructReader(Sockets *socketFactory) : FGSocketReader(socketFactory) {
     }
 
     virtual void setup(Context &context) override {
-
-        int bindPort = context.properties.getInt(P_jsb_bind_port, 5502);
-        String dataFile = context.properties.getString(P_jsb_data_file, "");
-
-        this->dataFileWriter = new FileWriter(dataFile); // todo write data log
-
-        // TODO move the server to the context ?
-        server = this->sockets->socket();
-        if (server == 0) {
-            context.stop(String::format("cannot create new socket from socket factory."));
-            return;
-        }
-        String address = "127.0.0.1";
-
-        Result bResult = this->sockets->bind(server, address, bindPort); //
-        if (bResult.error != 0) {
-            context.stop(String::format("cannot bind to port:%i, error:%i", bindPort, bResult.error));
-            return;
-        }
-
-        Result lResult = this->sockets->listen(server);
-
-        if (lResult.error != 0) {
-            context.stop(String::format("cannot listen on port:%i", bindPort));
-            return;
-        }
-
-        log(String::format("Waiting the JSBSim start up and connect to the the address:%s:%i", address.getText(), bindPort));
-
-        this->sockIn = this->sockets->accept(server);
-        if (sockIn == 0) {
-            context.stop("cannot accept connect from JSBSim.");
-            return;
-        }
-        log("JSBSim connected in, trying to receive the first package of data.");
-
-        bool success = receive(lastFGNetData);
-        if (!success) {
-            context.stop("Failed to the get the connection ready from JSBSim.");
-        }
+        FGSocketReader::setup(context);
     }
 
-    virtual void run() override {
-        while (true) {
-            bool success = receive(lastFGNetData);
-            if (success) {
-                continue;
-            }
-            // exit loop?
-            break;
-        }
-        log("Error, JSBSim socket connection broken.");
-    }
-
-    bool receive(FGNetFDM &data) {
+    bool update(SocketData *data) override {
         int size = sizeof(FGNetFDM);
-        char buf[size];
+        char buf[size]{0};
 
         int received = 0;
         char *from = buf;
@@ -129,8 +51,11 @@ public:
                 broken = true;
                 break;
             }
-
+            if (true) {
+                break;
+            }
             received += len;
+            from += len;
             if (received == size) {
                 break;
             }
@@ -138,13 +63,20 @@ public:
         if (broken) {
             return false;
         }
-        // byteSwap(buf, size);
-        data = *(FGNetFDM *)buf;
+        byteSwap(buf, size);
+        FGNetFDM data2 = *(FGNetFDM *)buf;
         String line;
-        log("data received, going to log it....");
+        // log(buildDataLine(data2, line));
+        data->A_X_pilot = data2.A_X_pilot;
+        data->A_Y_pilot = data2.A_Y_pilot;
+        data->A_Z_pilot = data2.A_Z_pilot;
+        data->altitude = data2.altitude;
+        data->agl = data2.agl;
+        data->phi = data2.phi;
+        data->psi = data2.psi;
+        data->theta = data2.theta;
+        log(String::format("data.agl:%e=?:%e", data->agl, data2.agl));
 
-        log(buildDataLine(data, line));
-        log("Done of log data.");
         return true;
     }
 

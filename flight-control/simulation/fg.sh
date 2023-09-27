@@ -29,6 +29,6 @@ fgfs \
     --time-match-local \
     --lon=121 \
     --lat=31 \
-    --disable-sound \
+#    --disable-sound \
 #	--airport=PHBK \
 #	--timeofday=noon \

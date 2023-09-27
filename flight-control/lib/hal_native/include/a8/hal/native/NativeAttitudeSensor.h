@@ -26,6 +26,9 @@ public:
     virtual double getAlt() {
         return jio->getAlt();
     }
+    virtual double getAgl() {
+        return jio->getAgl();
+    }
     /**
      * Angular velocity in Degree.
     */

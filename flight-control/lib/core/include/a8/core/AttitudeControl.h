@@ -67,11 +67,12 @@ public:
 
     virtual void tick(const long tickTime) override {
 
-        double alt1 = attitudeSensor->getAlt();
+        double agl1 = attitudeSensor->getAgl();
+
         Vector3f aVel1 = attitudeSensor->getAngVel();
         //
-        double alt2 = 20; // Meter
-        float cmdThrottle = altitudeControl_->update(alt2, alt1);
+        double agl2 = 20; // Meter
+        float cmdThrottle = altitudeControl_->update(agl2, agl1);
 
         Vector3f aVel2 = Vector3f(0.0, 0.5, 0.0);
         float cmdRoll = rollControl_->update(aVel2.x, aVel1.x);
@@ -86,10 +87,23 @@ public:
         float ar = cmdThrottle - cmdRoll - cmdPitch + yawSign * cmdYaw; // AR: After right
         // fr = al = fl = ar = 0.6;
         // fr = al = 0.6f + yawSign * 0.00005f;
-        log(String::format("alt:%.2f=>%.2f", alt1, alt2)                                                                  //
+        trim(fr);
+        trim(al);
+        trim(fl);
+        trim(ar);
+
+        log(String::format("\tagl:%e=>%e", agl1, agl2)                                                                    //
             + String::format(",cmdThrottles:%i:%.2f,%i:%.2f,%i:%.2f,%i:%.2f", idxFL, fl, idxFR, fr, idxAR, ar, idxAL, al) //
         );
         servosControl->setThrottleNorm(idxFL, fl, idxFR, fr, idxAR, ar, idxAL, al);
+    }
+
+    void trim(float &throttle) {
+        if (throttle > 1) {
+            throttle = 1;
+        } else if (throttle < -1) {
+            throttle = -1;
+        }
     }
 
     void setDataLog(Writer *dataLog) {
