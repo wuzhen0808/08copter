@@ -2,6 +2,7 @@ jsbsim \
  --script=scripts/run \
  --logdirectivefile=scripts/output1 \
  --logdirectivefile=scripts/output2 \
+ --logdirectivefile=scripts/output3 \
  --realtime \
 # --suspend \
 #--simulation-rate=10 \

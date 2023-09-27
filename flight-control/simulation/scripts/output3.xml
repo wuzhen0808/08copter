@@ -1,5 +1,9 @@
 <?xml version="1.0"?>
-<output name="127.0.0.1" type="FLIGHTGEAR" port="5502" protocol="TCP" rate="100">
+<output name="qc2309.csv" type="CSV" rate="100">
+    <property> velocities/vc-kts </property>
     <time type="simulation" resolution="1e-6" />
-    <!-- <aerosurfaces>ON</aerosurfaces> -->
+    <velocities>ON</velocities>
+    <position>ON</position>
+    <propulsion>ON</propulsion>
+
 </output>

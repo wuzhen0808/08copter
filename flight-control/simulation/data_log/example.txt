@@ -1,0 +1,87 @@
+$ prep_plot data_log/example.csv
+Known variable names in data file:
+  1:  Time
+  2:  q bar (psf)
+  3:  Reynolds Number
+  4:  V_{Total} (ft/s)
+  5:  V_{Inertial} (ft/s)
+  6:  UBody
+  7:  VBody
+  8:  WBody
+  9:  UdotBody
+  10:  VdotBody
+  11:  WdotBody
+  12:  UdotBody_i
+  13:  VdotBody_i
+  14:  WdotBody_i
+  15:  BodyAccel_X
+  16:  BodyAccel_Y
+  17:  BodyAccel_Z
+  18:  Aero V_{X Body} (ft/s)
+  19:  Aero V_{Y Body} (ft/s)
+  20:  Aero V_{Z Body} (ft/s)
+  21:  V_{X_{inertial}} (ft/s)
+  22:  V_{Y_{inertial}} (ft/s)
+  23:  V_{Z_{inertial}} (ft/s)
+  24:  V_{X_{ecef}} (ft/s)
+  25:  V_{Y_{ecef}} (ft/s)
+  26:  V_{Z_{ecef}} (ft/s)
+  27:  V_{North} (ft/s)
+  28:  V_{East} (ft/s)
+  29:  V_{Down} (ft/s)
+  30:  Altitude ASL (ft)
+  31:  Altitude AGL (ft)
+  32:  Phi (deg)
+  33:  Theta (deg)
+  34:  Psi (deg)
+  35:  Q(1)_{LOCAL}
+  36:  Q(2)_{LOCAL}
+  37:  Q(3)_{LOCAL}
+  38:  Q(4)_{LOCAL}
+  39:  Q(1)_{ECEF}
+  40:  Q(2)_{ECEF}
+  41:  Q(3)_{ECEF}
+  42:  Q(4)_{ECEF}
+  43:  Q(1)_{ECI}
+  44:  Q(2)_{ECI}
+  45:  Q(3)_{ECI}
+  46:  Q(4)_{ECI}
+  47:  Alpha (deg)
+  48:  Beta (deg)
+  49:  Latitude (deg)
+  50:  Latitude Geodetic (deg)
+  51:  Longitude (deg)
+  52:  X_{ECI} (ft)
+  53:  Y_{ECI} (ft)
+  54:  Z_{ECI} (ft)
+  55:  X_{ECEF} (ft)
+  56:  Y_{ECEF} (ft)
+  57:  Z_{ECEF} (ft)
+  58:  Earth Position Angle (deg)
+  59:  Distance AGL (ft)
+  60:  Terrain Elevation (ft)
+  61:  engine-1 HP (engine 0)
+  62:  prop Torque (engine 0)
+  63:  prop PFactor Pitch (engine 0)
+  64:  prop PFactor Yaw (engine 0)
+  65:  prop Thrust (engine 0 in lbs)
+  66:  prop RPM (engine 0)
+  67:  engine-1 HP (engine 1)
+  68:  prop Torque (engine 1)
+  69:  prop PFactor Pitch (engine 1)
+  70:  prop PFactor Yaw (engine 1)
+  71:  prop Thrust (engine 1 in lbs)
+  72:  prop RPM (engine 1)
+  73:  engine-1 HP (engine 2)
+  74:  prop Torque (engine 2)
+  75:  prop PFactor Pitch (engine 2)
+  76:  prop PFactor Yaw (engine 2)
+  77:  prop Thrust (engine 2 in lbs)
+  78:  prop RPM (engine 2)
+  79:  engine-1 HP (engine 3)
+  80:  prop Torque (engine 3)
+  81:  prop PFactor Pitch (engine 3)
+  82:  prop PFactor Yaw (engine 3)
+  83:  prop Thrust (engine 3 in lbs)
+  84:  prop RPM (engine 3)
+  85:  /fdm/jsbsim/velocities/vc-kts

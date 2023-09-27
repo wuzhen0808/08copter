@@ -5,6 +5,7 @@
         see code below to find the subSystem names.
         bool FGOutputType::Load(Element* element)
         <aerosurfaces>ON</aerosurfaces>
+        <propulsion>ON</propulsion>
     -->
     <position>ON</position>
 </output>

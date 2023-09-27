@@ -148,6 +148,50 @@ The code under folder lib/JSBSim-Plot is come from the git repository.
 
 This tool automatically process and call gnuplot to plot data produced by JSBSim.
 
+To build the executable file use following command.You may need copy and rename the executable file .pio/build/plot/program with any path you like.
+
+[source,shell]
+----
+$ pio run -e plot
+$ cp .pio/build/plot/program.exe /usr/local/bin/prep_plot
+----
+
+This tool is used to organize the command line options and the call the gnuplot command to plot CSV data.
+
+Firstly it can list the title names and the indexes of each title in a CSV data file.
+[source,shell]
+----
+$ prep_plot data_log/qc2309.csv
+Known variable names in data file:
+  1:  Time
+  2:  q bar (psf)
+  ... 
+  30:  Altitude ASL (ft)
+  31:  Altitude AGL (ft)
+  32:  Phi (deg)
+  33:  Theta (deg)
+  34:  Psi (deg)
+  ...
+----
+
+Secondly we need to create a xml file as the instruction for the prep_plot to work with.
+
+[source,shell]
+----
+$ 
+----
+
+[source,shell]
+----
+$ cat simulation/plot.sh
+#!/bin/tcsh
+foreach file (*.csv)
+  echo "process file:$file"
+  if (-f data_plot/${file}.r.xml) prep_plot $file --plot=data_plot/${file}.r.xml | gnuplot
+end
+gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=output.pdf *.ps
+----
+
 
 ==== {chapter}.{dep}.{counter:tools}. vscode[optional]
 

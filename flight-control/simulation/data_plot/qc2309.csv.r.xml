@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<plotset>
+  <!--
+    The title must be present as a column in the csv data file under ploting.
+-->
+
+  <plot>
+    <title>Altitude ASL (ft)</title>
+    <label axis="x">Time (sec)</label>
+    <label axis="y">Altitude ASL (ft)</label>
+    <scale>auto</scale>
+    <parameter axis="x">Time</parameter>
+    <parameter axis="y">Altitude ASL (ft)</parameter>
+  </plot>
+
+  <plot>
+    <title>V_{Total} (ft/s)</title>
+    <label axis="x">Time (sec)</label>
+    <label axis="y">V_{Total} (ft/s)</label>
+    <scale>auto</scale>
+    <parameter axis="x">Time</parameter>
+    <parameter axis="y">V_{Total} (ft/s)</parameter>
+  </plot>
+
+  <plot>
+    <title>prop RPM (engine 0)</title>
+    <label axis="x">Time (sec)</label>
+    <label axis="y">prop RPM (engine 0)</label>
+    <scale>auto</scale>
+    <parameter axis="x">Time</parameter>
+    <parameter axis="y">prop RPM (engine 0)</parameter>
+  </plot>
+  <plot>
+    <title>prop RPM (engine 1)</title>
+    <label axis="x">Time (sec)</label>
+    <label axis="y">prop RPM (engine 1)</label>
+    <scale>auto</scale>
+    <parameter axis="x">Time</parameter>
+    <parameter axis="y">prop RPM (engine 1)</parameter>
+  </plot>
+  <plot>
+    <title>prop RPM (engine 2)</title>
+    <label axis="x">Time (sec)</label>
+    <label axis="y">prop RPM (engine 2)</label>
+    <scale>auto</scale>
+    <parameter axis="x">Time</parameter>
+    <parameter axis="y">prop RPM (engine 2)</parameter>
+  </plot>
+  <plot>
+    <title>prop RPM (engine 3)</title>
+    <label axis="x">Time (sec)</label>
+    <label axis="y">prop RPM (engine 3)</label>
+    <scale>auto</scale>
+    <parameter axis="x">Time</parameter>
+    <parameter axis="y">prop RPM (engine 3)</parameter>
+  </plot>
+
+</plotset>
