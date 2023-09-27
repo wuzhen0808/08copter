@@ -1,1 +1,3 @@
 External source code from JSBSim.
+
+For the purpose of simulation. One source code file is useful, that is the class FGNetData. But unfortunately the the interface through the socket with FLIGHTGEAR protocol does not work for now. So there is no dependence on the source code located in this folder.

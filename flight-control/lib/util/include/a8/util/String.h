@@ -33,6 +33,49 @@ public:
     void append(const long fValue);
     void append(const unsigned fValue);
 
+    int lastIndexOf(char ch) {
+        for (int i = length - 1; i >= 0; i--) {
+            if (this->text[i] == ch) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    int indexOf(char ch) {
+        for (int i = 0; i < length; i++) {
+            if (this->text[i] == ch) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    String subStr(int from) {
+        return subStr(from, length - from);
+    }
+    String subStr(int from, int len) {
+        String ret;
+        char *buf = this->text + from;
+        ret.append(buf, len);
+        return ret;
+    }
+
+    String trim() {
+        int from = 0;
+        for (int i = 0; i < this->length; i++) {
+            char ch = this->text[i];
+            if (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n') {
+                from = i;
+                continue;
+            }
+            break;
+        }
+
+        if (from > 0) {
+            return subStr(from, length - from);
+        } else {
+            return *this;
+        }
+    }
     //
     // operators
     String &operator=(const char *buf);

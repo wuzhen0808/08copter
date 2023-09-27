@@ -1,5 +1,8 @@
 #pragma once
 #include "a8/util/Buffer.h"
+#include "a8/util/Float.h"
+#include "a8/util/LineReader.h"
+#include "a8/util/Reader.h"
 #include "a8/util/String.h"
 
 namespace a8::util {
@@ -10,7 +13,9 @@ enum PropertyType {
     zeroType = 0,
     boolType,
     intType,
+    longType,
     floatType,
+    doubleType,
     stringType,
     externalType,
 };
@@ -126,6 +131,75 @@ class Properties {
     }
 
 public:
+    static void load(Reader &reader, Properties &pts) {
+        LineReader lr = LineReader(&reader);
+        while (true) {
+            String line;
+            int ret = lr.readLine(line, false);//
+            if (ret == 0) {
+                break;
+            }
+            if (ret < 0) {
+                // error
+                break;
+            }
+            if (line.getLength() == 0) {
+                //
+                continue;
+            }
+            if (line.getChar(0) == '#') {
+                continue;
+            }
+            int idx = line.indexOf('=');
+            if (idx < 0) {
+                // ignore this line.
+                continue;
+            }
+            if (idx == 0) {
+                // ignore this line.
+                continue;
+            }
+
+            String name = line.subStr(0, idx).trim();
+            String value = line.subStr(idx + 1).trim();
+            if (value.getLength() == 0) {
+                // ignore this properties. us default value.
+                continue;
+            }
+            String type;
+            if (name.endWith("]")) {
+                int idx2 = name.lastIndexOf('[');
+                if (idx2 > 0) {
+                    type = name.subStr(idx2 + 1, name.getLength() - idx2 - 2);
+                    name = name.subStr(0, idx2);
+                }
+            }
+            if (type == "float") {
+                float v = Float::parse(value);
+                pts.set(name, v);
+            } else if (type == "int") {
+                float v = Float::parse(value);
+                pts.set(name, (int)v);
+            } else if (type == "long") {
+                float v = Float::parse(value);
+                pts.set(name, (long)v);
+            } else if (type == "double") {
+                float v = Float::parse(value);
+                pts.set(name, (double)v);
+            } else if (type == "string") {
+                pts.set(name, value);
+            } else if (type == "bool") {
+                bool v = (value == "true" || value == "y" || value == "TRUE" || value == "Y" || value == "ON");
+                pts.set(name, v);
+            } else if (type == "char") {
+                char ch = value.getChar(0);
+                pts.set(name, ch);
+            } else {
+                // error process?
+            }
+        }
+    }
+
     Properties() {
         this->zeroEntry = new Entry("0");
         this->buffer = new Buffer<Entry *>();
@@ -145,6 +219,13 @@ public:
     void set(const String &name, int value) {
         this->set(name, intType, new int(value));
     }
+    void set(const String &name, char value) {
+        this->set(name, intType, new char(value));
+    }
+
+    void set(const String &name, long value) {
+        this->set(name, longType, new long(value));
+    }
 
     void set(const String &name, const String &value) {
         this->set(name, stringType, new String(value));
@@ -161,6 +242,10 @@ public:
 
     void set(const String &name, const float value) {
         this->set(name, floatType, new float(value));
+    }
+
+    void set(const String &name, const double value) {
+        this->set(name, doubleType, new double(value));
     }
 
     void *getExternal(const String &name, void *defValue) {

@@ -27,9 +27,9 @@ private:
     Sockets *sFac;
     JSBSimIO *jio;
     Copter *copter;
-
+    String* configFile;
 protected:
-    void boot(Context &context) {
+    virtual void boot(Context &context) override {
 
         context.properties.set(P_fcs_servo_idx_ar, 0);
         context.properties.set(P_fcs_servo_idx_fl, 1);
@@ -37,10 +37,12 @@ protected:
         context.properties.set(P_fcs_servo_idx_fr, 3);
         context.properties.set(P_fcs_servo_fr_clockwise, true);
         context.properties.set(P_fcs_att_tick_rate, 1000); // HZ
+        //FileReader reader = new FileReader(configFile);
+        //Properties::load();
         Application::boot(context);
     }
 
-    void populate(Context &context) override {
+    virtual void populate(Context &context) override {
         Application::populate(context);
         sFac = this->addChild<WrapperComponent<NativeSockets>>(context, new WrapperComponent<NativeSockets>(new NativeSockets()))->wrapped;
         if (context.isStop()) {
@@ -53,11 +55,11 @@ protected:
         copter = this->addChild<NativeCopter>(context, new NativeCopter(jio));
     }
 
-    void setup(Context &context) override {
+    virtual void setup(Context &context) override {
         Application::setup(context);
     }
 
-    void start(Context &context) override {
+    virtual void start(Context &context) override {
         Application::start(context);
     }
 

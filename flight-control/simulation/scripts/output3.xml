@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<output name="qc2309.csv" type="CSV" rate="100">
+<output name="data_log/qc2309.csv" type="CSV" rate="100">
     <property> velocities/vc-kts </property>
     <time type="simulation" resolution="1e-6" />
     <velocities>ON</velocities>

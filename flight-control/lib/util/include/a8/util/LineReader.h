@@ -9,8 +9,6 @@ namespace a8::util {
 class LineReader {
 private:
     const static int BUF_LEN = 128;
-
-protected:
     Reader *reader;
     char buf[BUF_LEN];
     int localPointer = -1;
@@ -25,7 +23,7 @@ public:
     ~LineReader() {}
 
     int readLine(String &ret) {
-        return readLine(ret, false);
+        return readLine(ret, true);
     }
 
     int readLine(String &ret, bool appendSeparator) {
@@ -99,7 +97,7 @@ public:
             }
         }
 
-        return (found && !appendSeparator) ? thisResult - 1 : thisResult;
+        return thisResult;
     }
 };
 

@@ -1,3 +1,4 @@
+#!/bin/bash
 jsbsim \
  --script=scripts/run \
  --logdirectivefile=scripts/output1 \

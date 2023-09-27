@@ -1,3 +1,4 @@
+#!/bin/bash
 ##
 # Start flight gear view to listen the log output from jsbsim.
 # You need config the output in the test script of JSBSim. 

@@ -1,5 +1,4 @@
-#ifndef string__
-#define string__
+#pragma once
 #include "a8/util/String.h"
 
 namespace a8 {
@@ -13,5 +12,3 @@ public:
 } // namespace util
 
 } // namespace a8
-
-#endif

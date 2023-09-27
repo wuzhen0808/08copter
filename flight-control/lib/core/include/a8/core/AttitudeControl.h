@@ -37,10 +37,10 @@ private:
 public:
     AttitudeControl(ServosControl *servosControl,
                     AttitudeSensor *attitudeSensor) : Component("atc") {
-        altitudeControl_ = new PidControl(1.0f, .0f, .0f);
-        rollControl_ = new PidControl(.0f, 0.0f, 0.0f);
-        pitchControl_ = new PidControl(.0f, .0f, .0f);
-        yawControl_ = new PidControl(.0f, .0f, .0f);
+        altitudeControl_ = new PidControl(2.0f, .0f, .0f);
+        rollControl_ = new PidControl(2.0f, 0.0f, 0.0f);
+        pitchControl_ = new PidControl(2.0f, .0f, .0f);
+        yawControl_ = new PidControl(2.0f, .0f, .0f);
         this->attitudeSensor = attitudeSensor;
         this->servosControl = servosControl;
         this->dataLog = 0;
@@ -71,10 +71,10 @@ public:
 
         Vector3f aVel1 = attitudeSensor->getAngVel();
         //
-        double altitude2 = 20; // Meter
+        double altitude2 = 200; // Meter
         float cmdThrottle = altitudeControl_->update(altitude2, altitude1);
 
-        Vector3f aVel2 = Vector3f(0.0, 0.5, 0.0);
+        Vector3f aVel2 = Vector3f(0.0, 0.0, 0.0);
         float cmdRoll = rollControl_->update(aVel2.x, aVel1.x);
         float cmdPitch = pitchControl_->update(aVel2.y, aVel1.y);
         float cmdYaw = yawControl_->update(aVel2.z, aVel1.z);
