@@ -1,6 +1,6 @@
-#include "a8/util/Util.h"
 #include "a8/util/String.h"
 #include "a8/util/Buffer.h"
+#include "a8/util/Util.h"
 #include <stdio.h>
 // #define A8_DEBUG_STRING
 #ifdef A8_DEBUG_STRING
@@ -232,6 +232,7 @@ Buffer<String> String::split(const char separator) {
         if (text[i] == separator) {
             buffer.append(str);
             str = "";
+            continue;
         }
         str.append(text[i]);
     }

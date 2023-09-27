@@ -61,6 +61,7 @@ int receive(Sockets &ss, int port) {
             char *text = line.getText();
             cout << '\'' << text << '\'' << endl;
         }
+        break;
     }
 
     return 0;

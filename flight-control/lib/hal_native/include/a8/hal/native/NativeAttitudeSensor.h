@@ -24,7 +24,7 @@ public:
      * Altitude in Meter.
     */
     virtual double getAlt() {
-        return jio->getAlt();
+        return jio->getAltitude();
     }
     virtual double getAgl() {
         return jio->getAgl();

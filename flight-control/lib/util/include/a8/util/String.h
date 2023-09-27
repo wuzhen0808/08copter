@@ -6,11 +6,11 @@ namespace util {
 
 class String {
 
-private:    
+private:
     int length;
     char *text;
     void replace(const char *buf, int len, bool deleteText);
-    
+
 public:
     String();
     String(const char (&buf)[]);
@@ -32,14 +32,14 @@ public:
     void append(const int fValue);
     void append(const long fValue);
     void append(const unsigned fValue);
-    
+
     //
     // operators
     String &operator=(const char *buf);
-    //String &operator=(const char (&buf)[]); DO not declare this method, will error of ambiguous.
+    // String &operator=(const char (&buf)[]); DO not declare this method, will error of ambiguous.
     String &operator=(const String &str);
     String &operator=(const char &buf);
-    String &operator=(const int iValue);    
+    String &operator=(const int iValue);
     /*
     Use format "%e" to format the float value.
     For example 1.1 will convert to '1.100000e+00';
@@ -53,7 +53,7 @@ public:
     String &operator<<(const long fValue);
     String &operator<<(const char *buf);
     String &operator<<(const char buf);
-    String &operator<<(const unsigned uValue);    
+    String &operator<<(const unsigned uValue);
     String &operator<<(const String &str);
 
     // Other methods
@@ -67,23 +67,25 @@ public:
     template <typename... Args>
     static String format(const char formatStr[], Args... args) {
 
-        int inc = 100;
-        int size = inc;
-
-        while (true) {
-            char *buf = new char[size]{0};
-            int len = snprintf(buf, size, formatStr, args...);
-            if (len > 0) {
-                String ret(buf, len);
-                delete[] buf;
-                return ret; // success
-            }
+        int size = 100;
+        char *buf = new char[size]{0};
+        int len = snprintf(buf, size, formatStr, args...);
+        if (len + 1 > size) { // str truncate.
             delete[] buf;
-            size += inc;
+            size = len + 1;
+            buf = new char[size];
+            len = snprintf(buf, size, formatStr, args...);
+            if (len >= size) {
+                // error processing?
+                // exit(1);
+            }
         }
+        String ret(buf, len);
+        delete[] buf;
+        return ret;
     }
 
-    //Friend operators
+    // Friend operators
     friend String operator+(const String &str1, const String &str);
     friend bool operator==(const String &str1, const String &str2);
 };

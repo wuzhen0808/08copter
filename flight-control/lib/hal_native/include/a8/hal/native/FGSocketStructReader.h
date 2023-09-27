@@ -4,8 +4,12 @@
 
 using namespace a8::util;
 using namespace a8::hal;
-
+/**
+ * This implementation does NOT work. 
+ * Testing FAILED.
+*/
 namespace a8::hal::native {
+
 class FGSocketStructReader : public FGSocketReader {
 
 private:

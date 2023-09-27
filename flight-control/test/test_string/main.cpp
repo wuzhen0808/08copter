@@ -4,10 +4,10 @@
 #include "a8/hal/native/NativeSystem.h"
 #include "a8/util/Buffer.h"
 #include "a8/util/String.h"
+#include "input_output/net_fdm.hxx"
 #include <fstream>
 #include <gtest/gtest.h>
 #include <iostream>
-#include "input_output/net_fdm.hxx"
 
 using namespace a8::util;
 using namespace a8::hal;
@@ -21,6 +21,33 @@ using ::testing::TestPartResult;
 using ::testing::UnitTest;
 
 System *a8::hal::S = new TestSystem();
+TEST(TestString, testFormatLongString) {
+    String str1 = "11111111112222222222333333333344444444445555555555666666666677777777778888888888999999999900000000001111111111";
+    String str2 = String::format("abcdefghij0:%s", str1.getText());
+    String str3 = "abcdefghij0:" + str1;
+
+    EXPECT_EQ(str2.getLength(), str3.getLength());
+    EXPECT_EQ(str2, str3);
+}
+TEST(TestString, testSplit) {
+    String line = "A,BC,DEF,G";
+    Buffer<String> fields = line.split(',');
+    EXPECT_EQ(4, fields.getLength());
+    EXPECT_EQ(fields.get(0), "A");
+    EXPECT_EQ(fields.get(1), "BC");
+    EXPECT_EQ(fields.get(2), "DEF");
+    EXPECT_EQ(fields.get(3), "G");
+
+    int i0 = fields.indexOf("A");
+    EXPECT_EQ(0, i0);
+    int i1 = fields.indexOf("BC");
+    EXPECT_EQ(1, i1);
+    int i2 = fields.indexOf("DEF");
+    EXPECT_EQ(2, i2);
+    int i3 = fields.indexOf("G");
+    EXPECT_EQ(3, i3);
+}
+
 TEST(TestString, testAppendOperator) {
 
     String line = "";

@@ -87,7 +87,7 @@ public:
         SocketData *fdm = fgSocketReader->getLastData();
         return fdm->agl;
     }
-    double getAlt() {
+    double getAltitude() {
         SocketData *fdm = fgSocketReader->getLastData();
         return fdm->altitude;
     }
