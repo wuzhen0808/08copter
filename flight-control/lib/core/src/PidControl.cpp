@@ -1,11 +1,11 @@
 #include "a8/core/PidControl.h"
 #include "a8/hal/Hal.h"
-
-namespace a8 {
-namespace core {
+using namespace a8::util;
+namespace a8::core {
 using namespace a8::hal;
 
 // https://www.youtube.com/watch?v=NVLXCwc8HzM
+
 PidControl::PidControl(float kp, float ki, float kd) {
     // init as the default arguments.
     (*this).kp = kp;
@@ -23,7 +23,7 @@ float PidControl::update(float desirePosition, float actualPosition) {
     if (lastUpdateTimeInMs == 0) {
         lastUpdateTimeInMs = now;
     }
-    float p = kp * error;             // P
+    float p = kp * error; // P
     //
     float deltaTime = now - lastUpdateTimeInMs;
     float i = ki * error * deltaTime; // I
@@ -35,5 +35,4 @@ float PidControl::update(float desirePosition, float actualPosition) {
     lastUpdateTimeInMs = now;
     return p + i + d;
 }
-} // namespace core
-} // namespace a8
+} // namespace a8::core

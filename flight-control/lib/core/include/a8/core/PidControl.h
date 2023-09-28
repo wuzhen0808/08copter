@@ -5,17 +5,25 @@
 namespace a8 {
 namespace core {
 class PidControl {
-public:
-    PidControl(float kp, float ki, float kd);
-    ~PidControl();
-    float update(float desirePosition, float actualPosition);
 
 private:
+    unsigned long lastUpdateTimeInMs = 0;
+    float lastError;
+
+public:
     float kp;
     float ki;
     float kd;
-    unsigned long lastUpdateTimeInMs = 0;
-    float lastError;
+    
+    PidControl(float kp, float ki, float kd);
+    ~PidControl();
+
+    float update(float desirePosition, float actualPosition);
+    void setup(float kp, float ki, float kd) {
+        this->kp = kp;
+        this->ki = ki;
+        this->kd = kd;
+    }
 };
 } // namespace core
 } // namespace a8

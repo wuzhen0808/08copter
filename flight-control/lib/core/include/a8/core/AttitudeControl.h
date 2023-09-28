@@ -17,10 +17,10 @@ namespace a8::core {
 class AttitudeControl : public Component {
 
 private:
-    PidControl *altitudeControl_;
-    PidControl *rollControl_;
-    PidControl *pitchControl_;
-    PidControl *yawControl_;
+    PidControl *altitudePid;
+    PidControl *rollPid;
+    PidControl *pitchPid;
+    PidControl *yawPid;
     AttitudeSensor *attitudeSensor;
     ServosControl *servosControl;
     Writer *dataLog;
@@ -37,20 +37,21 @@ private:
 public:
     AttitudeControl(ServosControl *servosControl,
                     AttitudeSensor *attitudeSensor) : Component("atc") {
-        altitudeControl_ = new PidControl(2.0f, .0f, .0f);
-        rollControl_ = new PidControl(2.0f, 0.0f, 0.0f);
-        pitchControl_ = new PidControl(2.0f, .0f, .0f);
-        yawControl_ = new PidControl(2.0f, .0f, .0f);
+
+        altitudePid = new PidControl(.0f, .0f, .0f);
+        rollPid = new PidControl(.0f, 0.0f, 0.0f);
+        pitchPid = new PidControl(.0f, .0f, .0f);
+        yawPid = new PidControl(.0f, .0f, .0f);
         this->attitudeSensor = attitudeSensor;
         this->servosControl = servosControl;
         this->dataLog = 0;
         this->rate = 1; // hz
     }
     ~AttitudeControl() {
-        delete altitudeControl_;
-        delete rollControl_;
-        delete pitchControl_;
-        delete yawControl_;
+        delete altitudePid;
+        delete rollPid;
+        delete pitchPid;
+        delete yawPid;
     }
 
     virtual void boot(Context &context) override {
@@ -59,7 +60,42 @@ public:
         idxFL = context.properties.getInt(P_fcs_servo_idx_fl, 1);
         idxAL = context.properties.getInt(P_fcs_servo_idx_al, 2);
         idxFR = context.properties.getInt(P_fcs_servo_idx_fr, 3);
+        //
+        Buffer<float> *aPid3 = context.properties.getFloatArray(P_fcs_altitude_pid_k3);
+        Buffer<float> *rPid3 = context.properties.getFloatArray(P_fcs_roll_pid_k3);
+        Buffer<float> *pPid3 = context.properties.getFloatArray(P_fcs_pitch_pid_k3);
+        Buffer<float> *yPid3 = context.properties.getFloatArray(P_fcs_yaw_pid_k3);
+        setPidKs(altitudePid, aPid3);
+        setPidKs(rollPid, rPid3);
+        setPidKs(pitchPid, pPid3);
+        setPidKs(yawPid, yPid3);
+
         log(String::format("ar:%i,fl:%i,al:%i,fr:%i,", idxAR, idxFL, idxAL, idxFR));
+        log(String("pid-Ks:")
+            << "altitudePid(" << altitudePid->kp << altitudePid->ki << altitudePid->kd << ")," //
+            << "rollPid(" << rollPid->kp << rollPid->ki << rollPid->kd << "),"                 //
+            << "pitchPid(" << pitchPid->kp << pitchPid->ki << pitchPid->kd << "),"             //
+            << "yawPid(" << yawPid->kp << yawPid->ki << yawPid->kd << "),"                     //
+        );
+    }
+    void setPidKs(PidControl *pid, Buffer<float> *pidKs) {
+        if (pidKs == 0) {
+            return;
+        }
+        float kp = 0.0f;
+        float ki = 0.f;
+        float kd = 0.0f;
+
+        if (pidKs->getLength() > 0) {
+            kp = pidKs->get(0);
+        }
+        if (pidKs->getLength() > 1) {
+            ki = pidKs->get(1);
+        }
+        if (pidKs->getLength() > 2) {
+            kd = pidKs->get(2);
+        }
+        pid->setup(kp, ki, kd);
     }
     virtual void setup(Context &context) override {
         Component::setup(context);
@@ -72,12 +108,12 @@ public:
         Vector3f aVel1 = attitudeSensor->getAngVel();
         //
         double altitude2 = 200; // Meter
-        float cmdThrottle = altitudeControl_->update(altitude2, altitude1);
+        float cmdThrottle = altitudePid->update(altitude2, altitude1);
 
         Vector3f aVel2 = Vector3f(0.0, 0.0, 0.0);
-        float cmdRoll = rollControl_->update(aVel2.x, aVel1.x);
-        float cmdPitch = pitchControl_->update(aVel2.y, aVel1.y);
-        float cmdYaw = yawControl_->update(aVel2.z, aVel1.z);
+        float cmdRoll = rollPid->update(aVel2.x, aVel1.x);
+        float cmdPitch = pitchPid->update(aVel2.y, aVel1.y);
+        float cmdYaw = yawPid->update(aVel2.z, aVel1.z);
 
         float yawSign = this->reverseYaw ? -1.0f : 1.0f;
 
@@ -92,7 +128,7 @@ public:
         trim(fl);
         trim(ar);
 
-        log(String::format("\tagl:%e=>%e", altitude1, altitude2)                                                                    //
+        log(String::format("\tagl:%e=>%e", altitude1, altitude2)                                                          //
             + String::format(",cmdThrottles:%i:%.2f,%i:%.2f,%i:%.2f,%i:%.2f", idxFL, fl, idxFR, fr, idxAR, ar, idxAL, al) //
         );
         servosControl->setThrottleNorm(idxFL, fl, idxFR, fr, idxAR, ar, idxAL, al);

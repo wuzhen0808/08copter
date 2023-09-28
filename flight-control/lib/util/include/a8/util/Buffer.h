@@ -10,22 +10,29 @@ class Buffer {
 
 private:
     void init(int cap);
-    int capacity;
-    int length;
-    T *buffer = 0;
+    int capacity = 0;
+    int length = 0;
+    T *buffer;
     void ensureCapacity(int capacity);
 
 public:
     static const int INC = 100;
     Buffer<T>();
     Buffer<T>(int capacity);
-    Buffer<T>(T *buffer, int length);
-    Buffer<T>(T *buffer, int length, int capacity);
+    Buffer<T>(const Buffer<T> &buf) { // copy constructor
+        this->buffer = new T[buf.length];
+        Util::copy<T>(buf.buffer, this->buffer, buf.length);
+        this->length = buf.length;
+    }
     ~Buffer();
     int getLength() const;
     T get(int idx) const;
     T *getAll() const;
     int remove(int from);
+
+    bool isEmpty() {
+        return this->length == 0;
+    }
 
     int indexOf(T ele) {
         for (int i = 0; i < length; i++) {
@@ -56,6 +63,7 @@ public:
     void clear() {
         this->length = 0;
     }
+
     Buffer<T> *append(const T &element) {
         return append(&element, 1);
     }
@@ -68,13 +76,12 @@ public:
         return append(buf.buffer, 0, buf.length);
     }
 
-    Buffer<T> *append(const T *elements, const int from, const int length) {
-        int length2 = this->length + length;
-        ensureCapacity(length2);
-        for (int i = 0; i < length; i++) {
-            this->buffer[this->length + i] = elements[from + i];
-        }
-        this->length = length2;
+    Buffer<T> *append(const T *elements, const int from, const int len) {
+
+        ensureCapacity(this->length + len);
+        Util::copy<T>(elements, from, this->buffer, length, len);
+        ;
+        this->length = this->length + len;
         return this;
     }
 };
@@ -89,18 +96,6 @@ Buffer<T>::Buffer() {
 template <typename T>
 Buffer<T>::Buffer(int capacity) {
     init(capacity);
-}
-
-template <typename T>
-Buffer<T>::Buffer(T *array, int length) {
-    init(length);
-    this->appendAll(array, length);
-}
-
-template <typename T>
-Buffer<T>::Buffer(T *array, int length, int capacity) {
-    init(capacity);
-    this->appendAll(array, length);
 }
 
 template <typename T>
@@ -121,9 +116,9 @@ Buffer<T>::~Buffer() {
 }
 
 template <typename T>
-void Buffer<T>::ensureCapacity(int capacity) {
+void Buffer<T>::ensureCapacity(int newCap) {
 
-    if (this->capacity < capacity) {
+    if (this->capacity < newCap) {
 
         T *tmp1 = this->buffer;
         int cap2 = this->capacity + INC;
@@ -135,6 +130,10 @@ void Buffer<T>::ensureCapacity(int capacity) {
 
         this->buffer = tmp2;
         this->capacity = cap2;
+        if (cap2 < 0) {
+            //error?
+            cap2 = 1234567890;
+        }
         delete[] tmp1;
     }
 }

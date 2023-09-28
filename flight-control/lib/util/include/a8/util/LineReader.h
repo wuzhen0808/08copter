@@ -87,6 +87,7 @@ public:
                 len2 -= 1;
             }
             line.append(buf, localPointer, len2); //
+            
 
             localPointer += len;
             thisResult += len;

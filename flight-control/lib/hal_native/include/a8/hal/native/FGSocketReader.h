@@ -54,8 +54,8 @@ public:
 
     virtual void setup(Context &context) override {
 
-        int bindPort = context.properties.getInt(P_jsb_bind_port, 5502);
-        String dataFile = context.properties.getString(P_jsb_data_file, "");
+        int bindPort = context.properties.getInt(P_sim_jsb_sim_bind_port, 5502);
+        String dataFile = context.properties.getString(P_sim_jsb_sim_data_file, "");
 
         this->dataFileWriter = new FileWriter(dataFile); // todo write data log
 

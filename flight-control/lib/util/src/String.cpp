@@ -17,44 +17,17 @@ using std::endl;
 
 namespace a8::util {
 
-String::String() {
-    LOG(">>String::String()");
-    this->text = new char[1]{'\0'};
-    this->length = 0;
-    LOG("<<String::String()");
-}
-String::String(const char (&buf)[]) {
-    replace(buf, -1, false);
+// static methods
+Buffer<String> &String::strings(int argc, char **argv, Buffer<String> &&buf) {
+
+    for (int i = 0; i < argc; i++) {
+        buf.append(String(*argv[i]));
+    }
+    return buf;
 }
 
-String::String(const String &str) {
-    LOG(">>String::String(const String &str)");
-    replace(str.text, str.length, false);
-    LOG("<<String::String(const String &str)");
-}
-String::String(const Buffer<char> &buf) {
-    replace(buf.getAll(), buf.getLength(), false);
-}
-String::String(const char *buf, int len) {
-    LOG(">>String::String(const char *buf, int len)");
-    replace(buf, len, false);
-    LOG("<<String::String(const char *buf, int len)");
-}
-
-void String::replace(const char *buf, int len, bool deleteText) {
-    if (deleteText) {
-        delete[] text;
-    }
-    if (len == -1) {
-        len = String::getLength(buf);
-    }
-    char *buf2 = new char[len + 1]{0};
-    String::copy(buf, 0, len + 1, buf2, 0);
-    this->text = buf2;
-    this->length = len;
-}
-char *String::getText() const {
-    return this->text;
+String String::string(const char *str) {
+    return String(str, Util::strLength(str));
 }
 
 int String::getLength(const char *str) {
@@ -65,10 +38,48 @@ int String::getLength(const char *str) {
     }
 }
 
-void String::copy(const char *sourceStr, int from1, int len, char *toBuff, int from2) {
-    for (int i = 0; i < len; i++) {
-        toBuff[from2 + i] = sourceStr[from1 + i];
+// dynamic methods
+String::String() {
+    LOG(">>String::String()");
+    this->text = new char[1]{'\0'};
+    this->length = 0;
+    LOG("<<String::String()");
+}
+
+String::String(const String &str) {
+    LOG(">>String::String(const String &str)");
+    replace(str.text, str.length, false);
+    LOG("<<String::String(const String &str)");
+}
+
+String::String(const char (&buf)[]) {
+    replace(buf, -1, false);
+}
+
+String::String(const Buffer<char> &buf) {
+    replace(buf.getAll(), buf.getLength(), false);
+}
+String::String(const char *buf, int len) {
+    LOG(">>String::String(const char *buf, int len)");
+    replace(buf, len, false);
+    LOG("<<String::String(const char *buf, int len)");
+}
+
+void String::replace(const char *buf, int len, bool deleteText) {
+    if (len == -1) {
+        len = String::getLength(buf);
     }
+    char *buf2 = new char[len + 1];
+    Util::copy<char>(buf, buf2, len + 1);
+    buf2[len]='\0';//string end
+    if (deleteText) {
+        delete[] text;
+    }
+    this->text = buf2;
+    this->length = len;
+}
+char *String::getText() const {
+    return this->text;
 }
 
 String::~String() {
@@ -120,8 +131,8 @@ void String::append(const String *str) {
 void String::append(const char *str, int len) {
 
     char *buf = new char[length + len + 1]{0};
-    String::copy(text, 0, length, buf, 0);
-    String::copy(str, 0, len, buf, length);
+    Util::copy<char>(text, buf, length);
+    Util::copy<char>(str, 0, buf, length, len);
     delete[] text;
     text = buf;
     length = length + len;
@@ -225,21 +236,10 @@ bool String::endWith(const char *str) {
 
 Buffer<String> String::split(const char separator) {
 
-    Buffer<String> buffer;
-    String str;
+    return split<String>(separator, [](String &s) { return s; });
 
-    for (int i = 0; i < length; i++) {
-        if (text[i] == separator) {
-            buffer.append(str);
-            str = "";
-            continue;
-        }
-        str.append(text[i]);
-    }
-    buffer.append(str);
-
-    return buffer;
 }
+
 
 // friend static member
 String operator+(String const &str1, String const &str2) {
@@ -248,24 +248,34 @@ String operator+(String const &str1, String const &str2) {
     char *buf = new char[len1 + len2 + 1]{0};
     char *text1 = str1.getText();
     char *text2 = str2.getText();
-    String::copy(text1, 0, len1, buf, 0);
-    String::copy(text2, 0, len2, buf, len1);
+    Util::copy<char>(text1, buf, len1);
+    Util::copy<char>(text2, 0, buf, len1, len2);
     String ret(buf, len1 + len2);
     return ret;
 }
 
 bool operator==(String const &str1, String const &str2) {
+    return !operator!=(str1, str2);
+}
+bool operator==(String const &str1, const int len) {
+    return str1.getLength() == len;
+}
+bool operator!=(String const &str1, const int len) {
+    return str1.getLength() != len;
+}
+
+bool operator!=(String const &str1, String const &str2) {
     int len1 = str1.getLength();
     int len2 = str2.getLength();
     if (len1 != len2) {
-        return false;
+        return true;
     }
     for (int i = 0; i < len1; i++) {
         if (str1.getChar(i) != str2.getChar(i)) {
-            return false;
+            return true;
         }
     }
-    return true;
+    return false;
 }
 
 } // namespace a8::util

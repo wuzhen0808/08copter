@@ -1,5 +1,4 @@
-#ifndef Runnable__
-#define Runnable__
+#pragma once
 namespace a8::util {
 
 class Runnable {
@@ -8,4 +7,3 @@ public:
 };
 
 } // namespace a8::util
-#endif

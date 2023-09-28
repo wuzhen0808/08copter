@@ -20,7 +20,11 @@ public:
     }
 
     virtual int read(char *buf, int bufLen) override {
-        return buffer.read(from, buf, bufLen);
+        int len = buffer.read(from, buf, bufLen);
+        if (len > 0) {
+            from += len;
+        }
+        return len;
     };
 };
 

@@ -5,9 +5,13 @@
 #define P_fcs_servo_idx_ar ("fcs/servo-ar-idx")
 #define P_fcs_servo_idx_al ("fcs/servo-al-idx")
 #define P_fcs_servo_fr_clockwise ("fcs/servo-fr-clockwise")
-#define P_jsb_bind_port ("jsb/bind-port")
-#define P_jsb_data_file ("jsb/data-file")
-
+#define P_fcs_altitude_pid_k3 ("fcs/altitude_pid_k3")
+#define P_fcs_roll_pid_k3 ("fcs/roll_pid_k3")
+#define P_fcs_pitch_pid_k3 ("fcs/pitch_pid_k3")
+#define P_fcs_yaw_pid_k3 ("fcs/yaw_pid_k3")
+//simulation
+#define P_sim_jsb_sim_bind_port ("sim/jsb-sim-bind-port")
+#define P_sim_jsb_sim_data_file ("sim/jsb-sim-data-file")
 //attitude controller tick rate.
 #define P_fcs_att_tick_rate ("fcs/att-tick-rate") 
 

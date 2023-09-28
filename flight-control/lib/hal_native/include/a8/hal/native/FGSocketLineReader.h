@@ -43,11 +43,14 @@ public:
         sReader = new SocketReader(sockets, sockIn);
         lReader = new LineReader(sReader);
         String headerLine;
-        lReader->readLine(headerLine);
+        lReader->readLine(headerLine, false);
 
-        log(String::format("headerline:%s", headerLine.getText()));
+        log(String::format("headerline:'%s',len:%i", headerLine.getText(), headerLine.getLength()));
 
         Buffer<String> headers = headerLine.split(',');
+
+        String lastCol = headers.get(headers.getLength() - 1);
+        log(String::format("headers.len:'%i', last col:'%s' ", headers.getLength(), lastCol));
 
         Col_Time = findIndex(context, headers, "Time");
         Col_Altitude = findIndex(context, headers, "Altitude"); //

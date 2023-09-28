@@ -1,5 +1,5 @@
 #pragma once
-#include "a8/util/Buffer.h"
+#include "a8/util/Buffer.h"//TODO remove Buffer dependence.
 #include <stdio.h>
 namespace a8 {
 namespace util {
@@ -12,10 +12,66 @@ private:
     void replace(const char *buf, int len, bool deleteText);
 
 public:
+    // static member funcs
+    static int getLength(const char *str);
+    static Buffer<String> &strings(int argc, char **argv, Buffer<String> &&buf);
+    static String string(const char *str);
+
+    // Template method must be implemented in header file .
+    template <typename... Args>
+    static String format(const char formatStr[], Args... args) {
+
+        int size = 100;
+        char *buf = new char[size]{0};
+        int len = snprintf(buf, size, formatStr, args...);
+        if (len + 1 > size) { // str truncate.
+            delete[] buf;
+            size = len + 1;
+            buf = new char[size];
+            len = snprintf(buf, size, formatStr, args...);
+            if (len >= size) {
+                // error processing?
+                // exit(1);
+            }
+        }
+        String ret(buf, len);
+        delete[] buf;
+        return ret;
+    }
+
+    template <typename T>
+    Buffer<T> split(const char separator, T (*convert)(String &)) {
+
+        Buffer<T> buffer;
+        String str;
+
+        for (int i = 0; i < length; i++) {
+            if (text[i] == separator) {
+
+                buffer.append(convert(str));
+                str = "";
+                continue;
+            }
+            str.append(text[i]);
+        }
+        buffer.append(convert(str));
+
+        return buffer;
+    }
+
     String();
+    // String(const char * str), this constructor is not defined.
+    // Because for some reason if this method is added then the literal C++ string could not be recognized as String automatically by compiler.
+    // So we remove this constructor for now.
+    //
     String(const char (&buf)[]);
     String(const char *str, int len);
     String(const String &str); // Copy constructor
+    // Move constructor does not work for some unknow reason。
+    // Looks like the deconstructor is called unexpectedly when execution split().
+    // The split method take a function pointer as parameter to convert each string split out;
+    // So we remove this constructor for now.
+    // String(const String &&str);
     String(const Buffer<char> &buf);
     ~String();
 
@@ -41,7 +97,7 @@ public:
         }
         return -1;
     }
-    int indexOf(char ch) {
+    int indexOf(char ch) const {
         for (int i = 0; i < length; i++) {
             if (this->text[i] == ch) {
                 return i;
@@ -49,10 +105,10 @@ public:
         }
         return -1;
     }
-    String subStr(int from) {
+    String subStr(int from) const {
         return subStr(from, length - from);
     }
-    String subStr(int from, int len) {
+    String subStr(int from, int len) const {
         String ret;
         char *buf = this->text + from;
         ret.append(buf, len);
@@ -103,34 +159,12 @@ public:
     bool endWith(const char *str);
     Buffer<String> split(const char separator);
 
-    // static member funcs
-    static int getLength(const char *str);
-    static void copy(const char *str, int from1, int len, char *buff, int from2);
-
-    template <typename... Args>
-    static String format(const char formatStr[], Args... args) {
-
-        int size = 100;
-        char *buf = new char[size]{0};
-        int len = snprintf(buf, size, formatStr, args...);
-        if (len + 1 > size) { // str truncate.
-            delete[] buf;
-            size = len + 1;
-            buf = new char[size];
-            len = snprintf(buf, size, formatStr, args...);
-            if (len >= size) {
-                // error processing?
-                // exit(1);
-            }
-        }
-        String ret(buf, len);
-        delete[] buf;
-        return ret;
-    }
-
     // Friend operators
     friend String operator+(const String &str1, const String &str);
     friend bool operator==(const String &str1, const String &str2);
+    friend bool operator==(const String &str1, const int len);
+    friend bool operator!=(const String &str1, const int len);
+    friend bool operator!=(const String &str1, const String &str2);
 };
 
 bool operator==(const String &str1, const String &str2);

@@ -78,14 +78,24 @@ public:
     virtual void prepare(Properties &properties) {
     }
 
-    virtual void start() {
+    virtual void start(Properties &properties) {
         Scheduler *scheduler = this->createScheduler();
         LoggerFactory *loggerFac = this->createLoggerFactory();
-        // Properties only valid during the start up scope, these properties are regarded as local variables.
+        // Properties only valid during the start up scope, these properties are regarded as local(during application start up) variables.
         // Properties is as the interface between component and it's environment.
         // So properties normally assigned values from outside and read values by component in boot stage.
-        Properties properties;
         Context *context = new Context(properties, scheduler, loggerFac);
+        Logger *logger = context->loggerFactory->getLogger("");
+        Buffer<String> names = properties.getNames();
+
+        logger->info("====== Start of properties === ");
+        for (int i = 0; i < names.getLength(); i++) {
+            String name = names.get(i);
+            String line = properties.getLine(name);
+            logger->info(line);
+        }
+        logger->info("====== End of properties =====");
+
         this->stageTo(PostStart, *context);
         if (context->isStop()) {
             log(context->getMessage());

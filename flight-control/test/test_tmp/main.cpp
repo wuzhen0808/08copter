@@ -12,11 +12,6 @@ using namespace a8::hal::native;
 
 System *a8::hal::S = new NativeSystem();
 
-int receive(Sockets &ss, int port, char *buf, int bufLen);
-
 int main(int argc, char **argv) {
-    Application *app = new NativeApplication();
-    app->start();
-
-    return 0;
+    return NativeApplication::start(argc, argv);   
 }
