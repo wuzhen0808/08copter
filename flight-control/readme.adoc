@@ -3,30 +3,38 @@
 :toclevels: 3
 
 //  1
-== {counter:chapter}. Background
+== {counter:chapter}. Introduction
 
-=== {chapter}.{counter:bg}. Introduction
+=== {chapter}.{counter:bg}. What is A8
 
-The aim of this project is learning how to build a quad copter. 
+The aim of this project is learning how to build a quad copter from zero. Learning is not building itself in that we focus on the structure of a general quad copter. Trying to provide a framework and guide a learner to build his or her concrete copter.
 
-Building a copter from nothing is a long run. It may take you several month to get your idea flyable. So here we are trying to get the study curve clear.
+A8 stand for what? One reason is that Arduino UNO R4 is initially adopted here as the main board of the flight control system. Another reason is that this project started from Autumn and August of 2003. You know august is the 8th month of a year.
 
-Hardwares - a drone copter is composed with a `Frame`, several `Motors`, a `Micro Controller Board` , one or more `Sensors` , a `Battery`. 
+== {chapter}.{counter:bg}. Who may interest？
 
-Software - a drone copter need a `Flight Control System` and a `Remote Control System`.
+If you are going learn the procedure to build a quad copter you may interested in. Building a copter from nothing is a long run. It may take you several month to get your idea into real. Here we are trying to get the concepts behind clearly visible to you.
 
-Attitude control is the core of the flight control system. In order to achieve self balance, an `Inertial Measurement Unit` is adopted as the basic peripheral to provide the ability of knowing the actual attitude of the copter. 
+=== {chapter}.{counter:bg}. Who NOT interest?
 
-There are a set of tools as well for you to develop and tuning the software parameters.
+*** If you already know the detail about how to build a quad copter. Including the hardware components and software architecture of a copter or quad copter.
 
-One principal here is focusing on the readability of the source code but not the performance. Because the goal of this project is not a flyable copter but the procedure to build one. 
+*** If you are seeking a ready-to-use flight control system.
 
-A8 stand for what? Because Arduino UNO R4 is adopted here as the main board of the FCS. Another reason is that this project started from Autumn and August of 2003. You know august is the 8th month of a year.
+== {chapter}.{counter:bg}. Tools involved.
+
+There are a set of tools as well for you to develop and tuning your FCS.
+
+== {chapter}.{counter:bg}. Principal.
+
+One principal here is focusing on the readability of the source code but not the performance. Because the goal of this project is not a flyable copter but the procedure to build one.
 
 == {counter:chapter}. Concepts framework
 This section introduce the concepts involved. If you already know the background about how an copter is composed you can skip this section.
 
 === {chapter}.{counter:cf}. Hardware
+
+Hardwares - a drone copter is composed with a `Frame`, several `Motors`, a `Micro Controller Board` , one or more `Sensors` , a `Battery`. 
 
 ==== {chapter}.{cf}.{counter:hard}. Frame
 The frame may not so much worth to introduce, it is not a abstract component to build a copter.Basically we need a four arms to install the motors and have a center platform to fix the PCB boards.
@@ -42,12 +50,18 @@ A brush less motor need an ESC to drive itself. A quad copter need 4 brush less 
 The board during the development of this project is Arduino-UNO-R4-MINIMA. The MPU is Cortex-M4 architecture and the model is RA4M1 from Renesas.
 
 ==== {chapter}.{cf}.{counter:hard}. IMU
-Here we adopt MPU-9250 as the IMU(Inertial Measurement Unit) peripheral which contains three sensors which are accelerometer, gyro and magnetometer.
+
+In order to achieve self balance, an `Inertial Measurement Unit` is adopted as the basic peripheral to provide the ability of knowing the actual attitude of the copter. 
+
+For example MPU-9250 as one of the IMU(Inertial Measurement Unit) peripheral which contains an accelerometer,  a gyro and a magnetometer.
 
 ==== {chapter}.{cf}.{counter:hard}. RC
 Remote control.
 
 === {chapter}.{counter:cf}. Software - Flight Control
+
+Flight control is main software for a drone copter. And attitude control is the core of the flight control system. 
+
 ==== {chapter}.{cf}.{counter:flight}. PID controller
 An general approach to deal with auto-control problem. 
 
@@ -213,6 +227,8 @@ $ pio.exe project init --ide vscode --environment fc_native
 
 ==== {chapter}.{dep}.{counter:libs}. JSBSim-Kernel
 
+==== {chapter}.{dep}.{counter:libs}. ncurses
+
 == {counter:chapter}. Architecture
 
 === {chapter}.{counter:arch}. Diagram
@@ -337,7 +353,7 @@ Env fc_native is to support running the code in a simulation environment.
 
 At the moment the native environment only support building with MingW under Windows. 
 
-=== {chapter}.{counter:build}. Build program for native(MingW) environment
+=== {chapter}.{counter:build}. Build FCS for native(MingW) environment
 Change directory to the project home folder and run command below.
 
 [source,shell]
@@ -345,7 +361,7 @@ Change directory to the project home folder and run command below.
 $ pio run -e native
 ----
 
-=== {chapter}.{counter:build}. Build for Arduino UNO R4 Minima board
+=== {chapter}.{counter:build}. Build FCS for Arduino UNO R4 Minima board
 Change directory to the project home folder and run command below.
 
 [source,shell]
@@ -353,8 +369,21 @@ Change directory to the project home folder and run command below.
 $ pio run -e uno_r4_minima
 ----
 
-// // // // //
+=== {chapter}.{counter:build}. Build GS for native.
+
+Install the ncurses libs.
+
+Run build command.
+
+[source,shell]
+----
+$ pio run -e gs_native
+----
+
+
+
 //  4
+
 == {counter:chapter}. Tuning
 
 === {chapter}.{counter:tuning}. Tuning Simulation.

@@ -5,7 +5,14 @@ namespace a8::util {
 class Util {
 public:
     static const char END_OF_STR = '\0';
-
+    /**
+     * Format and append the formatted string to the buffer.
+     *
+     * Write back the results by reference.
+     *
+     * The buffer must be a space created by new in heap or zero in which case a new one will be created.
+     *
+     */
     template <typename... Args>
     static void appendFormat(char *&bufRef, int &lenRef, int &capRef, int deltaCap, const char formatStr[], Args... args) {
 
@@ -35,7 +42,7 @@ public:
             bufRight = buf + lenLeft;
             lenRight = snprintf(bufRight, capRight, formatStr, args...);
 
-            if (lenRight +1 > capRight) {
+            if (lenRight + 1 > capRight) {
                 // error processing?
                 // exit(1);
             }
@@ -47,17 +54,17 @@ public:
         lenRef = lenLeft + lenRight; // write back new length.
     }
 
-    template <typename T>
-    static void reRef(T *&ref, T *newRef) {
-        T *old = ref;
-        ref = newRef;
-        delete old;
-    }
-
     static void bug() {
         std::cout << "bug" << std::endl;
     }
 
+    /**
+     * Append a string to another.
+     * Create new space from heap if necessary.
+     * The old space will be released if new space is created.
+     * Caller should be the owner of the space, the old one or the new one.
+     *
+     */
     static void appendStr(char *&bufferRef, int &lengthRef, int &capacityRef, int deltaCapacity,
                           const char *buf1, const int from1, const int len1) {
         int lenLeft = lengthRef;
@@ -70,17 +77,59 @@ public:
             bufferRef[lengthRef] = END_OF_STR;
         }
     }
-
+    /**
+     * This method read the elements from the source buffer and append them to the end of the target buffer.
+     * If necessary, the destination buffer's capacity will be expanded by new array with a new capacity.
+     * The old buffer will be deleted from heap.
+     *
+     * Note that there are 3 references here for writing the process result back.
+     *
+     *  1. bufferRef - the pointer ref, it's may 0 or a valid buffer which created in heap by new keyword.
+     *  2. lengthRef - the length ref, indicate the length of meaningful content of the buffer.
+     *  3. capacityRef - the capacity ref, indicate th total size of the buffer when it is created.
+     *  4. deltaCap - if the capacity need to be expanded, the new capacity should increase by this argument.
+     *  5. tailCap - this arg specify more reserved space for caller to use, for instance the string tail to fill.
+     *  6,7,8. buf1,from1,len1 - the source buffer informations.
+     *
+     * The result are:
+     *  1. the pointer ref will be untouched if the capacity is enough to fill the new content.
+     *     It will be updated if a new array buffer created.
+     *  2. the length ref, will be updated to the total length after filling.
+     *  3. the capacity ref will be updated if new array created.
+     *
+     * For example, to append "abc" into a buffer which is initialized with a 0, null pointer.
+     *
+     * @code
+     *  //destination
+        char * buf2 = 0;
+        int len2 = 0;
+        int capacity2 = 0;
+        //source
+        const char buf1[] = "abc";
+        int len1 = 3;
+        //filling and write back the result by references.
+        Util::append(buf, len, capacity, 8, 0, buf1, 0, len1);
+        //check results.
+        assert buf2 != 0;
+        assert len2 = len1;
+        assert capacity2 = 8;
+        //free the array space.
+        if(buf2 != 0){
+            delete buf2;
+        }
+     *
+     *
+     */
     template <typename T>
-    static void append(T *&bufferRef, int &lengthRef, int &capacityRef, int deltaCapacity, int additionalCap,
+    static void append(T *&bufferRef, int &lengthRef, int &capacityRef, int deltaCap, int tailCap,
                        const T *buf1, const int from1, const int len1) {
 
         int length3 = lengthRef + len1;
 
         int cap2 = capacityRef;
         bool new_ = false;
-        while (cap2 < length3 + additionalCap) { // find a new capacity.
-            cap2 += deltaCapacity;
+        while (cap2 < length3 + tailCap) { // find a new capacity.
+            cap2 += deltaCap;
             new_ = true;
         }
         if (new_) {
@@ -93,24 +142,6 @@ public:
         }
         copy<T>(buf1, from1, len1, bufferRef, lengthRef);
         lengthRef = length3; // write length back.
-    }
-
-    template <typename T>
-    static T *newArray(const T *buf1, const int from1, const int len1, const T *buf2, const int from2, const int len2, const int capacity) {
-        T *dest = new T[capacity];
-        Util::copy<T>(buf1, from1, len1, dest);
-        Util::copy<T>(buf2, from2, len2, dest, len1);
-        return dest;
-    }
-
-    static char *newStr(const char *buf1, const int from1, const int len1, const char *buf2, const int from2, const int len2) {
-        return newStr(buf1, from1, len1, buf2, from2, len2, len1 + len2 + 1);
-    }
-    static char *newStr(const char *buf1, const int from1, const int len1, const char *buf2, const int from2, const int len2, const int capacity) {
-        int len3 = len1 + len2;
-        char *ret = newArray(buf1, from1, len1, buf2, from2, len2, capacity);
-        ret[len3] = END_OF_STR;
-        return ret;
     }
 
     template <typename T>
@@ -142,7 +173,14 @@ public:
     static T &ref(T &ref) {
         return ref;
     }
-
+    /**
+     * 1. cap - the current cap of some buffer.
+     * 2. deltaCap - increase by delta.
+     * 3. cap2 - the required minimize capacity to meet.
+     *
+     * Return:
+     * 1. a number large than cap2.
+     */
     static int makeCapacity(int cap, int deltaCap, int cap2) {
 
         if (cap < cap2) {
