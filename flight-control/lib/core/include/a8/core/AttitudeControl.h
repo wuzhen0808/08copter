@@ -72,14 +72,15 @@ public:
 
         log(String::format("ar:%i,fl:%i,al:%i,fr:%i,", idxAR, idxFL, idxAL, idxFR));
         log(String("pid-Ks:")
-            << "altitudePid(" << altitudePid->kp << altitudePid->ki << altitudePid->kd << ")," //
-            << "rollPid(" << rollPid->kp << rollPid->ki << rollPid->kd << "),"                 //
-            << "pitchPid(" << pitchPid->kp << pitchPid->ki << pitchPid->kd << "),"             //
-            << "yawPid(" << yawPid->kp << yawPid->ki << yawPid->kd << "),"                     //
+            << "altitude:" << altitudePid->toString() << "," //
+            << "roll:" << rollPid->toString() << ","         //
+            << "pitch:" << pitchPid->toString() << ","       //
+            << "yaw:" << yawPid->toString() << ","           //
         );
     }
+
     void setPidKs(PidControl *pid, Buffer<float> pidKs) {
-        
+
         float kp = 0.0f;
         float ki = 0.0f;
         float kd = 0.0f;

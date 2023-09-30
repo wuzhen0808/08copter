@@ -78,12 +78,16 @@ public:
     bool update(SocketData *data) override {
 
         String line;
-        bool hasMore = lReader->readLine(line);
+        int read = lReader->readLine(line);
+        if (read <= 0) {            
+            return false;
+        }
+
         log(String::format("dataline:%s", line.getText()));
         Buffer<String> fields = line.split(',');
         data->altitude = readDouble(fields, Col_Altitude);
 
-        return hasMore;
+        return true;
     }
 
     double readDouble(Buffer<String> &fields, int idx) {

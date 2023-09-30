@@ -106,7 +106,7 @@ public:
 
         // configuration file
         String fpath = resolveConfFile(pts);
-        S->out->println(String::format("a8 properties file path:%s", fpath));
+        S->out->println(String::format("a8 properties file path:%s", fpath.getText()));
 
         if (fpath != 0) {
             NativeFileReader fr(fpath);

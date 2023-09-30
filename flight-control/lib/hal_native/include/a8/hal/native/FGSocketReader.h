@@ -114,7 +114,7 @@ public:
         while (running) {
             running = update();
         }
-        log("Error, JSBSim socket connection broken.");
+        log("Error,cannot receive data from JSBSim. Socket connection may broken?");
     }
 
     virtual bool update(SocketData *data) = 0;

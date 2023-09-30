@@ -10,4 +10,7 @@ foreach file (data_log/*.csv)
   if (-f $rpath) prep_plot $file --plot=$rpath | gnuplot    
   
 end
-gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=data_plot/output.pdf data_log/*.ps
+set pdf = data_plot/output.pdf
+gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=${pdf} data_log/*.ps
+
+echo "file generated: ${pdf}"
