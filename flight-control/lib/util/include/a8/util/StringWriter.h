@@ -9,7 +9,7 @@ namespace a8::util {
  */
 class StringWriter : public Writer {
 protected:
-    Buffer<char> buffer;
+    String str;
     int from = 0;
 
 public:
@@ -20,11 +20,12 @@ public:
     }
 
     virtual void write(const char *buf, int bufLen) override {
-        buffer.append(buf, bufLen);
+        str.append(buf, bufLen);
     };
     
     String toString() {
-        return buffer;
+        //TODO how to avoid copy.
+        return str;
     }
 };
 

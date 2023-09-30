@@ -15,21 +15,21 @@ System *a8::hal::S = new NativeSystem();
 int receive(Sockets &ss, int port) {
     SOCK server = ss.socket();
     if (server == 0) {
-        // context.stop(String::format("cannot create new socket from socket factory."));
+        // context->stop(String::format("cannot create new socket from socket factory."));
         return false;
     }
     String address = "127.0.0.1";
 
     Result bResult = ss.bind(server, address, port); //
     if (bResult.error != 0) {
-        // context.stop(String::format("cannot bind to port:%i, error:%i", bindPort, bResult.error));
+        // context->stop(String::format("cannot bind to port:%i, error:%i", bindPort, bResult.error));
         return false;
     }
 
     Result lResult = ss.listen(server);
 
     if (lResult.error != 0) {
-        // context.stop(String::format("cannot listen on port:%i", bindPort));
+        // context->stop(String::format("cannot listen on port:%i", bindPort));
         return false;
     }
 

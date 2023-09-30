@@ -17,11 +17,11 @@ private:
     bool stop_ = false;
 
 public:
-    Properties &properties;
+    Properties *properties;
     Scheduler *scheduler;
     LoggerFactory *loggerFactory;
 
-    Context(Properties &properties, Scheduler *scheduler, LoggerFactory *loggerFactory) : properties(properties) {
+    Context(Properties *properties, Scheduler *scheduler, LoggerFactory *loggerFactory) : properties(properties) {
         this->loggerFactory = loggerFactory;
         this->scheduler = scheduler;
     }

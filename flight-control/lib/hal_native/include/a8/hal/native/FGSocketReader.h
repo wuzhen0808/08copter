@@ -52,31 +52,31 @@ public:
         return lastData;
     }
 
-    virtual void setup(Context &context) override {
+    virtual void setup(Context *context) override {
 
-        int bindPort = context.properties.getInt(P_sim_jsb_sim_bind_port, 5502);
-        String dataFile = context.properties.getString(P_sim_jsb_sim_data_file, "");
+        int bindPort = context->properties->getInt(P_sim_jsb_sim_bind_port, 5502);
+        String dataFile = context->properties->getString(P_sim_jsb_sim_data_file, "");
 
         this->dataFileWriter = new FileWriter(dataFile); // todo write data log
 
         // TODO move the server to the context ?
         server = this->sockets->socket();
         if (server == 0) {
-            context.stop(String::format("cannot create new socket from socket factory."));
+            context->stop(String::format("cannot create new socket from socket factory."));
             return;
         }
         String address = "127.0.0.1";
 
         Result bResult = this->sockets->bind(server, address, bindPort); //
         if (bResult.error != 0) {
-            context.stop(String::format("cannot bind to port:%i, error:%i", bindPort, bResult.error));
+            context->stop(String::format("cannot bind to port:%i, error:%i", bindPort, bResult.error));
             return;
         }
 
         Result lResult = this->sockets->listen(server);
 
         if (lResult.error != 0) {
-            context.stop(String::format("cannot listen on port:%i", bindPort));
+            context->stop(String::format("cannot listen on port:%i", bindPort));
             return;
         }
 
@@ -84,13 +84,13 @@ public:
 
         this->sockIn = this->sockets->accept(server);
         if (sockIn == 0) {
-            context.stop("cannot accept connect from JSBSim.");
+            context->stop("cannot accept connect from JSBSim.");
             return;
         }
         log("JSBSim connected in, trying to receive the first package of data.");
     }
 
-    virtual void postSetup(Context &context) override {
+    virtual void postSetup(Context *context) override {
         Component::postSetup(context);
     }
 

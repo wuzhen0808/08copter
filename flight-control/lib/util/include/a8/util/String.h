@@ -1,43 +1,66 @@
 #pragma once
-#include "a8/util/Buffer.h"//TODO remove Buffer dependence.
-#include <stdio.h>
+#include "a8/util/Buffer.h" //TODO remove Buffer dependence.
+#include "debug.h"
+#define DELTA_STR_CAP (16)
+
 namespace a8 {
 namespace util {
 
 class String {
 
 private:
-    int length;
-    char *text;
-    void replace(const char *buf, int len, bool deleteText);
+    // Template method must be implemented in header file .
+
+    int length = 0;
+    char *text = 0;
+    int capacity = 0;
+
+    void init() {
+        this->text = 0;
+        this->length = 0;
+        this->capacity = 0;
+    }
+
+    void init(const char *buf, int len) {
+        this->init();
+        Util::appendStr(this->text, this->length, this->capacity, DELTA_STR_CAP, buf, 0, len);
+    }
+    template <typename... Args>
+    String &appendFormat(const char format[], Args... args) {
+        Util::appendFormat(text, length, capacity, DELTA_STR_CAP, format, args...);
+        return *this;
+    }
 
 public:
-    // static member funcs
-    static int getLength(const char *str);
-    static Buffer<String> &strings(int argc, char **argv, Buffer<String> &&buf);
-    static String string(const char *str);
-
-    // Template method must be implemented in header file .
     template <typename... Args>
-    static String format(const char formatStr[], Args... args) {
-
-        int size = 100;
-        char *buf = new char[size]{0};
-        int len = snprintf(buf, size, formatStr, args...);
-        if (len + 1 > size) { // str truncate.
-            delete[] buf;
-            size = len + 1;
-            buf = new char[size];
-            len = snprintf(buf, size, formatStr, args...);
-            if (len >= size) {
-                // error processing?
-                // exit(1);
-            }
-        }
-        String ret(buf, len);
-        delete[] buf;
+    static String format(const char format[], Args... args) {
+        String ret;
+        ret.appendFormat(format, args...);
+        // TODO use move constructor?
         return ret;
     }
+
+    // static member funcs
+    static int getLength(const char *str);
+    static Buffer<String> &strings(int argc, char **argv, Buffer<String> &buf) {
+
+        for (int i = 0; i < argc; i++) {
+            String str = String::string(argv[i]);
+            if (str.length > 10000) {
+                Util::bug();
+            }
+            buf.append(str);
+        }
+        for (int i = 0; i < buf.getLength(); i++) {
+            String str = buf.get(i);
+            if (str.length > 10000) {
+                Util::bug();
+            }
+        }
+        return buf;
+    }
+
+    static String string(const char *str);
 
     template <typename T>
     Buffer<T> split(const char separator, T (*convert)(String &)) {
@@ -58,36 +81,163 @@ public:
 
         return buffer;
     }
+    // dynamic methods
+    String() {
+        this->init();
+    }
 
-    String();
     // String(const char * str), this constructor is not defined.
     // Because for some reason if this method is added then the literal C++ string could not be recognized as String automatically by compiler.
     // So we remove this constructor for now.
     //
-    String(const char (&buf)[]);
-    String(const char *str, int len);
-    String(const String &str); // Copy constructor
-    // Move constructor does not work for some unknow reason。
-    // Looks like the deconstructor is called unexpectedly when execution split().
-    // The split method take a function pointer as parameter to convert each string split out;
-    // So we remove this constructor for now.
-    // String(const String &&str);
-    String(const Buffer<char> &buf);
-    ~String();
+    String(const String &str) { // copy constructor
+        LOG(">>String::String(const String &str)");
 
-    char *getText() const;
-    char getChar(int idx) const;
+        init(str.text, str.length);
+        LOG("<<String::String(const String &str)");
+    }
+
+    String(const float f) {
+        init();
+        Util::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%e", f);
+    }
+
+    String(const int i) {
+        this->init();
+        Util::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%i", i);
+    }
+
+    String(const char ch) {
+        init(&ch, 1);
+    }
+
+    String &operator=(const String &str) { // assign operator
+        this->clear();
+        Util::appendStr(this->text, this->length, this->capacity, DELTA_STR_CAP, str.text, 0, str.length);
+        return *this;
+    }
+
+    String &operator=(const char *buf) {
+        this->clear();
+        int len = Util::strLength(buf);
+        Util::appendStr(this->text, this->length, this->capacity, DELTA_STR_CAP, buf, 0, len);
+        return *this;
+    }
+
+    String &operator=(const char &ch) {
+        this->clear();
+        this->append(ch);
+        return *this;
+    }
+
+    String &operator=(const int iValue) {
+        this->clear();
+        this->append(iValue);
+        return *this;
+    }
+
+    String &operator=(const float fValue) {
+        this->clear();
+        this->append(fValue);
+        return *this;
+    }
+
+    ~String() {
+        if (this->text != 0) {
+            delete[] this->text;
+        }
+    }
+
+    String(const char (&buf)[]) {
+        int len = Util::strLength(buf);
+        init(buf, len);
+    }
+
+    String(const char *buf, int len) {
+        LOG(">>String::String(const char *buf, int len)");
+        init(buf, len);
+        LOG("<<String::String(const char *buf, int len)");
+    }
+
+    // other methods
+    //  Move constructor does not work for some unknow reason。
+    //  Looks like the deconstructor is called unexpectedly when execution split().
+    //  The split method take a function pointer as parameter to convert each string split out;
+    //  So we remove this constructor for now.
+    //  String(const String &&str);
+    void clear() {
+        this->length = 0;
+    }
+
+    bool isEmpty() {
+        return this->length = 0;
+    }
+    /**
+     * Return:
+     *  0(nullptr)
+     *  or a char array end with '\0';
+     *
+     */
+    const char *getText() const {
+        return this->text;
+    }
+    
+    const char *txt() const {
+        return this->text;
+    }
+
     int getLength() const;
-    void append(const String *str);
-    void append(const String &str);
-    void append(const char *str);
-    void append(const char *str, int len);
-    void append(const char ch);
-    void append(const float fValue);
-    void append(const double fValue);
-    void append(const int fValue);
-    void append(const long fValue);
-    void append(const unsigned fValue);
+
+    int len() const {
+        return this->length;
+    }
+
+    char getChar(int idx) const {
+        return this->text[idx];
+    }
+
+    void append(const char *str) {
+        append(str, 0, Util::strLength(str));
+    }
+
+    void append(const char ch) {
+        append(&ch, 0, 1);
+    }
+
+    void append(const String *str) {
+        append(str->getText(), 0, str->getLength());
+    }
+
+    void append(const char *buf, int len) {
+        append(buf, 0, len);
+    }
+    void append(const String &str) {
+        append(str.text, str.length);
+    }
+
+    void append(const char *buf, int from, int len) {
+        Util::appendStr(this->text, this->length, this->capacity, DELTA_STR_CAP,
+                        buf, from, len);
+    }
+    void append(const float fValue) {
+        Util::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%e", fValue);
+    }
+
+    void append(const double fValue) {
+        Util::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%e", fValue);
+    }
+
+    void append(const int iValue) {
+        Util::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%i", iValue);
+    }
+
+    void append(const long lValue) {
+        Util::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%i", lValue);
+    }
+
+    void append(const unsigned iValue) {
+        Util::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%i", iValue);
+    }
 
     int lastIndexOf(char ch) {
         for (int i = length - 1; i >= 0; i--) {
@@ -134,16 +284,7 @@ public:
     }
     //
     // operators
-    String &operator=(const char *buf);
-    // String &operator=(const char (&buf)[]); DO not declare this method, will error of ambiguous.
-    String &operator=(const String &str);
-    String &operator=(const char &buf);
-    String &operator=(const int iValue);
-    /*
-    Use format "%e" to format the float value.
-    For example 1.1 will convert to '1.100000e+00';
-    */
-    String &operator=(const float fValue);
+
     String &operator=(const Buffer<char> &iValue);
 
     String &operator<<(const float fValue);

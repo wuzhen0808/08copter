@@ -33,7 +33,7 @@ public:
     FGSocketStructReader(Sockets *socketFactory) : FGSocketReader(socketFactory) {
     }
 
-    virtual void setup(Context &context) override {
+    virtual void setup(Context *context) override {
         FGSocketReader::setup(context);
     }
 

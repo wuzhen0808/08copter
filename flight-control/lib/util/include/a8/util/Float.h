@@ -13,7 +13,12 @@ public:
     static Buffer<double> parseAll(String fStr, char sep) {
         return parseAll<double>(fStr, sep, [](double d) { return d; });
     }
-
+    template <typename T>
+    static Buffer<T> parseAll2(String fStr, char sep, T (*converter)(double)) {
+        Buffer<T> ret;
+        ret.append(converter(1));
+        return ret;
+    }
     template <typename T>
     static Buffer<T> parseAll(String fStr, char sep, T (*converter)(double)) {
 

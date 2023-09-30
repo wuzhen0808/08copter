@@ -1,144 +1,21 @@
 #include "a8/util/String.h"
 #include "a8/util/Buffer.h"
 #include "a8/util/Util.h"
-#include <stdio.h>
-// #define A8_DEBUG_STRING
-#ifdef A8_DEBUG_STRING
-#include <iostream>
-using std::cout;
-using std::endl;
-#define LOG(msg) cout << msg << endl;
-#define LOG2(msg, msg2) cout << msg << msg2 << endl;
-#else
-#define LOG(msg)
-#define LOG2(msg, msg2)
-#endif
-#define INC (10)
+
 
 namespace a8::util {
 
 // static methods
-Buffer<String> &String::strings(int argc, char **argv, Buffer<String> &&buf) {
-
-    for (int i = 0; i < argc; i++) {
-        buf.append(String(*argv[i]));
-    }
-    return buf;
-}
 
 String String::string(const char *str) {
     return String(str, Util::strLength(str));
 }
 
-int String::getLength(const char *str) {
-    for (int i = 0;; i++) {
-        if (str[i] == '\0') {
-            return i;
-        }
-    }
-}
-
 // dynamic methods
-String::String() {
-    LOG(">>String::String()");
-    this->text = new char[1]{'\0'};
-    this->length = 0;
-    LOG("<<String::String()");
-}
 
-String::String(const String &str) {
-    LOG(">>String::String(const String &str)");
-    replace(str.text, str.length, false);
-    LOG("<<String::String(const String &str)");
-}
-
-String::String(const char (&buf)[]) {
-    replace(buf, -1, false);
-}
-
-String::String(const Buffer<char> &buf) {
-    replace(buf.getAll(), buf.getLength(), false);
-}
-String::String(const char *buf, int len) {
-    LOG(">>String::String(const char *buf, int len)");
-    replace(buf, len, false);
-    LOG("<<String::String(const char *buf, int len)");
-}
-
-void String::replace(const char *buf, int len, bool deleteText) {
-    if (len == -1) {
-        len = String::getLength(buf);
-    }
-    char *buf2 = new char[len + 1];
-    Util::copy<char>(buf, buf2, len + 1);
-    buf2[len]='\0';//string end
-    if (deleteText) {
-        delete[] text;
-    }
-    this->text = buf2;
-    this->length = len;
-}
-char *String::getText() const {
-    return this->text;
-}
-
-String::~String() {
-    delete[] this->text;
-    this->text = 0;
-    this->length = 0;
-}
 
 int String::getLength() const {
     return this->length;
-}
-
-char String::getChar(int idx) const {
-    return this->text[idx];
-}
-
-void String::append(const char *str) {
-    append(str, getLength(str));
-}
-
-void String::append(const char ch) {
-    append(&ch, 1);
-}
-
-void String::append(const float fValue) {
-    append(String::format("%e", fValue));
-}
-
-void String::append(const double fValue) {
-    append(String::format("%e", fValue));
-}
-
-void String::append(const int fValue) {
-    append(String::format("%i", fValue));
-}
-
-void String::append(const long fValue) {
-    append(String::format("%i", fValue));
-}
-
-void String::append(const unsigned fValue) {
-    append(String::format("%i", fValue));
-}
-
-void String::append(const String *str) {
-    append(str->getText(), str->getLength());
-}
-
-void String::append(const char *str, int len) {
-
-    char *buf = new char[length + len + 1]{0};
-    Util::copy<char>(text, buf, length);
-    Util::copy<char>(str, 0, buf, length, len);
-    delete[] text;
-    text = buf;
-    length = length + len;
-}
-void String::append(const String &str) {
-    append(str.text, str.length);
 }
 
 // operators
@@ -148,39 +25,6 @@ String &String::operator=(const char (&buf)[]) {
     return *this;
 }
 */
-
-String &String::operator=(const char *buf) {
-    replace(buf, -1, true);
-    return *this;
-}
-
-String &String::operator=(const String &str) {
-    replace(str.text, str.length, true);
-    return *this;
-}
-
-String &String::operator=(const char &str) {
-    replace(&str, 1, true);
-    return *this;
-}
-
-String &String::operator=(const int iValue) {
-    String str = String::format("%i", iValue);
-    replace(str.text, str.length, true);
-    return *this;
-}
-
-String &String::operator=(const float fValue) {
-    String str;
-    str.append(fValue);
-    this->operator=(str);
-    return *this;
-}
-
-String &String::operator=(const Buffer<char> &buf) {
-    replace(buf.getAll(), buf.getLength(), true);
-    return *this;
-}
 
 String &String::operator<<(const float fValue) {
     append(fValue);
@@ -235,22 +79,14 @@ bool String::endWith(const char *str) {
 }
 
 Buffer<String> String::split(const char separator) {
-
     return split<String>(separator, [](String &s) { return s; });
-
 }
-
 
 // friend static member
 String operator+(String const &str1, String const &str2) {
-    int len1 = str1.getLength();
-    int len2 = str2.getLength();
-    char *buf = new char[len1 + len2 + 1]{0};
-    char *text1 = str1.getText();
-    char *text2 = str2.getText();
-    Util::copy<char>(text1, buf, len1);
-    Util::copy<char>(text2, 0, buf, len1, len2);
-    String ret(buf, len1 + len2);
+    String ret;
+    ret.append(str1);
+    ret.append(str2);
     return ret;
 }
 

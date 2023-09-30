@@ -124,57 +124,57 @@ public:
     }
 
     template <class T>
-    T *addChild(Context &context, Component *com) {
+    T *addChild(Context *context, Component *com) {
         com->stageTo(this->stage, context);
         this->children->append(com);
         return static_cast<T *>(com);
     }
   
-    virtual void boot(Context &context) {
-        this->loggerFactory = context.loggerFactory;
+    virtual void boot(Context *context) {
+        this->loggerFactory = context->loggerFactory;
         stageChildrenTo(Boot, context);
     }
-    virtual void populate(Context &context) {
+    virtual void populate(Context *context) {
         stageChildrenTo(Populate, context);
     }
 
-    virtual void postPopulate(Context &context) {
+    virtual void postPopulate(Context *context) {
         this->stageChildrenTo(PostPopulate, context);
     }
-    virtual void setup(Context &context) {
+    virtual void setup(Context *context) {
         this->stageChildrenTo(Setup, context);
     }
-    virtual void postSetup(Context &context) {
+    virtual void postSetup(Context *context) {
         this->stageChildrenTo(PostSetup, context);
     }
 
-    virtual void start(Context &context) {
+    virtual void start(Context *context) {
         this->stageChildrenTo(Start, context);
     }
 
-    virtual void postStart(Context &context) {
+    virtual void postStart(Context *context) {
         this->stageChildrenTo(PostStart, context);
     }
 
     bool isStage(Stage stage) {
         return this->stage == stage;
     }
-    virtual void stageChildrenTo(Stage stage2, Context &context) {
+    virtual void stageChildrenTo(Stage stage2, Context *context) {
         if (this->children != 0) {
             int count = this->children->getLength();
             for (int i = 0; i < count; i++) {
                 Component *com = children->get(i);
                 com->stageTo(stage2, context);
-                if (context.isStop()) {
+                if (context->isStop()) {
                     break;
                 }
             }
         }
     }
 
-    virtual void stageTo(Stage stage2, Context &context) {
+    virtual void stageTo(Stage stage2, Context *context) {
 
-        if (context.isStop()) {
+        if (context->isStop()) {
             return;
         }
 

@@ -21,10 +21,18 @@ using ::testing::TestPartResult;
 using ::testing::UnitTest;
 
 System *a8::hal::S = new TestSystem();
+
+TEST(TestString, testEmpty){
+    String str0;
+    int len0 = Util::strLength(str0.getText());
+    EXPECT_EQ(0, len0);
+    
+}
+
 TEST(TestString, testFormatLongString) {
     String str1 = "11111111112222222222333333333344444444445555555555666666666677777777778888888888999999999900000000001111111111";
     String str2 = String::format("abcdefghij0:%s", str1.getText());
-    String str3 = "abcdefghij0:" + str1;
+    String str3 = "abcdefghij0:11111111112222222222333333333344444444445555555555666666666677777777778888888888999999999900000000001111111111";
 
     EXPECT_EQ(str2.getLength(), str3.getLength());
     EXPECT_EQ(str2, str3);

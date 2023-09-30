@@ -16,7 +16,7 @@ protected:
 public:
     ServosControl(int totalServos);
     ~ServosControl();
-    void setup(Context &context) override {
+    void setup(Context *context) override {
         log(String::format(">>setup, totalServos:%i", totalServos));
 
         this->servos = new Servo *[totalServos]; // is Servo need to be a Component type?

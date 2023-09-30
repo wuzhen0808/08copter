@@ -54,17 +54,17 @@ public:
         delete yawPid;
     }
 
-    virtual void boot(Context &context) override {
+    virtual void boot(Context *context) override {
         Component::boot(context);
-        idxAR = context.properties.getInt(P_fcs_servo_idx_ar, 0);
-        idxFL = context.properties.getInt(P_fcs_servo_idx_fl, 1);
-        idxAL = context.properties.getInt(P_fcs_servo_idx_al, 2);
-        idxFR = context.properties.getInt(P_fcs_servo_idx_fr, 3);
+        idxAR = context->properties->getInt(P_fcs_servo_idx_ar, 0);
+        idxFL = context->properties->getInt(P_fcs_servo_idx_fl, 1);
+        idxAL = context->properties->getInt(P_fcs_servo_idx_al, 2);
+        idxFR = context->properties->getInt(P_fcs_servo_idx_fr, 3);
         //
-        Buffer<float> *aPid3 = context.properties.getFloatArray(P_fcs_altitude_pid_k3);
-        Buffer<float> *rPid3 = context.properties.getFloatArray(P_fcs_roll_pid_k3);
-        Buffer<float> *pPid3 = context.properties.getFloatArray(P_fcs_pitch_pid_k3);
-        Buffer<float> *yPid3 = context.properties.getFloatArray(P_fcs_yaw_pid_k3);
+        Buffer<float> aPid3 = context->properties->getFloatArray(P_fcs_altitude_pid_k3);
+        Buffer<float> rPid3 = context->properties->getFloatArray(P_fcs_roll_pid_k3);
+        Buffer<float> pPid3 = context->properties->getFloatArray(P_fcs_pitch_pid_k3);
+        Buffer<float> yPid3 = context->properties->getFloatArray(P_fcs_yaw_pid_k3);
         setPidKs(altitudePid, aPid3);
         setPidKs(rollPid, rPid3);
         setPidKs(pitchPid, pPid3);
@@ -78,26 +78,24 @@ public:
             << "yawPid(" << yawPid->kp << yawPid->ki << yawPid->kd << "),"                     //
         );
     }
-    void setPidKs(PidControl *pid, Buffer<float> *pidKs) {
-        if (pidKs == 0) {
-            return;
-        }
+    void setPidKs(PidControl *pid, Buffer<float> pidKs) {
+        
         float kp = 0.0f;
-        float ki = 0.f;
+        float ki = 0.0f;
         float kd = 0.0f;
 
-        if (pidKs->getLength() > 0) {
-            kp = pidKs->get(0);
+        if (pidKs.getLength() > 0) {
+            kp = pidKs.get(0);
         }
-        if (pidKs->getLength() > 1) {
-            ki = pidKs->get(1);
+        if (pidKs.getLength() > 1) {
+            ki = pidKs.get(1);
         }
-        if (pidKs->getLength() > 2) {
-            kd = pidKs->get(2);
+        if (pidKs.getLength() > 2) {
+            kd = pidKs.get(2);
         }
         pid->setup(kp, ki, kd);
     }
-    virtual void setup(Context &context) override {
+    virtual void setup(Context *context) override {
         Component::setup(context);
     }
 

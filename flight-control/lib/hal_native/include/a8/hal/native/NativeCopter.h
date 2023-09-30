@@ -20,8 +20,8 @@ private:
     int port;
 
 protected:
-    virtual ServosControl *createServosControl(Context &context) override;
-    virtual AttitudeSensor *createAttitudeSensor(Context &context) override;
+    virtual ServosControl *createServosControl(Context *context) override;
+    virtual AttitudeSensor *createAttitudeSensor(Context *context) override;
 
 public:
     NativeCopter(JSBSimIO *jio) : Copter("cpt",4) {
@@ -29,8 +29,8 @@ public:
     }
     ~NativeCopter() {}
 
-    virtual void setup(Context &context) override;
-    virtual void start(Context &context) override;
+    virtual void setup(Context *context) override;
+    virtual void start(Context *context) override;
     virtual void stop();
 };
 

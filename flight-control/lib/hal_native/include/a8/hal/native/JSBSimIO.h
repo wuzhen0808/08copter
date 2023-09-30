@@ -42,25 +42,25 @@ public:
         // TODO release runner from scheduler, and delete it here;
     }
 
-    void populate(Context &context) override {
+    void populate(Context *context) override {
         Component::populate(context);
     }
-    void setup(Context &context) override {
+    void setup(Context *context) override {
 
         this->fgSocketReader = this->addChild<FGSocketReader>(context, new FGSocketLineReader(this->sockets));
 
         client = this->sockets->socket();
         if (client == 0) {
-            context.stop("Error, cannot create socket.");
+            context->stop("Error, cannot create socket.");
             return;
         }
         log("Connecting to JSBSim ...");
-        String connectHost = context.properties.getString("todo", "127.0.0.1");
-        int connectPort = context.properties.getInt("todo", 5126);
+        String connectHost = context->properties->getString("todo", "127.0.0.1");
+        int connectPort = context->properties->getInt("todo", 5126);
 
         Result connected = this->sockets->connect(client, connectHost, connectPort);
         if (connected.error) {
-            context.stop("Failed connect to JSBSim");
+            context->stop("Failed connect to JSBSim");
             return;
         }
         log("Successfully connected to JSBSim.");

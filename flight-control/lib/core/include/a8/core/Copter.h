@@ -22,8 +22,8 @@ protected:
     ServosControl *servosControl_;
     AttitudeControl *attitudeControl_;
     // member functions
-    virtual ServosControl *createServosControl(Context &context) = 0;
-    virtual AttitudeSensor *createAttitudeSensor(Context &context) = 0;
+    virtual ServosControl *createServosControl(Context *context) = 0;
+    virtual AttitudeSensor *createAttitudeSensor(Context *context) = 0;
 
 public:
     Copter(const String &name) : Component(name) {
@@ -39,7 +39,7 @@ public:
     ~Copter() {
     }
 
-    virtual void populate(Context &context) override {
+    virtual void populate(Context *context) override {
         Component::populate(context);
         this->log(String::format(">>Copter::setup(),totalServos:%i", totalServos_));
 
@@ -52,10 +52,10 @@ public:
 
         this->log("<<Copter::setup()");
     }
-    virtual void setup(Context &context) override {
+    virtual void setup(Context *context) override {
         Component::setup(context);
     }
-    virtual void start(Context &context) override {
+    virtual void start(Context *context) override {
         Component::start(context);
     }
 

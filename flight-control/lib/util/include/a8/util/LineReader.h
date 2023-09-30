@@ -26,13 +26,6 @@ public:
         return readLine(ret, true);
     }
 
-    int readLine(String &ret, bool appendSeparator) {
-        Buffer<char> buf;
-        int rst = readLine(buf, appendSeparator);
-        ret = buf;
-        return rst;
-    }
-
     void syncLocalIfNeeded() {
         if (this->localPointer >= 0) { // Read global at least once.
             if (localResult > 0) {     // has local content waiting to be processed.
@@ -55,7 +48,7 @@ public:
         localPointer = 0;
     }
 
-    int readLine(Buffer<char> &line, bool appendSeparator) {
+    int readLine(String &line, bool appendSeparator) {
         int thisResult = 0;
         bool found = false;
         while (true) {

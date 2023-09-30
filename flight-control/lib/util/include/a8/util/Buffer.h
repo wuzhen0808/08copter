@@ -2,30 +2,51 @@
 #include "a8/util/Callback3.h"
 #include "a8/util/ForEach.h"
 #include "a8/util/Util.h"
+#include "debug.h"
+
+#define DELTA_BUF_CAP (16)
 
 namespace a8::util {
-
 template <typename T>
 class Buffer {
 
 private:
-    void init(int cap);
-    int capacity = 0;
-    int length = 0;
+    int capacity;
+    int length;
+
     T *buffer;
-    void ensureCapacity(int capacity);
+
+    void init() {
+        this->length = 0;
+        this->capacity = 0;
+        this->buffer = 0;
+    }
 
 public:
-    static const int INC = 100;
-    Buffer<T>();
-    Buffer<T>(int capacity);
-    Buffer<T>(const Buffer<T> &buf) { // copy constructor
-        this->buffer = new T[buf.length];
-        Util::copy<T>(buf.buffer, this->buffer, buf.length);
-        this->length = buf.length;
+    Buffer<T>() {
+        this->init();
     }
-    ~Buffer();
+    Buffer<T>(const Buffer<T> &buf) { // copy constructor
+        this->init();
+        this->append(buf.buffer, 0, buf.length);
+    }
+    void operator=(const Buffer<T> &buf) { // assign operator
+        this->clear();
+        this->append(buf.buffer, 0, buf.length);
+    }
+
+    ~Buffer<T>() {    
+        if (this->buffer != 0) {
+            // delete[] this->buffer;
+        }
+    }
+
     int getLength() const;
+
+    int len() const {
+        return this->length;
+    }
+
     T get(int idx) const;
     T *getAll() const;
     int remove(int from);
@@ -50,7 +71,7 @@ public:
         if (len > this->length - from1) {
             len = this->length - from1;
         }
-        Util::copy<T>(this->buffer, from1, buf, 0, len);
+        Util::copy<T>(this->buffer, from1, len, buf);
         return len;
     }
 
@@ -77,11 +98,12 @@ public:
     }
 
     Buffer<T> *append(const T *elements, const int from, const int len) {
-
-        ensureCapacity(this->length + len);
-        Util::copy<T>(elements, from, this->buffer, length, len);
-        ;
-        this->length = this->length + len;
+        LOG(">>Buffer<T> *append(const T *elements, const int from, const int len)");
+        Util::append<T>(this->buffer, this->length, this->capacity,
+                        DELTA_BUF_CAP, 0,
+                        elements, from, len);
+        LOG2("this->buffer:", this->buffer);
+        LOG("<<Buffer<T> *append(const T *elements, const int from, const int len)");
         return this;
     }
 };
@@ -89,59 +111,10 @@ public:
 // implementation
 
 template <typename T>
-Buffer<T>::Buffer() {
-    init(INC);
-}
-
-template <typename T>
-Buffer<T>::Buffer(int capacity) {
-    init(capacity);
-}
-
-template <typename T>
-void Buffer<T>::init(int capacity) {
-    this->buffer = new T[capacity];
-    this->capacity = capacity;
-    this->length = 0;
-}
-
-template <typename T>
-Buffer<T>::~Buffer() {
-
-    delete[] this->buffer;
-    this->buffer = 0;
-
-    this->capacity = 0;
-    this->length = 0;
-}
-
-template <typename T>
-void Buffer<T>::ensureCapacity(int newCap) {
-
-    if (this->capacity < newCap) {
-
-        T *tmp1 = this->buffer;
-        int cap2 = this->capacity + INC;
-        T *tmp2 = new T[cap2];
-
-        for (int i = 0; i < this->length; i++) {
-            tmp2[i] = tmp1[i];
-        }
-
-        this->buffer = tmp2;
-        this->capacity = cap2;
-        if (cap2 < 0) {
-            //error?
-            cap2 = 1234567890;
-        }
-        delete[] tmp1;
-    }
-}
-
-template <typename T>
 T Buffer<T>::get(int idx) const {
     return this->buffer[idx];
 }
+
 template <typename T>
 int Buffer<T>::getLength() const {
     return this->length;
