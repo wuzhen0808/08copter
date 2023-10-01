@@ -1,0 +1,3 @@
+util folder contains the blocks to build a software.
+util folder contains no any concept of copter.
+util folder contains no external dependence.

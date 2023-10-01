@@ -12,15 +12,15 @@ public:
     
     // virtual Result setBlocking(SOCK sock, bool blocking) = 0;
 
-    virtual bool send(SOCK sock, String &str) = 0;
+    virtual bool send(SOCK sock, const char * buf, int len) = 0;
 
     virtual int receive(SOCK sock, char *buf, int bufLen) = 0;
 
     virtual int getLastError() = 0;
 
-    virtual Result connect(SOCK sock, String &host, int port) = 0;
+    virtual Result connect(SOCK sock, const String host, int port) = 0;
 
-    virtual Result bind(SOCK sock, String &address, int port) = 0;
+    virtual Result bind(SOCK sock, const String address, int port) = 0;
 
     virtual Result listen(SOCK sock) = 0;
 

@@ -32,6 +32,11 @@ private:
     }
 
 public:
+    
+    static String string(const char *str, int len) {
+        return String(str, len);
+    }
+
     template <typename... Args>
     static String format(const char format[], Args... args) {
         String ret;
@@ -181,7 +186,7 @@ public:
     const char *getText() const {
         return this->text;
     }
-    
+
     const char *txt() const {
         return this->text;
     }

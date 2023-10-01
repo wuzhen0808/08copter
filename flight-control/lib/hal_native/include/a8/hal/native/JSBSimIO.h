@@ -7,14 +7,13 @@
 #include "a8/util/Component.h"
 #include "a8/util/Math.h"
 #include "a8/util/Rate.h"
+#include "a8/util/ReadWriteRunner.h"
 #include "a8/util/Result.h"
 #include "a8/util/Runnable.h"
+#include "a8/util/RunnerComponent.h"
 #include "a8/util/Sockets.h"
 #include "a8/util/String.h"
 #include "a8/util/Vector3f.h"
-#include "a8/util/ReadWriteRunner.h"
-#include "a8/util/RunnerComponent.h"
-
 
 using namespace a8::util;
 using namespace a8::hal;
@@ -71,7 +70,7 @@ public:
 
     void setThrottleNorm(int id, float throttle) {
         String sb = String::format("set fcs/throttle-cmd-norm[%i] %f\n", id, throttle);
-        int sent = sockets->send(client, sb);
+        int sent = sockets->send(client, sb.getText(), sb.getLength());
     }
     Vector3f getAngVel() {
         SocketData *fdm = fgSocketReader->getLastData();

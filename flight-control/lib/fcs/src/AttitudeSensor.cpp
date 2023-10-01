@@ -1,7 +1,7 @@
-#include "a8/core/AttitudeSensor.h"
-namespace a8::core {
+#include "a8/fcs/AttitudeSensor.h"
+namespace a8::fcs {
 AttitudeSensor::AttitudeSensor() : Component("ats") {
 }
 AttitudeSensor::~AttitudeSensor() {
 }
-} // namespace a8::core
+} // namespace a8::fcs

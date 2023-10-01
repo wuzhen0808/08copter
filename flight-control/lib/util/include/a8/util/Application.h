@@ -32,6 +32,8 @@ public:
 
 class Application : public Component {
 private:
+    Scheduler *scheduler;
+    LoggerFactory *loggerFac;
 protected:
     Buffer<RateRunner *> *rateRunners_;
 
@@ -64,13 +66,11 @@ protected:
     }
 
 public:
-    Application(const char *name) : Component(name) {
+    Application(const char *name, Scheduler* scheduler, LoggerFactory* logFac) : Component(name) {
+        this->scheduler = scheduler;
+        this->loggerFac = logFac;
     }
-    Application(String &name) : Component(name) {
-    }
-
-    virtual Scheduler *createScheduler() = 0;
-    virtual LoggerFactory *createLoggerFactory() = 0;
+    
     virtual void start(Context *context) {
         Component::start(context);
     }
@@ -79,8 +79,7 @@ public:
     }
 
     virtual void start(Properties *properties) {
-        Scheduler *scheduler = this->createScheduler();
-        LoggerFactory *loggerFac = this->createLoggerFactory();
+        
         // Properties only valid during the start up scope, these properties are regarded as local(during application start up) variables.
         // Properties is as the interface between component and it's environment.
         // So properties normally assigned values from outside and read values by component in boot stage.

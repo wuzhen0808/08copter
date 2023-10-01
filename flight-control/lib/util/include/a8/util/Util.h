@@ -133,7 +133,8 @@ public:
             new_ = true;
         }
         if (new_) {
-            T *buffer = newArray<T>(bufferRef, 0, lengthRef, 0, 0, 0, cap2);
+            T *buffer = new T[cap2];
+            copy<T>(bufferRef, 0, lengthRef, buffer);
             if (bufferRef != 0) {
                 delete bufferRef;
             }
@@ -170,7 +171,10 @@ public:
         }
     }
     template <typename T>
-    static T &ref(T &ref) {
+    static T &replace(T *newObj, T &ref) {
+        T *tmp = &ref;
+        ref = *newObj;
+        delete tmp;
         return ref;
     }
     /**

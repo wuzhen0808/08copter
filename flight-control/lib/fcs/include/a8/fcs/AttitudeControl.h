@@ -1,9 +1,9 @@
 #pragma once
 
-#include "a8/core/AttitudeSensor.h"
-#include "a8/core/PidControl.h"
-#include "a8/core/ServosControl.h"
-#include "a8/core/defines.h"
+#include "a8/fcs/AttitudeSensor.h"
+#include "a8/fcs/PidControl.h"
+#include "a8/fcs/ServosControl.h"
+#include "a8/fcs/defines.h"
 #include "a8/util/Callback.h"
 #include "a8/util/Component.h"
 #include "a8/util/Writer.h"
@@ -12,7 +12,7 @@
 
 using namespace a8::util;
 
-namespace a8::core {
+namespace a8::fcs {
 
 class AttitudeControl : public Component {
 
@@ -152,4 +152,4 @@ public:
     }
 };
 
-} // namespace a8::core
+} // namespace a8::fcs

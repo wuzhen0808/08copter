@@ -1,4 +1,4 @@
-#include <panel.h>
+#include <ncurses/panel.h>
 namespace a8::gs {
 class GroundStation {
     

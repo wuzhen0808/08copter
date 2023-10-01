@@ -7,7 +7,7 @@
 using namespace a8::hal;
 using namespace a8::util;
 
-namespace a8::core {
+namespace a8::fcs {
 class PidControl {
 
 private:
@@ -57,4 +57,4 @@ public:
         return String::format("(pk:%e,pi:%e,pd:%e)", kp, ki, kd);
     }
 };
-} // namespace a8::core
+} // namespace a8::fcs

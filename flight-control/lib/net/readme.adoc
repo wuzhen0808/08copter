@@ -1,0 +1,5 @@
+
+net folder actually is the protocol itself between apps(GS/FCS/RC) running on machines.
+net folder abstract the binding blocks of a copter and defines the message to transfer.
+net folder contains no implementation but defines the behavior for each message processing.
+net folder is the fundamental layer on which different apps are rely on.

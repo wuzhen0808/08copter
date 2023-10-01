@@ -5,7 +5,7 @@
 using a8::hal::Servo;
 using namespace a8::util;
 
-namespace a8::core {
+namespace a8::fcs {
 
 class ServosControl : public Component {
 protected:
@@ -35,4 +35,4 @@ public:
     void setThrottleNorm(int id1, float vel1, int id2, float vel2, int id3, float vel3, int id4, float vel4);
 };
 
-} // namespace a8::core
+} // namespace a8::fcs

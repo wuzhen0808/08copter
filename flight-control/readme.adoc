@@ -497,7 +497,7 @@ Following command is used to show the stack strace in case any exception encount
 #0  0x00007ff9f8acf61e in ucrtbase!abort () from C:\WINDOWS\System32\ucrtbase.dll
 No symbol table info available.
 ... ...
-#7  0x00007ff65e8eb5f6 in a8::core::Copter::setup (this=0x718c50) at lib\core\src\Copter.cpp:25
+#7  0x00007ff65e8eb5f6 in a8::fcs::Copter::setup (this=0x718c50) at lib\core\src\Copter.cpp:25
 No locals.
 #8  0x00007ff65e8e1f46 in a8::native::NativeCopter::setup (this=0x718c50)
     at lib\native\src\NativeCopter.cpp:14

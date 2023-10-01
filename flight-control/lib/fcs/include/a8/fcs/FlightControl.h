@@ -1,19 +1,20 @@
-#ifndef FLIGHT_CONFIG__
-#define FLIGHT_CONFIG__
+#pragma once
 
-#include "a8/core/AttitudeControl.h"
-#include "a8/core/AttitudeSensor.h"
-#include "a8/core/ServosControl.h"
+#include "a8/fcs/AttitudeControl.h"
+#include "a8/fcs/AttitudeSensor.h"
+#include "a8/fcs/ServosControl.h"
 #include "a8/hal/Hal.h"
+#include "a8/net/GsStub.h"
 #include "a8/util/Result.h"
 #include "a8/util/Scheduler.h"
 #include "a8/util/String.h"
 
 using a8::hal::S;
+using namespace a8::net;
 using namespace a8::util;
-namespace a8::core {
+namespace a8::fcs {
 
-class Copter : public Component {
+class FlightControl : public Component {
 private:
 protected:
     // members
@@ -21,22 +22,24 @@ protected:
     AttitudeSensor *attitudeSensor_;
     ServosControl *servosControl_;
     AttitudeControl *attitudeControl_;
+    GsStub * gsStub;
     // member functions
     virtual ServosControl *createServosControl(Context *context) = 0;
     virtual AttitudeSensor *createAttitudeSensor(Context *context) = 0;
+    virtual GsStub *createGsStub(Context *context) =0;
 
 public:
-    Copter(const String &name) : Component(name) {
+    FlightControl(const String &name) : Component(name) {
         this->init();
         this->totalServos_ = 4;
     }
-    Copter(const String &name, int totalServos) : Component(name) {
+    FlightControl(const String &name, int totalServos) : Component(name) {
         this->init();
         this->totalServos_ = totalServos;
     }
     void init() {
     }
-    ~Copter() {
+    ~FlightControl() {
     }
 
     virtual void populate(Context *context) override {
@@ -67,5 +70,4 @@ public:
     }
 };
 
-} // namespace a8::core
-#endif
+} // namespace a8::fcs

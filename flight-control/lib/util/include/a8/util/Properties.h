@@ -268,12 +268,23 @@ public:
         return findEntry(name, true)->getStringArray();
     }
     // end get methods
-    void mergeFrom(Properties *pts) {
+    void mergeFrom(Properties *pts, bool overwrite) {
+
         for (int i = 0; i < pts->buffer->getLength(); i++) {
             Entry *entry = pts->buffer->get(i);
+            if (overwrite && this->contains(entry->name)) {
+                continue;
+            }
+
             this->set(entry->name, entry->type, entry->value);
         }
     }
+
+    bool contains(String name) {
+        Entry *entry = findEntry(name, false);
+        return entry != 0;
+    }
+
     String getLine(String name) {
         Entry *entry = this->findEntry(name, false);
         if (entry == 0) {

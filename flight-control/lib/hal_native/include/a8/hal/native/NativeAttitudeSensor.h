@@ -1,10 +1,10 @@
 #pragma once
-#include "a8/core/AttitudeSensor.h"
-#include "a8/core/Copter.h"
+#include "a8/fcs/AttitudeSensor.h"
+#include "a8/fcs/FlightControl.h"
 #include "a8/hal/native/JSBSimIO.h"
 #include "a8/util/Vector3f.h"
 
-using namespace a8::core;
+using namespace a8::fcs;
 using namespace a8::util;
 using namespace a8::hal::native;
 

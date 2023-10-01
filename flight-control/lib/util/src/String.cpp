@@ -11,6 +11,7 @@ String String::string(const char *str) {
     return String(str, Util::strLength(str));
 }
 
+
 // dynamic methods
 
 

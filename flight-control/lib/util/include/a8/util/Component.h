@@ -129,7 +129,7 @@ public:
         this->children->append(com);
         return static_cast<T *>(com);
     }
-  
+
     virtual void boot(Context *context) {
         this->loggerFactory = context->loggerFactory;
         stageChildrenTo(Boot, context);
@@ -154,6 +154,13 @@ public:
 
     virtual void postStart(Context *context) {
         this->stageChildrenTo(PostStart, context);
+    }
+    virtual void shutdown(Context *context) {
+        this->stageChildrenTo(Shutdown, context);
+    }
+
+    virtual void postShutdown(Context *context) {
+        this->stageChildrenTo(PostShutdown, context);
     }
 
     bool isStage(Stage stage) {
@@ -223,6 +230,13 @@ public:
                 break;
             }
         case PostStart:
+            break;
+        case Shutdown:
+            this->stage = Shutdown;
+            this->shutdown(context);
+            if (isStage(stage2)) {
+                break;
+            }
             break;
         default:
             // Unknown stage.

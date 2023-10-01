@@ -1,11 +1,11 @@
 #pragma once
-#include "a8/core/Copter.h"
-#include "a8/core/ServosControl.h"
+#include "a8/fcs/FlightControl.h"
+#include "a8/fcs/ServosControl.h"
 #include "a8/hal/Servo.h"
 #include "a8/hal/native/JSBSimIO.h"
 #include "a8/hal/native/NativeServo.h"
 
-using namespace a8::core;
+using namespace a8::fcs;
 using namespace a8::util;
 
 namespace a8::hal::native {

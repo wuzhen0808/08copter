@@ -6,11 +6,11 @@
 
 using a8::freertos::FreeRtosScheduler;
 using a8::arduino::ArduinoServosControl;
-using a8::core::AttitudeControl;
-using a8::core::AttitudeSensor;
-using a8::core::ServosControl;
-using a8::core::Thread;
-using a8::core::Timer;
+using a8::fcs::AttitudeControl;
+using a8::fcs::AttitudeSensor;
+using a8::fcs::ServosControl;
+using a8::fcs::Thread;
+using a8::fcs::Timer;
 using a8::simulator::SimulatorAttitudeSensor;
 namespace a8 {
 namespace arduino {

@@ -15,6 +15,6 @@
 //attitude controller tick rate.
 #define P_fcs_att_tick_rate ("fcs/att-tick-rate") 
 
-namespace a8::core {
+namespace a8::fcs {
 
-} // namespace a8::core
+} // namespace a8::fcs

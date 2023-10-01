@@ -4,7 +4,7 @@
 using namespace a8::util;
 
 using namespace a8::hal;
-namespace a8::hal {
+namespace a8::common {
 
 class SimpleLogger : public Logger {
 

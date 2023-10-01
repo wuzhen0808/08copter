@@ -44,7 +44,7 @@ public:
     }
     */
 
-    virtual Result connect(SOCK sock, String &host, int port) override {
+    virtual Result connect(SOCK sock, const String host, int port) override {
         struct sockaddr_in serv_addr;
         serv_addr.sin_family = AF_INET;
         serv_addr.sin_addr.s_addr = inet_addr(host.getText());
@@ -58,7 +58,7 @@ public:
         return true;
     }
 
-    virtual Result bind(SOCK sock, String &address, int port) override {
+    virtual Result bind(SOCK sock, const String address, int port) override {
         sockaddr_in name;
         int nameLen = sizeof(name);
         memset(&name, 0, nameLen);
@@ -96,9 +96,9 @@ public:
         return ret;
     }
 
-    bool send(SOCK sock, String &msg) override {
+    bool send(SOCK sock, const char* buf, int len) override {
         // S->out->println(String::format("sending... message:%s", str->getText()));
-        int sRst = ::send(sock, msg.getText(), msg.getLength(), 0);
+        int sRst = ::send(sock, buf, len, 0);
         if (sRst == SOCKET_ERROR) {
             // S->out->println(String::format("failed to send, rst:%i", sRst));
             return false;

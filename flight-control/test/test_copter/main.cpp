@@ -1,6 +1,6 @@
 #include "TersePrinter.h"
 #include "TestSystem.h"
-#include "a8/core/Copter.h"
+#include "a8/fcs/FlightControl.h"
 #include "a8/freertos/FreeRtosScheduler.h"
 #include "a8/hal/Hal.h"
 #include "a8/hal/native/NativeCopter.h"
@@ -23,7 +23,7 @@ using ::testing::TestInfo;
 using ::testing::TestPartResult;
 using ::testing::UnitTest;
 //
-using ::a8::core::Copter;
+using ::a8::fcs::Copter;
 using ::a8::freertos::FreeRtosScheduler;
 using ::a8::native::NativeFreeRtosInitializer;
 

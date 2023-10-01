@@ -35,7 +35,7 @@ public:
         this->append(buf.buffer, 0, buf.length);
     }
 
-    ~Buffer<T>() {    
+    ~Buffer<T>() {
         if (this->buffer != 0) {
             // delete[] this->buffer;
         }
@@ -105,6 +105,9 @@ public:
         LOG2("this->buffer:", this->buffer);
         LOG("<<Buffer<T> *append(const T *elements, const int from, const int len)");
         return this;
+    }
+    void set(int idx, T element) {
+        this->buffer[idx] = element;
     }
 };
 

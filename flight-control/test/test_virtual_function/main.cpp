@@ -4,7 +4,7 @@
 #include "a8/util/Timer.h"
 #include "a8/util/Buffer.h"
 #include "a8/util/String.h"
-#include "a8/core/Callback.h"
+#include "a8/fcs/Callback.h"
 #include "a8/util/Runnable.h"
 #include "a8/freertos/FreeRtosScheduler.h"
 #include "a8/native/NativeFreeRtosInitializer.h"
@@ -16,11 +16,11 @@
 using namespace a8::util;
 using namespace a8::hal;
 using namespace std;
-using a8::core::Timer;
-using a8::core::Thread;
-using a8::core::Callback;
-using a8::core::Runnable;
-namespace a8::core {
+using a8::fcs::Timer;
+using a8::fcs::Thread;
+using a8::fcs::Callback;
+using a8::fcs::Runnable;
+namespace a8::fcs {
 
 class Animal {
 public:
@@ -36,10 +36,10 @@ public:
 
     virtual Thread *getCurrentThread() = 0;
 };
-} // namespace a8::core
+} // namespace a8::fcs
 namespace a8::native {
 
-class Dog : public a8::core::Animal {
+class Dog : public a8::fcs::Animal {
 public:
     Dog() {
     }
@@ -71,8 +71,8 @@ public:
 TEST(TestScheduler, virtualTest) {
     a8::native::FreeRtosInitializer *rtos = new a8::native::NativeFreeRtosInitializer();
     rtos->initialize();
-    a8::core::Scheduler * scheduler = new a8::freertos::FreeRtosScheduler();
-    a8::core::Copter *copter = new a8::native::NativeCopter(scheduler);
+    a8::fcs::Scheduler * scheduler = new a8::freertos::FreeRtosScheduler();
+    a8::fcs::Copter *copter = new a8::native::NativeCopter(scheduler);
     copter->setup();//here????
     scheduler -> tmpTimer();
     cout << "DONE"<<endl;
