@@ -6,7 +6,7 @@
 #include "a8/util/String.h"
 #include "a8/fcs/Callback.h"
 #include "a8/util/Runnable.h"
-#include "a8/freertos/FreeRtosScheduler.h"
+#include "a8/hal/freertos/FreeRtosScheduler.h"
 #include "a8/native/NativeFreeRtosInitializer.h"
 #include "a8/native/NativeCopter.h"
 #include "TestSystem.h"
@@ -71,7 +71,7 @@ public:
 TEST(TestScheduler, virtualTest) {
     a8::native::FreeRtosInitializer *rtos = new a8::native::NativeFreeRtosInitializer();
     rtos->initialize();
-    a8::fcs::Scheduler * scheduler = new a8::freertos::FreeRtosScheduler();
+    a8::fcs::Scheduler * scheduler = new a8::hal::freertos::FreeRtosScheduler();
     a8::fcs::Copter *copter = new a8::native::NativeCopter(scheduler);
     copter->setup();//here????
     scheduler -> tmpTimer();

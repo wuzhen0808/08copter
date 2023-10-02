@@ -1,7 +1,7 @@
 
-#include "a8/freertos/FreeRtosInitializer.h"
+#include "a8/hal/freertos/FreeRtosInitializer.h"
 
-namespace a8::freertos {
+namespace a8::hal::freertos {
 FreeRtosInitializer::FreeRtosInitializer() {
 }
 
@@ -10,4 +10,4 @@ FreeRtosInitializer::~FreeRtosInitializer() {
 void FreeRtosInitializer::initialize() {
 }
 
-} // namespace a8::freertos
+} // namespace a8::hal::freertos

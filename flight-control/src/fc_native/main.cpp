@@ -8,7 +8,7 @@
 #include "a8/util/Properties.h"
 #include "a8/util/Application.h"
 #include "a8/hal/native/NativeSockets.h"
-#include "a8/freertos/FreeRtosScheduler.h"
+#include "a8/hal/freertos/FreeRtosScheduler.h"
 
 #include <iostream>
 #include <stdio.h>
@@ -16,7 +16,7 @@
 using namespace a8::hal;
 using namespace a8::hal::native;
 using namespace a8::net;
-using namespace a8::freertos;
+using namespace a8::hal::freertos;
 
 System *a8::hal::S = new NativeSystem();
 

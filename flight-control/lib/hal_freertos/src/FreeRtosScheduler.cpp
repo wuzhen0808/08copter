@@ -1,8 +1,8 @@
-#include "a8/freertos/FreeRtosScheduler.h"
-#include "a8/freertos/FreeRtosThread.h"
-#include "a8/freertos/FreeRtosTimer.h"
+#include "a8/hal/freertos/FreeRtosScheduler.h"
+#include "a8/hal/freertos/FreeRtosThread.h"
+#include "a8/hal/freertos/FreeRtosTimer.h"
 
-namespace a8::freertos {
+namespace a8::hal::freertos {
 
 FreeRtosScheduler::FreeRtosScheduler() : Scheduler() {
 }
@@ -29,4 +29,4 @@ Thread *FreeRtosScheduler::getCurrentThread() {
     return FreeRtosThread::getCurrentThread();
 }
 
-} // namespace a8::freertos
+} // namespace a8::hal::freertos

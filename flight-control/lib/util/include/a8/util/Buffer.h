@@ -1,7 +1,7 @@
 #pragma once
 #include "a8/util/Callback3.h"
 #include "a8/util/ForEach.h"
-#include "a8/util/Util.h"
+#include "a8/util/Lang.h"
 #include "debug.h"
 
 #define DELTA_BUF_CAP (16)
@@ -71,7 +71,7 @@ public:
         if (len > this->length - from1) {
             len = this->length - from1;
         }
-        Util::copy<T>(this->buffer, from1, len, buf);
+        Lang::copy<T>(this->buffer, from1, len, buf);
         return len;
     }
 
@@ -99,12 +99,18 @@ public:
 
     Buffer<T> *append(const T *elements, const int from, const int len) {
         LOG(">>Buffer<T> *append(const T *elements, const int from, const int len)");
-        Util::append<T>(this->buffer, this->length, this->capacity,
+        Lang::append<T>(this->buffer, this->length, this->capacity,
                         DELTA_BUF_CAP, 0,
                         elements, from, len);
         LOG2("this->buffer:", this->buffer);
         LOG("<<Buffer<T> *append(const T *elements, const int from, const int len)");
         return this;
+    }
+    void set(int idx, T emptyValue, T element) {
+        while (this->length - 1 < idx) {
+            this->append(emptyValue);
+        }
+        this->buffer[idx] = element;
     }
     void set(int idx, T element) {
         this->buffer[idx] = element;

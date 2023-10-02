@@ -13,7 +13,7 @@ protected:
 
 public:
     StringReader(const char *str) {
-        buffer.append(str, Util::strLength(str));
+        buffer.append(str, Lang::strLength(str));
     }
 
     ~StringReader() {

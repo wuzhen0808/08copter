@@ -1,10 +1,10 @@
 #include "a8/arduino/ArduinoCopter.h"
-#include "a8/freertos/FreeRtosScheduler.h"
+#include "a8/hal/freertos/FreeRtosScheduler.h"
 #include "a8/arduino/ArduinoServosControl.h"
 #include "a8/simulator/SimulatorAttitudeSensor.h"
 #include <Arduino.h>
 
-using a8::freertos::FreeRtosScheduler;
+using a8::hal::freertos::FreeRtosScheduler;
 using a8::arduino::ArduinoServosControl;
 using a8::fcs::AttitudeControl;
 using a8::fcs::AttitudeSensor;

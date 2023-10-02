@@ -1,10 +1,10 @@
 
-#include "a8/freertos/FreeRtosTimer.h"
+#include "a8/hal/freertos/FreeRtosTimer.h"
 
 #define LOCAL_THIS 0
 #define LOCAL_LAST_WAKE 1
 
-namespace a8::freertos {
+namespace a8::hal::freertos {
 FreeRtosTimer::FreeRtosTimer(Callback *pvRunnable, const Rate &rate) : callback(pvRunnable),
                                                                        rate(rate) {
 
@@ -42,4 +42,4 @@ void FreeRtosTimer::timerCallbackFunction(TimerHandle_t handle) {
     timer->callback->call();
 }
 
-} // namespace a8::freertos
+} // namespace a8::hal::freertos

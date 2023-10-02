@@ -11,7 +11,7 @@ public:
     ~Writer() {
     }
     void write(const char *str) {
-        writeUntil(str, Util::END_OF_STR);
+        writeUntil(str, Lang::END_OF_STR);
     }
 
     void writeUntil(const char *buf, char til) {

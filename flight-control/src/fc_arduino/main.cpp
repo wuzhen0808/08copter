@@ -1,12 +1,12 @@
 #include "a8/hal/Hal.h"
 #include "a8/arduino/ArduinoCopter.h"
 #include "a8/arduino/ArduinoSystem.h"
-#include "a8/freertos/FreeRtosScheduler.h"
+#include "a8/hal/freertos/FreeRtosScheduler.h"
 
 using a8::arduino::ArduinoCopter;
 using a8::arduino::ArduinoSystem;
 using a8::hal::System;
-using a8::freertos::FreeRtosScheduler;
+using a8::hal::freertos::FreeRtosScheduler;
 using AString = a8::util::String;
 
 System * a8::hal::S = new ArduinoSystem();

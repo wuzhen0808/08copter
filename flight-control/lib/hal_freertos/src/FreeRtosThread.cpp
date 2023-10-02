@@ -1,11 +1,11 @@
 #include "a8/hal/Hal.h"
-#include "a8/freertos/FreeRtosThread.h"
+#include "a8/hal/freertos/FreeRtosThread.h"
 #include <FreeRTOS.h>
 #include <task.h>
 
 using ::a8::hal::S;
 
-namespace a8::freertos {
+namespace a8::hal::freertos {
 static int LOCAL_THIS = 0;
 static int STACK_DEPTH = 521 / 4;
 static int DEFAULT_PRIORITY = 1;
@@ -57,4 +57,4 @@ void FreeRtosThread::taskFunction(void *pvParameters) {
     thread->runnable->run();
 }
 
-} // namespace a8::freertos
+} // namespace a8::hal::freertos

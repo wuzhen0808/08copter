@@ -15,4 +15,4 @@ void NativeFreeRtosInitializer::initialize() {
     //main_from_demo();
 }
 
-} // namespace a8::freertos
+} // namespace a8::hal::freertos

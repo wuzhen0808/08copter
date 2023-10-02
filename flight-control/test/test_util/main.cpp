@@ -24,7 +24,7 @@ TEST(TestBuffer, testParse2) {
     char *buf = 0;
     int len = 0;
     int cap = 0;
-    Util::appendFormat(buf, len, cap, 8, "%i", 1);
+    Lang::appendFormat(buf, len, cap, 8, "%i", 1);
     cout << buf << endl;
     EXPECT_EQ(len, 1);
 

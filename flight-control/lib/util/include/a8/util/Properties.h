@@ -134,7 +134,7 @@ public:
         for (int i = 0; i < lines.getLength(); i++) {
             String str = lines.get(i);
             if (str.getLength() > 10000) {
-                Util::bug();
+                Lang::bug();
             }
             setLine(str);
         }
@@ -260,11 +260,11 @@ public:
         return findEntry(name, true)->getFloatArray();
     }
 
-    Buffer<int> getInt(const String &name) {
+    Buffer<int> getIntArray(const String &name) {
         return findEntry(name, true)->getIntArray();
     }
 
-    Buffer<String> getString(const String &name) {
+    Buffer<String> getStringArray(const String &name) {
         return findEntry(name, true)->getStringArray();
     }
     // end get methods

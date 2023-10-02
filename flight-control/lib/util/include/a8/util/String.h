@@ -23,11 +23,11 @@ private:
 
     void init(const char *buf, int len) {
         this->init();
-        Util::appendStr(this->text, this->length, this->capacity, DELTA_STR_CAP, buf, 0, len);
+        Lang::appendStr(this->text, this->length, this->capacity, DELTA_STR_CAP, buf, 0, len);
     }
     template <typename... Args>
     String &appendFormat(const char format[], Args... args) {
-        Util::appendFormat(text, length, capacity, DELTA_STR_CAP, format, args...);
+        Lang::appendFormat(text, length, capacity, DELTA_STR_CAP, format, args...);
         return *this;
     }
 
@@ -52,14 +52,14 @@ public:
         for (int i = 0; i < argc; i++) {
             String str = String::string(argv[i]);
             if (str.length > 10000) {
-                Util::bug();
+                Lang::bug();
             }
             buf.append(str);
         }
         for (int i = 0; i < buf.getLength(); i++) {
             String str = buf.get(i);
             if (str.length > 10000) {
-                Util::bug();
+                Lang::bug();
             }
         }
         return buf;
@@ -104,12 +104,12 @@ public:
 
     String(const float f) {
         init();
-        Util::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%e", f);
+        Lang::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%e", f);
     }
 
     String(const int i) {
         this->init();
-        Util::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%i", i);
+        Lang::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%i", i);
     }
 
     String(const char ch) {
@@ -118,14 +118,14 @@ public:
 
     String &operator=(const String &str) { // assign operator
         this->clear();
-        Util::appendStr(this->text, this->length, this->capacity, DELTA_STR_CAP, str.text, 0, str.length);
+        Lang::appendStr(this->text, this->length, this->capacity, DELTA_STR_CAP, str.text, 0, str.length);
         return *this;
     }
 
     String &operator=(const char *buf) {
         this->clear();
-        int len = Util::strLength(buf);
-        Util::appendStr(this->text, this->length, this->capacity, DELTA_STR_CAP, buf, 0, len);
+        int len = Lang::strLength(buf);
+        Lang::appendStr(this->text, this->length, this->capacity, DELTA_STR_CAP, buf, 0, len);
         return *this;
     }
 
@@ -154,7 +154,7 @@ public:
     }
 
     String(const char (&buf)[]) {
-        int len = Util::strLength(buf);
+        int len = Lang::strLength(buf);
         init(buf, len);
     }
 
@@ -202,7 +202,7 @@ public:
     }
 
     void append(const char *str) {
-        append(str, 0, Util::strLength(str));
+        append(str, 0, Lang::strLength(str));
     }
 
     void append(const char ch) {
@@ -221,27 +221,27 @@ public:
     }
 
     void append(const char *buf, int from, int len) {
-        Util::appendStr(this->text, this->length, this->capacity, DELTA_STR_CAP,
+        Lang::appendStr(this->text, this->length, this->capacity, DELTA_STR_CAP,
                         buf, from, len);
     }
     void append(const float fValue) {
-        Util::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%e", fValue);
+        Lang::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%e", fValue);
     }
 
     void append(const double fValue) {
-        Util::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%e", fValue);
+        Lang::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%e", fValue);
     }
 
     void append(const int iValue) {
-        Util::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%i", iValue);
+        Lang::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%i", iValue);
     }
 
     void append(const long lValue) {
-        Util::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%i", lValue);
+        Lang::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%i", lValue);
     }
 
     void append(const unsigned iValue) {
-        Util::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%i", iValue);
+        Lang::appendFormat(this->text, this->length, this->capacity, DELTA_STR_CAP, "%i", iValue);
     }
 
     int lastIndexOf(char ch) {

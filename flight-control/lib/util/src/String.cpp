@@ -1,6 +1,6 @@
 #include "a8/util/String.h"
 #include "a8/util/Buffer.h"
-#include "a8/util/Util.h"
+#include "a8/util/Lang.h"
 
 
 namespace a8::util {
@@ -8,7 +8,7 @@ namespace a8::util {
 // static methods
 
 String String::string(const char *str) {
-    return String(str, Util::strLength(str));
+    return String(str, Lang::strLength(str));
 }
 
 
@@ -65,7 +65,7 @@ String &String::operator<<(const String &str) {
 // other
 
 bool String::endWith(const char *str) {
-    int len = Util::strLength(str);
+    int len = Lang::strLength(str);
     if (this->length < len) {
         return false;
     }

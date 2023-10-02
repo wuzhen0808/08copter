@@ -5,7 +5,7 @@
 #include <winioctl.h>
 #include <ws2tcpip.h>
 #include "a8/util/Result.h"
-#include "a8/util/Sockets.h"
+#include "a8/util/net.h"
 #define IS_VALID_SOCKET(s) ((s) != INVALID_SOCKET)
 #define GET_SOCKET_ERRNO() (WSAGetLastError())
 #else
@@ -58,7 +58,7 @@ public:
         return true;
     }
 
-    virtual Result bind(SOCK sock, const String address, int port) override {
+    virtual int bind(SOCK sock, const String address, int port) override {
         sockaddr_in name;
         int nameLen = sizeof(name);
         memset(&name, 0, nameLen);
@@ -68,32 +68,36 @@ public:
         name.sin_addr.s_addr = inet_addr(address.getText());
         int error = ::bind(sock, (struct sockaddr *)&name, nameLen);
         if (error != 0) {
-            // S->out->println(String::format("Failed to bind sock(%i) on address(%s:%i).", sock, address.getText(), port));
-            return error;
+            return -1;
         }
-        return true;
+        return 0;
     }
 
-    virtual Result listen(SOCK sock) override {
+    virtual int listen(SOCK sock) override {
         int error = ::listen(sock, 5); // what's backlog?
-        if (error != 0) {
-            // S->out->println(String::format("Failed listen on sock:%i, error:%i", sock, error));
+        if (error != 0) {        
             return error;
-        }
-        // S->out->println(String::format(">>Success listen on sock:%i", sock));
-        return true;
+        }        
+        return 0;
     }
 
-    virtual SOCK accept(SOCK sock) override {
-        // S->out->println(String::format(">>accept... on sock:%i", sock));
-
+    virtual int accept(SOCK sock, SOCK & sockIn) override {
         int ret = ::accept(sock, 0, 0);
-        if (ret == 0) {
-            //  S->out->println("Failed accept next client.");
-            return 0;
-        }
-        // S->out->println("New client connected in.");
+        if (ret == 0) {        
+            return -1;
+        }        
+        sockIn = ret;
         return ret;
+    }
+    
+    virtual SOCK accept(SOCK sock) override {
+        
+        int ret = ::accept(sock, 0, 0);
+        if (ret == 0) {        
+            return 0;
+        }        
+        return ret;
+
     }
 
     bool send(SOCK sock, const char* buf, int len) override {
@@ -121,6 +125,21 @@ public:
     bool isReady() {
         return this->startUpError == 0;
     }
+    int socket(SOCK & sock) override {
+        if (!this->isReady()) {
+            return -1;
+        }
+
+        int ret = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (IS_VALID_SOCKET(ret)) {
+            sock = ret;
+            ret = 1;
+        }
+
+        ret = GET_SOCKET_ERRNO();                    
+        return ret;
+    }
+
     SOCK socket() override {
         if (!this->isReady()) {
             return 0;

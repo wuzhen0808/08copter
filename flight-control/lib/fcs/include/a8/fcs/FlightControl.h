@@ -4,7 +4,6 @@
 #include "a8/fcs/AttitudeSensor.h"
 #include "a8/fcs/ServosControl.h"
 #include "a8/hal/Hal.h"
-#include "a8/net/GsStub.h"
 #include "a8/util/Result.h"
 #include "a8/util/Scheduler.h"
 #include "a8/util/String.h"

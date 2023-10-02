@@ -1,46 +1,25 @@
-#include <ncurses/panel.h>
+#include "a8/link.h"
+#include "a8/hal.h"
+#include "a8/util.h"
+#include "a8/hal/native.h"
+#include "a8/gs.h"
+#include "a8/hal/freertos.h"
+
+using namespace a8::link;
+using namespace a8::util;
+using namespace a8::hal;
+using namespace a8::hal::native;
+using namespace a8::gs;
+using namespace a8::hal::freertos;
+
+System *a8::hal::S = new NativeSystem();
 
 int main(int argc, char **argv) {
-    initscr();
-    printw("Hello,,,,");
-    refresh();
-    getch();
-    endwin();
-    return 0;
-}
-int mainx() {
-    WINDOW *my_wins[3];
-    PANEL *my_panels[3];
-    int lines = 10, cols = 40, y = 2, x = 4, i;
-
-    initscr();
-    cbreak();
-    noecho();
-
-    /* Create windows for the panels */
-    my_wins[0] = newwin(lines, cols, y, x);
-    my_wins[1] = newwin(lines, cols, y + 1, x + 5);
-    my_wins[2] = newwin(lines, cols, y + 2, x + 10);
-
-    /*
-     * Create borders around the windows so that you can see the effect
-     * of panels
-     */
-    for (i = 0; i < 3; ++i)
-        box(my_wins[i], 0, 0);
-
-    /* Attach a panel to each window */   /* Order is bottom up */
-    my_panels[0] = new_panel(my_wins[0]); /* Push 0, order: stdscr-0 */
-    my_panels[1] = new_panel(my_wins[1]); /* Push 1, order: stdscr-0-1 */
-    my_panels[2] = new_panel(my_wins[2]); /* Push 2, order: stdscr-0-1-2 */
-
-    /* Update the stacking order. 2nd panel will be on top */
-    update_panels();
-
-    /* Show it on the screen */
-    doupdate();
-
-    getch();
-    endwin();
-	return 0;
+    Sockets *sockets = new NativeSockets();    
+    Links* links = new Links(sockets);
+    GroundStation *gs = new GroundStation(argc, argv, links);
+    Scheduler *scheduler = new FreeRtosScheduler();
+    LoggerFactory *logFac = new NativeLoggerFactory();
+    Application *app = new Application("app", scheduler, logFac);
+    app->start(new Properties());
 }

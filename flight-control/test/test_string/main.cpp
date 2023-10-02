@@ -24,7 +24,7 @@ System *a8::hal::S = new TestSystem();
 
 TEST(TestString, testEmpty){
     String str0;
-    int len0 = Util::strLength(str0.getText());
+    int len0 = Lang::strLength(str0.getText());
     EXPECT_EQ(0, len0);
     
 }
