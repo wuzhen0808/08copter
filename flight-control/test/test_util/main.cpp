@@ -1,4 +1,4 @@
-#include "a8/hal/Hal.h"
+#include "a8/hal.h"
 #include "a8/util/Buffer.h"
 #include "a8/util/Float.h"
 #include "a8/util/Math.h"

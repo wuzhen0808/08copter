@@ -1,14 +1,14 @@
 #pragma once
-#include "a8/fcs/AttitudeSensor.h"
-#include "a8/fcs/FlightControl.h"
-#include "a8/hal/native/JSBSimIO.h"
+#include "a8/fc/AttitudeSensor.h"
+#include "a8/fc/FlightControl.h"
+#include "a8/fc/native/JSBSimIO.h"
 #include "a8/util/Vector3f.h"
 
-using namespace a8::fcs;
+using namespace a8::fc;
 using namespace a8::util;
 using namespace a8::hal::native;
 
-namespace a8::hal::native {
+namespace a8::fc::native {
 class NativeAttitudeSensor : public AttitudeSensor {
 private:
     JSBSimIO *jio;

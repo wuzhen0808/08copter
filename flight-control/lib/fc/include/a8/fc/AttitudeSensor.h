@@ -4,7 +4,7 @@
 
 using namespace a8::util;
 
-namespace a8::fcs {
+namespace a8::fc {
 
 class AttitudeSensor : public Component {
 public:
@@ -16,4 +16,4 @@ public:
     virtual double getAlt() = 0;
     virtual double getAgl() = 0;
 };
-} // namespace a8::fcs
+} // namespace a8::fc

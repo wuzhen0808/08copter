@@ -1,15 +1,16 @@
 #pragma once
 
-#include "a8/fcs/native/FGSocketReader.h"
-
+#include "a8/fc/native/FGSocketReader.h"
+//#include "input_output/net_fdm.hxx"
 using namespace a8::util;
 using namespace a8::hal;
 /**
- * This implementation does NOT work. 
+ * This implementation does NOT work.
  * Testing FAILED.
-*/
-namespace a8::fcs::native {
-
+ */
+namespace a8::fc::native {
+/**
+ *
 class FGSocketStructReader : public FGSocketReader {
 
 private:
@@ -188,4 +189,5 @@ public:
     }
 };
 
-} // namespace a8::hal::native
+*/
+} // namespace a8::fc::native

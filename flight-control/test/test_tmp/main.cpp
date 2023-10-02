@@ -1,5 +1,5 @@
 
-#include "a8/hal/Hal.h"
+#include "a8/hal.h"
 #include "a8/hal/System.h"
 #include "a8/hal/native/NativeApplication.h"
 #include "a8/hal/native/NativeSystem.h"

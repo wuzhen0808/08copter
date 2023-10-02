@@ -1,5 +1,5 @@
 #pragma once
-namespace a8::hal {
+namespace a8::fc {
 
 class Servo {
 protected:

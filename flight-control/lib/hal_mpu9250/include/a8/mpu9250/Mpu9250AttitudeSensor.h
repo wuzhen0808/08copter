@@ -1,12 +1,12 @@
 #ifndef MPU9250_ATTITUDE_SENSOR__
 #define MPU9250_ATTITUDE_SENSOR__
-#include "a8/fcs/AttitudeSensor.h"
+#include "a8/fc/AttitudeSensor.h"
 #include "a8/util/Component.h"
-#include "a8/fcs/FlightControl.h"
+#include "a8/fc/FlightControl.h"
 #include <MPU9250.h>
 namespace a8 {
 namespace mpu9250 {
-using namespace a8::fcs;
+using namespace a8::fc;
 
 class Mpu9250AttitudeSensor : public AttitudeSensor {
 public:

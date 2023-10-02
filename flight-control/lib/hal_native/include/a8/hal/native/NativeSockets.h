@@ -1,22 +1,23 @@
+
+#include "a8/util/net.h"
 // clang-format off
 #if defined(_WIN32)
 #include <winsock2.h>
 #include <winsock.h>
 #include <winioctl.h>
 #include <ws2tcpip.h>
-#include "a8/util/Result.h"
-#include "a8/util/net.h"
 #define IS_VALID_SOCKET(s) ((s) != INVALID_SOCKET)
 #define GET_SOCKET_ERRNO() (WSAGetLastError())
 #else
 #error "not supported."
 #endif
 using namespace a8::util;
+using namespace a8::util::net;
 // https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-ioctlsocket
 
 namespace a8::hal::native {
 
-class NativeSockets : virtual public Sockets {
+class NativeSockets : public Sockets {
 
 public:
     NativeSockets() {

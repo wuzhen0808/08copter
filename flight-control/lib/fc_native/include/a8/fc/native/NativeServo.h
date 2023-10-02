@@ -1,13 +1,12 @@
 #pragma once
-#include "a8/hal/Servo.h"
-#include "a8/fcs/native/JSBSimIO.h"
-
+#include "a8/fc.h"
+#include "a8/fc/native/JSBSimIO.h"
 
 using namespace a8::util;
+using namespace a8::fc;
+namespace a8::fc::native {
 
-namespace a8::hal::native {
-
-class NativeServo : public a8::hal::Servo {
+class NativeServo : public Servo {
 
 private:
     JSBSimIO *jio;
@@ -19,10 +18,11 @@ public:
 
     ~NativeServo() {}
 
-    virtual void setThrottleNorm(float throttle) {
+    void setThrottleNorm(float throttle) override {
         this->jio->setThrottleNorm(this->id, throttle);
     }
-    virtual void setup();
+    void setup() override {
+    }
 };
 
-} // namespace a8::hal::native
+} // namespace a8::fc::native

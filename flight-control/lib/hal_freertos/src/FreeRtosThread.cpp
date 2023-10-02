@@ -1,4 +1,4 @@
-#include "a8/hal/Hal.h"
+#include "a8/hal.h"
 #include "a8/hal/freertos/FreeRtosThread.h"
 #include <FreeRTOS.h>
 #include <task.h>

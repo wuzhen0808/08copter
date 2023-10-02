@@ -1,7 +1,7 @@
 #pragma once
-#include "a8/fcs/native/FGSocketLineReader.h"
-#include "a8/fcs/native/FGSocketStructReader.h"
-#include "a8/hal/Hal.h"
+#include "a8/fc/native/FGSocketLineReader.h"
+#include "a8/fc/native/FGSocketStructReader.h"
+#include "a8/hal.h"
 #include "a8/hal/native.h"
 #include "a8/util.h"
 
@@ -9,7 +9,7 @@ using namespace a8::util;
 using namespace a8::hal::native;
 using namespace a8::hal;
 
-namespace a8::fcs::native {
+namespace a8::fc::native {
 
 class JSBSimIO : public Component {
 private:
@@ -82,4 +82,4 @@ public:
         return fdm->altitude;
     }
 };
-} // namespace a8::fcs::native
+} // namespace a8::fc::native

@@ -1,9 +1,9 @@
 #pragma once
-#include "a8/fcs/AttitudeSensor.h"
-#include "a8/fcs/FlightControl.h"
+#include "a8/fc/AttitudeSensor.h"
+#include "a8/fc/FlightControl.h"
 
 namespace a8::arduino {
-using namespace a8::fcs;
+using namespace a8::fc;
 class ArduinoAttitudeSensor : public AttitudeSensor {
 public:
     ArduinoAttitudeSensor();

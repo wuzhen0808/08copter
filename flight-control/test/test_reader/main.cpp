@@ -1,6 +1,6 @@
 #include "TersePrinter.h"
 #include "TestSystem.h"
-#include "a8/hal/Hal.h"
+#include "a8/hal.h"
 #include "a8/hal/native/NativeSystem.h"
 #include "a8/util/Buffer.h"
 #include "a8/util/LineReader.h"

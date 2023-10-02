@@ -1,12 +1,12 @@
 #pragma once
 
-#include "a8/fcs/native/FGSocketReader.h"
+#include "a8/fc/native/FGSocketReader.h"
 #include "a8/util.h"
 #include <string>
 using namespace a8::util;
 using namespace a8::hal;
 
-namespace a8::fcs::native {
+namespace a8::fc::native {
 class FGSocketLineReader : public FGSocketReader {
 
 private:

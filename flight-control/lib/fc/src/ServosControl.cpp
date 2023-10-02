@@ -1,11 +1,11 @@
-#include "a8/fcs/ServosControl.h"
+#include "a8/fc/ServosControl.h"
 #include "a8/util/Math.h"
 
-namespace a8::fcs {
+namespace a8::fc {
 
 using namespace a8::util;
-using namespace a8::fcs;
-using namespace a8::hal;
+using namespace a8::fc;
+
 using a8::util::Math;
 
 ServosControl::ServosControl(int totalServos) : Component("svc") {
@@ -31,4 +31,4 @@ void ServosControl::setThrottleNorm(int id1, float vel1, int id2, float vel2, in
     setThrottleNorm(id4, vel4);
 }
 
-} // namespace a8::fcs
+} // namespace a8::fc

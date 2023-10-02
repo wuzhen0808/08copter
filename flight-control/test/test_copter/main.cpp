@@ -1,8 +1,8 @@
 #include "TersePrinter.h"
 #include "TestSystem.h"
-#include "a8/fcs/FlightControl.h"
+#include "a8/fc/FlightControl.h"
 #include "a8/hal/freertos/FreeRtosScheduler.h"
-#include "a8/hal/Hal.h"
+#include "a8/hal.h"
 #include "a8/hal/native/NativeCopter.h"
 #include "a8/hal/native/NativeFreeRtosInitializer.h"
 #include "a8/hal/native/NativeSystem.h"
@@ -23,7 +23,7 @@ using ::testing::TestInfo;
 using ::testing::TestPartResult;
 using ::testing::UnitTest;
 //
-using ::a8::fcs::Copter;
+using ::a8::fc::Copter;
 using ::a8::hal::freertos::FreeRtosScheduler;
 using ::a8::native::NativeFreeRtosInitializer;
 

@@ -1,17 +1,17 @@
 #pragma once
 
-#include "a8/fcs/AttitudeControl.h"
-#include "a8/fcs/AttitudeSensor.h"
-#include "a8/fcs/ServosControl.h"
-#include "a8/hal/Hal.h"
+#include "a8/fc/AttitudeControl.h"
+#include "a8/fc/AttitudeSensor.h"
+#include "a8/fc/ServosControl.h"
+#include "a8/hal.h"
 #include "a8/util/Result.h"
 #include "a8/util/Scheduler.h"
 #include "a8/util/String.h"
 
 using a8::hal::S;
-using namespace a8::net;
+
 using namespace a8::util;
-namespace a8::fcs {
+namespace a8::fc {
 
 class FlightControl : public Component {
 private:
@@ -21,11 +21,9 @@ protected:
     AttitudeSensor *attitudeSensor_;
     ServosControl *servosControl_;
     AttitudeControl *attitudeControl_;
-    GsStub * gsStub;
     // member functions
     virtual ServosControl *createServosControl(Context *context) = 0;
     virtual AttitudeSensor *createAttitudeSensor(Context *context) = 0;
-    virtual GsStub *createGsStub(Context *context) =0;
 
 public:
     FlightControl(const String &name) : Component(name) {
@@ -69,4 +67,4 @@ public:
     }
 };
 
-} // namespace a8::fcs
+} // namespace a8::fc

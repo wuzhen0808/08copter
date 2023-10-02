@@ -1,23 +1,18 @@
 
 #pragma once
-#include "a8/fcs/FlightControl.h"
-#include "a8/fcs/defines.h"
+#include "a8/fc/FlightControl.h"
+#include "a8/fc/defines.h"
 #include "a8/hal/freertos/FreeRtosInitializer.h"
 #include "a8/hal/freertos/FreeRtosScheduler.h"
-#include "a8/hal/Hal.h"
-#include "a8/hal/native/JSBSimIO.h"
-#include "a8/hal/native/NativeAttitudeSensor.h"
+#include "a8/hal.h"
+#include "a8/fc/native/JSBSimIO.h"
+#include "a8/fc/native/NativeAttitudeSensor.h"
 #include "a8/hal/native/NativeFileReader.h"
-#include "a8/hal/native/NativeGsStub.h"
 #include "a8/hal/native/NativeLoggerFactory.h"
-#include "a8/hal/native/NativeServosControl.h"
+#include "a8/fc/native/NativeServosControl.h"
 #include "a8/hal/native/NativeSystem.h"
-#include "a8/util/Finally.h"
-#include "a8/util/Result.h"
-#include "a8/util/SocketRunnerComponent.h"
-#include "a8/util/SocketWriter.h"
-#include "a8/util/Sockets.h"
-#include "a8/util/Lang.h"
+#include "a8/util/net.h"
+#include "a8/link.h"
 #include "a8/util/WrapperComponent.h"
 
 #include <iostream>
@@ -25,10 +20,11 @@
 using namespace a8::hal::native;
 using namespace std;
 using namespace a8::util;
-using namespace a8::net;
-using namespace a8::fcs;
+using namespace a8::util::net;
+using namespace a8::fc;
+using namespace a8::link;
 
-namespace a8::hal::native {
+namespace a8::fc::native {
 
 class NativeFlightControl : public FlightControl {
 private:
@@ -40,7 +36,7 @@ private:
     int port;
     int argc;
     char **argv;
-    GsStub *gs;
+    GsApi *gs;
     int gsPort;
     String resolveConfFile(Properties &pts) {
 
@@ -100,11 +96,6 @@ protected:
     virtual AttitudeSensor *createAttitudeSensor(Context *context) override {
         NativeAttitudeSensor *sensor = new NativeAttitudeSensor(this->jsbSimIo);
         return sensor;
-    }
-
-    virtual GsStub *createGsStub(Context *context) override {
-
-        return new NativeGsStub(sockets, gsPort);
     }
 
 public:

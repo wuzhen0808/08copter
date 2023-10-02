@@ -1,14 +1,14 @@
 #pragma once
-#include "a8/fcs/FlightControl.h"
-#include "a8/fcs/ServosControl.h"
-#include "a8/hal/Servo.h"
-#include "a8/hal/native/JSBSimIO.h"
-#include "a8/hal/native/NativeServo.h"
+#include "a8/fc.h"
+#include "a8/fc/FlightControl.h"
+#include "a8/fc/ServosControl.h"
+#include "a8/fc/native/JSBSimIO.h"
+#include "a8/fc/native/NativeServo.h"
 
-using namespace a8::fcs;
+using namespace a8::fc;
 using namespace a8::util;
 
-namespace a8::hal::native {
+namespace a8::fc::native {
 
 class NativeServosControl : public ServosControl {
 
@@ -20,9 +20,9 @@ public:
         this->jio = jio;
     }
     ~NativeServosControl() {}
-    virtual Servo *createServo(int servoId) override{
+    virtual Servo *createServo(int servoId) override {
         return new NativeServo(jio, servoId);
     }
 };
 
-} // namespace a8::hal::native
+} // namespace a8::fc::native

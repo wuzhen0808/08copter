@@ -1,10 +1,10 @@
 #pragma once
-#include "a8/fcs/defines.h"
-#include "a8/hal/Hal.h"
+#include "a8/fc/defines.h"
+#include "a8/hal.h"
 #include "a8/hal/native/ConsoleWriter.h"
 #include "a8/hal/native/FileWriter.h"
 #include "a8/util.h"
-#include "input_output/net_fdm.hxx"
+
 #include "winsock.h"
 
 using namespace a8::util;
@@ -12,7 +12,7 @@ using namespace a8::util::net;
 using namespace a8::hal;
 using namespace a8::hal::native;
 
-namespace a8::fcs::native {
+namespace a8::fc::native {
 class SocketData {
 public:
     double altitude;
@@ -115,4 +115,4 @@ public:
     virtual bool update(SocketData *data) = 0;
 };
 
-} // namespace a8::fcs::native
+} // namespace a8::fc::native

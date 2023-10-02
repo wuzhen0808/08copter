@@ -1,7 +1,5 @@
 #pragma once
-#include "a8/util/Callback2.h"
-#include "a8/util/Result.h"
-#include "a8/util/String.h"
+#include "a8/util.h"
 namespace a8::util::net {
 
 typedef int SOCK;

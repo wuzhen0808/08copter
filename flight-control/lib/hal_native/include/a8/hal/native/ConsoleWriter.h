@@ -1,5 +1,5 @@
 #pragma once
-#include "a8/hal/Hal.h"
+#include "a8/hal.h"
 #include "a8/util/String.h"
 #include "a8/util/Writer.h"
 

@@ -1,4 +1,4 @@
-#include "a8/hal/Hal.h"
+#include "a8/hal.h"
 #include "a8/arduino/ArduinoCopter.h"
 #include "a8/arduino/ArduinoSystem.h"
 #include "a8/hal/freertos/FreeRtosScheduler.h"

@@ -1,5 +1,5 @@
 #pragma once
-#include "a8/hal/Hal.h"
+#include "a8/hal.h"
 #include "a8/util/String.h"
 // Reference:
 // https://github.com/bitcraze/crazyflie-firmware.git
@@ -7,7 +7,7 @@
 using namespace a8::hal;
 using namespace a8::util;
 
-namespace a8::fcs {
+namespace a8::fc {
 class PidControl {
 
 private:
@@ -57,4 +57,4 @@ public:
         return String::format("(pk:%e,pi:%e,pd:%e)", kp, ki, kd);
     }
 };
-} // namespace a8::fcs
+} // namespace a8::fc

@@ -1,14 +1,14 @@
 #pragma once
-#include "a8/fcs/FlightControl.h"
+#include "a8/fc/FlightControl.h"
 #include "a8/util/Scheduler.h"
-#include "a8/fcs/ServosControl.h"
-#include "a8/fcs/AttitudeSensor.h"
+#include "a8/fc/ServosControl.h"
+#include "a8/fc/AttitudeSensor.h"
 
-using a8::fcs::Copter;
-using a8::fcs::Scheduler;
-using a8::fcs::AttitudeControl;
-using a8::fcs::ServosControl;
-using a8::fcs::AttitudeSensor;
+using a8::fc::Copter;
+using a8::fc::Scheduler;
+using a8::fc::AttitudeControl;
+using a8::fc::ServosControl;
+using a8::fc::AttitudeSensor;
 
 namespace a8::arduino {
 
