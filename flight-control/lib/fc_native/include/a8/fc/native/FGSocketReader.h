@@ -3,7 +3,7 @@
 #include "a8/hal.h"
 #include "a8/hal/native/ConsoleWriter.h"
 #include "a8/hal/native/FileWriter.h"
-#include "a8/util.h"
+#include "a8/util/net.h"
 
 #include "winsock.h"
 
@@ -55,9 +55,10 @@ public:
         this->dataFileWriter = new FileWriter(dataFile); // todo write data log
 
         // TODO move the server to the context ?
-        server = this->sockets->socket();
+        String errorMessage;
+        int ret = this->sockets->socket(server, errorMessage);
         if (server == 0) {
-            context->stop(String::format("cannot create new socket from socket factory."));
+            context->stop(errorMessage);
             return;
         }
         String address = "127.0.0.1";
@@ -68,7 +69,7 @@ public:
             return;
         }
 
-        Result lResult = this->sockets->listen(server);
+        Result lResult = this->sockets->listen(server, context->message());
 
         if (lResult.error != 0) {
             context->stop(String::format("cannot listen on port:%i", bindPort));

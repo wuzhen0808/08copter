@@ -19,7 +19,7 @@ public:
     }
 
     virtual void log(int level, const String &msg) override {
-        S->out->println(msg);
+        a8::hal::S->out->println(msg);
         writer->write(msg.getText(), msg.getLength());
 
         writer->write("\n", 1);

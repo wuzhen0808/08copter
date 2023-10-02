@@ -27,6 +27,7 @@ public:
         this->sockets = sockets;
         this->codec = codec;
         this->addresses = new Buffer<Address *>();
+        this->dispatcher = new Dispatcher(0);
     }
     void setDefaultHandle(FuncType::handle handle) {
         dispatcher->setDefaultHandle(handle);
@@ -47,7 +48,7 @@ public:
      * Register an address, to track the status for binding and listening.
      */
     int add(String host, int port) { //
-        //todo avoid duplicate.
+        // todo avoid duplicate.
         Address *add = new Address(host, port);
         int ret = this->addresses->getLength();
         this->addresses->append(add);
@@ -61,20 +62,26 @@ public:
     /**
      * Single way, sending only.
      */
-    int connect(int address, Channel *&channel) {
-        return connect(address, channel, 0, 0);
+    int connect(int address, Channel *&channel, String &errorMessage) {
+        return connect(address, channel, 0, 0, errorMessage);
     }
     /**
      * Double ways, sending and receiving.
      */
 
-    int connect(int address, Channel *&channel, FuncType::handle listen, void *context) {
+    int connect(int address, Channel *&channel, FuncType::handle listen, void *context, String &errorMessage) {
 
-        SOCK sock = this->sockets->socket();
+        SOCK sock;
+        int ret = this->sockets->socket(sock, errorMessage);
+        if (ret < 0) {
+            return ret;
+        }
+
         Address *addr = this->getAddress(address);
         int rst = this->sockets->connect(sock, addr->host, addr->port).error;
         if (rst < 0) {
             this->sockets->close(sock);
+            errorMessage << "Cannot connect to address:" << addr->host << ":" << addr->port << "\n";
             return rst;
         }
         // client mode.
@@ -83,14 +90,14 @@ public:
         return rst;
     }
 
-    int bind(int address) {
+    int bind(int address, String &errorMessage) {
         Address *addr = this->getAddress(address);
         if (addr->status != Idle) {
             return -1; // cannot bind un less Idle.
         }
 
         SOCK sock;
-        int rst = this->sockets->socket(sock);
+        int rst = this->sockets->socket(sock, errorMessage);
         if (rst < 0) {
             return rst;
         }
@@ -104,15 +111,17 @@ public:
     /**
      * Register the listener on an address.
      */
-    int listen(int address, FuncType::handle listen, void *context) {
+    int listen(int address, FuncType::handle listen, void *context, String &message) {
         Address *addr = this->getAddress(address);
         if (addr->status != Bond) {
             return -1; // not bind yet.
         }
-        int ret = this->sockets->listen(addr->sock);
-        if (ret == 0) {
-            addr->listening(listen, context);
+        int ret = this->sockets->listen(addr->sock, message);
+        if (ret < 0) {
+            return ret;
         }
+        
+        addr->listening(listen, context);
 
         return ret;
     }

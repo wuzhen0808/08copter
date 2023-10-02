@@ -31,9 +31,7 @@ public:
 };
 
 class Application : public Component {
-private:
-    Scheduler *scheduler;
-    LoggerFactory *loggerFac;
+
 protected:
     Buffer<RateRunner *> *rateRunners_;
 
@@ -66,40 +64,34 @@ protected:
     }
 
 public:
-    Application(const char *name, Scheduler* scheduler, LoggerFactory* logFac) : Component(name) {
-        this->scheduler = scheduler;
-        this->loggerFac = logFac;
-    }
-    
-    virtual void start(Context *context) {
-        Component::start(context);
+    static Application *start(Context *context, Component *child) {
+        Application *app = new Application("app");
+        app->addChild(child)->stageTo(PostStart, context);
+        return app;
     }
 
-    virtual void prepare(Properties *properties) {
+    Application(const char *name) : Component(name) {
     }
 
-    virtual void start(Properties *properties) {
-        
+    void boot(Context *context) override {
+        Component::boot(context);
         // Properties only valid during the start up scope, these properties are regarded as local(during application start up) variables.
         // Properties is as the interface between component and it's environment.
         // So properties normally assigned values from outside and read values by component in boot stage.
-        Context *context = new Context(properties, scheduler, loggerFac);
+
         Logger *logger = context->loggerFactory->getLogger("");
-        Buffer<String> names = properties->getNames();
+        Buffer<String> names = context->properties->getNames();
 
         logger->info("====== Start of properties === ");
         for (int i = 0; i < names.getLength(); i++) {
             String name = names.get(i);
-            String line = properties->getLine(name);
+            String line = context->properties->getLine(name);
             logger->info(line);
         }
         logger->info("====== End of properties =====");
+    }
 
-        this->stageTo(PostStart, context);
-        if (context->isStop()) {
-            log(context->getMessage());
-            return;
-        }
+    void postStart(Context *context) override {
 
         // ticker
         this->rateRunners_ = buildRateRunners(new Buffer<RateRunner *>());

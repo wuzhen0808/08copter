@@ -13,7 +13,7 @@ class Context {
 
 private:
     int lastError;
-    String message;
+    String message_;
     bool stop_ = false;
 
 public:
@@ -21,7 +21,8 @@ public:
     Scheduler *scheduler;
     LoggerFactory *loggerFactory;
 
-    Context(Properties *properties, Scheduler *scheduler, LoggerFactory *loggerFactory) : properties(properties) {
+    Context(Scheduler *scheduler, LoggerFactory *loggerFactory) {
+        this->properties = new Properties();
         this->loggerFactory = loggerFactory;
         this->scheduler = scheduler;
     }
@@ -32,18 +33,23 @@ public:
         return stop_;
     }
 
-    void stop(String errorMessage) {
-        message << "\n"
-                << errorMessage;
+    void stop() {
         stop_ = true;
+    }
+    void stop(String errorMessage) {
+        message_ << "\n"
+                << errorMessage;
+        stop();
     }
 
     void schedule(Runnable *task) {
         scheduler->schedule(task);
     }
-
+    String &message() {
+        return this->message_;
+    }
     String getMessage() {
-        return message;
+        return message_;
     }
 };
 

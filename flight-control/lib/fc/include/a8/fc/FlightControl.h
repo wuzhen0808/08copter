@@ -43,11 +43,14 @@ public:
         Component::populate(context);
         this->log(String::format(">>Copter::setup(),totalServos:%i", totalServos_));
 
-        attitudeSensor_ = this->addChild<AttitudeSensor>(context, createAttitudeSensor(context));
+        attitudeSensor_ = createAttitudeSensor(context);
+        this->addChild(context, attitudeSensor_);
 
-        servosControl_ = this->addChild<ServosControl>(context, createServosControl(context));
+        servosControl_ = createServosControl(context);
+        this->addChild(context, servosControl_);
 
-        attitudeControl_ = this->addChild<AttitudeControl>(context, new AttitudeControl(servosControl_, attitudeSensor_));
+        attitudeControl_ = new AttitudeControl(servosControl_, attitudeSensor_);
+        this->addChild(context, attitudeControl_);
         //
 
         this->log("<<Copter::setup()");

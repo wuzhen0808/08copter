@@ -37,11 +37,13 @@ public:
     }
     void setup(Context *context) override {
 
-        this->fgSocketReader = this->addChild<FGSocketReader>(context, new FGSocketLineReader(this->sockets));
+        this->fgSocketReader = new FGSocketLineReader(this->sockets);
+        this->addChild(context, fgSocketReader);
 
-        client = this->sockets->socket();
-        if (client == 0) {
-            context->stop("Error, cannot create socket.");
+        String errorMessage;
+        int ret = this->sockets->socket(client, errorMessage);
+        if (ret < 0) {
+            context->stop(errorMessage);
             return;
         }
         log("Connecting to JSBSim ...");
@@ -55,8 +57,12 @@ public:
         }
         log("Successfully connected to JSBSim.");
 
-        Runnable *runner2 = new ReadWriteRunner(new SocketReader(sockets, client), consoleWriter);
-        Component *com = this->addChild<RunnerComponent>(context, new RunnerComponent("rwr", runner2));
+        Component *com = new RunnerComponent("rwr",                                               //
+                                             new ReadWriteRunner(                                 //
+                                                 new SocketReader(sockets, client), consoleWriter //
+                                                 )                                                //
+        );
+        this->addChild(context, com);
     }
 
     void setThrottleNorm(int id, float throttle) {
@@ -77,6 +83,7 @@ public:
         SocketData *fdm = fgSocketReader->getLastData();
         return fdm->agl;
     }
+
     double getAltitude() {
         SocketData *fdm = fgSocketReader->getLastData();
         return fdm->altitude;

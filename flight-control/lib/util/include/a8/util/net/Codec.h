@@ -19,7 +19,7 @@ class Codec {
 
 public:
     void add(int type, FuncType::encode encoder, FuncType::decode decoder) {
-        EnDe *codec;
+        EnDe *codec = new EnDe();
         codec->encode = encoder;
         codec->decode = decoder;
         while (codecs.getLength() < type + 1) {

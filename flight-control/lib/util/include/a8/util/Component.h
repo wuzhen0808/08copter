@@ -123,11 +123,15 @@ public:
         getLogger()->info(msg);
     }
 
-    template <class T>
-    T *addChild(Context *context, Component *com) {
-        com->stageTo(this->stage, context);
+    virtual Component *addChild(Component *com) {
         this->children->append(com);
-        return static_cast<T *>(com);
+        return this;
+    }
+
+    Component *addChild(Context *context, Component *com) {
+        com->stageTo(this->stage, context);
+        this->addChild(com);
+        return this;
     }
 
     virtual void boot(Context *context) {
@@ -179,54 +183,54 @@ public:
         }
     }
 
-    virtual void stageTo(Stage stage2, Context *context) {
+    virtual Component *stageTo(Stage stage2, Context *context) {
 
         if (context->isStop()) {
-            return;
+            return this;
         }
 
         switch (this->stage) {
         case Zero:
             this->stage = Boot;
             this->boot(context);
-            if (isStage(stage2)) {
+            if (isStage(stage2) || context->isStop()) {
                 break;
             }
         case Boot:
             this->stage = Populate;
             this->populate(context);
-            if (isStage(stage2)) {
+            if (isStage(stage2) || context->isStop()) {
                 break;
             }
 
         case Populate:
             this->stage = PostPopulate;
             this->postPopulate(context);
-            if (isStage(stage2)) {
+            if (isStage(stage2) || context->isStop()) {
                 break;
             }
         case PostPopulate:
             this->stage = Setup;
             this->setup(context);
-            if (isStage(stage2)) {
+            if (isStage(stage2) || context->isStop()) {
                 break;
             }
         case Setup:
             this->stage = PostSetup;
             this->postSetup(context);
-            if (isStage(stage2)) {
+            if (isStage(stage2) || context->isStop()) {
                 break;
             }
         case PostSetup:
             this->stage = Start;
             this->start(context);
-            if (isStage(stage2)) {
+            if (isStage(stage2) || context->isStop()) {
                 break;
             }
         case Start:
             this->stage = PostStart;
             this->postStart(context);
-            if (isStage(stage2)) {
+            if (isStage(stage2) || context->isStop()) {
                 break;
             }
         case PostStart:
@@ -234,7 +238,7 @@ public:
         case Shutdown:
             this->stage = Shutdown;
             this->shutdown(context);
-            if (isStage(stage2)) {
+            if (isStage(stage2) || context->isStop()) {
                 break;
             }
             break;
@@ -242,6 +246,10 @@ public:
             // Unknown stage.
             break;
         }
+        if (context->isStop()) {
+            this->log(context->getMessage());
+        }
+        return this;
     }
     virtual void stop() {
     }

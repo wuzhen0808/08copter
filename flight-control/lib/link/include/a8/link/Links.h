@@ -1,71 +1,73 @@
 #pragma once
+#include "a8/link/FcApi.h"
 #include "a8/link/GsApi.h"
-#include "a8/link/FcsApi.h"
-#include "a8/link/skeleton/FcsSkeleton.h"
+#include "a8/link/skeleton/FcSkeleton.h"
 #include "a8/link/skeleton/GsSkeleton.h"
-#include "a8/link/stub/FcsStub.h"
+#include "a8/link/stub/FcStub.h"
 #include "a8/link/stub/GsStub.h"
 
 #include "a8/link/SimpleCodec.h"
-#include "a8/util.h"
+#include "a8/util/net.h"
 
+using namespace a8::util::net;
 namespace a8::link {
+
+typedef void *(*stubFacFunc)(Channel *);
+
+typedef void *(*skeletonFacFunc)(Channel *);
 
 class Links {
 
     Network *network;
     String host = "127.0.0.1";
-    int fcsPort;
-    int gsPort;
+    int fcsPort = 8001;
+    int gsPort = 8002;
     //
     int gsAddress;
-    int fcsAddress;
+    int fcAddress;
 
 public:
     Links(Sockets *sockets) {
         Codec *codec = new SimpleCodec();
         network = new Network(sockets, codec, 0); //
+
+        // register address
+        this->gsAddress = network->add(host, gsPort);
+        this->fcAddress = network->add(host, fcsPort);
+
         // register codecs
         network->add(CommonMessageType::PING, Functions::encodeString, Functions::decodeString);
         network->add(CommonMessageType::LOG, Functions::encodeString, Functions::decodeString);
-        this->gsAddress = network->add(host, gsPort);
-        this->fcsAddress = network->add(host, fcsPort);
     }
 
-    int getGsStub(GsApi *&ret) {
+    int getStub(FcApi *&api, String &errorMessage) {
         Channel *channel;
-        int rst = network->connect(gsAddress, channel, 0, 0);
+        int rst = network->connect(fcAddress, channel, 0, 0, errorMessage);
         if (rst > 0) {
-            ret = new GsStub(channel);
+            api = new FcStub(channel);
         }
-
         return rst;
     }
 
-    int getFcsStub(FcsApi *&ret) {
+    int getStub(GsApi *&api, String &errorMessage) {
         Channel *channel;
-        int rst = network->connect(gsAddress, channel, 0, 0);
+        int rst = network->connect(gsAddress, channel, 0, 0, errorMessage);
         if (rst > 0) {
-            ret = new FcsStub(channel);
+            api = new GsStub(channel);
         }
-
         return rst;
     }
 
-    void bindGsAddress() {
-        network->bind(gsAddress);
+    int bindGs(String &errorMessage) {
+        return network->bind(gsAddress, errorMessage);
     }
 
-    void bindFcsAddress() {
-        network->bind(fcsAddress);
+    int listen(GsSkeleton *skeleton, String&errorMessage) {
+        return network->listen(gsAddress, GsSkeleton::handle, skeleton,errorMessage);
     }
 
-    void listen(GsSkeleton *skeleton) {
-        network->listen(gsAddress, GsSkeleton::handle, skeleton);
-    }
-
-    void listen(FcsSkeleton *skeleton) {
-        network->listen(fcsAddress, FcsSkeleton::handle, skeleton);
+    int listen(FcSkeleton *skeleton, String & em) {
+       return network->listen(fcAddress, FcSkeleton::handle, skeleton, em);
     }
 };
 } // namespace a8::link

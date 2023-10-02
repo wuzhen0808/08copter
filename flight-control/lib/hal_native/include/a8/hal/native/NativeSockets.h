@@ -74,9 +74,10 @@ public:
         return 0;
     }
 
-    virtual int listen(SOCK sock) override {
+    virtual int listen(SOCK sock, String &message) override {
         int error = ::listen(sock, 5); // what's backlog?
-        if (error != 0) {        
+        if (error != 0) { 
+            message<<"cannot listen sock:"<<sock<<",error:"<<error;       
             return error;
         }        
         return 0;
@@ -141,17 +142,20 @@ public:
         return ret;
     }
 
-    SOCK socket() override {
+    int socket(SOCK & sock, String&errorMessage) override {
         if (!this->isReady()) {
-            return 0;
+            errorMessage<<"Socket factory not ready.";
+            return -1;
         }
 
         int ret = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-        if (!IS_VALID_SOCKET(ret)) {
+        if (!IS_VALID_SOCKET(ret)) {            
             int socketError = GET_SOCKET_ERRNO();
             // S->out->println(String::format("Failed to create socket:%i, error:%i", ret, socketError));
-            return 0;
+            errorMessage << "Invalid socket:" << ret << ",error:" << socketError ;
+            return -1;
         }
+        sock= ret;
         return ret;
     }
 

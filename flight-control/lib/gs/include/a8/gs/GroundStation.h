@@ -3,7 +3,6 @@
 #include "a8/gs/GsNetImp.h"
 #include "a8/link.h"
 #include "a8/util/net.h"
-
 using namespace a8::util;
 using namespace a8::util::net;
 namespace a8::gs {
@@ -11,15 +10,12 @@ namespace a8::gs {
 class GroundStation : public Component {
 
     Dashboard *dashboard;
-    String fcHost;
-    int fcPort;
     Links *links;
-    FcsApi *fcsApi;
+    FcApi *fcApi;
 
 public:
     GroundStation(int argc, char **argv, Links *links) : Component("gs") {
         this->links = links;
-        this->fcPort = fcPort;
     }
 
     void populate(Context *context) override {
@@ -28,19 +24,29 @@ public:
 
     void setup(Context *context) override {
         Component::setup(context);
-        this->fcPort = context->properties->getInt("gs/fcs-port", 0);
-        if (this->fcPort == 0) {
-            context->stop("gs/fcs-port is not set or set as 0");
-            return;
-        }
-        this->fcHost = context->properties->getString("gs/fcs-host", "127.0.0.1");
+
         // open dashboard
         this->dashboard = new Dashboard();
-        // connect to fcs
+        // waiting fcs to connect
 
-        int rst = links->getFcsStub(this->fcsApi);
+        int ret = links->bindGs(context->message());
+        if (ret < 0) {
+            return context->stop();
+        }
+
+        GsNetImp *gsNet = new GsNetImp(this->dashboard);
+        ret = links->listen(gsNet, context->message());
+        if (ret < 0) {
+            context->stop();
+            return;
+        }
+        log("listening connect in on port of gs.");
+        // or connect to fcs
+        String errorMessage;
+        int rst = links->getStub(this->fcApi, errorMessage);
         if (rst < 0) {
-            //error to get fcs stub.
+            // context->stop(errorMessage);
+            // ignore the error.
         }
     }
 

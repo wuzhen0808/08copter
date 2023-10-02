@@ -1,28 +1,26 @@
 
 #pragma once
+#include "a8/fc.h"
 #include "a8/fc/FlightControl.h"
-#include "a8/fc/defines.h"
-#include "a8/hal/freertos/FreeRtosInitializer.h"
-#include "a8/hal/freertos/FreeRtosScheduler.h"
-#include "a8/hal.h"
 #include "a8/fc/native/JSBSimIO.h"
 #include "a8/fc/native/NativeAttitudeSensor.h"
-#include "a8/hal/native/NativeFileReader.h"
-#include "a8/hal/native/NativeLoggerFactory.h"
 #include "a8/fc/native/NativeServosControl.h"
-#include "a8/hal/native/NativeSystem.h"
-#include "a8/util/net.h"
+#include "a8/fc/native/defines.h"
+#include "a8/hal.h"
+#include "a8/hal/freertos/FreeRtosInitializer.h"
+#include "a8/hal/freertos/FreeRtosScheduler.h"
+#include "a8/hal/native.h"
 #include "a8/link.h"
-#include "a8/util/WrapperComponent.h"
+#include "a8/util/net.h"
 
 #include <iostream>
 
+using namespace a8::fc;
 using namespace a8::hal::native;
-using namespace std;
+using namespace a8::link;
 using namespace a8::util;
 using namespace a8::util::net;
-using namespace a8::fc;
-using namespace a8::link;
+using namespace std;
 
 namespace a8::fc::native {
 
@@ -36,15 +34,17 @@ private:
     int port;
     int argc;
     char **argv;
-    GsApi *gs;
-    int gsPort;
+    //
+    GsApi *gsApi;
+    Links *links;
+
     String resolveConfFile(Properties &pts) {
 
-        String fpath = pts.getString("a8.properties", "");
+        String fpath = pts.getString(a8_properties, "");
         if (fpath != "") {
             return fpath;
         }
-        const char *file = std::getenv("A8_PROPERTIES");
+        const char *file = std::getenv(A8_PROPERTIES);
         if (file != 0) {
             return String::string(file);
         }
@@ -99,8 +99,9 @@ protected:
     }
 
 public:
-    NativeFlightControl(int argc, char **argv, Sockets *sockets) : FlightControl("fcs", 4) {
+    NativeFlightControl(int argc, char **argv, Links *links, Sockets *sockets) : FlightControl("fcs", 4) {
         this->sockets = sockets;
+        this->links = links;
         this->argc = argc;
         this->argv = argv;
     }
@@ -113,15 +114,21 @@ public:
 
     virtual void populate(Context *context) override {
         FlightControl::populate(context);
-        this->addChild<WrapperComponent<Sockets>>(context, new WrapperComponent<Sockets>(sockets));
+        this->addChild(context, new WrapperComponent<Sockets>(sockets));
+       
+        String errorMessage;
+        int rst = this->links->getStub(this->gsApi, errorMessage);
+        if (rst < 0) {
+            context->stop(errorMessage);
+            return;
+        }
+
+        jio = new JSBSimIO(sockets);
+        this->addChild(context, jio);
         if (context->isStop()) {
             return;
         }
-        jio = this->addChild<JSBSimIO>(context, new JSBSimIO(sockets));
-        if (context->isStop()) {
-            return;
         }
-    }
 
     void setup(Context *context) override {
         FlightControl::setup(context);
@@ -135,4 +142,4 @@ public:
     }
 };
 
-} // namespace a8::hal::native
+} // namespace a8::fc::native

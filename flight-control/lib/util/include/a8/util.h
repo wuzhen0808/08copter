@@ -16,5 +16,7 @@
 #include "a8/util/Vector3f.h"
 #include "a8/util/ReadWriteRunner.h"
 #include "a8/util/RunnerComponent.h"
+#include "a8/util/WrapperComponent.h"
+
 
 
