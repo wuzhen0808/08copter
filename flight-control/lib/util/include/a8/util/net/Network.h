@@ -62,26 +62,26 @@ public:
     /**
      * Single way, sending only.
      */
-    int connect(int address, Channel *&channel, String &errorMessage) {
+    int connect(int address, Channel *&channel, Result &errorMessage) {
         return connect(address, channel, 0, 0, errorMessage);
     }
     /**
      * Double ways, sending and receiving.
      */
 
-    int connect(int address, Channel *&channel, FuncType::handle listen, void *context, String &errorMessage) {
+    int connect(int address, Channel *&channel, FuncType::handle listen, void *context, Result &res) {
 
         SOCK sock;
-        int ret = this->sockets->socket(sock, errorMessage);
+        int ret = this->sockets->socket(sock, res);
         if (ret < 0) {
             return ret;
         }
 
         Address *addr = this->getAddress(address);
-        int rst = this->sockets->connect(sock, addr->host, addr->port).error;
+        int rst = this->sockets->connect(sock, addr->host, addr->port, res);
         if (rst < 0) {
             this->sockets->close(sock);
-            errorMessage << "Cannot connect to address:" << addr->host << ":" << addr->port << "\n";
+            res.errorMessage << "Cannot connect to address:" << addr->host << ":" << addr->port << "\n";
             return rst;
         }
         // client mode.
@@ -90,7 +90,7 @@ public:
         return rst;
     }
 
-    int bind(int address, String &errorMessage) {
+    int bind(int address, Result &errorMessage) {
         Address *addr = this->getAddress(address);
         if (addr->status != Idle) {
             return -1; // cannot bind un less Idle.
@@ -102,7 +102,7 @@ public:
             return rst;
         }
 
-        int ret = this->sockets->bind(sock, addr->host, addr->port); //
+        int ret = this->sockets->bind(sock, addr->host, addr->port, errorMessage); //
         if (ret == 0) {
             addr->bond(sock);
         }
@@ -111,7 +111,7 @@ public:
     /**
      * Register the listener on an address.
      */
-    int listen(int address, FuncType::handle listen, void *context, String &message) {
+    int listen(int address, FuncType::handle listen, void *context, Result &message) {
         Address *addr = this->getAddress(address);
         if (addr->status != Bond) {
             return -1; // not bind yet.

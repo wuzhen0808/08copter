@@ -40,19 +40,20 @@ public:
         this->fgSocketReader = new FGSocketLineReader(this->sockets);
         this->addChild(context, fgSocketReader);
 
-        String errorMessage;
-        int ret = this->sockets->socket(client, errorMessage);
+        Result res;
+        int ret = this->sockets->socket(client, res);
         if (ret < 0) {
-            context->stop(errorMessage);
+            context->stop(res);
             return;
         }
         log("Connecting to JSBSim ...");
         String connectHost = context->properties->getString("todo", "127.0.0.1");
         int connectPort = context->properties->getInt("todo", 5126);
 
-        Result connected = this->sockets->connect(client, connectHost, connectPort);
-        if (connected.error) {
-            context->stop("Failed connect to JSBSim");
+        Result connected;
+        ret = this->sockets->connect(client, connectHost, connectPort, connected);
+        if (ret < 0) {
+            context->stop(connected);
             return;
         }
         log("Successfully connected to JSBSim.");

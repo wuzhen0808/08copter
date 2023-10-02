@@ -36,6 +36,19 @@ protected:
     String name;
     Rate rate; // in mHz = 0.001Hz
 
+    void print(Writer *writer, bool recursive, int indent) {
+        for (int i = 0; i < indent; i++) {
+            *writer << ' ';
+        }
+        *writer << name << ",stage:" << this->stage << '\n';
+        if (!recursive) {
+            return;
+        }
+        for (int i = 0; i < children->len(); i++) {
+            children->get(i)->print(writer, indent + 1, recursive);
+        }
+    }
+
 public:
     Component(const char *name) {
         String name_;
@@ -134,8 +147,29 @@ public:
         return this;
     }
 
+    void beforeStage(Context *context) {
+        Buffer<String> *path = context->getPath();
+        path->append(this->name);
+        String msg(">>");
+        for (int i = 0; i < path->len(); i++) {
+            msg << "/" << path->get(i);
+        }
+        msg << ":" << this->stage;
+        log(msg);
+    }
+
+    void afterStage(Context *context) {
+        Buffer<String> *path = context->getPath();
+        String msg("<<");
+        for (int i = 0; i < path->len(); i++) {
+            msg << "/" << path->get(i);
+        }
+        msg << ":" << this->stage;
+        log(msg);
+        path->removeLast();
+    }
+
     virtual void boot(Context *context) {
-        this->loggerFactory = context->loggerFactory;
         stageChildrenTo(Boot, context);
     }
     virtual void populate(Context *context) {
@@ -143,6 +177,7 @@ public:
     }
 
     virtual void postPopulate(Context *context) {
+
         this->stageChildrenTo(PostPopulate, context);
     }
     virtual void setup(Context *context) {
@@ -185,63 +220,88 @@ public:
 
     virtual Component *stageTo(Stage stage2, Context *context) {
 
-        if (context->isStop()) {
-            return this;
-        }
-
         switch (this->stage) {
         case Zero:
+            if (isStage(stage2) || context->isStop()) {
+                break;
+            }
+            this->loggerFactory = context->loggerFactory;
             this->stage = Boot;
+            beforeStage(context);
             this->boot(context);
-            if (isStage(stage2) || context->isStop()) {
-                break;
-            }
+            afterStage(context);
+
         case Boot:
-            this->stage = Populate;
-            this->populate(context);
             if (isStage(stage2) || context->isStop()) {
                 break;
             }
+            this->stage = Populate;
+            beforeStage(context);
+            this->populate(context);
+            afterStage(context);
 
         case Populate:
+            if (isStage(stage2) || context->isStop()) {
+                break;
+            }
             this->stage = PostPopulate;
+            beforeStage(context);
             this->postPopulate(context);
-            if (isStage(stage2) || context->isStop()) {
-                break;
-            }
+            afterStage(context);
+
         case PostPopulate:
+            if (isStage(stage2) || context->isStop()) {
+                break;
+            }
             this->stage = Setup;
+            beforeStage(context);
             this->setup(context);
-            if (isStage(stage2) || context->isStop()) {
-                break;
-            }
+            afterStage(context);
+
         case Setup:
+            if (isStage(stage2) || context->isStop()) {
+                break;
+            }
             this->stage = PostSetup;
+            beforeStage(context);
             this->postSetup(context);
-            if (isStage(stage2) || context->isStop()) {
-                break;
-            }
+            afterStage(context);
+
         case PostSetup:
+            if (isStage(stage2) || context->isStop()) {
+                break;
+            }
             this->stage = Start;
+            beforeStage(context);
             this->start(context);
-            if (isStage(stage2) || context->isStop()) {
-                break;
-            }
+            afterStage(context);
+
         case Start:
+            if (isStage(stage2) || context->isStop()) {
+                break;
+            }
             this->stage = PostStart;
+            beforeStage(context);
             this->postStart(context);
-            if (isStage(stage2) || context->isStop()) {
-                break;
-            }
+            afterStage(context);
         case PostStart:
-            break;
-        case Shutdown:
-            this->stage = Shutdown;
-            this->shutdown(context);
             if (isStage(stage2) || context->isStop()) {
                 break;
             }
-            break;
+            this->stage = Shutdown;
+            beforeStage(context);
+            this->postStart(context);
+            afterStage(context);
+
+        case Shutdown:
+            if (isStage(stage2) || context->isStop()) {
+                break;
+            }
+            this->stage = PostShutdown;
+            beforeStage(context);
+            this->shutdown(context);
+            afterStage(context);
+
         default:
             // Unknown stage.
             break;
@@ -252,6 +312,12 @@ public:
         return this;
     }
     virtual void stop() {
+    }
+    void print(Writer *writer) {
+        print(writer, true, 0);
+    }
+    void print(Writer *writer, bool recursive) {
+        print(writer, recursive, 0);
     }
 };
 } // namespace a8::util

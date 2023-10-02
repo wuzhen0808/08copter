@@ -29,7 +29,6 @@ private:
     Sockets *sockets;
     JSBSimIO *jio;
     String propertiesFile;
-    JSBSimIO *jsbSimIo;
     String host;
     int port;
     int argc;
@@ -90,11 +89,11 @@ private:
 
 protected:
     virtual ServosControl *createServosControl(Context *context) override {
-        ServosControl *servos = new NativeServosControl(totalServos_, jsbSimIo);
+        ServosControl *servos = new NativeServosControl(totalServos_, jio);
         return servos;
     }
     virtual AttitudeSensor *createAttitudeSensor(Context *context) override {
-        NativeAttitudeSensor *sensor = new NativeAttitudeSensor(this->jsbSimIo);
+        NativeAttitudeSensor *sensor = new NativeAttitudeSensor(this->jio);
         return sensor;
     }
 
@@ -113,22 +112,23 @@ public:
     }
 
     virtual void populate(Context *context) override {
-        FlightControl::populate(context);
         this->addChild(context, new WrapperComponent<Sockets>(sockets));
-       
-        String errorMessage;
+
+        Result errorMessage;
         int rst = this->links->getStub(this->gsApi, errorMessage);
         if (rst < 0) {
             context->stop(errorMessage);
             return;
         }
-
+        log("successfully connect to gsApi");
         jio = new JSBSimIO(sockets);
         this->addChild(context, jio);
         if (context->isStop()) {
             return;
         }
-        }
+
+        FlightControl::populate(context);
+    }
 
     void setup(Context *context) override {
         FlightControl::setup(context);

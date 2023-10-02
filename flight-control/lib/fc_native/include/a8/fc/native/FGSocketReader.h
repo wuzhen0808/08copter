@@ -55,31 +55,35 @@ public:
         this->dataFileWriter = new FileWriter(dataFile); // todo write data log
 
         // TODO move the server to the context ?
-        String errorMessage;
-        int ret = this->sockets->socket(server, errorMessage);
-        if (server == 0) {
-            context->stop(errorMessage);
+        Result res;
+        int ret = this->sockets->socket(server, res);
+        if (ret < 0) {
+            context->stop(res.errorMessage);
             return;
         }
         String address = "127.0.0.1";
 
-        Result bResult = this->sockets->bind(server, address, bindPort); //
-        if (bResult.error != 0) {
-            context->stop(String::format("cannot bind to port:%i, error:%i", bindPort, bResult.error));
+        Result bResult;
+        ret = this->sockets->bind(server, address, bindPort, bResult); //
+        if (ret < 0) {
+            context->stop(bResult.errorMessage);
             return;
         }
 
-        Result lResult = this->sockets->listen(server, context->message());
+        Result lResult;
+        ret = this->sockets->listen(server, lResult);
 
-        if (lResult.error != 0) {
-            context->stop(String::format("cannot listen on port:%i", bindPort));
+        if (ret < 0) {
+
+            context->stop(lResult.errorMessage);
+
             return;
         }
 
         log(String::format("Waiting the JSBSim start up and connect to the the address:%s:%i", address.getText(), bindPort));
 
-        this->sockIn = this->sockets->accept(server);
-        if (sockIn == 0) {
+        ret = this->sockets->accept(server, this->sockIn);
+        if (ret < 0) {
             context->stop("cannot accept connect from JSBSim.");
             return;
         }

@@ -45,7 +45,7 @@ public:
     }
     */
 
-    virtual Result connect(SOCK sock, const String host, int port) override {
+    virtual int connect(SOCK sock, const String host, int port, Result&res) override {
         struct sockaddr_in serv_addr;
         serv_addr.sin_family = AF_INET;
         serv_addr.sin_addr.s_addr = inet_addr(host.getText());
@@ -53,13 +53,14 @@ public:
 
         int cRst = ::connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
         if (cRst == SOCKET_ERROR) {
-            return Result(cRst, String::format("Connection failed to host:%s with port:%i", host.getText(), port));
+            res.errorMessage<<"Connection failed to address:"<<host<<":"<<port;
+            return -1; 
         }
 
         return true;
     }
 
-    virtual int bind(SOCK sock, const String address, int port) override {
+    virtual int bind(SOCK sock, const String address, int port, Result& res) override {
         sockaddr_in name;
         int nameLen = sizeof(name);
         memset(&name, 0, nameLen);
@@ -69,15 +70,16 @@ public:
         name.sin_addr.s_addr = inet_addr(address.getText());
         int error = ::bind(sock, (struct sockaddr *)&name, nameLen);
         if (error != 0) {
+            res.errorMessage<<"cannot bind to address:"<<address<<":"<<port;
             return -1;
         }
-        return 0;
+        return 1;
     }
 
-    virtual int listen(SOCK sock, String &message) override {
+    virtual int listen(SOCK sock, Result &rst) override {
         int error = ::listen(sock, 5); // what's backlog?
         if (error != 0) { 
-            message<<"cannot listen sock:"<<sock<<",error:"<<error;       
+            rst.errorMessage<<"cannot listen sock:"<<sock<<",error:"<<error;       
             return error;
         }        
         return 0;
@@ -92,16 +94,6 @@ public:
         return ret;
     }
     
-    virtual SOCK accept(SOCK sock) override {
-        
-        int ret = ::accept(sock, 0, 0);
-        if (ret == 0) {        
-            return 0;
-        }        
-        return ret;
-
-    }
-
     bool send(SOCK sock, const char* buf, int len) override {
         // S->out->println(String::format("sending... message:%s", str->getText()));
         int sRst = ::send(sock, buf, len, 0);
@@ -142,9 +134,9 @@ public:
         return ret;
     }
 
-    int socket(SOCK & sock, String&errorMessage) override {
+    int socket(SOCK & sock, Result &res) override {
         if (!this->isReady()) {
-            errorMessage<<"Socket factory not ready.";
+            res.errorMessage<<"Socket factory not ready.";
             return -1;
         }
 
@@ -152,7 +144,7 @@ public:
         if (!IS_VALID_SOCKET(ret)) {            
             int socketError = GET_SOCKET_ERRNO();
             // S->out->println(String::format("Failed to create socket:%i, error:%i", ret, socketError));
-            errorMessage << "Invalid socket:" << ret << ",error:" << socketError ;
+            res.errorMessage << "Invalid socket:" << ret << ",error:" << socketError ;
             return -1;
         }
         sock= ret;

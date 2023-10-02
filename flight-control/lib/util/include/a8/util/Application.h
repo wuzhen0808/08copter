@@ -5,6 +5,7 @@
 #include "a8/util/Properties.h"
 #include "a8/util/Scheduler.h"
 #include "a8/util/Timer.h"
+#include "a8/util/StringWriter.h"
 
 namespace a8::util {
 
@@ -91,8 +92,15 @@ public:
         logger->info("====== End of properties =====");
     }
 
-    void postStart(Context *context) override {
+    void postPopulate(Context *context) override {
+        Component::postPopulate(context);
+    }
 
+    void postStart(Context *context) override {
+        Component::postStart(context);
+        StringWriter strW;
+        this->print(&strW);
+        log(strW.toString());
         // ticker
         this->rateRunners_ = buildRateRunners(new Buffer<RateRunner *>());
         for (int i = 0; i < rateRunners_->getLength(); i++) {

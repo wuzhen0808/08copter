@@ -40,7 +40,7 @@ public:
         network->add(CommonMessageType::LOG, Functions::encodeString, Functions::decodeString);
     }
 
-    int getStub(FcApi *&api, String &errorMessage) {
+    int getStub(FcApi *&api, Result &errorMessage) {
         Channel *channel;
         int rst = network->connect(fcAddress, channel, 0, 0, errorMessage);
         if (rst > 0) {
@@ -49,25 +49,26 @@ public:
         return rst;
     }
 
-    int getStub(GsApi *&api, String &errorMessage) {
+    int getStub(GsApi *&api, Result &res) {
         Channel *channel;
-        int rst = network->connect(gsAddress, channel, 0, 0, errorMessage);
+        int rst = network->connect(gsAddress, channel, 0, 0, res);
         if (rst > 0) {
             api = new GsStub(channel);
+            res.successMessage << "successfully connect to gs address:" << host << ":" << gsPort;
         }
         return rst;
     }
 
-    int bindGs(String &errorMessage) {
+    int bindGs(Result &errorMessage) {
         return network->bind(gsAddress, errorMessage);
     }
 
-    int listen(GsSkeleton *skeleton, String&errorMessage) {
-        return network->listen(gsAddress, GsSkeleton::handle, skeleton,errorMessage);
+    int listen(GsSkeleton *skeleton, Result &errorMessage) {
+        return network->listen(gsAddress, GsSkeleton::handle, skeleton, errorMessage);
     }
 
-    int listen(FcSkeleton *skeleton, String & em) {
-       return network->listen(fcAddress, FcSkeleton::handle, skeleton, em);
+    int listen(FcSkeleton *skeleton, Result &em) {
+        return network->listen(fcAddress, FcSkeleton::handle, skeleton, em);
     }
 };
 } // namespace a8::link

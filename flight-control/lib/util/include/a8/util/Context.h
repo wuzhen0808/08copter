@@ -4,9 +4,11 @@
 #include "a8/util/Callback2.h"
 #include "a8/util/LoggerFactory.h"
 #include "a8/util/Properties.h"
+#include "a8/util/Result.h"
 #include "a8/util/Runnable.h"
 #include "a8/util/Scheduler.h"
 #include "a8/util/String.h"
+
 namespace a8::util {
 
 class Context {
@@ -15,6 +17,7 @@ private:
     int lastError;
     String message_;
     bool stop_ = false;
+    Buffer<String> *path;
 
 public:
     Properties *properties;
@@ -25,6 +28,10 @@ public:
         this->properties = new Properties();
         this->loggerFactory = loggerFactory;
         this->scheduler = scheduler;
+        this->path = new Buffer<String>();
+    }
+    Buffer<String> *getPath() {
+        return this->path;
     }
 
     ~Context() {}
@@ -36,9 +43,12 @@ public:
     void stop() {
         stop_ = true;
     }
+    void stop(Result rst) {
+        stop(rst.errorMessage);
+    }
     void stop(String errorMessage) {
         message_ << "\n"
-                << errorMessage;
+                 << errorMessage;
         stop();
     }
 

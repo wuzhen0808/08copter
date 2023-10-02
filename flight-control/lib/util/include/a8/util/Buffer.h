@@ -115,6 +115,13 @@ public:
     void set(int idx, T element) {
         this->buffer[idx] = element;
     }
+    int removeLast() {
+        if (this->length == 0) {
+            return false;
+        }
+        this->length--;
+        return 1;
+    }
 };
 
 // implementation

@@ -41,7 +41,6 @@ public:
 
     virtual void populate(Context *context) override {
         Component::populate(context);
-        this->log(String::format(">>Copter::setup(),totalServos:%i", totalServos_));
 
         attitudeSensor_ = createAttitudeSensor(context);
         this->addChild(context, attitudeSensor_);
@@ -53,7 +52,6 @@ public:
         this->addChild(context, attitudeControl_);
         //
 
-        this->log("<<Copter::setup()");
     }
     virtual void setup(Context *context) override {
         Component::setup(context);
