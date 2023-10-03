@@ -1,8 +1,9 @@
 #pragma once
-#include "a8/util/Component.h"
+#include "a8/util/comp.h"
 #include "a8/util/Vector3f.h"
 
 using namespace a8::util;
+using namespace a8::util::comp;
 
 namespace a8::fc {
 

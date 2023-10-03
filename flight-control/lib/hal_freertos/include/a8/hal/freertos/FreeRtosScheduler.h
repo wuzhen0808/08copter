@@ -1,26 +1,41 @@
 #pragma once
-#include "a8/util/Scheduler.h"
+
+#include "a8/hal/freertos/FreeRtosScheduler.h"
+#include "a8/hal/freertos/FreeRtosThread.h"
+#include "a8/hal/freertos/FreeRtosTimer.h"
+#include "a8/util/thread.h"
 
 using namespace a8::util;
+using namespace a8::util::thread;
 
 namespace a8::hal::freertos {
 
 class FreeRtosScheduler : public Scheduler {
 public:
-    FreeRtosScheduler();
-    ~FreeRtosScheduler();
-    virtual Timer *tmpTimer() override {
-        return 0;
+    FreeRtosScheduler() : Scheduler() {
     }
-    virtual void startSchedule() override;
 
-    virtual void endSchedule() override;
+    ~FreeRtosScheduler() {
+    }
 
-    virtual Thread *schedule(Runnable *runnable) override;
+    void startSchedule() override {
+        vTaskStartScheduler();
+    }
+    void endSchedule() override {
+        vTaskEndScheduler();
+    }
 
-    virtual Timer *scheduleTimer(Callback *callback, const Rate &ticks) override;
+    Thread *schedule(thread::FuncType::run runF, void *context) override {
+        return FreeRtosThread::start(runF, context);
+    }
 
-    virtual Thread *getCurrentThread() override;
+    Timer *scheduleTimer(thread::FuncType::run runF, void *context, const Rate &rate) override {
+        return FreeRtosTimer::start(runF, context, rate);
+    }
+
+    Thread *getCurrentThread() override {
+        return FreeRtosThread::getCurrentThread();
+    }
 };
 
 } // namespace a8::hal::freertos

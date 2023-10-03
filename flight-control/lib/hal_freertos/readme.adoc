@@ -1,0 +1,4 @@
+Since this lib depends on the FreeRTOS-Kernel and the Kernel code cannot compilable unless provide env port header file, and the config header file.
+
+So if you depends on this lib, please read the readme under FreeRTOS-Kernel.
+ 

@@ -1,10 +1,12 @@
 #pragma once
+#include "a8/util/comp.h"
 #include "a8/gs/Dashboard.h"
 #include "a8/gs/GsNetImp.h"
 #include "a8/link.h"
 #include "a8/util/net.h"
 using namespace a8::util;
 using namespace a8::util::net;
+using namespace a8::util::comp;
 namespace a8::gs {
 
 class GroundStation : public Component {
@@ -28,23 +30,24 @@ public:
         // open dashboard
         this->dashboard = new Dashboard();
         // waiting fcs to connect
-
-        int ret = links->bindGs(context->message());
-        if (ret < 0) {
-            return context->stop();
+        Result rst ;
+        int ret = links->bindGs(rst);
+        if (ret < 0) {            
+            return context->stop(rst.errorMessage);
         }
 
         GsNetImp *gsNet = new GsNetImp(this->dashboard);
-        ret = links->listen(gsNet, context->message());
+        Result rst2;
+        ret = links->listen(gsNet, rst2);
         if (ret < 0) {
-            context->stop();
+            context->stop(rst2.errorMessage);
             return;
         }
         log("listening connect in on port of gs.");
         // or connect to fcs
-        String errorMessage;
-        int rst = links->getStub(this->fcApi, errorMessage);
-        if (rst < 0) {
+        Result rst3;
+        ret = links->getStub(this->fcApi, rst3);
+        if (ret < 0) {
             // context->stop(errorMessage);
             // ignore the error.
         }

@@ -5,12 +5,15 @@
 #include "a8/fc/ServosControl.h"
 #include "a8/hal.h"
 #include "a8/util/Result.h"
-#include "a8/util/Scheduler.h"
 #include "a8/util/String.h"
+#include "a8/util/thread.h"
 
 using a8::hal::S;
 
 using namespace a8::util;
+using namespace a8::util::thread;
+using namespace a8::util::comp;
+
 namespace a8::fc {
 
 class FlightControl : public Component {
@@ -51,7 +54,6 @@ public:
         attitudeControl_ = new AttitudeControl(servosControl_, attitudeSensor_);
         this->addChild(context, attitudeControl_);
         //
-
     }
     virtual void setup(Context *context) override {
         Component::setup(context);

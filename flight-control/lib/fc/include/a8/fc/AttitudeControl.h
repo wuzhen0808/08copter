@@ -5,13 +5,13 @@
 #include "a8/fc/ServosControl.h"
 #include "a8/fc/defines.h"
 #include "a8/util/Callback.h"
-#include "a8/util/Component.h"
+#include "a8/util/comp.h"
 #include "a8/util/Writer.h"
 
 #define FR_SPIN_DIRECTION LEFT_HAND
 
 using namespace a8::util;
-
+using namespace a8::util::comp;
 namespace a8::fc {
 
 class AttitudeControl : public Component {

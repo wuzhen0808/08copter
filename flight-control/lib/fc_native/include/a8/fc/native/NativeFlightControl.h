@@ -7,11 +7,11 @@
 #include "a8/fc/native/NativeServosControl.h"
 #include "a8/fc/native/defines.h"
 #include "a8/hal.h"
-#include "a8/hal/freertos/FreeRtosInitializer.h"
 #include "a8/hal/freertos/FreeRtosScheduler.h"
 #include "a8/hal/native.h"
 #include "a8/link.h"
 #include "a8/util/net.h"
+#include "a8/util/comp.h"
 
 #include <iostream>
 
@@ -20,6 +20,7 @@ using namespace a8::hal::native;
 using namespace a8::link;
 using namespace a8::util;
 using namespace a8::util::net;
+using namespace a8::util::comp;
 using namespace std;
 
 namespace a8::fc::native {

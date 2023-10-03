@@ -1,0 +1,2 @@
+This folder is not a lib, because it is mandatory for
+the compilation of kernel.

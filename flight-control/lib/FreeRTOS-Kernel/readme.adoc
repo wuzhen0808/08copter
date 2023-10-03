@@ -4,4 +4,18 @@ https://github.com/FreeRTOS/FreeRTOS-Kernel.git
 
 Only the kernel files copied.
 
+Note that to compile this folder, you must provide additional header files including 
+1. FreeRTOSConfig.h
+2. portmacro.h
+
+To link the lib after compile, you must provide implementation below.
+
+1. heap implementation, heap4.c for example.
+2. port implementation, port.c for MingW env.
+
+
+
+
+
+
 

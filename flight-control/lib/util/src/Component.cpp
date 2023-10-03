@@ -1,4 +1,4 @@
-#include "a8/util/Component.h"
+#include "a8/util/comp/Component.h"
 
 namespace a8::util {
 

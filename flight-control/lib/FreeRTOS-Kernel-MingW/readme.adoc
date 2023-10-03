@@ -1,0 +1,8 @@
+All source code in this folder is copy from here:
+https://github.com/FreeRTOS/FreeRTOS-Kernel.git
+
+find them from portable folder
+
+This folder is not only a lib, but also a patch for the compilation of FreeRTOS-Kernel.
+
+

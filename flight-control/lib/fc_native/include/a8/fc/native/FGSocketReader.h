@@ -4,11 +4,13 @@
 #include "a8/hal/native/ConsoleWriter.h"
 #include "a8/hal/native/FileWriter.h"
 #include "a8/util/net.h"
+#include "a8/util/comp.h"
 
 #include "winsock.h"
 
 using namespace a8::util;
 using namespace a8::util::net;
+using namespace a8::util::comp;
 using namespace a8::hal;
 using namespace a8::hal::native;
 

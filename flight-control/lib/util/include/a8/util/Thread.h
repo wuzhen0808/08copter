@@ -1,10 +1,4 @@
 #pragma once
-
-namespace a8::util {
-class Thread {
-public:
-    Thread();
-    ~Thread();
-    virtual void start() = 0;
-};
-} // namespace a8
+#include "a8/util.h"
+#include "a8/util/thread/defines.h"
+#include "a8/util/thread/Scheduler.h"

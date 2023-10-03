@@ -4,8 +4,10 @@
 #include "a8/hal.h"
 #include "a8/hal/native.h"
 #include "a8/util.h"
+#include "a8/util/comp.h"
 
 using namespace a8::util;
+using namespace a8::util::comp;
 using namespace a8::hal::native;
 using namespace a8::hal;
 
