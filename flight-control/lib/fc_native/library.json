@@ -14,8 +14,7 @@
   "dependencies": {
     "util":"^1.0",
     "fc":"^1.0",
-    "hal_native":"^1.0",
-    "FreeRTOS-Kernel-heap4": "^1.0",
+    "hal_native":"^1.0",    
     "FreeRTOS-Kernel-MingW": "^1.0"
     
   },

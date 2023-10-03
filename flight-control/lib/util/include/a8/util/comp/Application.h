@@ -117,9 +117,8 @@ public:
     void postPopulate(Context *context) override {
         Component::postPopulate(context);
     }
-
-    void postStart(Context *context) override {
-        Component::postStart(context);
+    void start(Context *context) override {
+        Component::start(context);
         StringWriter strW;
         this->print(&strW);
         log(strW.toString());
@@ -142,8 +141,12 @@ public:
             Timer *timer = context->scheduler->scheduleTimer(RateRunner::tick, runner, runner->rate);
             runner->timer = timer;
         }
-        context->scheduler->startSchedule();
     }
+    //
+    void postStart(Context *context) override {
+        Component::postStart(context);        
+    }
+
 };
 
 } // namespace a8::util::comp

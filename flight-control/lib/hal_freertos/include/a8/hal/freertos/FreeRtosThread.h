@@ -41,6 +41,8 @@ public:
         return thread;
     }
     FreeRtosThread(thread::FuncType::run run, void *context) {
+        this->run = run;
+        this->context = context;
     }
     ~FreeRtosThread() {
     }

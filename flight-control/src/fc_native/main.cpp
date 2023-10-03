@@ -5,11 +5,11 @@
 #include "a8/fc/native.h"
 #include "a8/hal.h"
 #include "a8/hal/System.h"
+#include "a8/hal/freertos.h"
 #include "a8/hal/native.h"
 #include "a8/link.h"
-#include "a8/util/net.h"
 #include "a8/util/comp.h"
-#include "a8/hal/freertos.h"
+#include "a8/util/net.h"
 
 #include <iostream>
 #include <stdio.h>
@@ -28,11 +28,11 @@ using namespace a8::hal::freertos;
 
 System *a8::hal::S = new NativeSystem();
 
-
 int main(int argc, char **argv) {
+    Scheduler *sch = new FreeRtosScheduler();
     Sockets *sockets = new NativeSockets();
     Links *links = new Links(sockets);
-    Application::start(new Context(new FreeRtosScheduler(),  //
+    Application::start(new Context(sch,                      //
                                    new NativeLoggerFactory() //
                                    ),
                        new NativeFlightControl(argc, //
@@ -41,4 +41,5 @@ int main(int argc, char **argv) {
                                                sockets //
                                                )       //
     );
+    sch->startSchedule();
 }
