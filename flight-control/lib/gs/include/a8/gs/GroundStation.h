@@ -22,6 +22,11 @@ public:
         this->fcStub = fcStub;
         this->skeleton = skeleton;
     }
+    ~ChannelRunner() {
+        delete channel;
+        delete fcStub;
+        delete skeleton;
+    }
 
     void run() {
         while (true) {
@@ -75,11 +80,11 @@ public:
 
     void run(TickingContext *ticking) override {
         log("GS net accepter running...");
-        GsNetImp *skeleton = new GsNetImp(this->dashboard);
         while (true) {
             Channel *ch = 0;
             FcStub *fcStub = 0;
             Result rst;
+            GsNetImp *skeleton = new GsNetImp(this->dashboard);
             int ret = links->acceptGs(ch, fcStub, skeleton, rst);
             if (ret < 0) {
                 log(rst.errorMessage);
@@ -90,6 +95,16 @@ public:
             ChannelRunner *cr = new ChannelRunner(ch, fcStub, skeleton);
             // TODO manage all the channels.
             this->addChild(cr);
+
+            while (true) {
+                int ret = cr->channel->receive();
+                if (ret < 0) {
+                    //
+                    log(String() << "exit the receive loop of the client connection, ret:" << ret);
+                    delete cr;
+                    break;
+                }
+            }
         }
         log("Warning: GS net accepter exited.");
     }
