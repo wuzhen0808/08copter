@@ -23,11 +23,12 @@ public:
     Scheduler *scheduler;
     LoggerFactory *loggerFactory;
 
-    StagingContext(Scheduler *scheduler, LoggerFactory *loggerFactory) {
+    StagingContext(Scheduler *scheduler, LoggerFactory *loggerFactory, System * sys) {
         this->properties = new Properties();
         this->loggerFactory = loggerFactory;
         this->scheduler = scheduler;
         this->path = new Buffer<String>();
+        this->sys = sys;
     }
     Buffer<String> *getPath() {
         return this->path;

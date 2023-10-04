@@ -9,8 +9,6 @@ namespace a8::link {
 
 class SimpleCodec : public Codec {
 
-    Buffer<EnDe *> codecs;
-
     int writeInt8(Writer *writer, int iValue) {
         char ch = iValue & 0x000000FF;
         writer->write(&ch, 1);
@@ -55,7 +53,7 @@ public:
         int len = 0;
         char *buf = 0;
         if (codec != 0) {
-            len = (codec->encode)(data, buf);
+            len = codec->encode(data, buf);
         }
         if (len >= 0) {
             writeInt16(writer, len);

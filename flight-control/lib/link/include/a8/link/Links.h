@@ -38,6 +38,7 @@ public:
         // register codecs
         network->add(CommonMessageType::PING, Functions::encodeString, Functions::decodeString);
         network->add(CommonMessageType::LOG, Functions::encodeString, Functions::decodeString);
+        network->add(CommonMessageType::CMD, Functions::encodeString, Functions::decodeString);
     }
 
     int getStub(FcApi *&api, Result &errorMessage) {
@@ -49,9 +50,8 @@ public:
         return rst;
     }
 
-    int getStub(GsApi *&api, Result &res) {
-        Channel *channel;
-        int rst = network->connect(gsAddress, channel, 0, 0, res);
+    int getStub(Channel *&channel, GsApi *&api, FcSkeleton *skeleton, Result &res) {
+        int rst = network->connect(gsAddress, channel, GsSkeleton::handle, skeleton, res);
         if (rst > 0) {
             api = new GsStub(channel);
             res.successMessage << "successfully connect to gs address:" << host << ":" << gsPort;
@@ -63,18 +63,29 @@ public:
         return network->bind(gsAddress, errorMessage);
     }
 
-    int listenGs(GsSkeleton *skeleton, Result &errorMessage) {
-        return network->listen(gsAddress, GsSkeleton::handle, skeleton, errorMessage);
+    int listenGs(Result &errorMessage) {
+        return network->listen(gsAddress, errorMessage);
     }
-    int acceptGs(Channel *&ch, Result &rst) {
-        return network->accept(gsAddress, ch, rst);
+
+    int acceptGs(Channel *&channel, FcStub *&fcStub, GsSkeleton *skeleton, Result &rst) {
+        int ret = network->accept(gsAddress, channel, GsSkeleton::handle, skeleton, rst);
+        if (ret < 0) {
+            return ret;
+        }
+        fcStub = new FcStub(channel);
+        return ret;
     }
 
     int listenFc(FcSkeleton *skeleton, Result &em) {
-        return network->listen(fcAddress, FcSkeleton::handle, skeleton, em);
+        return network->listen(fcAddress, em);
     }
-    int acceptFc(Channel *&ch, Result &rst) {
-        return network->accept(fcAddress, ch, rst);
+    int acceptFc(Channel *&channel, GsStub *&gsStub, FcSkeleton *skeleton, Result &rst) {
+        int ret = network->accept(fcAddress, channel, FcSkeleton::handle, skeleton, rst);
+        if (ret < 0) {
+            return ret;
+        }
+        gsStub = new GsStub(channel);
+        return ret;
     }
 };
 } // namespace a8::link

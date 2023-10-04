@@ -2,6 +2,7 @@
 #pragma once
 #include "a8/fc.h"
 #include "a8/fc/FlightControl.h"
+#include "a8/fc/native/FcSkeletonImpl.h"
 #include "a8/fc/native/JSBSimIO.h"
 #include "a8/fc/native/NativeAttitudeSensor.h"
 #include "a8/fc/native/NativeServosControl.h"
@@ -37,6 +38,8 @@ private:
     //
     GsApi *gsApi;
     Links *links;
+    FcSkeletonImpl *skeleton;
+    Channel *gsChannel;
 
     String resolveConfFile(Properties &pts) {
 
@@ -104,6 +107,7 @@ public:
         this->links = links;
         this->argc = argc;
         this->argv = argv;
+        this->rate = Rate::ForEver;
     }
     ~NativeFlightControl() {}
 
@@ -114,20 +118,33 @@ public:
 
     virtual void populate(StagingContext *context) override {
         this->addChild(context, new WrapperComponent<Sockets>(sockets));
-
+        this->skeleton = new FcSkeletonImpl();
+        this->addChild(context, skeleton);
         Result errorMessage;
-        int rst = this->links->getStub(this->gsApi, errorMessage);
+        int rst = this->links->getStub(this->gsChannel, this->gsApi, this->skeleton, errorMessage);
         if (rst < 0) {
             context->stop(errorMessage);
             return;
         }
         log("successfully connect to gsApi");
+        gsApi->ping("hello, gs,this is fc.");
         jio = new JSBSimIO(sockets);
         this->addChild(context, jio);
         if (context->isStop()) {
             return;
         }
         FlightControl::populate(context);
+    }
+
+    void run(TickingContext *context) override {
+        while (true) {
+
+            int ret = this->gsChannel->receive();
+            if (ret <= 0) {
+                log(String() << "cannot receive message from gsChannel, got error:" << ret);
+            }
+        }
+        log("receive thread for gsChannel exited.");
     }
 
     void setup(StagingContext *context) override {

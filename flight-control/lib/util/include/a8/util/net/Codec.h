@@ -15,6 +15,7 @@ struct EnDe {
 };
 
 class Codec {
+protected:    
     Buffer<EnDe *> codecs;
 
 public:

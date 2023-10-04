@@ -32,8 +32,9 @@ struct AppRunner {
 void runGs(void *ar) {
     AppRunner *runner = static_cast<AppRunner *>(ar);
 
-    Application::start("appGs", new Context(new FreeRtosScheduler(),  //
-                                            new NativeLoggerFactory() //
+    Application::start("appGs", new StagingContext(new FreeRtosScheduler(),  //
+                                            new NativeLoggerFactory() , //
+                                            a8::hal::S 
                                             ),
                        new GroundStation(runner->argc,                 //
                                          runner->argv,                 //
@@ -47,8 +48,9 @@ void runFc(void *ar) {
     AppRunner *runner = static_cast<AppRunner *>(ar);
     Sockets *sockets = new NativeSockets();
     Links *links = new Links(sockets);
-    Application::start("appFc", new Context(new FreeRtosScheduler(),  //
-                                            new NativeLoggerFactory() //
+    Application::start("appFc", new StagingContext(new FreeRtosScheduler(),  //
+                                            new NativeLoggerFactory() , //
+                                            a8::hal::S 
                                             ),
                        new NativeFlightControl(runner->argc, //
                                                runner->argv, //

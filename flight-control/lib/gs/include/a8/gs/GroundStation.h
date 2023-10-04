@@ -8,7 +8,35 @@ using namespace a8::util;
 using namespace a8::util::net;
 using namespace a8::util::comp;
 namespace a8::gs {
+class ChannelRunner : public Component {
+public:
+    static void run(void *runner) {
+        ChannelRunner *cr = static_cast<ChannelRunner *>(runner);
+        cr->run();
+    }
+    Channel *channel;
+    FcStub *fcStub;
+    GsSkeleton *skeleton;
+    ChannelRunner(Channel *ch, FcStub *fcStub, GsSkeleton *skeleton) : Component("channelRunnerX") {
+        this->channel = ch;
+        this->fcStub = fcStub;
+        this->skeleton = skeleton;
+    }
 
+    void run() {
+        while (true) {
+            int ret = channel->receive(1);
+            if (ret < 0) {
+                break;
+            }
+            if (ret == 0) {
+                break;
+            }
+            fcStub->ping("hello, ack.");
+        }
+        log("Channel Runner Exited");
+    }
+};
 class GroundStation : public Component {
 
     Dashboard *dashboard;
@@ -30,6 +58,7 @@ public:
 
         // open dashboard
         this->dashboard = new Dashboard();
+        this->addChild(this->dashboard);
         // waiting fcs to connect
         Result rst;
         int ret = links->bindGs(rst);
@@ -37,34 +66,30 @@ public:
             return context->stop(rst.errorMessage);
         }
 
-        GsNetImp *gsNet = new GsNetImp(this->dashboard);
-        Result rst2;
-        ret = links->listenGs(gsNet, rst2);
+        ret = links->listenGs(rst);
         if (ret < 0) {
-            context->stop(rst2.errorMessage);
-            return;
+            return context->stop(rst.errorMessage);
         }
         log("listening connect in on port of gs.");
-
-        // // or connect to fcs
-        // Result rst3;
-        // ret = links->getStub(this->fcApi, rst3);
-        // if (ret < 0) {
-        //     // context->stop(errorMessage);
-        //     // ignore the error.
-        // }
     }
 
-    void run(TickingContext * ticking) override {
+    void run(TickingContext *ticking) override {
         log("GS net accepter running...");
+        GsNetImp *skeleton = new GsNetImp(this->dashboard);
         while (true) {
             Channel *ch = 0;
+            FcStub *fcStub = 0;
             Result rst;
-            int ret = links->acceptGs(ch, rst);
+            int ret = links->acceptGs(ch, fcStub, skeleton, rst);
             if (ret < 0) {
+                log(rst.errorMessage);
                 break;
             }
-            log("A new GS client connected in.");
+            log("A new GS client connected in, we treat it as a FcStub.");
+
+            ChannelRunner *cr = new ChannelRunner(ch, fcStub, skeleton);
+            // TODO manage all the channels.
+            this->addChild(cr);
         }
         log("Warning: GS net accepter exited.");
     }

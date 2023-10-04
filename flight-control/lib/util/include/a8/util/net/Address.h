@@ -35,9 +35,12 @@ public:
         this->sock = sock;
         this->status = Bond;
     }
-    void listening(FuncType::handle listen, void *context) {
-        this->listen = listen;
-        this->receiver = receiver;
+    void listening() {        
+        this->status = Listening;
+    }
+    
+    friend String &operator<<(String &str, Address *address) {
+        return operator<<(str, *address);
     }
 
     friend String &operator<<(String &str, Address &address) {

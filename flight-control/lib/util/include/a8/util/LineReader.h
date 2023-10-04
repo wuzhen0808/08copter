@@ -9,22 +9,12 @@ namespace a8::util {
 class LineReader {
 private:
     const static int BUF_LEN = 128;
+    // dynamic member
     Reader *reader;
     char buf[BUF_LEN];
     int localPointer = -1;
     int localResult;
     int globalResult;
-
-public:
-    LineReader(Reader *reader) {
-        this->reader = reader;
-    }
-
-    ~LineReader() {}
-
-    int readLine(String &ret) {
-        return readLine(ret, true);
-    }
 
     void syncLocalIfNeeded() {
         if (this->localPointer >= 0) { // Read global at least once.
@@ -48,6 +38,38 @@ public:
         localPointer = 0;
     }
 
+public:
+    LineReader(Reader *reader) {
+        this->reader = reader;
+    }
+
+    ~LineReader() {}
+    /**
+     * Read one line and append to the ret parameter ref.
+     *
+     * Return:
+     * The total len read, including the line break char.
+     *
+     * - 0: EOF
+     * - >0: the length of the line read, including the line break char if not end.
+     * - <0: some error.
+     *
+     */
+    int readLine(String &ret) {
+        return readLine(ret, true);
+    }
+
+    /**
+     * Parmeters:
+     * - line: the reference which the line is append to.
+     * - appendSeparator:
+     * -- true: append the ling break char to the result string.
+     * -- false: drop the ling break char and return the line with out the line break.
+     * Return:
+     * - 0, EOF
+     * - >0， length of the chars read.
+     * - <0,  some error.
+     */
     int readLine(String &line, bool appendSeparator) {
         int thisResult = 0;
         bool found = false;
@@ -80,7 +102,6 @@ public:
                 len2 -= 1;
             }
             line.append(buf, localPointer, len2); //
-            
 
             localPointer += len;
             thisResult += len;

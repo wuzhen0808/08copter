@@ -4,7 +4,6 @@
 #include "a8/util/Writer.h"
 #include "a8/util/net/Address.h"
 #include "a8/util/net/Codec.h"
-#include "a8/util/net/Dispatcher.h"
 #include "a8/util/net/SocketReader.h"
 #include "a8/util/net/SocketWriter.h"
 #include "a8/util/net/Sockets.h"
@@ -15,28 +14,30 @@ namespace a8::util::net {
 class Channel {
 
     Sockets *sockets;
-    Address *address;
+    Address *address_;
     SOCK sock;
-    Codec *codecs;
-    Dispatcher *dispatcher;
-
+    Codec *codecs_;
+    FuncType::handle handle_;
+    void *context_;
+    //
     SocketWriter *writer;
     SocketReader *reader;
     int lastResult = 0;
 
 public:
-    Channel(Sockets *sockets, Address *address, SOCK sock, Codec *codec, Dispatcher *dispatcher) {
+    Channel(Sockets *sockets, Address *address, SOCK sock, Codec *codecs, FuncType::handle handle, void *context) {
         this->sockets = sockets;
-        this->address = address;
+        this->address_ = address;
         this->sock = sock;
-        this->codecs = codecs;
-        this->dispatcher = dispatcher;
+        this->codecs_ = codecs;
+        this->handle_ = handle;
+        this->context_ = context;
         this->reader = new SocketReader(sockets, sock);
         this->writer = new SocketWriter(sockets, sock);
     }
 
     int send(int type, void *data) {
-        int rst = codecs->write(writer, type, data);
+        int rst = codecs_->write(writer, type, data);
         if (rst < 0) {
             return rst;
         }
@@ -52,13 +53,12 @@ public:
         while (received < len && lastResult >= 0) {
             int type = 0;
             void *data = 0;
-            lastResult = codecs->read(reader, type, data);
+            lastResult = codecs_->read(reader, type, data);
 
             if (lastResult <= 0) {
                 break;
             }
-
-            dispatcher->dispatch(type, data, this->address->receiver);
+            handle_(type, data, context_);
             received++;
         }
 
