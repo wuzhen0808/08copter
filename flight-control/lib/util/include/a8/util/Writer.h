@@ -26,7 +26,7 @@ public:
         }
     }
     void write(String str) {
-        write(str.getText(), str.getLength());
+        write(str.text(), str.length());
     }
 
     virtual void write(const char *buf, int bufLen) = 0;

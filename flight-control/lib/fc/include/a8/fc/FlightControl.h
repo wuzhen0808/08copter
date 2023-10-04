@@ -25,8 +25,8 @@ protected:
     ServosControl *servosControl_;
     AttitudeControl *attitudeControl_;
     // member functions
-    virtual ServosControl *createServosControl(Context *context) = 0;
-    virtual AttitudeSensor *createAttitudeSensor(Context *context) = 0;
+    virtual ServosControl *createServosControl(StagingContext *context) = 0;
+    virtual AttitudeSensor *createAttitudeSensor(StagingContext *context) = 0;
 
 public:
     FlightControl(const String &name) : Component(name) {
@@ -42,7 +42,7 @@ public:
     ~FlightControl() {
     }
 
-    virtual void populate(Context *context) override {
+    virtual void populate(StagingContext *context) override {
         Component::populate(context);
 
         attitudeSensor_ = createAttitudeSensor(context);
@@ -55,19 +55,17 @@ public:
         this->addChild(context, attitudeControl_);
         //
     }
-    virtual void setup(Context *context) override {
+    virtual void setup(StagingContext *context) override {
         Component::setup(context);
     }
-    virtual void start(Context *context) override {
+    virtual void start(StagingContext *context) override {
         Component::start(context);
     }
 
-    int getServoCount() {
+    int getTotalServos() {
         return this->totalServos_;
     }
 
-    virtual void stop() override {
-    }
 };
 
 } // namespace a8::fc

@@ -63,12 +63,18 @@ public:
         return network->bind(gsAddress, errorMessage);
     }
 
-    int listen(GsSkeleton *skeleton, Result &errorMessage) {
+    int listenGs(GsSkeleton *skeleton, Result &errorMessage) {
         return network->listen(gsAddress, GsSkeleton::handle, skeleton, errorMessage);
     }
+    int acceptGs(Channel *&ch, Result &rst) {
+        return network->accept(gsAddress, ch, rst);
+    }
 
-    int listen(FcSkeleton *skeleton, Result &em) {
+    int listenFc(FcSkeleton *skeleton, Result &em) {
         return network->listen(fcAddress, FcSkeleton::handle, skeleton, em);
+    }
+    int acceptFc(Channel *&ch, Result &rst) {
+        return network->accept(fcAddress, ch, rst);
     }
 };
 } // namespace a8::link

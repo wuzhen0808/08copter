@@ -7,11 +7,11 @@
 #include "a8/fc/native/NativeServosControl.h"
 #include "a8/fc/native/defines.h"
 #include "a8/hal.h"
-#include "a8/hal/freertos/FreeRtosScheduler.h"
+#include "a8/hal/freertos.h"
 #include "a8/hal/native.h"
 #include "a8/link.h"
-#include "a8/util/net.h"
 #include "a8/util/comp.h"
+#include "a8/util/net.h"
 
 #include <iostream>
 
@@ -68,9 +68,9 @@ private:
         // command line arguments
         Buffer<String> buf;
         Buffer<String> &args = String::strings(argc, argv, buf);
-        for (int i = 0; i < args.getLength(); i++) {
+        for (int i = 0; i < args.length(); i++) {
             String str = args.get(i);
-            if (str.getLength() > 10000) {
+            if (str.length() > 10000) {
                 Lang::bug();
             }
         }
@@ -78,7 +78,7 @@ private:
 
         // configuration file
         String fpath = resolveConfFile(pts);
-        S->out->println(String::format("a8 properties file path:%s", fpath.getText()));
+        S->out->println(String::format("a8 properties file path:%s", fpath.text()));
 
         if (fpath != 0) {
             NativeFileReader fr(fpath);
@@ -89,11 +89,11 @@ private:
     }
 
 protected:
-    virtual ServosControl *createServosControl(Context *context) override {
+    virtual ServosControl *createServosControl(StagingContext *context) override {
         ServosControl *servos = new NativeServosControl(totalServos_, jio);
         return servos;
     }
-    virtual AttitudeSensor *createAttitudeSensor(Context *context) override {
+    virtual AttitudeSensor *createAttitudeSensor(StagingContext *context) override {
         NativeAttitudeSensor *sensor = new NativeAttitudeSensor(this->jio);
         return sensor;
     }
@@ -107,12 +107,12 @@ public:
     }
     ~NativeFlightControl() {}
 
-    virtual void boot(Context *context) override {
+    virtual void boot(StagingContext *context) override {
         resolveProperties(*context->properties);
         FlightControl::boot(context);
     }
 
-    virtual void populate(Context *context) override {
+    virtual void populate(StagingContext *context) override {
         this->addChild(context, new WrapperComponent<Sockets>(sockets));
 
         Result errorMessage;
@@ -127,19 +127,15 @@ public:
         if (context->isStop()) {
             return;
         }
-
         FlightControl::populate(context);
     }
 
-    void setup(Context *context) override {
+    void setup(StagingContext *context) override {
         FlightControl::setup(context);
     }
 
-    void start(Context *context) override {
+    void start(StagingContext *context) override {
         FlightControl::start(context);
-    }
-    void stop() override {
-        FlightControl::stop();
     }
 };
 

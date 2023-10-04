@@ -102,7 +102,7 @@ class Properties {
     }
 
     Entry *findEntry(const String &name, bool useZeroEntry) {
-        for (int i = 0; i < buffer->getLength(); i++) {
+        for (int i = 0; i < buffer->length(); i++) {
             Entry *entry = buffer->get(i);
             if (name == entry->name) {
                 return entry;
@@ -122,7 +122,7 @@ public:
 
     ~Properties() {
 
-        for (int j = 0; j < buffer->getLength(); j++) {
+        for (int j = 0; j < buffer->length(); j++) {
             Entry *entry = buffer->get(j);
             delete entry;
         }
@@ -131,9 +131,9 @@ public:
     }
 
     void setLines(const Buffer<String> &lines) {
-        for (int i = 0; i < lines.getLength(); i++) {
+        for (int i = 0; i < lines.length(); i++) {
             String str = lines.get(i);
-            if (str.getLength() > 10000) {
+            if (str.length() > 10000) {
                 Lang::bug();
             }
             setLine(str);
@@ -148,7 +148,7 @@ public:
 
         String name = line.subStr(0, idx).trim();
         String value = line.subStr(idx + 1).trim();
-        if (value.getLength() == 0) {
+        if (value.length() == 0) {
             // ignore this properties-> use default value.
             return false;
         }
@@ -156,7 +156,7 @@ public:
         if (name.endWith(")")) {
             int idx2 = name.lastIndexOf('(');
             if (idx2 > 0) {
-                type = name.subStr(idx2 + 1, name.getLength() - idx2 - 2);
+                type = name.subStr(idx2 + 1, name.length() - idx2 - 2);
                 name = name.subStr(0, idx2);
             }
         } else {
@@ -165,18 +165,18 @@ public:
         bool isArray = false;
         if (type.endWith("[]")) {
             isArray = true;
-            type = type.subStr(0, type.getLength() - 2);
+            type = type.subStr(0, type.length() - 2);
         }
         set(name, type, value);
         return true;
     }
 
     bool isValidLine(String line, int idxOfEq) {
-        if (line.getLength() == 0) {
+        if (line.length() == 0) {
             //
             return false;
         }
-        if (line.getChar(0) == '#') {
+        if (line.charAt(0) == '#') {
             return false;
         }
 
@@ -207,18 +207,18 @@ public:
         }
     }
     void write(Writer &writer) {
-        for (int i = 0; i < buffer->getLength(); i++) {
+        for (int i = 0; i < buffer->length(); i++) {
             Entry *entry = buffer->get(i);
-            writer.write(entry->name.getText(), entry->name.getLength());
+            writer.write(entry->name.text(), entry->name.length());
             writer.write("=", 1);
-            writer.write(entry->value.getText(), entry->value.getLength());
+            writer.write(entry->value.text(), entry->value.length());
             writer.write("\n", 1);
         }
     }
 
     Buffer<String> getNames() {
         Buffer<String> ret;
-        for (int i = 0; i < this->buffer->getLength(); i++) {
+        for (int i = 0; i < this->buffer->length(); i++) {
             ret.append(this->buffer->get(i)->name);
         }
         return ret;
@@ -270,7 +270,7 @@ public:
     // end get methods
     void mergeFrom(Properties *pts, bool overwrite) {
 
-        for (int i = 0; i < pts->buffer->getLength(); i++) {
+        for (int i = 0; i < pts->buffer->length(); i++) {
             Entry *entry = pts->buffer->get(i);
             if (overwrite && this->contains(entry->name)) {
                 continue;

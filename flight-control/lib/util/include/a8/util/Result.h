@@ -10,5 +10,9 @@ class Result {
 public:
     String errorMessage;
     String successMessage;
+
+    friend String &operator<<(String &str, Result &rst) {
+        return str << rst.errorMessage;
+    }
 };
 } // namespace a8::util

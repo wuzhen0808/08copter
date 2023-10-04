@@ -16,13 +16,13 @@ public:
         this->port = port;
     }
 
-    void setup(Context *context) override {
+    void setup(StagingContext *context) override {
     }
 
-    void postStart(Context *context) override {
+    void postStart(StagingContext *context) override {
     }
 
-    void shutdown(Context *context) override {
+    void shutdown(StagingContext *context) override {
     }
 };
 

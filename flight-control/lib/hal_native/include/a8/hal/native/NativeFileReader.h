@@ -13,7 +13,7 @@ private:
 public:
     NativeFileReader(String fpath) {
         this->fpath = fpath;
-        is.open(fpath.getText(), std::ios::in);
+        is.open(fpath.text(), std::ios::in);
     }
     ~NativeFileReader() {
         is.close();

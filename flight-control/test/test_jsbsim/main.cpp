@@ -55,7 +55,7 @@ TEST(TestString, smockTest1) {
     String line;
     FGSocketOuputReader::buildDataLine(data, line);
     EXPECT_EQ(0, 0)
-        << "altitude:" << data.altitude << ",agl:" << data.agl << "/" << line.getText() << endl;
+        << "altitude:" << data.altitude << ",agl:" << data.agl << "/" << line.text() << endl;
 }
 
 int main(int argc, char **argv) {

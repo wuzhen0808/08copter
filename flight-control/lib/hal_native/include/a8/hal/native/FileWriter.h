@@ -18,7 +18,7 @@ public:
 
     virtual void write(const char *buf, int bufLen) override {
         if (!ofstream.is_open()) {
-            ofstream.open(file.getText(), std::ios::out);            
+            ofstream.open(file.text(), std::ios::out);            
         }
 
         ofstream.write(buf, bufLen);

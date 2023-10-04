@@ -49,7 +49,7 @@ public:
         return lastData;
     }
 
-    virtual void setup(Context *context) override {
+    virtual void setup(StagingContext *context) override {
 
         int bindPort = context->properties->getInt(P_sim_jsb_sim_bind_port, 5502);
         String dataFile = context->properties->getString(P_sim_jsb_sim_data_file, "");
@@ -82,7 +82,7 @@ public:
             return;
         }
 
-        log(String::format("Waiting the JSBSim start up and connect to the the address:%s:%i", address.getText(), bindPort));
+        log(String::format("Waiting the JSBSim start up and connect to the the address:%s:%i", address.text(), bindPort));
 
         ret = this->sockets->accept(server, this->sockIn);
         if (ret < 0) {
@@ -92,7 +92,7 @@ public:
         log("JSBSim connected in, trying to receive the first package of data.");
     }
 
-    virtual void postSetup(Context *context) override {
+    virtual void postSetup(StagingContext *context) override {
         Component::postSetup(context);
     }
 
@@ -111,7 +111,7 @@ public:
             return false;
         }
     }
-    virtual void run() override {
+    virtual void run(TickingContext * ticking) override {
         bool running = true;
         while (running) {
             running = update();

@@ -33,7 +33,7 @@ int receive(Sockets &ss, int port) {
         return false;
     }
 
-    // log(String::format("Waiting the JSBSim start up and connect to the the address:%s:%i", address.getText(), bindPort));
+    // log(String::format("Waiting the JSBSim start up and connect to the the address:%s:%i", address.text(), bindPort));
     cout << "please connect in" << endl;
     SOCK sockIn = ss.accept(server);
 
@@ -58,7 +58,7 @@ int receive(Sockets &ss, int port) {
         } else {
 
             cout << "lineRead:" << endl;
-            char *text = line.getText();
+            char *text = line.text();
             cout << '\'' << text << '\'' << endl;
         }
         break;
@@ -78,7 +78,7 @@ int receiveByBuf(SocketReader *sr) {
             break;
         }
         String str(buf, ret);
-        cout << str.getText() << endl;
+        cout << str.text() << endl;
     }
     return false;
 }

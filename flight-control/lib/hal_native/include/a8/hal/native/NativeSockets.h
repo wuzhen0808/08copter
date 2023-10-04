@@ -48,7 +48,7 @@ public:
     virtual int connect(SOCK sock, const String host, int port, Result&res) override {
         struct sockaddr_in serv_addr;
         serv_addr.sin_family = AF_INET;
-        serv_addr.sin_addr.s_addr = inet_addr(host.getText());
+        serv_addr.sin_addr.s_addr = inet_addr(host.text());
         serv_addr.sin_port = htons(port);
 
         int cRst = ::connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
@@ -67,7 +67,7 @@ public:
 
         name.sin_family = AF_INET;
         name.sin_port = htons(port);
-        name.sin_addr.s_addr = inet_addr(address.getText());
+        name.sin_addr.s_addr = inet_addr(address.text());
         int error = ::bind(sock, (struct sockaddr *)&name, nameLen);
         if (error != 0) {
             res.errorMessage<<"cannot bind to address:"<<address<<":"<<port;
@@ -95,7 +95,7 @@ public:
     }
     
     bool send(SOCK sock, const char* buf, int len) override {
-        // S->out->println(String::format("sending... message:%s", str->getText()));
+        // S->out->println(String::format("sending... message:%s", str->text()));
         int sRst = ::send(sock, buf, len, 0);
         if (sRst == SOCKET_ERROR) {
             // S->out->println(String::format("failed to send, rst:%i", sRst));
@@ -152,7 +152,7 @@ public:
     }
 
     void toSet(Buffer<SOCK> &socks, fd_set &set) {
-        for (int i = 0; i < socks.getLength(); i++) {
+        for (int i = 0; i < socks.length(); i++) {
             set.fd_array[0] = socks.get(i);
             set.fd_count = i + 1;
         }

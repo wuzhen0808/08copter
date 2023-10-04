@@ -32,9 +32,9 @@ struct AppRunner {
 void runGs(void *ar) {
     AppRunner *runner = static_cast<AppRunner *>(ar);
 
-    Application::start(new Context(new FreeRtosScheduler(),  //
-                                   new NativeLoggerFactory() //
-                                   ),
+    Application::start("appGs", new Context(new FreeRtosScheduler(),  //
+                                            new NativeLoggerFactory() //
+                                            ),
                        new GroundStation(runner->argc,                 //
                                          runner->argv,                 //
                                          new Links(new NativeSockets() //
@@ -47,9 +47,9 @@ void runFc(void *ar) {
     AppRunner *runner = static_cast<AppRunner *>(ar);
     Sockets *sockets = new NativeSockets();
     Links *links = new Links(sockets);
-    Application::start(new Context(new FreeRtosScheduler(),  //
-                                   new NativeLoggerFactory() //
-                                   ),
+    Application::start("appFc", new Context(new FreeRtosScheduler(),  //
+                                            new NativeLoggerFactory() //
+                                            ),
                        new NativeFlightControl(runner->argc, //
                                                runner->argv, //
                                                links,
@@ -65,17 +65,20 @@ int main(int argc, char **argv) {
     ar1->argc = argc;
     ar1->argv = argv;
     ar1->sch = sch;
-    sch->schedule(runFc, ar1);
 
     AppRunner *ar2 = new AppRunner();
     ar2->argc = argc;
     ar2->argv = argv;
     ar2->sch = sch;
+    //
     sch->schedule(runGs, ar2);
-    
+    sch->schedule(runFc, ar1);
     sch->startSchedule();
+    //
 
     while (!ar1->isReady || !ar2->isReady) {
+        cout << "sleep second." << endl;
+        S->sleep(1000);
     }
     //
     cout << "Start schedule." << endl;

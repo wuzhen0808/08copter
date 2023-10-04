@@ -17,7 +17,7 @@ public:
         refresh();
     }
     void print(String msg) {
-        printw(msg.getText());
+        printw(msg.text());
     }
 
     void shutdown() {

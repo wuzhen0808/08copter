@@ -84,7 +84,7 @@ int getInt(int def) {
 TEST(TestBuffer, testParse2) {
     Buffer<int> buf = get3<int>([](double d) { return (int)d; });
 
-    EXPECT_EQ(1, buf.getLength());
+    EXPECT_EQ(1, buf.length());
 }
 /*
 TEST(TestBuffer, testGet) {
@@ -96,7 +96,7 @@ TEST(TestBuffer, testParse) {
     String str("1.0");
     Buffer<int> buf = Float::parseAll<int>(str, ',', [](double d) { return (int)d; });
 
-    EXPECT_EQ(1, buf.getLength());
+    EXPECT_EQ(1, buf.length());
 }
 TEST(TestBuffer, testIntBuffer) {
     int i = getInt(-1);

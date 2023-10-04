@@ -8,7 +8,7 @@ using a8::util::String;
 
 class NativeOutput : public Output {
     virtual void print(const String &msg) override {
-        cout << msg.getText();
+        cout << msg.text();
     }
 };
 

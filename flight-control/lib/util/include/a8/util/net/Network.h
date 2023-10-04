@@ -50,7 +50,7 @@ public:
     int add(String host, int port) { //
         // todo avoid duplicate.
         Address *add = new Address(host, port);
-        int ret = this->addresses->getLength();
+        int ret = this->addresses->length();
         this->addresses->append(add);
         return ret;
     }
@@ -111,39 +111,43 @@ public:
     /**
      * Register the listener on an address.
      */
-    int listen(int address, FuncType::handle listen, void *context, Result &message) {
-        Address *addr = this->getAddress(address);
-        if (addr->status != Bond) {
+    int listen(int adr, FuncType::handle listen, void *context, Result &rst) {
+        Address *address = this->getAddress(adr);
+        if (address->status != Bond) {
+            rst.errorMessage << "cannot listen on address" << *address << "before bond.";
             return -1; // not bind yet.
         }
-        int ret = this->sockets->listen(addr->sock, message);
+        int ret = this->sockets->listen(address->sock, rst);
         if (ret < 0) {
+
             return ret;
         }
-        
-        addr->listening(listen, context);
+
+        address->listening(listen, context);
 
         return ret;
     }
     /**
      * Blocking until new connection come in.
      */
-    int accept(int addressId, Channel *&channel) {
+    int accept(int addressId, Channel *&channel, Result &rst) {
         Address *addr = this->getAddress(addressId);
         if (addr->status != Listening) {
+            rst.errorMessage << "Not listening yet.";
             return -1; // not listening yet.
         }
 
         SOCK sock2;
-        int rst = sockets->accept(addr->sock, sock2);
-        if (rst < 0) {
+        int ret = sockets->accept(addr->sock, sock2);
+        if (ret < 0) {
             this->sockets->close(addr->sock);
             addr->sock = 0;
             addr->status = Idle;
-            return rst;
+            rst.errorMessage << "cannot accept socket on address:" << addr->host << ":" << addr->port;
+            return ret;
         }
         channel = new Channel(sockets, addr, sock2, codec, dispatcher);
-        return rst;
+        return ret;
     }
 };
 

@@ -22,7 +22,7 @@ public:
         EnDe *codec = new EnDe();
         codec->encode = encoder;
         codec->decode = decoder;
-        while (codecs.getLength() < type + 1) {
+        while (codecs.length() < type + 1) {
             codecs.append(0);
         }
         if (codecs.get(type) != 0) {

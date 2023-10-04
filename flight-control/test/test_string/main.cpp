@@ -4,7 +4,6 @@
 #include "a8/hal/native/NativeSystem.h"
 #include "a8/util/Buffer.h"
 #include "a8/util/String.h"
-#include "input_output/net_fdm.hxx"
 #include <fstream>
 #include <gtest/gtest.h>
 #include <iostream>
@@ -24,23 +23,23 @@ System *a8::hal::S = new TestSystem();
 
 TEST(TestString, testEmpty){
     String str0;
-    int len0 = Lang::strLength(str0.getText());
+    int len0 = Lang::strLength(str0.text());
     EXPECT_EQ(0, len0);
     
 }
 
 TEST(TestString, testFormatLongString) {
     String str1 = "11111111112222222222333333333344444444445555555555666666666677777777778888888888999999999900000000001111111111";
-    String str2 = String::format("abcdefghij0:%s", str1.getText());
+    String str2 = String::format("abcdefghij0:%s", str1.text());
     String str3 = "abcdefghij0:11111111112222222222333333333344444444445555555555666666666677777777778888888888999999999900000000001111111111";
 
-    EXPECT_EQ(str2.getLength(), str3.getLength());
+    EXPECT_EQ(str2.length(), str3.length());
     EXPECT_EQ(str2, str3);
 }
 TEST(TestString, testSplit) {
     String line = "A,BC,DEF,G";
     Buffer<String> fields = line.split(',');
-    EXPECT_EQ(4, fields.getLength());
+    EXPECT_EQ(4, fields.length());
     EXPECT_EQ(fields.get(0), "A");
     EXPECT_EQ(fields.get(1), "BC");
     EXPECT_EQ(fields.get(2), "DEF");
@@ -71,13 +70,13 @@ TEST(TestString, testAppendOperator) {
     line = "";
     double d = 0.123456789D;
     line << d << "/";
-    cout << line.getText() << endl;
+    cout << line.text() << endl;
     EXPECT_EQ(line, "1.234568e-01/");
 
     line = "";
     String abc("abc");
     line << abc << "/";
-    cout << line.getText() << endl;
+    cout << line.text() << endl;
     EXPECT_EQ(line, "abc/");
 }
 TEST(TestString, testEndWith) {
@@ -104,17 +103,17 @@ TEST(TestString, testAssign) {
     msg = 1;
     EXPECT_EQ(msg, "1");
     msg = 1.1f;
-    cout << msg.getText() << endl;
+    cout << msg.text() << endl;
     EXPECT_EQ(msg, "1.100000e+00");
 }
 
 TEST(TestString, testFormat) {
     String msg = "[0]";
-    EXPECT_EQ(3, msg.getLength());
+    EXPECT_EQ(3, msg.length());
 
-    String msg2 = String::format("msg:%s", msg.getText());
-    cout << msg2.getText() << endl;
-    EXPECT_EQ(7, msg2.getLength());
+    String msg2 = String::format("msg:%s", msg.text());
+    cout << msg2.text() << endl;
+    EXPECT_EQ(7, msg2.length());
     EXPECT_EQ(msg2, "msg:[0]");
 
     char buf[] = "set fcs/throttle-cmd-norm[0] 1\n";
@@ -125,10 +124,10 @@ TEST(TestString, testFormat) {
 TEST(TestString, smockTest1) {
 
     String s1;
-    EXPECT_EQ(s1.getLength(), 0);
+    EXPECT_EQ(s1.length(), 0);
 
     String s2 = s1;
-    EXPECT_EQ(s2.getLength(), 0);
+    EXPECT_EQ(s2.length(), 0);
 
     EXPECT_TRUE(s1 == s2);
     String *s3 = new String();
@@ -140,12 +139,12 @@ TEST(TestString, smockTest2) {
     String s1 = "A";
     String s2 = "8";
 
-    EXPECT_EQ(s1.getLength(), 1);
-    EXPECT_EQ(s2.getLength(), 1);
+    EXPECT_EQ(s1.length(), 1);
+    EXPECT_EQ(s2.length(), 1);
     EXPECT_FALSE(s1 == s2);
 
     String s3 = s1 + s2;
-    EXPECT_EQ(s3.getLength(), 2);
+    EXPECT_EQ(s3.length(), 2);
     EXPECT_EQ(s3, "A8");
 }
 
@@ -172,7 +171,7 @@ TEST(TestString, formatIntTest) {
 }
 
 void log(String msg) {
-    // a8::hal::println(msg.getText());
+    // a8::hal::println(msg.text());
 }
 
 int main(int argc, char **argv) {

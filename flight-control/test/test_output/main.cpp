@@ -24,10 +24,10 @@ System *a8::hal::S = new TestSystem();
 TEST(TestString, smockTest1) {
     
     String s1;
-    EXPECT_EQ(s1.getLength(), 0);
+    EXPECT_EQ(s1.length(), 0);
 
     String s2 = s1;
-    EXPECT_EQ(s2.getLength(), 0);
+    EXPECT_EQ(s2.length(), 0);
 
     EXPECT_TRUE(s1 == s2);
     String *s3 = new String();

@@ -16,7 +16,7 @@ static int encodeString(void *string, char *&buf) {
     String *str = static_cast<String *>(string);
     int len;
     int cap = 0;
-    Lang::appendStr(buf, len, cap, 128, str->getText(), 0, str->getLength());
+    Lang::appendStr(buf, len, cap, 128, str->text(), 0, str->length());
     return len;
 }
 

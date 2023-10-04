@@ -1,6 +1,6 @@
 #pragma once
 #include "a8/util/Math.h"
-
+#include "a8/util/String.h"
 namespace a8 {
 namespace util {
 
@@ -48,15 +48,15 @@ public:
     }
 
     float ms() const {
-        return 1000.0f / hz;
+        return 1.0e3 / hz;
     }
 
     float us() const {
-        return 1000000.0f / hz;
+        return 1.0e6 / hz;
     }
 
     float ns() const {
-        return 1000000000.0f / hz;
+        return 1.0e9 / hz;
     }
 
     /**
@@ -82,8 +82,12 @@ public:
         this->hz = hz;
         return *this;
     }
-};
 
+    //
+    friend String &operator<<(String &str, Rate &rate) {
+        return str << rate.hz;
+    }
+};
 
 } // namespace util
 

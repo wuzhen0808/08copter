@@ -2,12 +2,14 @@
 
 #include "a8/util.h"
 #include "a8/util/thread.h"
+#include "a8/util/sys.h"
 using namespace a8::util;
 using namespace a8::util::thread;
+using namespace a8::util::sys;
 
 namespace a8::util::comp {
 
-class Context {
+class StagingContext {
 
 private:
     int lastError;
@@ -16,11 +18,12 @@ private:
     Buffer<String> *path;
 
 public:
+    System * sys;
     Properties *properties;
     Scheduler *scheduler;
     LoggerFactory *loggerFactory;
 
-    Context(Scheduler *scheduler, LoggerFactory *loggerFactory) {
+    StagingContext(Scheduler *scheduler, LoggerFactory *loggerFactory) {
         this->properties = new Properties();
         this->loggerFactory = loggerFactory;
         this->scheduler = scheduler;
@@ -30,7 +33,7 @@ public:
         return this->path;
     }
 
-    ~Context() {}
+    ~StagingContext() {}
 
     bool isStop() {
         return stop_;

@@ -21,9 +21,9 @@ System *a8::hal::S = new NativeSystem();
 
 int main(int argc, char **argv) {
     Scheduler *sch = new FreeRtosScheduler();
-    Application::start(new Context(sch,                      //
-                                   new NativeLoggerFactory() //
-                                   ),
+    Application::start("appGs", new StagingContext(sch,                      //
+                                            new NativeLoggerFactory() //
+                                            ),
                        new GroundStation(argc,                         //
                                          argv,                         //
                                          new Links(new NativeSockets() //

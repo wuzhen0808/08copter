@@ -1,10 +1,12 @@
 #pragma once
 #include <iostream>
+
 namespace a8::util {
 
 class Lang {
 public:
     static const char END_OF_STR = '\0';
+    
     /**
      * Format and append the formatted string to the buffer.
      *
@@ -65,6 +67,7 @@ public:
      * Caller should be the owner of the space, the old one or the new one.
      *
      */
+
     static void appendStr(char *&bufferRef, int &lengthRef, int &capacityRef, int deltaCapacity,
                           const char *buf1, const int from1, const int len1) {
         int lenLeft = lengthRef;

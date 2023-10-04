@@ -24,7 +24,7 @@ public:
 
         Buffer<String> buf = fStr.split(sep);
         Buffer<T> ret;
-        for (int i = 0; i < buf.getLength(); i++) {
+        for (int i = 0; i < buf.length(); i++) {
             String str = buf.get(i);
             T dV = parse(str, converter);
             ret.append(dV);
@@ -41,7 +41,7 @@ public:
         int dotIdx = fStr.indexOf('.');
         int exp = dotIdx;
         if (dotIdx < 0) {
-            exp = fStr.getLength();
+            exp = fStr.length();
         }
         exp -= 1;
 
@@ -49,12 +49,12 @@ public:
 
         int i = 0;
 
-        for (int i = 0; i < fStr.getLength(); i++) {
+        for (int i = 0; i < fStr.length(); i++) {
             if (i == dotIdx) {
                 continue;
             }
 
-            char ch = fStr.getChar(i);
+            char ch = fStr.charAt(i);
 
             short sCh = (short)ch - (short)'0';
             if (sCh < 0 || sCh > 9) {

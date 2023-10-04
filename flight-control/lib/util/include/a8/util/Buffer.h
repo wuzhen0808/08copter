@@ -11,15 +11,15 @@ template <typename T>
 class Buffer {
 
 private:
-    int capacity;
-    int length;
+    int capacity_;
+    int length_;
 
-    T *buffer;
+    T *buffer_;
 
     void init() {
-        this->length = 0;
-        this->capacity = 0;
-        this->buffer = 0;
+        this->length_ = 0;
+        this->capacity_ = 0;
+        this->buffer_ = 0;
     }
 
 public:
@@ -28,23 +28,23 @@ public:
     }
     Buffer<T>(const Buffer<T> &buf) { // copy constructor
         this->init();
-        this->append(buf.buffer, 0, buf.length);
+        this->append(buf.buffer_, 0, buf.length_);
     }
     void operator=(const Buffer<T> &buf) { // assign operator
         this->clear();
-        this->append(buf.buffer, 0, buf.length);
+        this->append(buf.buffer_, 0, buf.length_);
     }
 
     ~Buffer<T>() {
-        if (this->buffer != 0) {
-            // delete[] this->buffer;
+        if (this->buffer_ != 0) {
+            // delete[] this->buffer_;
         }
     }
 
-    int getLength() const;
+    int length() const;
 
     int len() const {
-        return this->length;
+        return this->length_;
     }
 
     T get(int idx) const;
@@ -52,12 +52,12 @@ public:
     int remove(int from);
 
     bool isEmpty() {
-        return this->length == 0;
+        return this->length_ == 0;
     }
 
     int indexOf(T ele) {
-        for (int i = 0; i < length; i++) {
-            if (ele == buffer[i]) {
+        for (int i = 0; i < length_; i++) {
+            if (ele == buffer_[i]) {
                 return i;
             }
         }
@@ -65,61 +65,61 @@ public:
     }
 
     int read(int from1, T *buf, int len) {
-        if (from1 >= this->length) {
+        if (from1 >= this->length_) {
             return -1;
         }
-        if (len > this->length - from1) {
-            len = this->length - from1;
+        if (len > this->length_ - from1) {
+            len = this->length_ - from1;
         }
-        Lang::copy<T>(this->buffer, from1, len, buf);
+        Lang::copy<T>(this->buffer_, from1, len, buf);
         return len;
     }
 
     T *toArray(T *buf) {
-        for (int i = 0; i < this->length; i++) {
-            buf[i] = this->buffer[i];
+        for (int i = 0; i < this->length_; i++) {
+            buf[i] = this->buffer_[i];
         }
         return buf;
     }
     void clear() {
-        this->length = 0;
+        this->length_ = 0;
     }
 
     Buffer<T> *append(const T &element) {
         return append(&element, 1);
     }
 
-    Buffer<T> *append(const T *elements, int length) {
-        return append(elements, 0, length);
+    Buffer<T> *append(const T *elements, int length_) {
+        return append(elements, 0, length_);
     }
 
     Buffer<T> *append(const Buffer<T> &buf) {
-        return append(buf.buffer, 0, buf.length);
+        return append(buf.buffer_, 0, buf.length_);
     }
 
     Buffer<T> *append(const T *elements, const int from, const int len) {
         LOG(">>Buffer<T> *append(const T *elements, const int from, const int len)");
-        Lang::append<T>(this->buffer, this->length, this->capacity,
+        Lang::append<T>(this->buffer_, this->length_, this->capacity_,
                         DELTA_BUF_CAP, 0,
                         elements, from, len);
-        LOG2("this->buffer:", this->buffer);
+        LOG2("this->buffer_:", this->buffer_);
         LOG("<<Buffer<T> *append(const T *elements, const int from, const int len)");
         return this;
     }
     void set(int idx, T emptyValue, T element) {
-        while (this->length - 1 < idx) {
+        while (this->length_ - 1 < idx) {
             this->append(emptyValue);
         }
-        this->buffer[idx] = element;
+        this->buffer_[idx] = element;
     }
     void set(int idx, T element) {
-        this->buffer[idx] = element;
+        this->buffer_[idx] = element;
     }
     int removeLast() {
-        if (this->length == 0) {
+        if (this->length_ == 0) {
             return false;
         }
-        this->length--;
+        this->length_--;
         return 1;
     }
 };
@@ -128,24 +128,24 @@ public:
 
 template <typename T>
 T Buffer<T>::get(int idx) const {
-    return this->buffer[idx];
+    return this->buffer_[idx];
 }
 
 template <typename T>
-int Buffer<T>::getLength() const {
-    return this->length;
+int Buffer<T>::length() const {
+    return this->length_;
 }
 
 template <typename T>
 T *Buffer<T>::getAll() const {
-    return this->buffer;
+    return this->buffer_;
 }
 
 template <typename T>
 int Buffer<T>::remove(int from) {
-    int removed = this->length - from;
+    int removed = this->length_ - from;
     if (removed > 0) {
-        this->length = from;
+        this->length_ = from;
     } else {
         removed = 0;
     }

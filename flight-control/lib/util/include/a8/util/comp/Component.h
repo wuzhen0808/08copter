@@ -1,44 +1,35 @@
 #pragma once
 #include "a8/util.h"
+#include "a8/util/comp/StagingContext.h"
+#include "a8/util/comp/TickingContext.h"
+#include "a8/util/comp/defines.h"
 #include "a8/util/thread.h"
-#include "a8/util/comp/Context.h"
 using namespace a8::util;
 using namespace a8::util::thread;
 namespace a8::util::comp {
-enum Stage {
-    Zero = 0,
-    Boot,
-    Populate,
-    PostPopulate,
-    Setup,
-    PostSetup,
-    Start,
-    PostStart,
-    Shutdown,
-    PostShutdown
-};
+
 /**
- * Component is the middle-size building block. 
- * 
+ * Component is the middle-size building block.
+ *
  * It is a object managed by the parent and the root component.
- * 
+ *
  * It encapsulates the business which require common service from environment.
- * 
+ *
  * The services provided by the caller of a component are below.
- * 
+ *
  *  1. Scheduler service to start a thread and running a Runnable object.
  *  2. LoggerFactory service which provide loggers with names.
  *  3. Network service to communicate with other component. Network service is to be implemented.
- * 
+ *
  * What should not be a component?
- * 
+ *
  *  1. The functions or logics under coding do not require external services above.
  *  2. It is a object and created with a higher freq, not a singleton.
- * 
+ *
  * How to use the component?
- * 
+ *
  *  1. Provide a context before create any component.
- *  2. Implement and override the methods driving by stages.All the stages are below.  *      
+ *  2. Implement and override the methods driving by stages.All the stages are below.  *
  *      - Zero            - stage 0
  *      - Boot            - stage 1
  *      - Populate        - stage 2
@@ -47,32 +38,32 @@ enum Stage {
  *      - PostSetup       - stage 5
  *      - Shutdown        - stage 6
  *      - PostShutdown    - stage 7
- * 
+ *
  *  3. Implement more component and add them by addChild(Component*) method.
- *      Note the stage in which you add a child. 
+ *      Note the stage in which you add a child.
  *      The child component will be automatically driven to the same stage as the parent component.
- * 
+ *
  *  4. Optionally create a root component, such as an Application component.
- * 
+ *
  *  5. Calling stageTo(aStage);
- *      This method will execute the methods mentioned above one by one. Until there is some error 
- *      required the staging procedure stop. 
+ *      This method will execute the methods mentioned above one by one. Until there is some error
+ *      required the staging procedure stop.
  *      The stageTo method is executed recursively into each child and finally get the whole components
  *      tree into the destination stage.
- * 
+ *
  *  6. If you want a component running in a new thread. You need:
  *      - Implement the run() method.
  *      - Set the rate, frequency in HZ, to a non zero value.
  *      - Make sure the root component is an Application component.
- * 
+ *
  *  7. Note the root component.
- *      For example if the Application component is as the root component. At the postStart stage, 
+ *      For example if the Application component is as the root component. At the postStart stage,
  *      the Application component will:
- * 
+ *
  *      - Collect all the runnable components, assign thread(by the rate specified) for them and start the scheduler.
- *   
+ *
  */
-class Component : public Runnable {
+class Component {
 
 protected:
     Attributes *attributes;
@@ -143,7 +134,7 @@ public:
     }
 
     Component *findChild(const String &name) {
-        for (int i = 0; i < this->children->getLength(); i++) {
+        for (int i = 0; i < this->children->length(); i++) {
             Component *child = children->get(i);
             if (child->isName(name)) {
                 return child;
@@ -155,7 +146,7 @@ public:
     Component *findComponent(Buffer<String> &path, int from) {
         String name = path.get(from);
         Component *child = this->findChild(name);
-        if (child == 0 || from >= path.getLength()) {
+        if (child == 0 || from >= path.length()) {
             return 0;
         }
 
@@ -163,7 +154,7 @@ public:
     }
     Buffer<Component *> *collect(Buffer<Component *> *buffer) {
         buffer->append(*this->children);
-        for (int i = 0; i < children->getLength(); i++) {
+        for (int i = 0; i < children->length(); i++) {
             children->get(i)->collect(buffer);
         }
         return buffer;
@@ -171,15 +162,15 @@ public:
     /**
      * Tick method must not blocked and should be quickly returned.
      */
-    virtual void tick(const long tickTime) {
+    virtual void tick(TickingContext *ticking) {
     }
     /*
      * Run method is in a separate thread. It's a loop never end until system shutdown.
      */
-    virtual void run() override {
+    virtual void run(TickingContext *ticking) {
     }
 
-    void log(const String &msg) {
+    void log(const String msg) {
         getLogger()->info(msg);
     }
 
@@ -188,13 +179,13 @@ public:
         return this;
     }
 
-    Component *addChild(Context *context, Component *com) {
+    Component *addChild(StagingContext *context, Component *com) {
         com->stageTo(this->stage, context);
         this->addChild(com);
         return this;
     }
 
-    void beforeStage(Context *context) {
+    void beforeStage(StagingContext *context) {
         Buffer<String> *path = context->getPath();
         path->append(this->name);
         String msg(">>");
@@ -205,7 +196,7 @@ public:
         log(msg);
     }
 
-    void afterStage(Context *context) {
+    void afterStage(StagingContext *context) {
         Buffer<String> *path = context->getPath();
         String msg("<<");
         for (int i = 0; i < path->len(); i++) {
@@ -216,45 +207,45 @@ public:
         path->removeLast();
     }
 
-    virtual void boot(Context *context) {
+    virtual void boot(StagingContext *context) {
         stageChildrenTo(Boot, context);
     }
-    virtual void populate(Context *context) {
+    virtual void populate(StagingContext *context) {
         stageChildrenTo(Populate, context);
     }
 
-    virtual void postPopulate(Context *context) {
+    virtual void postPopulate(StagingContext *context) {
 
         this->stageChildrenTo(PostPopulate, context);
     }
-    virtual void setup(Context *context) {
+    virtual void setup(StagingContext *context) {
         this->stageChildrenTo(Setup, context);
     }
-    virtual void postSetup(Context *context) {
+    virtual void postSetup(StagingContext *context) {
         this->stageChildrenTo(PostSetup, context);
     }
 
-    virtual void start(Context *context) {
+    virtual void start(StagingContext *context) {
         this->stageChildrenTo(Start, context);
     }
 
-    virtual void postStart(Context *context) {
+    virtual void postStart(StagingContext *context) {
         this->stageChildrenTo(PostStart, context);
     }
-    virtual void shutdown(Context *context) {
+    virtual void shutdown(StagingContext *context) {
         this->stageChildrenTo(Shutdown, context);
     }
 
-    virtual void postShutdown(Context *context) {
+    virtual void postShutdown(StagingContext *context) {
         this->stageChildrenTo(PostShutdown, context);
     }
 
     bool isStage(Stage stage) {
         return this->stage == stage;
     }
-    virtual void stageChildrenTo(Stage stage2, Context *context) {
+    virtual void stageChildrenTo(Stage stage2, StagingContext *context) {
         if (this->children != 0) {
-            int count = this->children->getLength();
+            int count = this->children->length();
             for (int i = 0; i < count; i++) {
                 Component *com = children->get(i);
                 com->stageTo(stage2, context);
@@ -265,7 +256,7 @@ public:
         }
     }
 
-    virtual Component *stageTo(Stage stage2, Context *context) {
+    virtual Component *stageTo(Stage stage2, StagingContext *context) {
 
         switch (this->stage) {
         case Zero:
@@ -358,8 +349,14 @@ public:
         }
         return this;
     }
-    virtual void stop() {
+
+    friend String &operator<<(String &str, Component *comp) {
+        return operator<<(str, *comp);
     }
+    friend String &operator<<(String &str, Component &comp) {
+        return str << comp.name << "," << comp.stage;
+    }
+
     void print(Writer *writer) {
         print(writer, true, 0);
     }
@@ -367,4 +364,4 @@ public:
         print(writer, recursive, 0);
     }
 };
-} // namespace a8::util
+} // namespace a8::util::comp

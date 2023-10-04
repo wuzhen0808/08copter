@@ -34,10 +34,10 @@ public:
         // TODO release runner from scheduler, and delete it here;
     }
 
-    void populate(Context *context) override {
+    void populate(StagingContext *context) override {
         Component::populate(context);
     }
-    void setup(Context *context) override {
+    void setup(StagingContext *context) override {
 
         this->fgSocketReader = new FGSocketLineReader(this->sockets);
         this->addChild(context, fgSocketReader);
@@ -70,7 +70,7 @@ public:
 
     void setThrottleNorm(int id, float throttle) {
         String sb = String::format("set fcs/throttle-cmd-norm[%i] %f\n", id, throttle);
-        int sent = sockets->send(client, sb.getText(), sb.getLength());
+        int sent = sockets->send(client, sb.text(), sb.length());
     }
     Vector3f getAngVel() {
         SocketData *fdm = fgSocketReader->getLastData();

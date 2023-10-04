@@ -1,6 +1,7 @@
 #pragma once
-#include "a8/util/net/defines.h"
+#include "a8/util.h"
 #include "a8/util/net/Sockets.h"
+#include "a8/util/net/defines.h"
 
 namespace a8::util::net {
 enum Status {
@@ -37,6 +38,10 @@ public:
     void listening(FuncType::handle listen, void *context) {
         this->listen = listen;
         this->receiver = receiver;
+    }
+
+    friend String &operator<<(String &str, Address &address) {
+        return str << address.host << ":" << address.port;
     }
 };
 

@@ -4,9 +4,9 @@
 #include "a8/fc/PidControl.h"
 #include "a8/fc/ServosControl.h"
 #include "a8/fc/defines.h"
-#include "a8/util/Callback.h"
-#include "a8/util/comp.h"
+#include "a8/util.h"
 #include "a8/util/Writer.h"
+#include "a8/util/comp.h"
 
 #define FR_SPIN_DIRECTION LEFT_HAND
 
@@ -54,7 +54,7 @@ public:
         delete yawPid;
     }
 
-    virtual void boot(Context *context) override {
+    virtual void boot(StagingContext *context) override {
         Component::boot(context);
         idxAR = context->properties->getInt(P_fcs_servo_idx_ar, 0);
         idxFL = context->properties->getInt(P_fcs_servo_idx_fl, 1);
@@ -85,22 +85,22 @@ public:
         float ki = 0.0f;
         float kd = 0.0f;
 
-        if (pidKs.getLength() > 0) {
+        if (pidKs.length() > 0) {
             kp = pidKs.get(0);
         }
-        if (pidKs.getLength() > 1) {
+        if (pidKs.length() > 1) {
             ki = pidKs.get(1);
         }
-        if (pidKs.getLength() > 2) {
+        if (pidKs.length() > 2) {
             kd = pidKs.get(2);
         }
         pid->setup(kp, ki, kd);
     }
-    virtual void setup(Context *context) override {
+    virtual void setup(StagingContext *context) override {
         Component::setup(context);
     }
 
-    virtual void tick(const long tickTime) override {
+    virtual void tick(TickingContext *ticking) override {
 
         double altitude1 = attitudeSensor->getAlt();
 

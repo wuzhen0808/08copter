@@ -32,7 +32,7 @@ public:
        <LABELS> ,Time,Altitude,Phi (deg),Tht (deg),Psi (deg),Alpha (deg),Beta (deg),Latitude (deg),Longitude (deg)
        89.85,    5777.205,   0.8062249, -0.02998105,9.955398e-05,   -89.90706,    2.471205,    30.83043,    121.0004
      */
-    virtual void setup(Context *context) override {
+    virtual void setup(StagingContext *context) override {
         log(">>FGSocketLineReader.setUp()");
         FGSocketReader::setup(context);
         if (context->isStop()) {
@@ -44,12 +44,12 @@ public:
         String headerLine;
         lReader->readLine(headerLine, false);
 
-        log(String::format("headerline:'%s',len:%i", headerLine.getText(), headerLine.getLength()));
+        log(String::format("headerline:'%s',len:%i", headerLine.text(), headerLine.length()));
 
         Buffer<String> headers = headerLine.split(',');
 
-        String lastCol = headers.get(headers.getLength() - 1);
-        log(String::format("headers.len:'%i', last col:'%s' ", headers.getLength(), lastCol));
+        String lastCol = headers.get(headers.length() - 1);
+        log(String::format("headers.len:'%i', last col:'%s' ", headers.length(), lastCol));
 
         Col_Time = findIndex(context, headers, "Time");
         Col_Altitude = findIndex(context, headers, "Altitude"); //
@@ -62,7 +62,7 @@ public:
         Col_Longitude = findIndex(context, headers, "Longitude (deg)");
     }
 
-    int findIndex(Context *context, Buffer<String> &headers, String name) {
+    int findIndex(StagingContext *context, Buffer<String> &headers, String name) {
         int idx = headers.indexOf(name);
         if (idx < 0) {
             context->stop("No index found from header of the JSBSim socket data output for column:" + name);
@@ -70,7 +70,7 @@ public:
         return idx - 1;
     }
 
-    virtual void postSetup(Context *context) override {
+    virtual void postSetup(StagingContext *context) override {
         FGSocketReader::postSetup(context);
     }
 
@@ -82,7 +82,7 @@ public:
             return false;
         }
 
-        log(String::format("dataline:%s", line.getText()));
+        log(String::format("dataline:%s", line.text()));
         Buffer<String> fields = line.split(',');
         data->altitude = readDouble(fields, Col_Altitude);
 
@@ -92,7 +92,7 @@ public:
     double readDouble(Buffer<String> &fields, int idx) {
 
         String str = fields.get(idx);
-        double ret = std::atof(str.getText());
+        double ret = std::atof(str.text());
         return ret;
     }
     float readFloat(Buffer<String> &fields, int idx) {
@@ -100,7 +100,7 @@ public:
     }
     long readLong(Buffer<String> &fields, int idx) {
         String str = fields.get(idx);
-        double ret = std::atol(str.getText());
+        double ret = std::atol(str.text());
         return ret;
     }
 };
