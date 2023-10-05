@@ -1,40 +1,23 @@
 #pragma once
-#include "a8/util/net/defines.h"
 #include "a8/util/Reader.h"
 #include "a8/util/String.h"
 #include "a8/util/Writer.h"
 #include "a8/util/net/SocketReader.h"
 #include "a8/util/net/SocketWriter.h"
 #include "a8/util/net/Sockets.h"
+#include "a8/util/net/defines.h"
 
 namespace a8::util::net {
 
-struct EnDe {
-    FuncType::encode encode;
-    FuncType::decode decode;
-};
-
-class Codec {
-protected:    
-    Buffer<EnDe *> codecs;
+class Codec {  
 
 public:
-    void add(int type, FuncType::encode encoder, FuncType::decode decoder) {
-        EnDe *codec = new EnDe();
-        codec->encode = encoder;
-        codec->decode = decoder;
-        while (codecs.length() < type + 1) {
-            codecs.append(0);
-        }
-        if (codecs.get(type) != 0) {
-            // TODO error process?
-        }
-        codecs.set(type, codec);
+    Codec() {
     }
 
-    virtual int write(Writer *writer, int type, void *data) = 0;
+    virtual int write(Writer *writer, int type, void *data, Result &rst) = 0;
 
-    virtual int read(Reader *reader, int &type, void *&data) = 0;
+    virtual int read(Reader *reader, int &type, void *&data, Result &rst) = 0;
 };
 
 } // namespace a8::util::net

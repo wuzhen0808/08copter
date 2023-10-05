@@ -1,5 +1,5 @@
 #pragma once
-#include "a8/util/Buffer.h" //TODO remove Buffer dependence.
+#include "a8/util/Lang.h"
 #include "debug.h"
 #define DELTA_STR_CAP (16)
 namespace a8::util {
@@ -14,8 +14,8 @@ private:
     int capacity_ = 0;
 
 public:
-    static String string(const char *str, int len) {
-        return String(str, len);
+    static String string(const char *str) {
+        return String(str, Lang::strLength(str));
     }
 
     template <typename... Args>
@@ -26,40 +26,6 @@ public:
         return ret;
     }
 
-    // static member funcs
-
-    static Buffer<String> &strings(int argc, char **argv, Buffer<String> &buf) {
-
-        for (int i = 0; i < argc; i++) {
-            String str = string(argv[i]);
-            buf.append(str);
-        }
-        return buf;
-    }
-
-    static String string(const char *str) {
-        return String(str, Lang::strLength(str));
-    }
-
-    template <typename T>
-    Buffer<T> split(const char separator, T (*convert)(String &)) {
-
-        Buffer<T> buffer;
-        String str;
-
-        for (int i = 0; i < this->length_; i++) {
-            if (this->text_[i] == separator) {
-
-                buffer.append(convert(str));
-                str = "";
-                continue;
-            }
-            str.append(this->text_[i]);
-        }
-        buffer.append(convert(str));
-
-        return buffer;
-    }
     // dynamic methods
     String() {
     }
@@ -293,6 +259,12 @@ public:
         append(str);
         return *this;
     }
+    char operator[](int idx) {
+        if (idx < 0 || idx > this->length_) {
+            Lang::illegalArgument("index out of bound.");
+        }
+        return this->text_[idx];
+    }
 
     // Other methods
     bool endWith(const char *str) {
@@ -308,9 +280,6 @@ public:
             }
         }
         return true;
-    }
-    Buffer<String> split(const char separator) {
-        return split<String>(separator, [](String &s) { return s; });
     }
 
     // Friend operators

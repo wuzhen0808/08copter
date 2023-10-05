@@ -31,7 +31,8 @@ protected:
             // find a runner for the component.
             TickRunner *runner = this->findTickRunner(runners, rate);
             if (runner == 0) {
-                runner = new TickRunner(rate, context->sys);
+                TickingContext *ticking = new TickingContext(context, rate);
+                runner = new TickRunner(ticking);
                 runners->append(runner);
             }
             runner->add(component);
@@ -41,7 +42,7 @@ protected:
     TickRunner *findTickRunner(Buffer<TickRunner *> *runners, const Rate &rate_) {
         for (int i = 0; i < runners->length(); i++) {
             TickRunner *runner = runners->get(i);
-            long mHz1 = runner->rate.mHz();
+            long mHz1 = runner->getTicking()->getRate().mHz();
             long mHz2 = rate_.mHz();
             if (mHz1 == mHz2) {
                 return runner;
@@ -60,7 +61,7 @@ public:
      */
     static Application *start(String name, StagingContext *context, Component *child) {
         Application *app = new Application(name.text());
-        app->addChild(child)->stageTo(PostStart, context);
+        app->addChild(context, child)->stageTo(PostStart, context);
 
         StringWriter strW;
         app->print(&strW);

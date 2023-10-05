@@ -49,34 +49,26 @@ namespace a8::util::net {
  */
 class Network {
     void *context;
-    Codec *codec;
     Sockets *sockets;
+    Codec *codec;
 
     Buffer<Address *> *addresses;
 
 public:
     Network(Sockets *sockets, Codec *codec, void *context) {
         this->context = context;
-        this->sockets = sockets;
         this->codec = codec;
+        this->sockets = sockets;
         this->addresses = new Buffer<Address *>();
     }
-   
-    /**
-     * Register a data type with encoder and decoder.
-     * And optionally provide a default handle function pointer for receiving the data decoded.
-     * If no the handle function pointer not provided, the received data will be ignored.
-     */
-    void add(int type, FuncType::encode encoder, FuncType::decode decoder) {
-        this->codec->add(type, encoder, decoder);
-    }
+
     /**
      * Register an address, to track the status for binding and listening.
      */
     int add(String host, int port) { //
         // todo avoid duplicate.
         Address *add = new Address(host, port);
-        int ret = this->addresses->length(); 
+        int ret = this->addresses->length();
         this->addresses->append(add);
         return ret;
     }

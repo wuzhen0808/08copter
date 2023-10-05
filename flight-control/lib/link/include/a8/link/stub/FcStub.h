@@ -16,10 +16,12 @@ public:
         this->channel = channel;
     }
     void ping(String msg) override {
-        this->channel->send(CommonMessageType::PING, &msg);
+        Result rst;
+        this->channel->send(CommonMessageType::PING, &msg, rst);
     }
     void command(String cmd) override {
-        this->channel->send(CommonMessageType::CMD, &cmd);
+        Result rst;
+        this->channel->send(CommonMessageType::CMD, &cmd, rst);
     }
 };
 

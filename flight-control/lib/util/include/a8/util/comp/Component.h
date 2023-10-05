@@ -51,7 +51,7 @@ namespace a8::util::comp {
  *      The stageTo method is executed recursively into each child and finally get the whole components
  *      tree into the destination stage.
  *
- *  6. If you want a component running in a new thread. You need:
+ *  6. If your component to be running in a thread. 
  *      - Implement the run() method.
  *      - Set the rate, frequency in HZ, to a non zero value.
  *      - Make sure the root component is an Application component.
@@ -66,11 +66,11 @@ namespace a8::util::comp {
 class Component {
 
 protected:
-    Attributes *attributes;
     Logger *logger;
     LoggerFactory *loggerFactory;
     Buffer<Component *> *children;
     Stage stage;
+    String path; //
     String name;
     Rate rate; // in mHz = 0.001Hz
 
@@ -99,14 +99,45 @@ public:
     }
 
     ~Component() {
-        if (this->attributes != 0) {
-            delete[] attributes;
-            attributes = 0;
+        //
+        String this_;
+        this_ << this;
+
+        log(String() << ">>~Component(),this is:(" << this_ << ").");
+        Buffer<Component *> tmp;
+        tmp.append(this->children);
+
+        for (int i = tmp.length() - 1; i >= 0; i--) {
+            Component *com = tmp.get(i);
+            String com_;
+            com_ << com;
+            log(String() << ">>before deleteChild(),child is:(" << com_ << ").");
+            deleteChild(com);
+            log(String() << "<<after deleteChild(),child is:(" << com_ << ").");
         }
+        delete this->children;
+        log(String() << "<<~Component(),this is(" << this_ << ").");
     }
+
+    void deleteChild(Component *child) {
+        String child_;
+        child_ << child;
+        log(String() << ">>deleteChild()(" << child_ << ") from parent(" << this << ").");
+        int ret = this->removeChild(child);
+        log(String() << ">>deleteChild()>>removeChild()");
+        if (ret < 0) {
+            String msg;
+            msg << "no such child:" << child << " of parent:" << this;
+            log(msg);
+            Assert::illegalArgument(msg);
+        }
+        log(String() << ">>deleteChild()>>delete child");
+        delete child;
+        log(String() << "<<deleteChild()(" << child_ << ") from parent(" << this << ").");
+    }
+
     void init(const String &name) {
         this->children = new Buffer<Component *>();
-        this->attributes = 0;
         this->logger = 0;
         this->stage = Zero;
         this->name = name;
@@ -129,7 +160,8 @@ public:
     }
 
     Component *findComponent(String &path) {
-        Buffer<String> names = path.split('/');
+
+        Buffer<String> names = StringUtil::split(path, '/');
         return findComponent(names, 0);
     }
 
@@ -174,14 +206,17 @@ public:
         getLogger()->info(msg);
     }
 
-    virtual Component *addChild(Component *com) {
-        this->children->append(com);
-        return this;
+    int removeChild(Component *com) {
+        int ret = this->children->removeEle(com);
+        return ret;
     }
 
     Component *addChild(StagingContext *context, Component *com) {
         com->stageTo(this->stage, context);
-        this->addChild(com);
+        this->children->append(com);
+
+        com->path = StringUtil::buildStr(*context->getPath(), '/');
+
         return this;
     }
 

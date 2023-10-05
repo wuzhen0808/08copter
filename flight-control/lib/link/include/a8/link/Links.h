@@ -6,7 +6,6 @@
 #include "a8/link/stub/FcStub.h"
 #include "a8/link/stub/GsStub.h"
 
-#include "a8/link/SimpleCodec.h"
 #include "a8/util/net.h"
 
 using namespace a8::util::net;
@@ -28,17 +27,18 @@ class Links {
 
 public:
     Links(Sockets *sockets) {
-        Codec *codec = new SimpleCodec();
+        SimpleCodec *codec = new SimpleCodec();
+
+        // register codecs
+        codec->add(CommonMessageType::PING, CodecFunc::writeString, CodecFunc::readString);
+        codec->add(CommonMessageType::LOG, CodecFunc::writeString, CodecFunc::readString);
+        codec->add(CommonMessageType::CMD, CodecFunc::writeString, CodecFunc::readString);
+        
         network = new Network(sockets, codec, 0); //
 
         // register address
         this->gsAddress = network->add(host, gsPort);
         this->fcAddress = network->add(host, fcsPort);
-
-        // register codecs
-        network->add(CommonMessageType::PING, Functions::encodeString, Functions::decodeString);
-        network->add(CommonMessageType::LOG, Functions::encodeString, Functions::decodeString);
-        network->add(CommonMessageType::CMD, Functions::encodeString, Functions::decodeString);
     }
 
     int getStub(FcApi *&api, Result &errorMessage) {

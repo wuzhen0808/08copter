@@ -12,23 +12,24 @@ namespace a8::link {
 class GsStub : public GsApi {
 
 protected:
-    Channel* channel;
+    Channel *channel;
 
 public:
-    
-    GsStub(Channel* channel) {
+    GsStub(Channel *channel) {
         this->channel = channel;
     }
 
     // check if the GS responsible or not.
     void ping(String msg) override {
-        this->channel->send(CommonMessageType::PING, &msg);
+        Result rst;
+        this->channel->send(CommonMessageType::PING, &msg, rst);
     }
 
     // send log message to GS.
     void log(String msg) override {
-        this->channel->send(CommonMessageType::LOG, &msg);
+        Result rst;
+        this->channel->send(CommonMessageType::LOG, &msg, rst);
     }
 };
 
-} // namespace a8::net
+} // namespace a8::link

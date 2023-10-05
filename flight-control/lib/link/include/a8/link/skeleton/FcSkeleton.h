@@ -16,16 +16,17 @@ public:
         FcSkeleton *fcs = static_cast<FcSkeleton *>(context);
         switch (type) {
         case CommonMessageType::PING:
-            fcs->ping(*static_cast<String *>(data));
+            String *pData = static_cast<String *>(data);
+            fcs->ping(*pData);
+            delete pData;
             break;
-
         }
+        delete fcs;
     }
 
 public:
     FcSkeleton() {
     }
-    
 };
 
 } // namespace a8::link

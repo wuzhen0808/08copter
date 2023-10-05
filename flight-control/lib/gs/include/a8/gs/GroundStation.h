@@ -12,35 +12,38 @@ class ChannelRunner : public Component {
 public:
     static void run(void *runner) {
         ChannelRunner *cr = static_cast<ChannelRunner *>(runner);
-        cr->run();
+        //cr->run();
     }
     Channel *channel;
     FcStub *fcStub;
-    GsSkeleton *skeleton;
-    ChannelRunner(Channel *ch, FcStub *fcStub, GsSkeleton *skeleton) : Component("channelRunnerX") {
+    GsNetImp *skeleton;
+    ChannelRunner(Channel *ch, FcStub *fcStub) : Component("channelRunnerX") {
         this->channel = ch;
-        this->fcStub = fcStub;
-        this->skeleton = skeleton;
-    }
-    ~ChannelRunner() {
-        delete channel;
-        delete fcStub;
-        delete skeleton;
+        this->fcStub = fcStub;        
     }
 
-    void run() {
-        while (true) {
-            int ret = channel->receive(1);
-            if (ret < 0) {
-                break;
-            }
-            if (ret == 0) {
-                break;
-            }
-            fcStub->ping("hello, ack.");
-        }
-        log("Channel Runner Exited");
-    }
+    // ~ChannelRunner() {
+    //     log(String()<<">>~ChannelRunner() ");
+    //     delete channel;
+    //     log(String()<<" after delete channel, ~ChannelRunner() ");
+    //     delete fcStub;        
+    //     log(String()<<"<<~ChannelRunner() ");
+    // }
+
+    // void run() {
+    //     Result rst;
+    //     while (true) {
+    //         int ret = channel->receive(1, rst);
+    //         if (ret < 0) {
+    //             break;
+    //         }
+    //         if (ret == 0) {
+    //             break;
+    //         }
+    //         fcStub->ping("hello, ack.");
+    //     }
+    //     log("Channel Runner Exited");
+    // }
 };
 class GroundStation : public Component {
 
@@ -63,7 +66,7 @@ public:
 
         // open dashboard
         this->dashboard = new Dashboard();
-        this->addChild(this->dashboard);
+        this->addChild(context, this->dashboard);
         // waiting fcs to connect
         Result rst;
         int ret = links->bindGs(rst);
@@ -85,26 +88,35 @@ public:
             FcStub *fcStub = 0;
             Result rst;
             GsNetImp *skeleton = new GsNetImp(this->dashboard);
+            
             int ret = links->acceptGs(ch, fcStub, skeleton, rst);
             if (ret < 0) {
                 log(rst.errorMessage);
                 break;
             }
             log("A new GS client connected in, we treat it as a FcStub.");
+            Component * cm1 = new Component("tmp");
 
-            ChannelRunner *cr = new ChannelRunner(ch, fcStub, skeleton);
+            ChannelRunner *cr = new ChannelRunner(ch, fcStub);
+            //cr->addChild(ticking->getStaging(), skeleton);
+            cr->addChild(ticking->getStaging(), cm1);
+            cr->stageTo(Boot, ticking->getStaging());
+            
             // TODO manage all the channels.
-            this->addChild(cr);
+            // TODO select chanel and avoid multiple runner thread.
+            //this->addChild(ticking->getStaging(), cr);
 
-            while (true) {
-                int ret = cr->channel->receive();
-                if (ret < 0) {
-                    //
-                    log(String() << "exit the receive loop of the client connection, ret:" << ret);
-                    delete cr;
-                    break;
-                }
-            }
+            // while (true) {
+            //     int ret = cr->channel->receive(rst);
+            //     if (ret < 0) {
+            //         //
+            //         log(String() << "exit the receive loop of the client connection, ret:" << ret);
+                    
+            //         break;
+            //     }
+            // }
+            //this->deleteChild(cr);
+            //delete cr;
         }
         log("Warning: GS net accepter exited.");
     }

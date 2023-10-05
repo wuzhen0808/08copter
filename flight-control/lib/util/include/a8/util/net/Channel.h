@@ -36,29 +36,30 @@ public:
         this->writer = new SocketWriter(sockets, sock);
     }
 
-    int send(int type, void *data) {
-        int rst = codecs_->write(writer, type, data);
-        if (rst < 0) {
-            return rst;
+    int send(int type, void *data, Result& rst) {
+        int ret = codecs_->write(writer, type, data, rst);
+        if (ret < 0) {
+            return ret;
         }
         return 1;
     }
 
-    int receive() {
-        return receive(1);
+    int receive(Result & rst) {
+        return receive(1, rst);
     }
 
-    int receive(int len) {
+    int receive(int len, Result& rst) {
         int received = 0;
         while (received < len && lastResult >= 0) {
             int type = 0;
             void *data = 0;
-            lastResult = codecs_->read(reader, type, data);
+            lastResult = codecs_->read(reader, type, data, rst);
 
             if (lastResult <= 0) {
                 break;
             }
             handle_(type, data, context_);
+            
             received++;
         }
 

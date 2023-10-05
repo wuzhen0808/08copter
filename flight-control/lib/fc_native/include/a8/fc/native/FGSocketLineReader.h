@@ -46,7 +46,7 @@ public:
 
         log(String::format("headerline:'%s',len:%i", headerLine.text(), headerLine.length()));
 
-        Buffer<String> headers = headerLine.split(',');
+        Buffer<String> headers = StringUtil::split(headerLine, ',');
 
         String lastCol = headers.get(headers.length() - 1);
         log(String::format("headers.len:'%i', last col:'%s' ", headers.length(), lastCol));
@@ -78,12 +78,12 @@ public:
 
         String line;
         int read = lReader->readLine(line);
-        if (read <= 0) {            
+        if (read <= 0) {
             return false;
         }
 
         log(String::format("dataline:%s", line.text()));
-        Buffer<String> fields = line.split(',');
+        Buffer<String> fields = StringUtil::split(line, ',');
         data->altitude = readDouble(fields, Col_Altitude);
 
         return true;
@@ -105,4 +105,4 @@ public:
     }
 };
 
-} // namespace a8::hal::native
+} // namespace a8::fc::native

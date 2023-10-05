@@ -19,8 +19,9 @@ public:
     ~StringWriter() {
     }
 
-    virtual void write(const char *buf, int bufLen) override {
+    virtual int write(const char *buf, int bufLen) override {
         str.append(buf, bufLen);
+        return bufLen;
     };
     
     String toString() {

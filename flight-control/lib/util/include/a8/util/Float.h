@@ -1,6 +1,7 @@
 #pragma once
 #include "a8/util/Math.h"
 #include "a8/util/String.h"
+#include "a8/util/StringUtil.h"
 namespace a8 {
 namespace util {
 using namespace a8::util;
@@ -22,10 +23,11 @@ public:
     template <typename T>
     static Buffer<T> parseAll(String fStr, char sep, T (*converter)(double)) {
 
-        Buffer<String> buf = fStr.split(sep);
+        Buffer<String> buf = StringUtil::split(fStr, sep);
+
         Buffer<T> ret;
-        for (int i = 0; i < buf.length(); i++) {
-            String str = buf.get(i);
+        for (int i = 0; i < buf.len(); i++) {
+            String str = buf[i];
             T dV = parse(str, converter);
             ret.append(dV);
         }

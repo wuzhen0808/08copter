@@ -70,7 +70,7 @@ private:
 
         // command line arguments
         Buffer<String> buf;
-        Buffer<String> &args = String::strings(argc, argv, buf);
+        Buffer<String> args = StringUtil::strings(argc, argv);
         for (int i = 0; i < args.length(); i++) {
             String str = args.get(i);
             if (str.length() > 10000) {
@@ -137,9 +137,10 @@ public:
     }
 
     void run(TickingContext *context) override {
+        Result rst;
         while (true) {
 
-            int ret = this->gsChannel->receive();
+            int ret = this->gsChannel->receive(rst);
             if (ret <= 0) {
                 log(String() << "cannot receive message from gsChannel, got error:" << ret);
             }

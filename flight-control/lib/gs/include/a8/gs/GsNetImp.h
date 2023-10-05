@@ -9,16 +9,16 @@ class GsNetImp : public GsSkeleton, public Component {
     Dashboard *dashboard;
 
 public:
-    GsNetImp(Dashboard *db) : Component("skeleton"){
+    GsNetImp(Dashboard *db) : Component("skeleton") {
         this->dashboard = db;
-    }
+    }    
     void ping(String msg) override {
         log(String() << "on ping message:" << msg);
         dashboard->print(msg);
     }
 
     void log(String msg) override {
-        log(String() << "on log message:" << msg);
+        Component::log(String() << "on log message:" << msg);
         dashboard->print(msg);
     }
 };

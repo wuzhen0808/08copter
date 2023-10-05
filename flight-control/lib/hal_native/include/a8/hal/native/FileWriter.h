@@ -16,13 +16,14 @@ public:
         this->file = file;
     }
 
-    virtual void write(const char *buf, int bufLen) override {
+    virtual int write(const char *buf, int bufLen) override {
         if (!ofstream.is_open()) {
             ofstream.open(file.text(), std::ios::out);            
         }
 
         ofstream.write(buf, bufLen);
         ofstream.flush();
+        return bufLen;
     }
 };
 } // namespace a8::hal::native

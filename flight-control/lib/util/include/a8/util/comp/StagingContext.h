@@ -16,9 +16,9 @@ private:
     String message_;
     bool stop_ = false;
     Buffer<String> *path;
+    System * sys;
 
 public:
-    System * sys;
     Properties *properties;
     Scheduler *scheduler;
     LoggerFactory *loggerFactory;
@@ -30,6 +30,11 @@ public:
         this->path = new Buffer<String>();
         this->sys = sys;
     }
+
+    System * getSys(){
+        return sys;
+    }
+
     Buffer<String> *getPath() {
         return this->path;
     }

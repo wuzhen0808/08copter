@@ -1,12 +1,19 @@
 #pragma once
-#include <iostream>
-
+#include <stdio.h>
 namespace a8::util {
 
 class Lang {
+private:
+    void emptyMethod() const {
+    }
+
 public:
     static const char END_OF_STR = '\0';
-    
+
+    static void illegalArgument(const char *msg) {
+        static_cast<Lang *>(0)->emptyMethod();
+    }
+
     /**
      * Format and append the formatted string to the buffer.
      *
@@ -57,7 +64,7 @@ public:
     }
 
     static void bug() {
-        std::cout << "bug" << std::endl;
+        //std::cout << "bug" << std::endl;
     }
 
     /**

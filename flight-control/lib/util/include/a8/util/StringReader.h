@@ -1,6 +1,7 @@
 #pragma once
 #include "a8/util/Buffer.h"
 #include "a8/util/Reader.h"
+#include "a8/util/String.h"
 
 namespace a8::util {
 
@@ -14,6 +15,9 @@ protected:
 public:
     StringReader(const char *str) {
         buffer.append(str, Lang::strLength(str));
+    }
+    StringReader(const String str) {
+        buffer.append(str.text(), str.len());
     }
 
     ~StringReader() {

@@ -1,4 +1,5 @@
 #pragma once
+#include "a8/util/Assert.h"
 #include "a8/util/Callback3.h"
 #include "a8/util/ForEach.h"
 #include "a8/util/Lang.h"
@@ -7,6 +8,7 @@
 #define DELTA_BUF_CAP (16)
 
 namespace a8::util {
+
 template <typename T>
 class Buffer {
 
@@ -37,7 +39,7 @@ public:
 
     ~Buffer<T>() {
         if (this->buffer_ != 0) {
-            // delete[] this->buffer_;
+            delete[] this->buffer_;
         }
     }
 
@@ -47,9 +49,50 @@ public:
         return this->length_;
     }
 
-    T get(int idx) const;
+    T get(int idx) const {
+        if (idx < 0 || idx > this->length_ - 1) {
+            Assert::illegalArgument("idx out of range.");
+        }
+        return this->buffer_[idx];
+    }
     T *getAll() const;
-    int remove(int from);
+
+    int removeIndexFrom(int from) {
+        int removed = this->length_ - from;
+        if (removed > 0) {
+            this->length_ = from;
+        } else {
+            removed = 0;
+        }
+        return removed;
+    }
+
+    int removeEle(T element) {
+        int idx = this->indexOf(element);
+        if (idx < 0) {
+            return -1;
+        }
+
+        T *buf2 = 0;
+        int len2 = 0;
+        int cap2 = 0;
+
+        int leftLen = idx;
+        int rightLen = this->length_ - idx - 1;
+
+        Lang::append(buf2, len2, cap2, DELTA_BUF_CAP, 0, this->buffer_, 0, leftLen);
+        Lang::append(buf2, len2, cap2, DELTA_BUF_CAP, 0, this->buffer_, idx + 1, rightLen);
+        this->reset(buf2, len2, cap2);
+        return 1;
+    }
+
+    void reset(T *buf, int len, int cap) {
+        T *tmp = this->buffer_;
+        this->buffer_ = buf;
+        this->length_ = len;
+        this->capacity_ = cap;
+        delete tmp;
+    }
 
     bool isEmpty() {
         return this->length_ == 0;
@@ -75,11 +118,14 @@ public:
         return len;
     }
 
-    T *toArray(T *buf) {
+    int toArray(T *buf, int len) {
+        if (len != this->length_) {
+            Assert::illegalArgument("buf length wrong.");
+        }
         for (int i = 0; i < this->length_; i++) {
             buf[i] = this->buffer_[i];
         }
-        return buf;
+        return this->length_;
     }
     void clear() {
         this->length_ = 0;
@@ -95,6 +141,10 @@ public:
 
     Buffer<T> *append(const Buffer<T> &buf) {
         return append(buf.buffer_, 0, buf.length_);
+    }
+
+    Buffer<T> *append(const Buffer<T> *buf) {
+        return append(buf->buffer_, 0, buf->length_);
     }
 
     Buffer<T> *append(const T *elements, const int from, const int len) {
@@ -122,14 +172,16 @@ public:
         this->length_--;
         return 1;
     }
+
+    T operator[](int idx) {
+        if (idx < 0 || idx > this->length_ - 1) {
+            Assert::illegalArgument("idx out of bound.");
+        }
+        return this->buffer_[idx];
+    }
 };
 
 // implementation
-
-template <typename T>
-T Buffer<T>::get(int idx) const {
-    return this->buffer_[idx];
-}
 
 template <typename T>
 int Buffer<T>::length() const {
@@ -139,17 +191,6 @@ int Buffer<T>::length() const {
 template <typename T>
 T *Buffer<T>::getAll() const {
     return this->buffer_;
-}
-
-template <typename T>
-int Buffer<T>::remove(int from) {
-    int removed = this->length_ - from;
-    if (removed > 0) {
-        this->length_ = from;
-    } else {
-        removed = 0;
-    }
-    return removed;
 }
 
 } // namespace a8::util

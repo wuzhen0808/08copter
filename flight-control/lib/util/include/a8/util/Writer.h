@@ -10,34 +10,32 @@ public:
 
     ~Writer() {
     }
-    void write(const char ch) {
-        write(&ch, 1);
-    }
-    void write(const char *str) {
-        writeUntil(str, Lang::END_OF_STR);
+    int write(const char ch) {
+        return write(&ch, 1);
     }
 
-    void writeUntil(const char *buf, char til) {
+    int writeUntil(const char *buf, char til) {
+        int ret = 0;
         for (int i = 0;; i++) {
             if (buf[i] == til) {
                 break;
             }
-            write(buf, 1);
+
+            ret += write(buf, 1);
         }
+        return ret;
     }
-    void write(String str) {
-        write(str.text(), str.length());
+    int write(String str) {
+        return write(str.text(), str.length());
     }
 
-    virtual void write(const char *buf, int bufLen) = 0;
+    virtual int write(const char *buf, int bufLen) = 0;
+
     Writer &operator<<(const char ch) {
         write(ch);
         return *this;
     }
-    Writer &operator<<(const char *str) {
-        write(str);
-        return *this;
-    }
+
     Writer &operator<<(const String str) {
         write(str);
         return *this;

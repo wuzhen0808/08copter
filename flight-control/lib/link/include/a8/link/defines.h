@@ -11,20 +11,4 @@ static const int LOG = 2;
 static const int CMD = 3;
 }; // namespace MessageType
 
-
-namespace Functions {
-static int encodeString(void *string, char *&buf) {
-    String *str = static_cast<String *>(string);
-    int len;
-    int cap = 0;
-    Lang::appendStr(buf, len, cap, 128, str->text(), 0, str->length());
-    return len;
-}
-
-static void *decodeString(char *buf, int len) {
-    String *str = new String(buf, len);
-    return str;
-}
-}; // namespace Functions
-
 } // namespace a8::net

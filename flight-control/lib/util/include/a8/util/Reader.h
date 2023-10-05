@@ -24,6 +24,9 @@ public:
      * <0: error code.
      */
     virtual int read(char *buf, int bufLen) = 0;
+    int read(char& ch){        
+        return read(&ch, 1);
+    }
 };
 
 } // namespace a8::util

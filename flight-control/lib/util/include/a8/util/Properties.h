@@ -57,8 +57,9 @@ public:
         Buffer<String> ret;
         if (type != PT_STRING) {
             return ret;
-        }
-        return value.split(',');
+        }        
+        ret = StringUtil::split(value, ',');        
+        return ret;
     }
 
     float getFloat(float defValue) {
