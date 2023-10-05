@@ -8,42 +8,43 @@ using namespace a8::util;
 using namespace a8::util::net;
 using namespace a8::util::comp;
 namespace a8::gs {
-class ChannelRunner : public Component {
+class ChannelRunner : public FlyWeight {
 public:
     static void run(void *runner) {
         ChannelRunner *cr = static_cast<ChannelRunner *>(runner);
-        //cr->run();
+        cr->run();
     }
     Channel *channel;
     FcStub *fcStub;
     GsNetImp *skeleton;
-    ChannelRunner(Channel *ch, FcStub *fcStub) : Component("channelRunnerX") {
+    ChannelRunner(Channel *ch, GsNetImp *skeleton, FcStub *fcStub, LoggerFactory *logFac) : FlyWeight(logFac) {
         this->channel = ch;
-        this->fcStub = fcStub;        
+        this->fcStub = fcStub;
+        this->skeleton = skeleton;
     }
 
-    // ~ChannelRunner() {
-    //     log(String()<<">>~ChannelRunner() ");
-    //     delete channel;
-    //     log(String()<<" after delete channel, ~ChannelRunner() ");
-    //     delete fcStub;        
-    //     log(String()<<"<<~ChannelRunner() ");
-    // }
+    ~ChannelRunner() {
+        log(String() << ">>~ChannelRunner() ");
+        delete channel;
+        delete fcStub;
+        delete skeleton;
+        log(String() << "<<~ChannelRunner() ");
+    }
 
-    // void run() {
-    //     Result rst;
-    //     while (true) {
-    //         int ret = channel->receive(1, rst);
-    //         if (ret < 0) {
-    //             break;
-    //         }
-    //         if (ret == 0) {
-    //             break;
-    //         }
-    //         fcStub->ping("hello, ack.");
-    //     }
-    //     log("Channel Runner Exited");
-    // }
+    void run() {
+        Result rst;
+        while (true) {
+            int ret = channel->receive(1, rst);
+            if (ret < 0) {
+                break;
+            }
+            if (ret == 0) {
+                break;
+            }
+            fcStub->ping("hello, ack.");
+        }
+        log("Channel Runner Exited");
+    }
 };
 class GroundStation : public Component {
 
@@ -87,36 +88,32 @@ public:
             Channel *ch = 0;
             FcStub *fcStub = 0;
             Result rst;
-            GsNetImp *skeleton = new GsNetImp(this->dashboard);
-            
+            GsNetImp *skeleton = new GsNetImp(this->dashboard, this->loggerFactory);
+
             int ret = links->acceptGs(ch, fcStub, skeleton, rst);
             if (ret < 0) {
+                delete skeleton;
                 log(rst.errorMessage);
                 break;
             }
-            log("A new GS client connected in, we treat it as a FcStub.");
-            Component * cm1 = new Component("tmp");
 
-            ChannelRunner *cr = new ChannelRunner(ch, fcStub);
-            //cr->addChild(ticking->getStaging(), skeleton);
-            cr->addChild(ticking->getStaging(), cm1);
-            cr->stageTo(Boot, ticking->getStaging());
-            
+            log("A new GS client connected in, we treat it as a FcStub.");
+
+            ChannelRunner *cr = new ChannelRunner(ch, skeleton, fcStub, this->loggerFactory);
+
             // TODO manage all the channels.
             // TODO select chanel and avoid multiple runner thread.
-            //this->addChild(ticking->getStaging(), cr);
 
-            // while (true) {
-            //     int ret = cr->channel->receive(rst);
-            //     if (ret < 0) {
-            //         //
-            //         log(String() << "exit the receive loop of the client connection, ret:" << ret);
-                    
-            //         break;
-            //     }
-            // }
-            //this->deleteChild(cr);
-            //delete cr;
+            while (true) {
+                int ret = cr->channel->receive(rst);
+                if (ret < 0) {
+                    //
+                    log(String() << "exit the receive loop of the client connection, ret:" << ret);
+
+                    break;
+                }
+            }
+            delete cr;
         }
         log("Warning: GS net accepter exited.");
     }

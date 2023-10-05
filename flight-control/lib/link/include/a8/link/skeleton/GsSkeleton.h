@@ -1,8 +1,7 @@
 #pragma once
-#include "a8/link/defines.h"
 #include "a8/link/GsApi.h"
-#include "a8/link/stub/GsStub.h"
 #include "a8/link/defines.h"
+#include "a8/link/stub/GsStub.h"
 #include "a8/util.h"
 
 using namespace a8::util;
@@ -24,10 +23,17 @@ public:
             break;
         }
     }
-    
+
     GsSkeleton() {
+    }
+    virtual ~GsSkeleton() {
         
     }
+    // check if the GS responsible or not.
+    virtual void ping(String msg) = 0;
+
+    // send log message to GS.
+    virtual void log(String msg) = 0;
 };
 
-} // namespace a8::net
+} // namespace a8::link

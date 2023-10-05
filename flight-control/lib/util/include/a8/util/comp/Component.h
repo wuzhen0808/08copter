@@ -98,7 +98,7 @@ public:
         this->init(name);
     }
 
-    ~Component() {
+    virtual ~Component() {
         //
         String this_;
         this_ << this;

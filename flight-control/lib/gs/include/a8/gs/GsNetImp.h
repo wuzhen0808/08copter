@@ -5,20 +5,25 @@ using namespace a8::link;
 
 namespace a8::gs {
 
-class GsNetImp : public GsSkeleton, public Component {
+class GsNetImp : public GsSkeleton {
     Dashboard *dashboard;
-
+    LoggerFactory * loggerFactory;
+    Logger * logger;
 public:
-    GsNetImp(Dashboard *db) : Component("skeleton") {
+    GsNetImp(Dashboard *db, LoggerFactory * logFac) {
         this->dashboard = db;
-    }    
+        this->loggerFactory = logFac;
+        this->logger = logFac->getLogger("gsNetImpl");
+    }
+    ~GsNetImp() {
+    }
     void ping(String msg) override {
         log(String() << "on ping message:" << msg);
         dashboard->print(msg);
     }
 
     void log(String msg) override {
-        Component::log(String() << "on log message:" << msg);
+        logger->info(String() << "on log message:" << msg);
         dashboard->print(msg);
     }
 };
