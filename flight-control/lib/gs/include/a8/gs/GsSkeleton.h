@@ -7,10 +7,14 @@ namespace a8::gs {
 
 class GsSkeleton : public GsApi {
     Dashboard *dashboard;
-    LoggerFactory * loggerFactory;
-    Logger * logger;
+    LoggerFactory *loggerFactory;
+    Logger *logger;
+
 public:
-    GsSkeleton(Dashboard *db, LoggerFactory * logFac) {
+    static void release(void *skeleton) {
+        delete static_cast<GsApi *>(skeleton);
+    }
+    GsSkeleton(Dashboard *db, LoggerFactory *logFac) {
         this->dashboard = db;
         this->loggerFactory = logFac;
         this->logger = logFac->getLogger("gsNetImpl");

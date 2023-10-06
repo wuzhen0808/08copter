@@ -17,7 +17,5 @@ public:
     virtual void endSchedule() = 0;
     virtual Thread *schedule(FuncType::run run, void * context) = 0;
     virtual Timer *scheduleTimer(FuncType::run run, void * context, const Rate& ticks) = 0;
-
-    virtual Thread *getCurrentThread() = 0;
 };
 } // namespace a8::util

@@ -10,50 +10,54 @@ using namespace a8::util::comp;
 
 namespace a8::gs {
 
-class Dashboard : public Component {
-    LineReader *lr;
+class Dashboard : public FlyWeight {
+    LineReader *lr = 0;
+    NcursesReader *nr = 0;
 
 public:
-    Dashboard() : Component("dashboard") {
-        this->rate = Rate::ForEver;
-        lr = new LineReader(new NcursesReader());
+    Dashboard(LoggerFactory *logFac) : FlyWeight(logFac) {
     }
 
-    void setup(StagingContext *context) {
-        //initscr();
-        //echo();
-        //cbreak();
-        //keypad(stdscr, TRUE);
-        //print("a8 Ground Station");
-        //refresh();
+    void open() {
+        initscr();
+        echo();
+        cbreak();
+        keypad(stdscr, TRUE);
+        print("a8 Ground Station");
+        refresh();
+        nr = new NcursesReader();
+        lr = new LineReader(nr);
     }
 
-    void xrun(TickingContext *context) {
-        while (true) {
+    void close() {
 
-            String cmd;
-            int len = lr->readLine(cmd);
-            if (len <= 0) {
-                log("error when read command from ncurses.");
-                break;
-            }
-            if (cmd == "quit" || cmd=="exit") {
-                log("quit from gs.");
-                break;
-            } else if (cmd == "endwin") {
-                endwin();
-            } else if (cmd == "ping fc") {
-                
-            } else {
-            }
+        endwin();
+
+        if (nr != 0) {
+            delete nr;
+        }
+        if (lr != 0) {
+            delete lr;
         }
     }
-    void print(String msg) {
-        //printw(msg.text());
+    
+    template <typename T>
+    int receive(int len, void (*handle)(T, String), T *context, Result &rst) {
+        int len_ = 0;
+        int ret = -1;
+        while (len == -1 || len_ < len) {
+            String cmd;
+            ret = lr->readLine(cmd, rst);
+            if (ret < 0) {
+                break;
+            }
+            handle(context, cmd);
+        }
+        return ret;
     }
 
-    void shutdown(StagingContext *context) {
-        //endwin();
+    void print(String msg) {
+        printw(msg.text());
     }
 };
 

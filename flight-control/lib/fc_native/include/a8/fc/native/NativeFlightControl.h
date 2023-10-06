@@ -36,10 +36,10 @@ private:
     int argc;
     char **argv;
     //
-    
-    Network *links;
-    FcSkeleton * skeleton;
-    Channel<FcApi,GsApi> * gsChannel;
+
+    Links *links;
+    FcSkeleton *skeleton;
+    Bridge *gsBridge;
     String resolveConfFile(Properties &pts) {
 
         String fpath = pts.getString(a8_properties, "");
@@ -101,7 +101,7 @@ protected:
     }
 
 public:
-    NativeFlightControl(int argc, char **argv, Network *links, Sockets *sockets) : FlightControl("fcs", 4) {
+    NativeFlightControl(int argc, char **argv, Links *links, Sockets *sockets) : FlightControl("fcs", 4) {
         this->sockets = sockets;
         this->links = links;
         this->argc = argc;
@@ -118,16 +118,16 @@ public:
     virtual void populate(StagingContext *context) override {
         this->addChild(context, new WrapperComponent<Sockets>(sockets));
         skeleton = new FcSkeleton(context->loggerFactory);
-        
+
         Result rst;
-        int ret = this->links->gsAddress()->connect<FcApi,GsApi>(this->gsChannel, skeleton, GsStub::create, GsStub::release, rst);
+        int ret = this->links->gsAddress()->connect(this->gsBridge, skeleton, FcSkeleton::release, GsStub::create, GsStub::release, rst);
         if (ret < 0) {
             context->stop(rst);
             return;
         }
         log("successfully connect to gsApi");
-        
-        this->gsChannel->getStub()->ping("hello, gs,this is fc.");
+
+        this->gsBridge->getStub<GsApi>()->ping("hello, gs,this is fc.");
 
         jio = new JSBSimIO(sockets);
         this->addChild(context, jio);
@@ -138,15 +138,6 @@ public:
     }
 
     void run(TickingContext *context) override {
-        Result rst;
-        while (true) {
-
-            int ret = this->gsChannel->receive(rst);
-            if (ret <= 0) {
-                log(String() << "cannot receive message from gsChannel, got error:" << ret);
-            }
-        }
-        log("receive thread for gsChannel exited.");
     }
 
     void setup(StagingContext *context) override {

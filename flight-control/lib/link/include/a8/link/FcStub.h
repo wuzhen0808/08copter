@@ -11,18 +11,18 @@ namespace a8::link {
 
 // Stub to flight control system.
 class FcStub : public FcApi {
-    Channel<GsApi, FcApi> *channel;
+    Channel *channel;
 
 public:
-    static FcApi *create(Channel<GsApi, FcApi> *channel) {
+    static void *create(Channel *channel) {
         return new FcStub(channel);
     }
 
-    static void release(FcApi *stub) {
-        delete stub;
+    static void release(void *stub) {
+        delete static_cast<FcStub *>(stub);
     }
 
-    FcStub(Channel<GsApi, FcApi> *channel) {
+    FcStub(Channel *channel) {
         this->channel = channel;
     }
     void ping(String msg) override {

@@ -4,15 +4,16 @@
 #include "a8/link/defines.h"
 #include "a8/util/net.h"
 
+using namespace a8::util::net;
+
 namespace a8::link {
 
 /**
  *  Network is a utility wrapper on top of socket.
  *
  */
-class Network {
+class Links : public Network {
 
-    Sockets *sockets;
     SimpleCodec *codec;
     //
     String host = "127.0.0.1";
@@ -23,18 +24,17 @@ class Network {
     Address *gsAddress_;
 
 public:
-        
-    Network(Sockets *sockets) {
-
-        this->sockets = sockets;
-        codec = new SimpleCodec();
+    static Codec *buildCodec() {
+        SimpleCodec *codec = new SimpleCodec();
         // register codecs
         codec->add(CommonMessageType::PING, CodecFunc::writeString, CodecFunc::readString);
         codec->add(CommonMessageType::LOG, CodecFunc::writeString, CodecFunc::readString);
         codec->add(CommonMessageType::CMD, CodecFunc::writeString, CodecFunc::readString);
-
-        this->gsAddress_ = new Address(this->sockets, this->codec, GsBridge::bridge, host, gsPort);
-        this->fcAddress_ = new Address(this->sockets, this->codec, FcBridge::bridge, host, fcPort);
+        return codec;
+    }
+    Links(Sockets *sockets, Scheduler *scheduler, LoggerFactory *logFac) : Network(sockets, buildCodec(), scheduler, logFac) {
+        this->gsAddress_ = address(GsBridge::bridge, host, gsPort);
+        this->fcAddress_ = address(FcBridge::bridge, host, fcPort);
     }
 
     Address *gsAddress() {

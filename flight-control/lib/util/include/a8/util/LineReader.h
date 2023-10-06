@@ -2,6 +2,7 @@
 #include "a8/util/Buffer.h"
 #include "a8/util/Reader.h"
 #include "a8/util/String.h"
+#include "a8/util/Result.h"
 
 namespace a8::util {
 /**
@@ -56,7 +57,12 @@ public:
      *
      */
     int readLine(String &ret) {
-        return readLine(ret, true);
+        Result rst;
+        return readLine(ret, true, rst);
+    }
+
+    int readLine(String &ret, Result &rst) {
+        return readLine(ret, true, rst);
     }
 
     /**
@@ -71,6 +77,11 @@ public:
      * - <0,  some error.
      */
     int readLine(String &line, bool appendSeparator) {
+        Result rst;
+        return readLine(line, appendSeparator, rst);
+    }
+
+    int readLine(String &line, bool appendSeparator, Result &rst) {
         int thisResult = 0;
         bool found = false;
         while (true) {

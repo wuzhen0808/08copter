@@ -12,12 +12,12 @@ namespace a8::gs {
 class GroundStation : public Component {
 
     Dashboard *dashboard;
-    Network *network;
+    Links *network;
     FcApi *fcApi;
     Address *gsAddress;
 
 public:
-    GroundStation(int argc, char **argv, Network *network) : Component("gs") {
+    GroundStation(int argc, char **argv, Links *network) : Component("gs") {
         this->network = network;
         this->rate = Rate::ForEver;
     }
@@ -30,8 +30,7 @@ public:
         Component::setup(context);
 
         // open dashboard
-        this->dashboard = new Dashboard();
-        this->addChild(context, this->dashboard);
+        this->dashboard = new Dashboard(context->loggerFactory);
         this->gsAddress = network->gsAddress();
 
         // waiting fcs to connect
@@ -47,25 +46,29 @@ public:
         }
         log("listening connect in on port of gs.");
     }
-
+    static void release() {
+    }
     void run(TickingContext *ticking) override {
+
         log("GS net accepter running...");
         while (true) {
-            Channel<GsApi, FcApi> *channel = 0;
-
-            GsApi *skeleton = new GsSkeleton(this->dashboard, this->loggerFactory);
+            Bridge *bridge = 0;
             Result rst;
-            int ret = gsAddress->accept<GsApi, FcApi>(channel, skeleton, FcStub::create, FcStub::release, rst);
+            int ret = gsAddress->accept(
+                bridge,
+                new GsSkeleton(this->dashboard, this->loggerFactory), GsSkeleton::release, //
+                FcStub::create, FcStub::release,                                           //
+                rst                                                                        //
+            );
+
             if (ret < 0) {
-                delete skeleton;
                 log(rst.errorMessage);
                 break;
             }
-            log("A new GS client connected in, we treat it as a FcStub.");
-
-            delete channel;
+            log("A new GS client connected in.");
         }
-        log("Warning: GS net accepter exited.");
+
+        log("Warning: GS main loop exit.");
     }
 
     void shutdown(StagingContext *context) override {

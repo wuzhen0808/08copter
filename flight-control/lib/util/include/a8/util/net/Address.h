@@ -1,16 +1,21 @@
 #pragma once
 #include "a8/util.h"
+#include "a8/util/net/Bridge.h"
 #include "a8/util/net/Channel.h"
 #include "a8/util/net/Codec.h"
 #include "a8/util/net/Sockets.h"
 #include "a8/util/net/defines.h"
+#include "a8/util/thread.h"
+
+using namespace a8::util::thread;
+using stubCreate = void *(*)(Channel *);
+using anyRelease = void (*)(void *);
 
 namespace a8::util::net {
 enum Status {
     Idle,
     Bond,
     Listening
-
 };
 
 class Address {
@@ -19,6 +24,8 @@ private:
     Codec *codec;
     String host;
     int port;
+    Scheduler *scheduler;
+    LoggerFactory *loggerFactory;
 
     SOCK sock;
     Status status;
@@ -31,13 +38,15 @@ public:
      *
      */
 
-    Address(Sockets *sockets, Codec *codec, bridge bridge, String host, int port) {
+    Address(Sockets *sockets, Codec *codec, bridge bridge, String host, int port, Scheduler *scheduler, LoggerFactory *loggerFactory) {
         this->sockets = sockets;
         this->codec = codec;
         this->host = host;
         this->port = port;
         this->bridge_ = bridge;
         this->status = Idle;
+        this->scheduler = scheduler;
+        this->loggerFactory = loggerFactory;
     }
 
     int bind(Result &errorMessage) {
@@ -79,8 +88,8 @@ public:
     /**
      * Double ways, sending and receiving.
      */
-    template<typename K, typename S>
-    int connect(Channel<K, S> *&channel, K *skeleton, S *(*stubCreate)(Channel<K, S> *), void (*stubRelease)(S *), Result &res) {
+
+    int connect(Bridge *&bridge, void *skeleton, anyRelease skeletonReleaseF, stubCreate stubCreateF, anyRelease stubReleaseF, Result &res) {
         if (this->status != Idle) {
             return -1;
         }
@@ -98,15 +107,29 @@ public:
             return rst;
         }
         // client mode.
-        channel = new Channel<K, S>(sockets, sock, codec, bridge_, skeleton, stubCreate, stubRelease);
+        Channel *channel = new Channel(sockets, sock, codec);
+        bridge = createBridge(skeleton, skeletonReleaseF, stubCreateF, stubReleaseF, channel);
         return rst;
+    }
+
+    Bridge *createBridge(void *skeleton, anyRelease skeletonReleaseF, stubCreate stubCreateF, anyRelease stubReleaseF, Channel *channel) {
+
+        void *stub = stubCreateF(channel);
+        Bridge *bridge = new Bridge(bridge_, skeleton, skeletonReleaseF, stub, stubReleaseF, channel, loggerFactory);
+        scheduler->schedule(
+            [](void *bridge) {
+                static_cast<Bridge *>(bridge)->run();
+                delete static_cast<Bridge *>(bridge); // release all object, bridge,channel,stub,skelton.
+            },                                        //
+            bridge                                    //
+        );
+        return bridge;
     }
 
     /**
      * Blocking until new connection come in.
      */
-    template <typename K, typename S>
-    int accept(Channel<K, S> *&channel, K *skeleton, S *(*stubCreate)(Channel<K, S> *), void (*stubRelease)(S *), Result &rst) {
+    int accept(Bridge *&bridge, void *skeleton, anyRelease skeletonReleaseF, stubCreate stubCreateF, anyRelease stubReleaseF, Result &rst) {
 
         if (this->status != Listening) {
             rst.errorMessage << "Could not accept connection on address" << this << ",not listening yet.";
@@ -122,7 +145,9 @@ public:
             rst.errorMessage << "cannot accept socket on address:" << this->host << ":" << this->port;
             return ret;
         }
-        channel = new Channel<K, S>(sockets, sock2, codec, bridge_, skeleton, stubCreate, stubRelease);
+        Channel *channel = new Channel(sockets, sock2, codec);
+
+        bridge = createBridge(skeleton, skeletonReleaseF, stubCreateF, stubReleaseF, channel);
         return ret;
     }
 

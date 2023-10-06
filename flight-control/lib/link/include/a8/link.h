@@ -1,8 +1,9 @@
 #pragma once
+//clang-format off
 #include "a8/link/defines.h"
+//clang-format on
 #include "a8/link/FcApi.h"
-#include "a8/link/GsApi.h"
 #include "a8/link/FcStub.h"
+#include "a8/link/GsApi.h"
 #include "a8/link/GsStub.h"
-
-#include "a8/link/Network.h"
+#include "a8/link/Links.h"

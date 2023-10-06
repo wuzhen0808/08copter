@@ -13,18 +13,18 @@ namespace a8::link {
 class GsStub : public GsApi {
 
 protected:
-    Channel<FcApi, GsApi> *channel;
+    Channel *channel;
 
 public:
-    static GsApi *create(Channel<FcApi, GsApi> *channel) {
+    static void *create(Channel *channel) {
         return new GsStub(channel);
     }
-    
-    static void release(GsApi * stub) {
-        delete stub;
+
+    static void release(void *stub) {
+        delete static_cast<GsStub *>(stub);
     }
 
-    GsStub(Channel<FcApi, GsApi> *channel) {
+    GsStub(Channel *channel) {
         this->channel = channel;
     }
 

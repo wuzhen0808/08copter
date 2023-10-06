@@ -13,23 +13,25 @@ namespace a8::hal::freertos {
 #define DEFAULT_THREAD_NAME ("My Thread")
 
 class FreeRtosThread : public Thread {
+    using run = void (*)(void *);
+
 private:
     static const int LOCAL_THIS = 0;
     static const int STACK_DEPTH = 521 / 4;
     static const int DEFAULT_PRIORITY = 1;
     TaskHandle_t handle;
-    thread::FuncType::run run;
+
+    run run_;
     void *context;
-
+    
     static void taskFunction(void *pvParameters) {
-
         FreeRtosThread *thread = static_cast<FreeRtosThread *>(pvParameters);
-        thread->run(thread->context);
+        thread->run_(thread->context);
     }
 
 public:
-    static Thread *start(thread::FuncType::run run, void *context) {
-        FreeRtosThread *th_ = new FreeRtosThread(run, context);
+    static Thread *start(run runF, void *context) {
+        FreeRtosThread *th_ = new FreeRtosThread(runF, context);
         th_->start();
         return th_;
     }
@@ -40,8 +42,8 @@ public:
         Thread *thread = static_cast<Thread *>(pv);
         return thread;
     }
-    FreeRtosThread(thread::FuncType::run run, void *context) {
-        this->run = run;
+    FreeRtosThread(run runF, void *context) {
+        this->run_ = runF;
         this->context = context;
     }
     ~FreeRtosThread() {

@@ -10,6 +10,10 @@ namespace a8::fc::native {
 class FcSkeleton : public FcApi, public FlyWeight {
 
 public:
+    static void release(void *skeleton) {
+        delete static_cast<FcSkeleton *>(skeleton);
+    }
+    
     FcSkeleton(LoggerFactory *loggerFactory) : FlyWeight(loggerFactory) {
     }
 

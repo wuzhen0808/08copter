@@ -21,15 +21,17 @@ System *a8::hal::S = new NativeSystem();
 
 int main(int argc, char **argv) {
     Scheduler *sch = new FreeRtosScheduler();
-    Application::start("appGs", new StagingContext(sch,                      //
-                                            new NativeLoggerFactory(), //
-                                            a8::hal::S 
-                                            ),
-                       new GroundStation(argc,                         //
-                                         argv,                         //
-                                         new Network(new NativeSockets() //
-                                                   )                   //
-                                         )                             //
+    LoggerFactory *logFac = new NativeLoggerFactory();
+    Application::start("appGs", new StagingContext(sch,    //
+                                                   logFac, //
+                                                   a8::hal::S),
+                       new GroundStation(argc,                          //
+                                         argv,                          //
+                                         new Links(new NativeSockets(), //
+                                                   sch,                 //
+                                                   logFac               //
+                                                   )                    //
+                                         )                              //
     );
     sch->startSchedule();
 }
