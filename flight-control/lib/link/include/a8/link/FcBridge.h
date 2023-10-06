@@ -1,7 +1,6 @@
 #pragma once
 #include "a8/link/FcApi.h"
 #include "a8/link/defines.h"
-#include "a8/link/stub/FcStub.h"
 #include "a8/util.h"
 
 using namespace a8::util;
@@ -9,11 +8,11 @@ using namespace a8::util;
 namespace a8::link {
 
 // Stub to ground station interface.
-class FcSkeleton : public FcApi {
+class FcBridge {
 
 public:
-    static void handle(int type, void *data, void *context) {
-        FcSkeleton *fcs = static_cast<FcSkeleton *>(context);
+    static void bridge(int type, void *data, void *context) {
+        FcApi *fcs = static_cast<FcApi *>(context);
         switch (type) {
         case CommonMessageType::PING:
             String *pData = static_cast<String *>(data);
@@ -22,10 +21,6 @@ public:
             break;
         }
         delete fcs;
-    }
-
-public:
-    FcSkeleton() {
     }
 };
 

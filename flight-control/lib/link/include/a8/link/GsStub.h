@@ -1,7 +1,8 @@
 #pragma once
-
+#include "a8/link/FcApi.h"
 #include "a8/link/GsApi.h"
-#include "a8/util.h"
+#include "a8/link/defines.h"
+#include "a8/util/net.h"
 
 using namespace a8::util;
 using namespace a8::util::net;
@@ -12,10 +13,18 @@ namespace a8::link {
 class GsStub : public GsApi {
 
 protected:
-    Channel *channel;
+    Channel<FcApi, GsApi> *channel;
 
 public:
-    GsStub(Channel *channel) {
+    static GsApi *create(Channel<FcApi, GsApi> *channel) {
+        return new GsStub(channel);
+    }
+    
+    static void release(GsApi * stub) {
+        delete stub;
+    }
+
+    GsStub(Channel<FcApi, GsApi> *channel) {
         this->channel = channel;
     }
 

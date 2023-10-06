@@ -8,6 +8,8 @@
 #include "a8/util/net/Sockets.h"
 
 namespace a8::util::net {
+using bridge = void (*)(int, void *, void *);
+
 namespace FuncType {
 
 // encode data into the buffer.
@@ -16,9 +18,6 @@ typedef int (*write)(Writer *writer, int type, void *data, Result &rst);
 // decode buffer into data with type.
 typedef int (*read)(Reader *reader, int &type, void *&data, Result &rst);
 
-// handle the incoming message data with a context.
-// the handle function must delete the data after the data is consumed, otherwise this will be a mem leak
-typedef void (*handle)(int type, void *data, void *context);
 } // namespace FuncType
 
 namespace CodecFunc {

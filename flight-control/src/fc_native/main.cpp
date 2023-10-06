@@ -31,7 +31,7 @@ System *a8::hal::S = new NativeSystem();
 int main(int argc, char **argv) {
     Scheduler *sch = new FreeRtosScheduler();
     Sockets *sockets = new NativeSockets();
-    Links *links = new Links(sockets);
+    Network *links = new Network(sockets);
     Application::start("appFc", new StagingContext(sch,                       //
                                                    new NativeLoggerFactory(), //
                                                    a8::hal::S                 //

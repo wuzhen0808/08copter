@@ -1,5 +1,7 @@
 #pragma once
 #include "a8/link/FcApi.h"
+#include "a8/link/GsApi.h"
+#include "a8/link/defines.h"
 #include "a8/util/net.h"
 
 using namespace a8::util;
@@ -9,10 +11,18 @@ namespace a8::link {
 
 // Stub to flight control system.
 class FcStub : public FcApi {
-    Channel *channel;
+    Channel<GsApi, FcApi> *channel;
 
 public:
-    FcStub(Channel *channel) {
+    static FcApi *create(Channel<GsApi, FcApi> *channel) {
+        return new FcStub(channel);
+    }
+
+    static void release(FcApi *stub) {
+        delete stub;
+    }
+
+    FcStub(Channel<GsApi, FcApi> *channel) {
         this->channel = channel;
     }
     void ping(String msg) override {

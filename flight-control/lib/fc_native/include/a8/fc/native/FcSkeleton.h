@@ -7,20 +7,18 @@ using namespace a8::link;
 using namespace a8::util::comp;
 
 namespace a8::fc::native {
-class FcSkeletonImpl : public FcSkeleton, public Component {
+class FcSkeleton : public FcApi, public FlyWeight {
+
 public:
-    FcSkeletonImpl() : Component("skel") {
-        
+    FcSkeleton(LoggerFactory *loggerFactory) : FlyWeight(loggerFactory) {
     }
+
     void ping(String msg) override {
         log(String() << "received ping msg:" << msg);
     }
     void command(String cmd) override {
         // todo.
         log(String() << "received command:" << cmd);
-    }
-
-    void setup(StagingContext *context) override {
     }
 };
 } // namespace a8::fc::native

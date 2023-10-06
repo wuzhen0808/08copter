@@ -2,7 +2,7 @@
 #pragma once
 #include "a8/fc.h"
 #include "a8/fc/FlightControl.h"
-#include "a8/fc/native/FcSkeletonImpl.h"
+#include "a8/fc/native/FcSkeleton.h"
 #include "a8/fc/native/JSBSimIO.h"
 #include "a8/fc/native/NativeAttitudeSensor.h"
 #include "a8/fc/native/NativeServosControl.h"
@@ -36,11 +36,10 @@ private:
     int argc;
     char **argv;
     //
-    GsApi *gsApi;
-    Links *links;
-    FcSkeletonImpl *skeleton;
-    Channel *gsChannel;
-
+    
+    Network *links;
+    FcSkeleton * skeleton;
+    Channel<FcApi,GsApi> * gsChannel;
     String resolveConfFile(Properties &pts) {
 
         String fpath = pts.getString(a8_properties, "");
@@ -102,7 +101,7 @@ protected:
     }
 
 public:
-    NativeFlightControl(int argc, char **argv, Links *links, Sockets *sockets) : FlightControl("fcs", 4) {
+    NativeFlightControl(int argc, char **argv, Network *links, Sockets *sockets) : FlightControl("fcs", 4) {
         this->sockets = sockets;
         this->links = links;
         this->argc = argc;
@@ -118,16 +117,18 @@ public:
 
     virtual void populate(StagingContext *context) override {
         this->addChild(context, new WrapperComponent<Sockets>(sockets));
-        this->skeleton = new FcSkeletonImpl();
-        this->addChild(context, skeleton);
-        Result errorMessage;
-        int rst = this->links->getStub(this->gsChannel, this->gsApi, this->skeleton, errorMessage);
-        if (rst < 0) {
-            context->stop(errorMessage);
+        skeleton = new FcSkeleton(context->loggerFactory);
+        
+        Result rst;
+        int ret = this->links->gsAddress()->connect<FcApi,GsApi>(this->gsChannel, skeleton, GsStub::create, GsStub::release, rst);
+        if (ret < 0) {
+            context->stop(rst);
             return;
         }
         log("successfully connect to gsApi");
-        gsApi->ping("hello, gs,this is fc.");
+        
+        this->gsChannel->getStub()->ping("hello, gs,this is fc.");
+
         jio = new JSBSimIO(sockets);
         this->addChild(context, jio);
         if (context->isStop()) {

@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
                                             ),
                        new GroundStation(argc,                         //
                                          argv,                         //
-                                         new Links(new NativeSockets() //
+                                         new Network(new NativeSockets() //
                                                    )                   //
                                          )                             //
     );

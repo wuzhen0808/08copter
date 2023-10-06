@@ -5,17 +5,17 @@ using namespace a8::link;
 
 namespace a8::gs {
 
-class GsNetImp : public GsSkeleton {
+class GsSkeleton : public GsApi {
     Dashboard *dashboard;
     LoggerFactory * loggerFactory;
     Logger * logger;
 public:
-    GsNetImp(Dashboard *db, LoggerFactory * logFac) {
+    GsSkeleton(Dashboard *db, LoggerFactory * logFac) {
         this->dashboard = db;
         this->loggerFactory = logFac;
         this->logger = logFac->getLogger("gsNetImpl");
     }
-    ~GsNetImp() {
+    ~GsSkeleton() {
     }
     void ping(String msg) override {
         log(String() << "on ping message:" << msg);
