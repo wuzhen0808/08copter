@@ -1,4 +1,5 @@
 #pragma once
+#include "a8/hal.h"
 #include "a8/util/Logger.h"
 #include "a8/util/String.h"
 #include "a8/util/Writer.h"
@@ -21,9 +22,7 @@ public:
     virtual void log(int level, const String &msg) override {
         a8::hal::S->out->println(msg);
         writer->write(msg.text(), msg.length());
-
         writer->write("\n", 1);
-
     };
 };
 

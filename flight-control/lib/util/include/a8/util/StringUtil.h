@@ -16,7 +16,15 @@ public:
     }
 
     // static member funcs
+    static char **toCharArrayArray(Buffer<String> buf) {
+        char **ret = new char *[buf.length()];
+        for (int i = 0; i < buf.len(); i++) {
+            String str = buf[i];
+            Lang::appendStr(ret[i], str.text(), 0, str.len());
+        }
 
+        return ret;
+    }
     static Buffer<String> strings(int argc, char **argv) {
         Buffer<String> ret;
         for (int i = 0; i < argc; i++) {

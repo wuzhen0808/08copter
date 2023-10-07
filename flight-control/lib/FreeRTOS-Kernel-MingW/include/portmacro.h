@@ -29,8 +29,8 @@
 #ifndef PORTMACRO_H
 #define PORTMACRO_H
 
-#include <windows.h>
-#include <winbase.h>
+//#include <windows.h>
+//#include <winbase.h>
 
 /******************************************************************************
     Defines

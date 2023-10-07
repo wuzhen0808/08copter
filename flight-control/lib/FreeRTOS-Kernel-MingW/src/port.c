@@ -28,6 +28,10 @@
 
 /* Standard includes. */
 #include <stdio.h>
+// >> FIX windows typedef conflict
+#include <windows.h>
+#include <winbase.h>
+// << FIX
 
 /* Scheduler includes. */
 #include "FreeRTOS.h"

@@ -64,7 +64,21 @@ public:
     }
 
     static void bug() {
-        //std::cout << "bug" << std::endl;
+        // std::cout << "bug" << std::endl;
+    }
+
+    static char *newStr(const char *buf1, const int from1, const int len1) {
+        char *ret = 0;
+        int len = 0;
+        int cap = 0;
+        appendStr(ret, len, cap, 1, buf1, from1, len1);
+        return ret;
+    }
+    
+    static void appendStr(char *&bufferRef, const char *buf1, const int from1, const int len1) {
+        int len = 0;
+        int cap = 0;
+        appendStr(bufferRef, len, cap, 1, buf1, from1, len1);
     }
 
     /**

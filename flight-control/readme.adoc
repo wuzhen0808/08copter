@@ -11,25 +11,21 @@ The aim of this project is learning how to build a quad copter from zero. Learni
 
 A8 stand for what? One reason is that Arduino UNO R4 is initially adopted here as the main board of the flight control system. Another reason is that this project started from Autumn and August of 2003. You know august is the 8th month of a year.
 
-== {chapter}.{counter:bg}. Who may interest？
+=== {chapter}.{counter:bg}. For whom？
 
-If you are going learn the procedure to build a quad copter you may interested in. Building a copter from nothing is a long run. It may take you several month to get your idea into real. Here we are trying to get the concepts behind clearly visible to you.
+If you are learning to build a quad copter from zero then this project is a entry point.Because building a copter from nothing is a long run. It may take you several month to get your idea into real. Here we are trying to get the concepts behind visible to you.
 
-=== {chapter}.{counter:bg}. Who NOT interest?
+=== {chapter}.{counter:bg}. NOT for whom?
 
 *** If you already know the detail about how to build a quad copter. Including the hardware components and software architecture of a copter or quad copter.
 
-*** If you are seeking a ready-to-use flight control system.
+*** If you are seeking a ready-to-use flight control system. Then this project is not the ideal one for you because at this moment this project only focus on one hardware(arduino-UNO-r4) and one platform(MSYS2).
 
-== {chapter}.{counter:bg}. Tools involved.
+=== {chapter}.{counter:bg}. Principal.
 
-There are a set of tools as well for you to develop and tuning your FCS.
+One principal this project trying to follow is concentrating on the readability of the source code. Because the goal of this project is not a flyable copter but the procedure to build one.
 
-== {chapter}.{counter:bg}. Principal.
-
-One principal here is focusing on the readability of the source code but not the performance. Because the goal of this project is not a flyable copter but the procedure to build one.
-
-== {counter:chapter}. Concepts framework
+== {counter:chapter}. Glossary
 This section introduce the concepts involved. If you already know the background about how an copter is composed you can skip this section.
 
 === {chapter}.{counter:cf}. Hardware
@@ -114,7 +110,7 @@ Attitude control is the most important part in a flight control system. A typica
 == {counter:chapter}. Dependencies
 This section introduce the external tools and libs.
 
-=== {chapter}.{counter:dep}. Tools
+=== {chapter}.{counter:dep}. Environment
 
 ==== {chapter}.{dep}.{counter:tools}. MSYS2[mandatory] 
 
@@ -127,6 +123,8 @@ Unified C Run Time for building the code for windows platform.
 $ pacman -S ... 
 ----
 
+=== {chapter}.{counter:dep}. Tools mandatory
+
 ==== {chapter}.{dep}.{counter:tools}. PlatformIO[mandatory]
 We rely on platformIO to build this project. File platformio.ini is the entry point to build code. Following command builds the firmware for the target environment.
 
@@ -138,14 +136,55 @@ Run pio to build.
 $ pio run -e arduino_uno_minima
 ----
 
+=== {chapter}.{counter:dep}. Libs
 
-==== {chapter}.{dep}.{counter:tools}. JSBSim[optional]
+==== {chapter}.{dep}.{counter:libs}. FreeRTOS
+
+==== {chapter}.{dep}.{counter:libs}. JSBSim-Kernel
+
+==== {chapter}.{dep}.{counter:libs}. ncurses
+
+==== {chapter}.{dep}.{counter:libs}. pdcurses
+This lib is needed to build the cdk source code.
+[source,shell]
+----
+$ pacman -S mingw-w64-ucrt-x86_64-pdcurses
+----
+==== {chapter}.{dep}.{counter:libs}. CDK(curses development kit)
+Download the source code from `site`.
+
+Unzip the tar.
+
+Build the code.
+
+[source,shell]
+----
+
+$ ./configure.
+configure: loading site script /etc/config.site
+checking build system type... x86_64-w64-mingw32
+...
+$ make
+/bin/sh ./gen-scale.sh DSCALE DScale Double double ./include/gen-scale.h >include/dscale.h
+... 
+$ make install
+... 
+Installing CDK header files in /ucrt64/include/cdk...
+...
+rm -f /ucrt64/include/cdk.h && mv /ucrt64/include/cdk/cdk.h /ucrt64/include/cdk.h
+Installing CDK library
+Installing script cdk5-config
+
+----
+=== {chapter}.{counter:dep}. Tools recommended
+
+==== {chapter}.{dep}.{counter:tools2}. JSBSim
 This tool is used to simulate and tuning the FCS under development.
 
-==== {chapter}.{dep}.{counter:tools}. Flight gear[optional]
+==== {chapter}.{dep}.{counter:tools2}. Flight gear
 This tool is used to simulate and tuning the FCS under development.
 
-==== {chapter}.{dep}.{counter:tools}. gnuplot[optional]
+==== {chapter}.{dep}.{counter:tools2}. gnuplot
 
 This tool is optional and is used to plot data and tuning FCS.
 
@@ -156,7 +195,7 @@ How to install gnuplot?
 pacman -S ...
 ----
 
-==== {chapter}.{dep}.{counter:tools}. JSBSim-Plot[optional]
+==== {chapter}.{dep}.{counter:tools2}. JSBSim-Plot
 
 The code under folder lib/JSBSim-Plot is come from the git repository.
 
@@ -173,6 +212,7 @@ $ cp .pio/build/plot/program.exe /usr/local/bin/prep_plot
 This tool is used to organize the command line options and the call the gnuplot command to plot CSV data.
 
 Firstly it can list the title names and the indexes of each title in a CSV data file.
+
 [source,shell]
 ----
 $ prep_plot data_log/qc2309.csv
@@ -199,15 +239,14 @@ $
 ----
 $ cat simulation/plot.sh
 #!/bin/tcsh
-foreach file (*.csv)
-  echo "process file:$file"
-  if (-f data_plot/${file}.r.xml) prep_plot $file --plot=data_plot/${file}.r.xml | gnuplot
-end
-gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=output.pdf *.ps
+ foreach file (*.csv)
+   echo "process file:$file"
+   if(-f data_plot/${file}.r.xml) prep_plot $file --plot=data_plot/${file}.r.xml | gnuplot
+ end
+ gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=output.pdf *.ps 
 ----
 
-
-==== {chapter}.{dep}.{counter:tools}. vscode[optional]
+==== {chapter}.{dep}.{counter:tools2}. vscode IDE
 
 This tool is optional and only needed in case you need an IDE to modify the code.
 
@@ -218,18 +257,10 @@ Following command will update the file `.vscode/c_cpp_properties.json` for the e
 
 [source,shell]
 ----
-$ pio.exe project init --ide vscode --environment fc_native
+$ pio project init --ide vscode --environment fc_native
 ----
 
-=== {chapter}.{counter:dep}. Libs
-
-==== {chapter}.{dep}.{counter:libs}. FreeRTOS
-
-==== {chapter}.{dep}.{counter:libs}. JSBSim-Kernel
-
-==== {chapter}.{dep}.{counter:libs}. ncurses
-
-== {counter:chapter}. Architecture
+== {counter:chapter}. Code structure
 
 === {chapter}.{counter:arch}. Diagram
 A diagram to illustrate the dependence relation between parts of code.
@@ -240,7 +271,7 @@ A diagram to illustrate the dependence relation between parts of code.
 ==== {chapter}.{arch}.{counter:folder}. lib/util
 Utility code which itself does not have any dependence.
 
-It's the real kernel.
+It's the kernel of the project.
 
 ==== {chapter}.{arch}.{counter:folder}. lib/hal
 Hardware abstract layer.
@@ -265,17 +296,11 @@ In each environment's application layer, you should provide the initialization t
 System * a8::hal::S = new ArduinoSystem();
 ----
 
-==== {chapter}.{arch}.{counter:folder}. lib/cil
+==== {chapter}.{arch}.{counter:folder}. lib/
 
-Configuration interface layer.
+==== {chapter}.{arch}.{counter:folder}. lib/fc
 
-Developer interface to select env and parameter settings.
-
-Provide a plugin mechanism to get all the unknown env plugin-enabled by a package of code.
-
-==== {chapter}.{arch}.{counter:folder}. lib/core
-
-Implement all concept about a quad copter.
+Flight control of a quad copter.
 
 Have two external dependence, lib/util and lib/hal.
 
@@ -294,9 +319,6 @@ Depends on lib/util.
 
 Should not depend on lib/core, but currently not meet this rule.
 
-
-==== {chapter}.{arch}.{counter:folder}. lib/cil_x
-
 ==== {chapter}.{arch}.{counter:folder}. lib/FreeRTOS-Kernel
 Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
 
@@ -306,22 +328,28 @@ You know the kernel part of FreeRTOS must be configured before it's application 
 
 For example the below parameter is defined in the file of FreeRTOSConfig.h located in the lib/arduino/include folder.
 
+Please note this folder cannot be compiled unless the additional header files for the target environment are provided. For mingw env, please find them from the folder of FreeRTOS-Kernel-MingW.
+
 [source,c++]
 ----
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS (5)
 ----
 
-==== {chapter}.{arch}.{counter:folder}. lib/FreeRTOS-MemMang-heap4
+==== {chapter}.{arch}.{counter:folder}. lib/FreeRTOS-Kernel-MingW
+
 Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
 
+In order to compile FreeRTOS kernel with the native(MingW) environment we need following 3 parts of code.
+
+*** heap4
 This folder contains one of the memory management policy which we adopted for both Arduino UNO and native environment. This is enabled by the settings of environment of uno_r4_minima in the platformIO configuration file 'platformio.ini'.
 
 Why we don't use the Arduino_FreeRTOS.h which provided by the arduino-renesas framework itself? It's because we are trying to get the code structure clean, clear and then easy understandable. So we need the code independent with each part and as less as possible to depend 3rd party code or library.
 
-==== {chapter}.{arch}.{arch}.{counter:folder}. lib/FreeRTOS-MSVC-MingW
-Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
+*** port.c
 
-For the purpose of porting FreeRTOS to the native(MingW) environment.
+
+*** config
 
 ==== {chapter}.{arch}.{counter:folder}. lib/FreeRTOS-ArduinoRenesas-UNO
 Do not edit the source code in this folder because all the code are from FreeRTOS official git repository.
@@ -329,7 +357,7 @@ Do not edit the source code in this folder because all the code are from FreeRTO
 For the purpose of porting FreeRTOS to the arduino_uno_minima environment.
 
 ==== {chapter}.{arch}.{counter:folder}. src
-There folder contains the main entry function for each environment. How to distinguish them? The answer is by the building filter which is defined in the platformio.ini file.
+This folder contains the main function for each environment. How to distinguish them? It's is by the building filter which is defined in the platformio.ini file.
 
 For example the code below defines the filter when building firmware for arduino environment.
 

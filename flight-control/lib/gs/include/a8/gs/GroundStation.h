@@ -21,7 +21,7 @@ public:
         this->network = network;
         this->rate = Rate::ForEver;
     }
-
+    
     void populate(StagingContext *context) override {
         Component::populate(context);
     }
@@ -31,6 +31,8 @@ public:
 
         // open dashboard
         this->dashboard = new Dashboard(context->loggerFactory);
+        this->dashboard->open();//open dashboard view.
+        
         this->gsAddress = network->gsAddress();
 
         // waiting fcs to connect
@@ -46,10 +48,8 @@ public:
         }
         log("listening connect in on port of gs.");
     }
-    static void release() {
-    }
+    
     void run(TickingContext *ticking) override {
-
         log("GS net accepter running...");
         while (true) {
             Bridge *bridge = 0;
@@ -67,11 +67,11 @@ public:
             }
             log("A new GS client connected in.");
         }
-
         log("Warning: GS main loop exit.");
     }
 
     void shutdown(StagingContext *context) override {
+        dashboard->close();
         Component::shutdown(context);
     }
 };

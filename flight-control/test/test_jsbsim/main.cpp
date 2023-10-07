@@ -9,7 +9,6 @@
 #include <fstream>
 #include <gtest/gtest.h>
 #include <iostream>
-#include <winsock.h>
 
 using namespace a8::util;
 using namespace a8::hal;
