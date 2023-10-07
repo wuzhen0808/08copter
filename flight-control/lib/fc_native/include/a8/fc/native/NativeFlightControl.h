@@ -136,8 +136,8 @@ public:
             static_cast<NativeFlightControl *>(this_)->hearBeat();
         },
                                           this, 1.0f);
-
-        jio = new JSBSimIO(sockets);
+        // TODO enable mock jio for easy validation.
+        jio = new JSBSimIO(sockets); // TODO use network util.
         this->addChild(context, jio);
         if (context->isStop()) {
             return;

@@ -20,19 +20,19 @@ class Foreground : public FlyWeight {
     NcursesReader *nr = 0;
     LogView *logView = 0;
     Output *sysOutput = 0;
-    CdkScreen *screen;
+    Cdk *cdk;
 
 public:
     Foreground(LoggerFactory *logFac) : FlyWeight(logFac) {
     }
     void open() {
-        this->screen = new CdkScreen();
-        this->screen->initColor();
-        logView = new LogView(screen);
+        this->cdk = new Cdk();
+        this->cdk->initColor();
+        logView = new LogView(cdk);
         sysOutput = S->out;
         // take over the system output.
         S->out = logView;
-        //logView->activate();
+        // logView->activate();
     }
     void close() {
         // restore the default system output.
@@ -40,10 +40,7 @@ public:
         sysOutput = 0;
         delete this->logView;
         this->logView = 0;
-        screen->end();
-    }
-    void activate(){
-        logView->activate();
+        cdk->end();
     }
 
     void print(String msg) {

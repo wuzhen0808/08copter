@@ -6,18 +6,14 @@ using namespace a8::util::curses;
 namespace a8::gs {
 
 class LogView : public Output {
-    CdkViewer *cdkViewer;
+    ScrollWindow *scrollWindow;
 
 public:
-    LogView(CdkScreen * screen) {        
-        this->cdkViewer = new CdkViewer(screen);
+    LogView(Cdk *cdk) {
+        this->scrollWindow = cdk->newScrollWindow(CENTER, CENTER, 30, -2, "Log View", 200, true, true);
     }
     ~LogView() {
-        delete cdkViewer;
-    }
-
-    void activate(){
-        cdkViewer->activate();
+        delete scrollWindow;
     }
 
     void print(const String &msg) override {
@@ -25,7 +21,7 @@ public:
     }
 
     void append(String line) {
-        this->cdkViewer->append(line);
+        this->scrollWindow->append(line);
     }
 };
 } // namespace a8::gs

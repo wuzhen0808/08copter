@@ -31,22 +31,17 @@ public:
             context->stop(rst.errorMessage);
             return;
         }
+        // this method is running in a new thread.
+        fg->open(); // open dashboard view.
+        // Scheduler *sch = context->scheduler;
+        // sch->schedule(bg, [](void *bg) {
+        //     static_cast<Background *>(bg)->run();
+        // });
+
     }
 
     void run(TickingContext *ticking) override {
-        // this method is running in a new thread.
-        fg->open(); // open dashboard view.
-        Scheduler *sch = ticking->getStaging()->scheduler;
-        sch->schedule([](void *bg) {
-            static_cast<Background *>(bg)->run();
-        },
-                      bg);
-        // Note,this method is blocking until exit the dashboard?
-        // so don't calling this method before postStart(), since Application will calling startSchedule until start() stage.
-        fg->activate();
-        fg->close();
-        bg->stop();
-        //sch->endSchedule();
+        bg->run();
     }
 
     void postStart(StagingContext *context) {
