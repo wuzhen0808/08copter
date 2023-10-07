@@ -40,6 +40,7 @@ private:
     Links *links;
     FcSkeleton *skeleton;
     Bridge *gsBridge;
+    GsApi *gsApi;
     String resolveConfFile(Properties &pts) {
 
         String fpath = pts.getString(a8_properties, "");
@@ -114,7 +115,9 @@ public:
         resolveProperties(*context->properties);
         FlightControl::boot(context);
     }
-
+    void hearBeat() {
+        gsApi->ping("hello, gs,this is fc.");
+    }
     virtual void populate(StagingContext *context) override {
         this->addChild(context, new WrapperComponent<Sockets>(sockets));
         skeleton = new FcSkeleton(context->loggerFactory);
@@ -127,7 +130,12 @@ public:
         }
         log("successfully connect to gsApi");
 
-        this->gsBridge->getStub<GsApi>()->ping("hello, gs,this is fc.");
+        gsApi = this->gsBridge->getStub<GsApi>();
+
+        context->scheduler->scheduleTimer([](void *this_) {
+            static_cast<NativeFlightControl *>(this_)->hearBeat();
+        },
+                                          this, 1.0f);
 
         jio = new JSBSimIO(sockets);
         this->addChild(context, jio);

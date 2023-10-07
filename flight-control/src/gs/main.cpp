@@ -1,5 +1,5 @@
 //clang-format off
-//#include <winsock2.h>
+// #include <winsock2.h>
 //clang-format on
 
 #include "a8/gs.h"
@@ -22,6 +22,7 @@ System *a8::hal::S = new NativeSystem();
 int main(int argc, char **argv) {
     Scheduler *sch = new FreeRtosScheduler();
     LoggerFactory *logFac = new NativeLoggerFactory();
+
     Application::start("appGs", new StagingContext(sch,    //
                                                    logFac, //
                                                    a8::hal::S),
@@ -33,5 +34,7 @@ int main(int argc, char **argv) {
                                                    )                    //
                                          )                              //
     );
+    // note, this method is blocking.
+    // until sch->endSchedule() is called.
     sch->startSchedule();
 }

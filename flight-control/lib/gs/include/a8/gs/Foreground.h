@@ -15,49 +15,35 @@ using namespace a8::hal;
 
 namespace a8::gs {
 
-class Dashboard : public FlyWeight {
+class Foreground : public FlyWeight {
     LineReader *lr = 0;
     NcursesReader *nr = 0;
-    CdkScreen *cdkScreen;
     LogView *logView = 0;
     Output *sysOutput = 0;
+    CdkScreen *screen;
 
 public:
-    Dashboard(LoggerFactory *logFac) : FlyWeight(logFac) {
+    Foreground(LoggerFactory *logFac) : FlyWeight(logFac) {
     }
     void open() {
-    }
-    void xopen() {
-        this->cdkScreen = new CdkScreen();
-        logView = new LogView(this->cdkScreen);
+        this->screen = new CdkScreen();
+        this->screen->initColor();
+        logView = new LogView(screen);
         sysOutput = S->out;
         // take over the system output.
         S->out = logView;
+        //logView->activate();
     }
     void close() {
-    }
-    void xclose() {
         // restore the default system output.
         S->out = sysOutput;
         sysOutput = 0;
         delete this->logView;
         this->logView = 0;
-        endwin();
+        screen->end();
     }
-
-    template <typename T>
-    int receive(int len, void (*handle)(T, String), T *context, Result &rst) {
-        int len_ = 0;
-        int ret = -1;
-        while (len == -1 || len_ < len) {
-            String cmd;
-            ret = lr->readLine(cmd, rst);
-            if (ret < 0) {
-                break;
-            }
-            handle(context, cmd);
-        }
-        return ret;
+    void activate(){
+        logView->activate();
     }
 
     void print(String msg) {

@@ -99,13 +99,15 @@ public:
     void start(StagingContext *context) override {
         Component::start(context);
 
-        // ticker
+        // ticker/timer and thread, non-blocking the staging while running the run() method..
         this->rateRunners_ = buildTickRunners(context, new Buffer<TickRunner *>());
         for (int i = 0; i < rateRunners_->length(); i++) {
             TickRunner *runner = rateRunners_->get(i);
             runner->run(context);
         }
+        
     }
+
     //
     void postStart(StagingContext *context) override {
         Component::postStart(context);

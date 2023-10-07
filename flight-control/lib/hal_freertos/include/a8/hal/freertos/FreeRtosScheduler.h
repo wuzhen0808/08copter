@@ -25,14 +25,19 @@ public:
         vTaskEndScheduler();
     }
 
-    Thread *schedule(void (*run)(void*), void * context) override {
+    Thread *schedule(void *context, run run) override {
         return FreeRtosThread::start(run, context);
     }
 
-    Timer *scheduleTimer(thread::FuncType::run runF, void *context, const Rate &rate) override {
-        return FreeRtosTimer::start(runF, context, rate);
+    Thread *schedule(run run, void *context) override {
+        return FreeRtosThread::start(run, context);
     }
-
+    Timer *scheduleTimer(const Rate &rate, void *context, run run) override {
+        return FreeRtosTimer::start(run, context, rate);
+    }
+    Timer *scheduleTimer(run run, void *context, const Rate &rate) override {
+        return FreeRtosTimer::start(run, context, rate);
+    }
 };
 
 } // namespace a8::hal::freertos

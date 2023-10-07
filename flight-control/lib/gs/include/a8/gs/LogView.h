@@ -9,8 +9,15 @@ class LogView : public Output {
     CdkViewer *cdkViewer;
 
 public:
-    LogView(CdkScreen *cdkScreen) {
-        this->cdkViewer = new CdkViewer(cdkScreen);
+    LogView(CdkScreen * screen) {        
+        this->cdkViewer = new CdkViewer(screen);
+    }
+    ~LogView() {
+        delete cdkViewer;
+    }
+
+    void activate(){
+        cdkViewer->activate();
     }
 
     void print(const String &msg) override {

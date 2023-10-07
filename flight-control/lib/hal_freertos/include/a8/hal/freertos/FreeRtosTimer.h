@@ -8,32 +8,31 @@ using namespace a8::util;
 using namespace a8::util::thread;
 
 namespace a8::hal::freertos {
-
 class FreeRtosTimer : public Timer {
 private:
     static void timerCallbackFunction(TimerHandle_t handle) {
         void *timerId = pvTimerGetTimerID(handle);
         FreeRtosTimer *timer = static_cast<FreeRtosTimer *>(timerId);
-        timer->run(timer->context);
+        timer->run_(timer->context);
     }
 
     Rate rate;
-    thread::FuncType::run run;
+    run run_;
     void *context;
 
     TimerHandle_t handle;
 
 public:
-    static Timer *start(thread::FuncType::run run, void *context, const Rate &rate) {
+    static Timer *start(run run, void *context, const Rate &rate) {
         Timer *timer = new FreeRtosTimer(run, context, rate);
         timer->start();
         return timer;
     }
 
-    FreeRtosTimer(thread::FuncType::run run, void *context, const Rate rate) {
+    FreeRtosTimer(run run, void *context, const Rate rate) {
         this->rate = rate;
         this->context = context;
-        this->run = run;
+        this->run_ = run;
         long ticks = rate.ms();
         handle = xTimerCreate(
             static_cast<const char *>("My Timer"), // name

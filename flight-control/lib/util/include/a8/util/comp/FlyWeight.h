@@ -9,12 +9,12 @@ using namespace a8::util::thread;
 namespace a8::util::comp {
 class FlyWeight {
 protected:
-    LoggerFactory *logFac;
+    LoggerFactory *loggerFactory;
     Logger *logger;
 
 public:
     FlyWeight(LoggerFactory *logFac) {
-        this->logFac = logFac;
+        this->loggerFactory = logFac;
         this->logger = logFac->getLogger("flyWeight");
     }
 

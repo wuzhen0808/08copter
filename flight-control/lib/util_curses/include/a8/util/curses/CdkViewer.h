@@ -1,7 +1,6 @@
 #pragma once
 
 #include "a8/util.h"
-#include "a8/util/curses/defines.h"
 #include "a8/util/curses/CdkScreen.h"
 #include "a8/util/curses/defines.h"
 #include <cdk.h>
@@ -11,43 +10,55 @@ namespace a8::util::curses {
 class CdkViewer {
 
     Buffer<char *> content;
+    CDKVIEWER *viewer;
+    String title;
 
 public:
-    CDKVIEWER *viewer;
-
     CdkViewer(CdkScreen *screen) {
-        Rectangle rect = screen->getRectangle();
         Buffer<String> buttons;
-        int buttonHighLight = 0;
-        bool box = false;
-        bool shadow = false;
-
-        init(screen, rect, buttons, buttonHighLight, box, shadow);
+        buttons.append("</5><OK><!5>");
+        buttons.append("</5><Cancel><!5>");
+        bool box = TRUE;
+        bool shadow = FALSE;
+        Rectangle rect = screen->rect();
+        init(screen, rect, buttons, box, shadow);
     }
     CdkViewer(CdkScreen *screen, Rectangle rect,
-              Buffer<String> buttons, int buttonHighLight,
+              Buffer<String> buttons,
               bool box,
               bool shadow) {
-        init(screen, rect, buttons, buttonHighLight, box, shadow);
+        init(screen, rect, buttons, box, shadow);
+    }
+    ~CdkViewer() {
+        destroyCDKViewer(viewer);
     }
 
     void init(CdkScreen *screen, Rectangle rect,
-              Buffer<String> buttons, int buttonHighLight,
+              Buffer<String> buttons,
               bool box,
               bool shadow) {
+        this->title = "<C></B/22>Log View<!22!B>";
         char **buttons2 = StringUtil::toCharArrayArray(buttons);
-        viewer = newCDKViewer(screen->screen,
-                              rect.x, rect.y, rect.h, rect.w,
+        viewer = newCDKViewer(screen->screen(),
+                              CENTER, CENTER, 20, -2,
                               buttons2,
                               buttons.len(),
-                              buttonHighLight,
-                              box, shadow);
+                              A_REVERSE,
+                              box ? TRUE : FALSE, shadow ? TRUE : FALSE);
+    }
+
+    void activate() {
+        int button = activateCDKViewer(this->viewer, 0);        
+    }
+    
+    EExitType exitType(){
+        return viewer->exitType;
     }
 
     void append(String line) {
         content.append(Lang::newStr(line.text(), 0, line.len()));
-        setCDKViewerInfo(viewer, content.getAll(), content.len(), false);
+
+        setCDKViewer(viewer, title.text(), content.getAll(), content.len(), A_REVERSE, TRUE, TRUE, TRUE);
     }
-    
 };
 } // namespace a8::util::curses

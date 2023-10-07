@@ -1,6 +1,6 @@
 #pragma once
-#include "a8/gs/Dashboard.h"
-#include "a8/gs/GsSkeleton.h"
+#include "a8/gs/Background.h"
+#include "a8/gs/Foreground.h"
 #include "a8/link.h"
 #include "a8/util/comp.h"
 #include "a8/util/net.h"
@@ -11,68 +11,45 @@ namespace a8::gs {
 
 class GroundStation : public Component {
 
-    Dashboard *dashboard;
-    Links *network;
-    FcApi *fcApi;
-    Address *gsAddress;
+    Links *links;
+    Foreground *fg;
+    Background *bg;
 
 public:
-    GroundStation(int argc, char **argv, Links *network) : Component("gs") {
-        this->network = network;
+    GroundStation(int argc, char **argv, Links *links) : Component("gs") {
         this->rate = Rate::ForEver;
+        this->links = links;
     }
-    
+
     void populate(StagingContext *context) override {
         Component::populate(context);
-    }
-
-    void setup(StagingContext *context) override {
-        Component::setup(context);
-
-        // open dashboard
-        this->dashboard = new Dashboard(context->loggerFactory);
-        this->dashboard->open();//open dashboard view.
-        
-        this->gsAddress = network->gsAddress();
-
-        // waiting fcs to connect
+        this->fg = new Foreground(context->loggerFactory);
+        this->bg = new Background(links, context->loggerFactory);
         Result rst;
-        int ret = this->gsAddress->bind(rst);
+        int ret = this->bg->open(rst);
         if (ret < 0) {
-            return context->stop(rst.errorMessage);
+            context->stop(rst.errorMessage);
+            return;
         }
-
-        ret = gsAddress->listen(rst);
-        if (ret < 0) {
-            return context->stop(rst.errorMessage);
-        }
-        log("listening connect in on port of gs.");
     }
-    
+
     void run(TickingContext *ticking) override {
-        log("GS net accepter running...");
-        while (true) {
-            Bridge *bridge = 0;
-            Result rst;
-            int ret = gsAddress->accept(
-                bridge,
-                new GsSkeleton(this->dashboard, this->loggerFactory), GsSkeleton::release, //
-                FcStub::create, FcStub::release,                                           //
-                rst                                                                        //
-            );
-
-            if (ret < 0) {
-                log(rst.errorMessage);
-                break;
-            }
-            log("A new GS client connected in.");
-        }
-        log("Warning: GS main loop exit.");
+        // this method is running in a new thread.
+        fg->open(); // open dashboard view.
+        Scheduler *sch = ticking->getStaging()->scheduler;
+        sch->schedule([](void *bg) {
+            static_cast<Background *>(bg)->run();
+        },
+                      bg);
+        // Note,this method is blocking until exit the dashboard?
+        // so don't calling this method before postStart(), since Application will calling startSchedule until start() stage.
+        fg->activate();
+        fg->close();
+        bg->stop();
+        //sch->endSchedule();
     }
 
-    void shutdown(StagingContext *context) override {
-        dashboard->close();
-        Component::shutdown(context);
+    void postStart(StagingContext *context) {
     }
 };
 
