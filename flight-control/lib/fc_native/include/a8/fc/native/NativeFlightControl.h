@@ -31,7 +31,6 @@ namespace a8::fc::native {
 
 class NativeFlightControl : public FlightControl {
 private:
-    Sockets *sockets;
     String propertiesFile;
     String host;
     int port;
@@ -39,12 +38,6 @@ private:
     char **argv;
     //
     Links *links;
-    FcSkeleton *skeleton;
-    Bridge *gsBridge;
-    SimInSkeleton *sis;
-
-    GsApi* gsApi;    
-    SimOutStub* soStub;
 
     String resolveConfFile(Properties &pts) {
 
@@ -97,22 +90,12 @@ private:
     }
 
 protected:
-    virtual ServosControl *createServosControl(StagingContext *context) override {
-        ServosControl *servos = new NativeServosControl(totalServos_, soStub);
-        return servos;
-    }
-    virtual AttitudeSensor *createAttitudeSensor(StagingContext *context) override {
-        NativeAttitudeSensor *sensor = new NativeAttitudeSensor(this->sis);
-        return sensor;
-    }
-
 public:
-    NativeFlightControl(int argc, char **argv, Links *links, Sockets *sockets) : FlightControl("fcs", 4) {
-        this->sockets = sockets;
+    NativeFlightControl(int argc, char **argv, Links *links) : FlightControl("fcs", 4) {
         this->links = links;
         this->argc = argc;
         this->argv = argv;
-        this->rate = Rate::ForEver;
+        this->rates.append(Rate::RUN)->append(1.0f); // calling run() in a thread, calling tick in 1Hz.
     }
     ~NativeFlightControl() {}
 
@@ -120,27 +103,54 @@ public:
         resolveProperties(*context->properties);
         FlightControl::boot(context);
     }
-    void heatBeat() {
-        gsApi->ping("hello, gs,this is fc.");
-    }
-    virtual void populate(StagingContext *context) override {
-        this->addChild(context, new WrapperComponent<Sockets>(sockets));
-        skeleton = new FcSkeleton(context->loggerFactory);
 
-        Result rst;
-        int ret = this->links->gsAddress()->connect(this->gsBridge, skeleton, FcSkeleton::release, rst);
+    int connectToGs(Scheduler *scheduler, Bridge *&bridgeRef, Result &rst) {
+        FcSkeleton *skeleton = new FcSkeleton(loggerFactory);
+        int ret = this->links->gsAddress()->connect(bridgeRef, skeleton, FcSkeleton::release, rst);
         if (ret < 0) {
-            context->stop(rst);
-            return;
+            delete skeleton;
+            return ret;
         }
-        log("successfully connect to gsApi");
 
-        gsApi = new GsStub(this->gsBridge->getChannel());
+        bridgeRef->createStub<GsApi>(GsStub::create, GsStub::release);
+        // hearBeat
 
-        context->scheduler->scheduleTimer([](void *this_) {
-            static_cast<NativeFlightControl *>(this_)->heatBeat();
-        },
-                                          this, 1.0f);
+        log("successfully connect to gs");
+        return ret;
+    }
+
+    void tick(TickingContext *ticking) override {
+        // Or use sync lock to access component fields.
+        int KEY = 0;
+        Bridge *gsBridge = ticking->getVar<Bridge>(KEY);
+        if (gsBridge != 0) {
+            Result rst;
+            int ret = gsBridge->isRunning(rst);
+            if (ret < 0) {
+                log(rst.errorMessage);
+                ticking->setVar(KEY, 0);
+                delete gsBridge;
+                gsBridge = 0;
+            }
+        }
+
+        if (gsBridge == 0) {
+            Result rst;
+            int ret = this->connectToGs(ticking->getStaging()->scheduler, gsBridge, rst);
+            if (ret < 0) {
+                log(rst);
+                // cannot connect , so nothing to do else.
+                return;
+            }
+            ticking->setVar(KEY, gsBridge);
+        }
+        // connected already.
+        GsApi *gsApi = gsBridge->stub<GsApi>();
+        gsApi->ping("hello gs, this is fc.");
+    }
+
+    virtual void populate(StagingContext *context) override {
+
         // TODO enable mock jio for easy validation.
         // jio = new JSBSimIO(sockets); // TODO use network util.
         // this->addChild(context, jio);
@@ -148,24 +158,60 @@ public:
         //     return;
         // }
         //
-        sis = new SimInSkeleton(context->loggerFactory);
-        Bridge *sisB = 0;
-        ret = this->links->simInAddress()->accept(sisB, sis, SimInSkeleton::release, rst);
-        if (ret < 0) {
-            context->stop(rst);
-        }
-        //
-        Bridge *soBridge = 0;
-        ret = this->links->simOutAddress()->connect(soBridge, new SimOutSkeleton(loggerFactory), SimOutSkeleton::release, rst);
+        Result rst;
+        Address *simAddress = this->links->simInAddress();
+        int ret = simAddress->bind(rst);
         if (ret < 0) {
             return context->stop(rst);
         }
-        this->soStub = new SimOutStub(soBridge->getChannel());
+        ret = simAddress->listen(rst);
+        if (ret < 0) {
+            return context->stop(rst);
+        }
 
+        servosControl_ = new NativeServosControl(totalServos_, context->loggerFactory);
+        attitudeSensor_ = new NativeAttitudeSensor();
         FlightControl::populate(context);
     }
 
     void run(TickingContext *context) override {
+
+        Bridge *simInBridge = 0;
+        Bridge *simOutBridge = 0;
+        while (true) {
+            int ret = -1;
+            Result rst;
+
+            // waiting the simulator connect in.
+            Bridge *lastSimInBridge = simInBridge;
+            SimInSkeleton *skeleton2 = new SimInSkeleton(context->getStaging()->loggerFactory);
+            ret = this->links->simInAddress()->accept(simInBridge, skeleton2, SimInSkeleton::release, rst);
+            if (ret < 0) {
+                delete skeleton2;
+                break;
+            }
+            NativeAttitudeSensor *sensor = static_cast<NativeAttitudeSensor *>(this->attitudeSensor_);
+            sensor->setSkeleton(skeleton2);
+            if (lastSimInBridge != 0) {
+                lastSimInBridge->close();
+                delete lastSimInBridge;
+            }
+
+            // connect to the simulator.
+            Bridge *lastSimOutBridge = simOutBridge;
+            ret = this->links->simOutAddress()->connect(simOutBridge, new SimOutSkeleton(loggerFactory), SimOutSkeleton::release, rst);
+            if (ret < 0) {
+                break;
+            }
+            simOutBridge->createStub<SimOutStub>(SimOutStub::create, SimOutStub::release);
+            SimOutStub *stub = lastSimOutBridge->stub<SimOutStub>();
+            static_cast<NativeServosControl *>(servosControl_)->setStub(stub);
+
+            if (lastSimOutBridge != 0) {
+                lastSimOutBridge->close();
+                delete lastSimInBridge;
+            }
+        }
     }
 
     void setup(StagingContext *context) override {

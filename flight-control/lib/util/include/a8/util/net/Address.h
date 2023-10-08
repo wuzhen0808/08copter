@@ -119,7 +119,6 @@ public:
         scheduler->schedule(
             [](void *bridge) {
                 static_cast<Bridge *>(bridge)->run();
-                delete static_cast<Bridge *>(bridge); // release all object, bridge,channel,stub,skelton.
             },                                        //
             bridge                                    //
         );

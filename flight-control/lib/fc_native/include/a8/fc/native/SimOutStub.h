@@ -3,15 +3,26 @@
 using namespace a8::link;
 
 namespace a8::fc::native {
-class SimOutStub : public LineStub {
+class SimOutStub {
+    Channel *channel;
+
 public:
-    SimOutStub(Channel *channel) : LineStub(channel) {
-        
+    static void *create(Channel *channel) {
+        return new SimOutStub(channel);
     }
 
-    void setThrottleNorm(int servoId, float throttle){
+    static void release(void *stub) {
+        delete static_cast<SimOutStub *>(stub);
+    }
+
+    SimOutStub(Channel *channel) {
+        this->channel = channel;
+    }
+
+    void setThrottleNorm(int servoId, float throttle) {
         String sb = String::format("set fcs/throttle-cmd-norm[%i] %f\n", servoId, throttle);
-        this->line(sb);
+        Result rst;
+        channel->send(0, &sb, rst);
     }
 };
 } // namespace a8::fc::native

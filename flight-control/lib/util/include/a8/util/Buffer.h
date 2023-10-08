@@ -49,6 +49,13 @@ public:
         return this->length_;
     }
 
+    T get(int idx, T def) const {
+        if (idx < 0 || idx >= length_) {
+            return def;
+        }
+        return this->buffer_[idx];
+    }
+
     T get(int idx) const {
         if (idx < 0 || idx > this->length_ - 1) {
             Assert::illegalArgument("idx out of range.");
@@ -178,7 +185,7 @@ public:
             Assert::illegalArgument("idx out of bound.");
         }
         return this->buffer_[idx];
-    }    
+    }
 };
 
 // implementation

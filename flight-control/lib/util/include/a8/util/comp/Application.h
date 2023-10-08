@@ -26,25 +26,29 @@ protected:
 
         for (int i = 0; i < allComponents->length(); i++) {
             Component *component = allComponents->get(i);
-            Rate rate = component->getRate();
 
-            // find a runner for the component.
-            TickRunner *runner = this->findTickRunner(runners, rate);
-            if (runner == 0) {
-                TickingContext *ticking = new TickingContext(context, rate);
-                runner = new TickRunner(ticking);
-                runners->append(runner);
+            Buffer<Rate> rates = component->getRates();
+            for (int j = 0; j < rates.len(); j++) {
+                Rate rate = rates.get(j);
+                // find a runner for the component.
+                TickRunner *runner = this->findTickRunner(runners, rate, j);
+                if (runner == 0) {
+                    TickingContext *ticking = new TickingContext(context, rate, j);
+                    runner = new TickRunner(ticking);
+                    runners->append(runner);
+                }
+                runner->add(component);
             }
-            runner->add(component);
         }
         return runners;
     }
-    TickRunner *findTickRunner(Buffer<TickRunner *> *runners, const Rate &rate_) {
+    TickRunner *findTickRunner(Buffer<TickRunner *> *runners, const Rate &rate_, const int group) {
         for (int i = 0; i < runners->length(); i++) {
             TickRunner *runner = runners->get(i);
             long mHz1 = runner->getTicking()->getRate().mHz();
             long mHz2 = rate_.mHz();
-            if (mHz1 == mHz2) {
+            int group1 = runner->getTicking()->getGroup();            
+            if (mHz1 == mHz2 && group1 == group) {
                 return runner;
             }
         }
@@ -105,7 +109,6 @@ public:
             TickRunner *runner = rateRunners_->get(i);
             runner->run(context);
         }
-        
     }
 
     //

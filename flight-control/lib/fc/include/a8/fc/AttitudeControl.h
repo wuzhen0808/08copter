@@ -10,6 +10,13 @@
 
 #define FR_SPIN_DIRECTION LEFT_HAND
 
+/**
+ * (M1) (M2)
+ *   \   /
+ *    [ ]
+ *    /  \
+ * (M4) (M3)
+ */
 using namespace a8::util;
 using namespace a8::util::comp;
 namespace a8::fc {
@@ -45,7 +52,7 @@ public:
         this->attitudeSensor = attitudeSensor;
         this->servosControl = servosControl;
         this->dataLog = 0;
-        this->rate = 1; // hz
+        this->rates.append(1); // hz
     }
     ~AttitudeControl() {
         delete altitudePid;
@@ -101,16 +108,24 @@ public:
     }
 
     virtual void tick(TickingContext *ticking) override {
+        int ret;
+        Result rst;
+        ret = attitudeSensor->isReady(rst);
+        if (ret < 0) {
+            log(rst.errorMessage);
+            return;
+        }
 
         double altitude1;
-        Result rst;
-        int ret = attitudeSensor->getAltitude(altitude1, rst);
+        ret = attitudeSensor->getAltitude(altitude1, rst);
         if (ret < 0) {
+            log(rst.errorMessage);
             return;
         }
         Vector3f aVel1;
         ret = attitudeSensor->getAngVel(aVel1, rst);
         if (ret < 0) {
+            log(rst.errorMessage);
             return;
         }
         //

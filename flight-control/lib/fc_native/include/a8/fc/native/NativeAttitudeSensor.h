@@ -6,19 +6,30 @@
 
 using namespace a8::fc;
 using namespace a8::util;
-using namespace a8::hal::native;
 
 namespace a8::fc::native {
 class NativeAttitudeSensor : public AttitudeSensor {
 private:
-    SimInSkeleton *sis;
+    SimInSkeleton *sis = 0;
 
 public:
-    NativeAttitudeSensor(SimInSkeleton *sis) : AttitudeSensor() {
-        this->sis = sis;
+    NativeAttitudeSensor() : AttitudeSensor() {
     }
     ~NativeAttitudeSensor() {
     }
+
+    void setSkeleton(SimInSkeleton *skeleton) {
+        this->sis = skeleton;
+    }
+
+    int isReady(Result &rst) override {
+        if (this->sis == 0) {
+            rst.errorMessage << "waiting the simulator connect in.";
+            return -1;
+        }
+        return 1;
+    }
+
     /**
      * Altitude in Meter.
      */

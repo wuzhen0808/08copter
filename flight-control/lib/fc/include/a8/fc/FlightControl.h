@@ -17,17 +17,13 @@ using namespace a8::util::comp;
 namespace a8::fc {
 
 class FlightControl : public Component {
-private:
 protected:
     // members
     int totalServos_;
     AttitudeSensor *attitudeSensor_;
     ServosControl *servosControl_;
     AttitudeControl *attitudeControl_;
-    // member functions
-    virtual ServosControl *createServosControl(StagingContext *context) = 0;
-    virtual AttitudeSensor *createAttitudeSensor(StagingContext *context) = 0;
-
+   
 public:
     FlightControl(const String &name) : Component(name) {
         this->init();
@@ -43,14 +39,7 @@ public:
     }
 
     virtual void populate(StagingContext *context) override {
-        Component::populate(context);
-
-        attitudeSensor_ = createAttitudeSensor(context);
-        this->addChild(context, attitudeSensor_);
-
-        servosControl_ = createServosControl(context);
-        this->addChild(context, servosControl_);
-
+        Component::populate(context);        
         attitudeControl_ = new AttitudeControl(servosControl_, attitudeSensor_);
         this->addChild(context, attitudeControl_);
         //

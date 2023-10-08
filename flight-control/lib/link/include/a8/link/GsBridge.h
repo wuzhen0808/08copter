@@ -20,6 +20,8 @@ public:
         case CommonMessageType::LOG:
             gss->log(*static_cast<String *>(data));
             break;
+        default:
+            gss->unknownMessageReceived(type,data);
         }
     }
 };

@@ -10,15 +10,17 @@
 namespace a8::util::net {
 
 class Codec {
-protected:    
-    using consume = void (*)(int, void *, void *); // type,data,context
+protected:
 public:
     Codec() {
     }
 
     virtual int write(Writer *writer, int type, void *data, Result &rst) = 0;
-
-    virtual int read(Reader *reader, consume consume, void * context, Result &rst) = 0;
+    
+    virtual int read(Reader *reader, bridge bridgeF, void *context, Result &rst) {
+        return read(reader, 0, bridgeF, context, rst);
+    }
+    virtual int read(Reader *reader, int type, bridge bridgeF, void *context, Result &rst) = 0;
 };
 
 } // namespace a8::util::net

@@ -42,7 +42,7 @@ public:
     /**
      * @override
      */
-    int read(Reader *reader, consume consume, void *context, Result &rst) override {
+    int read(Reader *reader, int type, bridge bridgeF, void *context, Result &rst) override {
 
         String *str = new String();
         char ch;
@@ -59,7 +59,7 @@ public:
             str->append(ch);
         }
         if (ret >= 0) {
-            consume(0, str, context);
+            bridgeF(type, str, context);
         }
         delete str;
         return ret;

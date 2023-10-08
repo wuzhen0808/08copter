@@ -39,6 +39,8 @@ public:
         Result rst;
         this->channel->send(CommonMessageType::LOG, &msg, rst);
     }
+    
+
 };
 
 } // namespace a8::link

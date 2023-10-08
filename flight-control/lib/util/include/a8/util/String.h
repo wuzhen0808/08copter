@@ -259,6 +259,7 @@ public:
         append(str);
         return *this;
     }
+        
     char operator[](int idx) {
         if (idx < 0 || idx > this->length_) {
             Lang::illegalArgument("index out of bound.");

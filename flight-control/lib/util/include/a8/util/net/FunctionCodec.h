@@ -1,6 +1,7 @@
 #pragma once
 #include "a8/util.h"
 #include "a8/util/net/Codec.h"
+#include "a8/util/net/defines.h"
 
 using namespace a8::util;
 using namespace a8::util::net;
@@ -8,13 +9,13 @@ using namespace a8::util::net;
 namespace a8::util::net {
 
 class FunctionCodec : public Codec {
-    FuncType::write writeF;
-    FuncType::read readF;
+    a8::util::net::write writeF;
+    a8::util::net::read readF;
 
 public:
-    FunctionCodec(FuncType::write write, FuncType::read read) : Codec() {
-        this->writeF = write;
-        this->readF = read;
+    FunctionCodec(a8::util::net::write writeF, a8::util::net::read readF) : Codec() {
+        this->writeF = writeF;
+        this->readF = readF;
     }
 
     /**
@@ -27,8 +28,8 @@ public:
     /**
      * @override
      */
-    int read(Reader *reader, consume consume, void *context, Result &rst) override {
-        return readF(reader, consume, context, rst);
+    int read(Reader *reader, int type, bridge bridgeF, void *context, Result &rst) override {
+        return readF(reader, type, bridgeF, context, rst);
         //
     }
 };

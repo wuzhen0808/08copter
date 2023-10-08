@@ -35,6 +35,10 @@ public:
         delete this->writer;
     }
 
+    void close() {
+        this->sockets->close(sock);
+    }
+
     int send(int type, void *data, Result &rst) {
         int ret = codecs_->write(writer, type, data, rst);
         if (ret < 0) {

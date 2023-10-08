@@ -7,11 +7,12 @@ using namespace a8::util::comp;
 
 namespace a8::fc {
 
-class AttitudeSensor : public Component {
+class AttitudeSensor {
 public:
-    AttitudeSensor();
-    ~AttitudeSensor();
+    AttitudeSensor() {}
+    ~AttitudeSensor() {}
 
+    virtual int isReady(Result &rst) = 0;
     virtual int getAngVel(Vector3f &angVel, Result &rst) = 0;
     virtual int getAccVel(Vector3f &accVel, Result &rst) = 0;
     virtual int getAltitude(double &altitude, Result &rst) = 0;

@@ -2,6 +2,6 @@
 
 namespace a8::util {
 
-Rate Rate::ForEver = -1.0f;
+Rate Rate::RUN = -1.0f;
 
 }

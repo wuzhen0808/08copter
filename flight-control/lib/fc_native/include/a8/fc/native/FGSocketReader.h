@@ -36,7 +36,7 @@ protected:
 
 public:
     FGSocketReader(Sockets *socketFactory) : Component("sor") {
-        rate = Rate::ForEver;
+        rates.append(Rate::RUN);
         this->sockets = socketFactory;
         this->server = 0;
         this->sockIn = 0;

@@ -37,7 +37,7 @@ public:
         subCodecs.set(type, subCodec);
     }
 
-    void add(int type, FuncType::write write, FuncType::read read) {
+    void add(int type, a8::util::net::write write, a8::util::net::read read) {
         add(type, new FunctionCodec(write, read));
     }
 
@@ -68,7 +68,7 @@ public:
     /**
      * @override
      */
-    int read(Reader *reader, consume consume, void *context, Result &rst) override {
+    int read(Reader *reader, int type0, bridge bridgeF, void* context, Result &rst) override {
         int type = -1;
         void *data = 0;
         int ret2 = 0;
@@ -84,7 +84,7 @@ public:
             return -2; // failed to decode buffer.
         }
 
-        ret = codec->read(reader, consume, context, rst); // write ref back
+        ret = codec->read(reader, type, bridgeF, context, rst); // write ref back
         if (ret < 0) {
             return ret;
         }

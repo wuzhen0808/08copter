@@ -25,5 +25,9 @@ public:
     void log(String msg) override {
         logger->info(String() << "on log message:" << msg);
     }
+
+    void unknownMessageReceived(int type, void *data) override {
+        logger->info(String() << "unknownMessageReceived, type:" << type);
+    }
 };
 } // namespace a8::gs

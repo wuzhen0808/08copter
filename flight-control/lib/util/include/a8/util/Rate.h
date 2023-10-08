@@ -8,7 +8,7 @@ class Rate {
     float hz;
 
 public:
-    static Rate ForEver;
+    static Rate RUN;
 
     Rate() {
         this->hz = 0.0f;
@@ -67,14 +67,13 @@ public:
         return Math::isNear(hz, 0.0f);
     }
     /*
-     * ForEver means it's a runner to be called in separate thread.
+     * RUN means it's a runner to be called in separate thread.
      */
-    bool isForEver() {
+    bool isRun() {
         return Math::isNear(hz, -1.0f);
     }
 
-    Rate &
-    operator=(int hz) {
+    Rate &operator=(int hz) {
         this->hz = hz;
         return *this;
     }

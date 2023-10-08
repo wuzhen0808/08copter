@@ -38,7 +38,7 @@ public:
     void tick() {
 
         this->ticking->beforTick();
-        bool isInThread = this->ticking->getRate().isForEver();
+        bool isInThread = this->ticking->getRate().isRun();
 
         for (int i = 0; i < components->length(); i++) {
             Component *comp = components->get(i);
@@ -55,7 +55,7 @@ public:
         if (ticking->getRate().isZero()) {
             return;
         }
-        if (!ticking->getRate().isForEver()) {
+        if (!ticking->getRate().isRun()) {
             this->timer = context->scheduler->scheduleTimer(TickRunner::tickFunc, this, rate);
             return;
         }
@@ -64,7 +64,7 @@ public:
             TickRunner *runner = new TickRunner(this->ticking);
             runner->add(com);
             runner->thread = context->scheduler->schedule(tickFunc, runner);
-            com->log(String() << "a new thread scheduled for comp:" << com);
+            com->log(String() << "a new thread scheduled for component:" << com);
             // todo storage of thread?
         }
 

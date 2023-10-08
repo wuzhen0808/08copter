@@ -10,15 +10,15 @@ namespace a8::fc::native {
 
 class SimInSkeleton : public LineApi, public FlyWeight {
 
-    int Col_Time = -1;     // Time
-    int Col_Altitude = -1; //
-    int Col_Phi = -1;
-    int Col_Tht = -1;
-    int Col_Psi = -1;
-    int Col_Alpha = -1;
-    int Col_Beta = -1;
-    int Col_Latitude = -1;
-    int Col_Longitude = -1;
+    int Col_Time = -2;     // Time
+    int Col_Altitude = -2; //
+    int Col_Phi = -2;
+    int Col_Tht = -2;
+    int Col_Psi = -2;
+    int Col_Alpha = -2;
+    int Col_Beta = -2;
+    int Col_Latitude = -2;
+    int Col_Longitude = -2;
 
     int lines = 0;
 
@@ -41,6 +41,9 @@ public:
         delete static_cast<SimInSkeleton *>(skeleton);
     }
     SimInSkeleton(LoggerFactory *logFac) : FlyWeight(logFac) {
+    }
+    ~SimInSkeleton() {
+        
     }
     void line(String line) override {
         if (lines == 0) {

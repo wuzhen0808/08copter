@@ -51,7 +51,7 @@ namespace a8::util::comp {
  *      The stageTo method is executed recursively into each child and finally get the whole components
  *      tree into the destination stage.
  *
- *  6. If your component to be running in a thread. 
+ *  6. If your component to be running in a thread.
  *      - Implement the run() method.
  *      - Set the rate, frequency in HZ, to a non zero value.
  *      - Make sure the root component is an Application component.
@@ -72,7 +72,8 @@ protected:
     Stage stage;
     String path; //
     String name;
-    Rate rate; // in mHz = 0.001Hz
+    
+    Buffer<Rate> rates; // in mHz = 0.001Hz
 
     void print(Writer *writer, bool recursive, int indent) {
         for (int i = 0; i < indent; i++) {
@@ -140,11 +141,10 @@ public:
         this->children = new Buffer<Component *>();
         this->logger = 0;
         this->stage = Zero;
-        this->name = name;
-        this->rate = 0;
+        this->name = name;        
     }
-    Rate getRate() {
-        return rate;
+    Buffer<Rate> getRates() {
+        return rates;
     }
     Logger *getLogger() {
         if (this->logger == 0) {
@@ -200,6 +200,10 @@ public:
      * Run method is in a separate thread. It's a loop never end until system shutdown.
      */
     virtual void run(TickingContext *ticking) {
+    }
+
+    void log(const Result rst) {
+        log(rst.errorMessage);
     }
 
     void log(const String msg) {

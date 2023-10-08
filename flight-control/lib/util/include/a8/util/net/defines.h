@@ -9,16 +9,8 @@
 
 namespace a8::util::net {
 using bridge = void (*)(int, void *, void *);
-using consume = void (*)(int, void *, void *);
-namespace FuncType {
-
-// encode data into the buffer.
-typedef int (*write)(Writer *writer, int type, void *data, Result &rst);
-
-// decode buffer into data with type.
-typedef int (*read)(Reader *reader, consume consume, void *context, Result &rst);
-
-} // namespace FuncType
+using write = int (*)(Writer *, int, void *, Result &);        // writer,type,data,result
+using read = int (*)(Reader *, int, bridge, void *, Result &); // reader,type,bridge,context,result.
 
 namespace CodecFunc {
 
@@ -78,7 +70,7 @@ static int writeString(Writer *writer, int type, void *data, Result &rst) {
     return len;
 }
 
-static int readString(Reader *reader, consume consume, void *context, Result &rst) {
+static int readString(Reader *reader, int type, bridge bridge, void *context, Result &rst) {
 
     // read length;
     int len;
@@ -90,7 +82,7 @@ static int readString(Reader *reader, consume consume, void *context, Result &rs
     char buf[len];
     reader->read(buf, len);
     String *data = new String(buf, len);
-    consume(0, data, context);
+    bridge(type, data, context);
     ret += len;
     return ret;
 }

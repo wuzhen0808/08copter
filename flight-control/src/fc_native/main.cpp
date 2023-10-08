@@ -33,15 +33,18 @@ int main(int argc, char **argv) {
     Sockets *sockets = new NativeSockets();
     LoggerFactory *logFac = new NativeLoggerFactory();
     Links *links = new Links(sockets, sch, logFac);
-    Application::start("appFc", new StagingContext(sch,       //
-                                                   logFac,    //
-                                                   a8::hal::S //
-                                                   ),
+    StagingContext *context = new StagingContext(sch,       //
+                                                 logFac,    //
+                                                 a8::hal::S //
+    );
+    Application::start("appFc", context,
                        new NativeFlightControl(argc, //
                                                argv, //
-                                               links,
-                                               sockets //
-                                               )       //
+                                               links //
+                                               )     //
     );
+    if (context->isStop()) {
+        return 0;
+    }
     sch->startSchedule();
 }

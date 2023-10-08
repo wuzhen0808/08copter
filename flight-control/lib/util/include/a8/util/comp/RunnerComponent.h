@@ -9,7 +9,7 @@ class RunnerComponent : public Component {
 public:
     RunnerComponent(const char *name, Runnable *runner) : Component(name) {
         this->runner = runner;
-        this->rate = Rate::ForEver;
+        this->rates.append(Rate::RUN);
     }
     virtual void run() {
         this->runner->run();

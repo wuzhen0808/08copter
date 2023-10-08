@@ -17,7 +17,7 @@ class GroundStation : public Component {
 
 public:
     GroundStation(int argc, char **argv, Links *links) : Component("gs") {
-        this->rate = Rate::ForEver;
+        this->rates.append(Rate::RUN);
         this->links = links;
     }
 
