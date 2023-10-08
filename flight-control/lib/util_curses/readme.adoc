@@ -1,0 +1,4 @@
+To keeping the util folder clean, nothing external libs needed for util folder.
+But util_curses depends on the cdk and related lib which are external libs.
+That's why we separate this part of code from util folder.
+

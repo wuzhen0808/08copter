@@ -219,6 +219,23 @@ public:
         }
     }
 
+    bool equalsIgnoreCase(const String str1) const {
+        int len1 = str1.length();
+        int len2 = this->length();
+        if (len1 != len2) {
+            return false;
+        }
+        for (int i = 0; i < len1; i++) {
+            char c1 = str1.charAt(i);
+            char c2 = this->charAt(i);
+
+            if (!Lang::equalsIgnoreCase(c1, c2)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     //
     // operators
 
@@ -259,7 +276,11 @@ public:
         append(str);
         return *this;
     }
-        
+
+    friend String &operator<<(const char *str, String &str2) {
+        return String() << str << str2;
+    }
+
     char operator[](int idx) {
         if (idx < 0 || idx > this->length_) {
             Lang::illegalArgument("index out of bound.");

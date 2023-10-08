@@ -49,6 +49,10 @@ public:
         this->loggerFactory = loggerFactory;
     }
 
+    void close(){
+        this->sockets->close(this->sock);
+    }
+
     int bind(Result &errorMessage) {
         if (this->status != Idle) {
             return -1; // cannot bind un less Idle.

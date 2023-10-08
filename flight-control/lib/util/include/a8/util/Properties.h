@@ -12,80 +12,80 @@
 
 namespace a8::util {
 
-class Entry {
-public:
-    String name;
-    String type;
-    String value;
-
-    Entry(const String name, const String type, const String value) {
-        set(name, type, value);
-    }
-
-    void set(const String name, const String type, const String value) {
-        this->name = name;
-        this->type = type;
-        this->value = value;
-    }
-    ~Entry() {
-    }
-    String getLine() {
-
-        return name + "=" + value;
-    }
-
-    Buffer<float> getFloatArray() {
-        Buffer<float> ret;
-        if (type != PT_FLOAT) {
-            return ret;
-        }
-        ret = Float::parseAll<float>(value, ',', [](double d) { return (float)d; });
-
-        return ret;
-    }
-
-    Buffer<int> getIntArray() {
-        Buffer<int> ret;
-        if (type != PT_INT) {
-            return ret;
-        }
-        ret = Float::parseAll<int>(value, ',', [](double d) { return (int)d; });
-        return ret;
-    }
-
-    Buffer<String> getStringArray() {
-        Buffer<String> ret;
-        if (type != PT_STRING) {
-            return ret;
-        }        
-        ret = StringUtil::split(value, ',');        
-        return ret;
-    }
-
-    float getFloat(float defValue) {
-        Buffer<float> buf = getFloatArray();
-        if (value == 0 || buf.isEmpty()) {
-            return defValue;
-        }
-        return buf.get(0);
-    }
-    int getInt(int defValue) {
-        Buffer<int> buf = getIntArray();
-        if (value == 0 || buf.isEmpty()) {
-            return defValue;
-        }
-        return buf.get(0);
-    }
-    String getString(String defValue) {
-        Buffer<String> buf = getStringArray();
-        if (value == 0 || buf.isEmpty()) {
-            return defValue;
-        }
-        return buf.get(0);
-    }
-};
-
 class Properties {
+
+    class Entry {
+    public:
+        String name;
+        String type;
+        String value;
+
+        Entry(const String name, const String type, const String value) {
+            set(name, type, value);
+        }
+
+        void set(const String name, const String type, const String value) {
+            this->name = name;
+            this->type = type;
+            this->value = value;
+        }
+        ~Entry() {
+        }
+        String getLine() {
+
+            return name + "=" + value;
+        }
+
+        Buffer<float> getFloatArray() {
+            Buffer<float> ret;
+            if (type != PT_FLOAT) {
+                return ret;
+            }
+            ret = Float::parseAll<float>(value, ',', [](double d) { return (float)d; });
+
+            return ret;
+        }
+
+        Buffer<int> getIntArray() {
+            Buffer<int> ret;
+            if (type != PT_INT) {
+                return ret;
+            }
+            ret = Float::parseAll<int>(value, ',', [](double d) { return (int)d; });
+            return ret;
+        }
+
+        Buffer<String> getStringArray() {
+            Buffer<String> ret;
+            if (type != PT_STRING) {
+                return ret;
+            }
+            ret = StringUtil::split(value, ',');
+            return ret;
+        }
+
+        float getFloat(float defValue) {
+            Buffer<float> buf = getFloatArray();
+            if (value == 0 || buf.isEmpty()) {
+                return defValue;
+            }
+            return buf.get(0);
+        }
+        int getInt(int defValue) {
+            Buffer<int> buf = getIntArray();
+            if (value == 0 || buf.isEmpty()) {
+                return defValue;
+            }
+            return buf.get(0);
+        }
+        String getString(String defValue) {
+            Buffer<String> buf = getStringArray();
+            if (value == 0 || buf.isEmpty()) {
+                return defValue;
+            }
+            return buf.get(0);
+        }
+    };
     Entry *zeroEntry;
 
     Buffer<Entry *> *buffer;

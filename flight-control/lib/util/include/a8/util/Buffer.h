@@ -186,6 +186,10 @@ public:
         }
         return this->buffer_[idx];
     }
+
+    void operator=(T* array){
+        
+    }
 };
 
 // implementation

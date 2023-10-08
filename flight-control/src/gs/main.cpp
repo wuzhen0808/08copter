@@ -36,5 +36,9 @@ int main(int argc, char **argv) {
     );
     // note, this method is blocking.
     // until sch->endSchedule() is called.
+    logFac->getLogger("default")->info("before startScheduler");
     sch->startSchedule();
+    logFac->getLogger("default")->info("after startScheduler");
+
+
 }

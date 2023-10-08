@@ -10,6 +10,25 @@ private:
 public:
     static const char END_OF_STR = '\0';
 
+    static bool isLower(char ch) {
+        return ch >= 'a' && ch <= 'z';
+    }
+
+    static bool isUpper(char ch) {
+        return ch >= 'A' && ch <= 'Z';
+    }
+
+    static char toLower(char ch) {
+        if (isUpper(ch)) {
+            ch = ch - 'A' + 'a';
+        }
+        return ch;
+    }
+    
+    static bool equalsIgnoreCase(char c1, char c2) {
+        return toLower(c1) == toLower(c2);
+    }
+
     template <typename T>
     static void replace(T *&ptr, T *ptr2) {
         T *tmp = ptr;

@@ -1,22 +1,19 @@
 #pragma once
 
 #include "a8/util.h"
+#include "a8/util/curses/Widget.h"
 #include "a8/util/curses/defines.h"
 #include <cdk.h>
 
 namespace a8::util::curses {
 
-class ScrollWindow {
-
-    CDKSWINDOW *widget;
+class ScrollWindow : Widget<CDKSWINDOW> {
 
 public:
-    ScrollWindow(CDKSWINDOW *widget) {
-
-        this->widget = widget;
+    ScrollWindow(CDKSWINDOW *widget): Widget(widget) {
     }
     
-    void draw() {
+    void draw() override{
         drawCDKSwindow(widget, widget->obj.box);
     }
 
