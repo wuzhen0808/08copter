@@ -89,7 +89,7 @@ public:
      * Double ways, sending and receiving.
      */
 
-    int connect(Bridge *&bridge, void *skeleton, anyRelease skeletonReleaseF, stubCreate stubCreateF, anyRelease stubReleaseF, Result &res) {
+    int connect(Bridge *&bridge, void *skeleton, anyRelease skeletonReleaseF, Result &res) {
         if (this->status != Idle) {
             return -1;
         }
@@ -106,16 +106,16 @@ public:
             res.errorMessage << "Cannot connect to address:" << this->host << ":" << this->port << "\n";
             return rst;
         }
+
         // client mode.
         Channel *channel = new Channel(sockets, sock, codec);
-        bridge = createBridge(skeleton, skeletonReleaseF, stubCreateF, stubReleaseF, channel);
+        bridge = createBridge(skeleton, skeletonReleaseF, channel);
         return rst;
     }
 
-    Bridge *createBridge(void *skeleton, anyRelease skeletonReleaseF, stubCreate stubCreateF, anyRelease stubReleaseF, Channel *channel) {
-
-        void *stub = stubCreateF(channel);
-        Bridge *bridge = new Bridge(bridge_, skeleton, skeletonReleaseF, stub, stubReleaseF, channel, loggerFactory);
+    Bridge *createBridge(void *skeleton, anyRelease skeletonReleaseF, Channel *channel) {
+        
+        Bridge *bridge = new Bridge(bridge_, skeleton, skeletonReleaseF, channel, loggerFactory);
         scheduler->schedule(
             [](void *bridge) {
                 static_cast<Bridge *>(bridge)->run();
@@ -130,7 +130,7 @@ public:
      * Blocking until new connection come in.
      * TODO timeout arg.
      */
-    int accept(Bridge *&bridge, void *skeleton, anyRelease skeletonReleaseF, stubCreate stubCreateF, anyRelease stubReleaseF, Result &rst) {
+    int accept(Bridge *&bridge, void *skeleton, anyRelease skeletonReleaseF, Result &rst) {
 
         if (this->status != Listening) {
             rst.errorMessage << "Could not accept connection on address" << this << ",not listening yet.";
@@ -148,7 +148,7 @@ public:
         }
         Channel *channel = new Channel(sockets, sock2, codec);
 
-        bridge = createBridge(skeleton, skeletonReleaseF, stubCreateF, stubReleaseF, channel);
+        bridge = createBridge(skeleton, skeletonReleaseF, channel);
         return ret;
     }
 

@@ -5,11 +5,15 @@
 //  1
 == {counter:chapter}. Introduction
 
-=== {chapter}.{counter:bg}. What is A8
+=== {chapter}.{counter:bg}. What is A3
 
 The aim of this project is learning how to build a quad copter from zero. Learning is not building itself in that we focus on the structure of a general quad copter. Trying to provide a framework and guide a learner to build his or her concrete copter.
 
-A8 stand for what? One reason is that Arduino UNO R4 is initially adopted here as the main board of the flight control system. Another reason is that this project started from Autumn and August of 2003. You know august is the 8th month of a year.
+A3 stand for Arduino, Autumn and August. 
+
+*** Arduino UNO R4 is initially adopted here as the board of the flight control system.
+*** This project is started from Autumn.
+*** It's started from August of 2003. 
 
 === {chapter}.{counter:bg}. For whom？
 
@@ -23,7 +27,7 @@ If you are learning to build a quad copter from zero then this project is a entr
 
 === {chapter}.{counter:bg}. Principal.
 
-One principal this project trying to follow is concentrating on the readability of the source code. Because the goal of this project is not a flyable copter but the procedure to build one.
+*** Dependencies minimizing.
 
 == {counter:chapter}. Glossary
 This section introduce the concepts involved. If you already know the background about how an copter is composed you can skip this section.

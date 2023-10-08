@@ -15,31 +15,24 @@ class Bridge : public FlyWeight {
     using stubRelease = void (*)(void *);
 
     bridge bridge_;
-    skeletonRelease skeletonRelease_;
-    stubRelease stubRelease_;
+    skeletonRelease skeletonRelease_;    
     void *skeleton;
-    void *stub_;
-
     Channel *channel;
 
 public:
-    Bridge(bridge bridge, void *skeleton, skeletonRelease skeletonRelease, void *stub, stubRelease stubRelease, Channel *channel, LoggerFactory *logF) : FlyWeight(logF) {
+    Bridge(bridge bridge, void *skeleton, skeletonRelease skeletonRelease, Channel *channel, LoggerFactory *logF) : FlyWeight(logF) {
         this->bridge_ = bridge;
         this->skeleton = skeleton;
-        this->skeletonRelease_ = skeletonRelease;
-        this->stub_ = stub;
-        this->stubRelease_ = stubRelease;
+        this->skeletonRelease_ = skeletonRelease;            
         this->channel = channel;
     }
     ~Bridge() {
-        stubRelease_(this->stub_);
         skeletonRelease_(this->skeleton);
         delete this->channel;
     }
 
-    template <typename S>
-    S *getStub() {
-        return static_cast<S *>(this->stub_);
+    Channel * getChannel(){
+        return channel;
     }
 
     void run() {

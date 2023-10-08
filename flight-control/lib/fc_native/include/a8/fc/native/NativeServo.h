@@ -1,6 +1,6 @@
 #pragma once
 #include "a8/fc.h"
-#include "a8/fc/native/JSBSimIO.h"
+#include "a8/fc/native/SimOutStub.h"
 
 using namespace a8::util;
 using namespace a8::fc;
@@ -9,19 +9,17 @@ namespace a8::fc::native {
 class NativeServo : public Servo {
 
 private:
-    JSBSimIO *jio;
+    SimOutStub *soStub;
 
 public:
-    NativeServo(JSBSimIO *jio, int id) : Servo(id) {
-        this->jio = jio;
+    NativeServo(SimOutStub *soStub, int id) : Servo(id) {
+        this->soStub = soStub;
     }
 
     ~NativeServo() {}
 
     void setThrottleNorm(float throttle) override {
-        this->jio->setThrottleNorm(this->id, throttle);
-    }
-    void setup() override {
+        this->soStub->setThrottleNorm(this->id, throttle);
     }
 };
 

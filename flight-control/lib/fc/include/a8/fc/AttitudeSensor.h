@@ -1,6 +1,6 @@
 #pragma once
-#include "a8/util/comp.h"
 #include "a8/util/Vector3f.h"
+#include "a8/util/comp.h"
 
 using namespace a8::util;
 using namespace a8::util::comp;
@@ -11,10 +11,10 @@ class AttitudeSensor : public Component {
 public:
     AttitudeSensor();
     ~AttitudeSensor();
-    
-    virtual Vector3f getAngVel() = 0;
-    virtual Vector3f getAccVel() = 0;
-    virtual double getAlt() = 0;
-    virtual double getAgl() = 0;
+
+    virtual int getAngVel(Vector3f &angVel, Result &rst) = 0;
+    virtual int getAccVel(Vector3f &accVel, Result &rst) = 0;
+    virtual int getAltitude(double &altitude, Result &rst) = 0;
+    virtual int getLongitude(double &longitude, Result &rst) = 0;
 };
 } // namespace a8::fc

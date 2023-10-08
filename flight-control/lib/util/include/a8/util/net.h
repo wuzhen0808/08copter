@@ -6,6 +6,7 @@
 #include "a8/util/net/Channel.h"
 #include "a8/util/net/Codec.h"
 #include "a8/util/net/SimpleCodec.h"
+#include "a8/util/net/LineCodec.h"
 #include "a8/util/net/Address.h"
 #include "a8/util/net/Network.h"
 

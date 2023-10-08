@@ -16,20 +16,18 @@ namespace a8::util::net {
 class Network {
 
     Sockets *sockets;
-    Codec *codec;
     Scheduler *scheduler;
     LoggerFactory *loggerFactory;
 
 public:
-    Network(Sockets *sockets, Codec *codec, Scheduler *scheduler, LoggerFactory *loggerFactory) {
+    Network(Sockets *sockets, Scheduler *scheduler, LoggerFactory *loggerFactory) {
         this->sockets = sockets;
-        this->codec = codec;
         this->scheduler = scheduler;
         this->loggerFactory = loggerFactory;
     }
 
-    Address * address(bridge bridgeF, String host, int port) {
-        return new Address(this->sockets, this->codec, bridgeF, host, port, this->scheduler, this->loggerFactory);
+    Address * address(bridge bridgeF, String host, int port, Codec *codec) {
+        return new Address(this->sockets, codec, bridgeF, host, port, this->scheduler, this->loggerFactory);
     }
 };
 

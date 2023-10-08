@@ -2,8 +2,8 @@
 #include "a8/fc.h"
 #include "a8/fc/FlightControl.h"
 #include "a8/fc/ServosControl.h"
-#include "a8/fc/native/JSBSimIO.h"
 #include "a8/fc/native/NativeServo.h"
+#include "a8/fc/native/SimOutStub.h"
 
 using namespace a8::fc;
 using namespace a8::util;
@@ -13,15 +13,15 @@ namespace a8::fc::native {
 class NativeServosControl : public ServosControl {
 
 private:
-    JSBSimIO *jio;
+    SimOutStub *soStub;
 
 public:
-    NativeServosControl(int totalServos, JSBSimIO *jio) : ServosControl(totalServos) {
-        this->jio = jio;
+    NativeServosControl(int totalServos, SimOutStub *soStub) : ServosControl(totalServos) {
+        this->soStub = soStub;
     }
     ~NativeServosControl() {}
     virtual Servo *createServo(int servoId) override {
-        return new NativeServo(jio, servoId);
+        return new NativeServo(soStub, servoId);
     }
 };
 

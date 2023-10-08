@@ -6,6 +6,9 @@
 #include "a8/fc/native/JSBSimIO.h"
 #include "a8/fc/native/NativeAttitudeSensor.h"
 #include "a8/fc/native/NativeServosControl.h"
+#include "a8/fc/native/SimInSkeleton.h"
+#include "a8/fc/native/SimOutSkeleton.h"
+#include "a8/fc/native/SimOutStub.h"
 #include "a8/fc/native/defines.h"
 #include "a8/hal.h"
 #include "a8/hal/freertos.h"
@@ -29,18 +32,20 @@ namespace a8::fc::native {
 class NativeFlightControl : public FlightControl {
 private:
     Sockets *sockets;
-    JSBSimIO *jio;
     String propertiesFile;
     String host;
     int port;
     int argc;
     char **argv;
     //
-
     Links *links;
     FcSkeleton *skeleton;
     Bridge *gsBridge;
-    GsApi *gsApi;
+    SimInSkeleton *sis;
+
+    GsApi* gsApi;    
+    SimOutStub* soStub;
+
     String resolveConfFile(Properties &pts) {
 
         String fpath = pts.getString(a8_properties, "");
@@ -93,11 +98,11 @@ private:
 
 protected:
     virtual ServosControl *createServosControl(StagingContext *context) override {
-        ServosControl *servos = new NativeServosControl(totalServos_, jio);
+        ServosControl *servos = new NativeServosControl(totalServos_, soStub);
         return servos;
     }
     virtual AttitudeSensor *createAttitudeSensor(StagingContext *context) override {
-        NativeAttitudeSensor *sensor = new NativeAttitudeSensor(this->jio);
+        NativeAttitudeSensor *sensor = new NativeAttitudeSensor(this->sis);
         return sensor;
     }
 
@@ -115,7 +120,7 @@ public:
         resolveProperties(*context->properties);
         FlightControl::boot(context);
     }
-    void hearBeat() {
+    void heatBeat() {
         gsApi->ping("hello, gs,this is fc.");
     }
     virtual void populate(StagingContext *context) override {
@@ -123,25 +128,40 @@ public:
         skeleton = new FcSkeleton(context->loggerFactory);
 
         Result rst;
-        int ret = this->links->gsAddress()->connect(this->gsBridge, skeleton, FcSkeleton::release, GsStub::create, GsStub::release, rst);
+        int ret = this->links->gsAddress()->connect(this->gsBridge, skeleton, FcSkeleton::release, rst);
         if (ret < 0) {
             context->stop(rst);
             return;
         }
         log("successfully connect to gsApi");
 
-        gsApi = this->gsBridge->getStub<GsApi>();
+        gsApi = new GsStub(this->gsBridge->getChannel());
 
         context->scheduler->scheduleTimer([](void *this_) {
-            static_cast<NativeFlightControl *>(this_)->hearBeat();
+            static_cast<NativeFlightControl *>(this_)->heatBeat();
         },
                                           this, 1.0f);
         // TODO enable mock jio for easy validation.
-        jio = new JSBSimIO(sockets); // TODO use network util.
-        this->addChild(context, jio);
-        if (context->isStop()) {
-            return;
+        // jio = new JSBSimIO(sockets); // TODO use network util.
+        // this->addChild(context, jio);
+        // if (context->isStop()) {
+        //     return;
+        // }
+        //
+        sis = new SimInSkeleton(context->loggerFactory);
+        Bridge *sisB = 0;
+        ret = this->links->simInAddress()->accept(sisB, sis, SimInSkeleton::release, rst);
+        if (ret < 0) {
+            context->stop(rst);
         }
+        //
+        Bridge *soBridge = 0;
+        ret = this->links->simOutAddress()->connect(soBridge, new SimOutSkeleton(loggerFactory), SimOutSkeleton::release, rst);
+        if (ret < 0) {
+            return context->stop(rst);
+        }
+        this->soStub = new SimOutStub(soBridge->getChannel());
+
         FlightControl::populate(context);
     }
 

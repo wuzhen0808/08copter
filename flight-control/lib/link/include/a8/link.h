@@ -6,4 +6,5 @@
 #include "a8/link/FcStub.h"
 #include "a8/link/GsApi.h"
 #include "a8/link/GsStub.h"
+#include "a8/link/LineStub.h"
 #include "a8/link/Links.h"

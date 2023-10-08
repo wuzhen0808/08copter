@@ -19,6 +19,8 @@ class Channel {
     SocketWriter *writer;
     SocketReader *reader;
     int lastResult = 0;
+    // codec context
+    void *codecObj;
 
 public:
     Channel(Sockets *sockets, SOCK sock, Codec *codecs) {
@@ -53,15 +55,11 @@ public:
 
         int received = 0;
         while ((len == -1 || received < len) && lastResult >= 0) {
-            int type = 0;
-            void *data = 0;
-            lastResult = codecs_->read(reader, type, data, rst);
 
+            lastResult = codecs_->read(reader, bridgeF, skeleton, rst);
             if (lastResult <= 0) {
                 break;
             }
-            bridgeF(type, data, skeleton);
-
             received++;
         }
 

@@ -17,7 +17,6 @@ public:
         case CommonMessageType::PING:
             String *pData = static_cast<String *>(data);
             fcs->ping(*pData);
-            delete pData;
             break;
         }
         delete fcs;

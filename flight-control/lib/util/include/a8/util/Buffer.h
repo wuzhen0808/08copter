@@ -178,7 +178,7 @@ public:
             Assert::illegalArgument("idx out of bound.");
         }
         return this->buffer_[idx];
-    }
+    }    
 };
 
 // implementation

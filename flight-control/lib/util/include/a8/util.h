@@ -21,3 +21,4 @@
 #include "a8/util/StringWriter.h"
 #include "a8/util/Vector3f.h"
 #include "a8/util/Writer.h"
+#include "a8/util/FinalRef.h"

@@ -35,21 +35,30 @@ public:
     }
 
     static Buffer<String> split(String str, const char separator) {
+        return StringUtil::split(&str, separator);
+    }
+
+    static Buffer<String> split(String *str, const char separator) {
         return StringUtil::split<String>(str, separator, [](String &s) { return s; });
     }
 
     template <typename T>
     static Buffer<T> split(String string, const char separator, T (*convert)(String &)) {
+        return StringUtil::split(&string, separator, convert);
+    }
+
+    template <typename T>
+    static Buffer<T> split(String *string, const char separator, T (*convert)(String &)) {
 
         String str;
         Buffer<T> ret;
-        for (int i = 0; i < string.length(); i++) {
-            if (string.charAt(i) == separator) {
+        for (int i = 0; i < string->length(); i++) {
+            if (string->charAt(i) == separator) {
                 ret.append(convert(str));
                 str = "";
                 continue;
             }
-            str.append(string.charAt(i));
+            str.append(string->charAt(i));
         }
         ret.append(convert(str));
         return ret;

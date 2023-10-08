@@ -1,6 +1,7 @@
 #pragma once
 #include "a8/link/FcBridge.h"
 #include "a8/link/GsBridge.h"
+#include "a8/link/LineBridge.h"
 #include "a8/link/defines.h"
 #include "a8/util/net.h"
 
@@ -14,27 +15,33 @@ namespace a8::link {
  */
 class Links : public Network {
 
-    SimpleCodec *codec;
     //
     String host = "127.0.0.1";
     int fcPort = 8001;
     int gsPort = 8002;
+    int simOutPort = 5126;
+    int simInPort = 5502;
 
     Address *fcAddress_;
     Address *gsAddress_;
+    Address *simOutAddress_;
+    Address *simInAddress_;
 
 public:
-    static Codec *buildCodec() {
+    Links(Sockets *sockets, Scheduler *scheduler, LoggerFactory *logFac) : Network(sockets, scheduler, logFac) {
+
         SimpleCodec *codec = new SimpleCodec();
         // register codecs
         codec->add(CommonMessageType::PING, CodecFunc::writeString, CodecFunc::readString);
         codec->add(CommonMessageType::LOG, CodecFunc::writeString, CodecFunc::readString);
         codec->add(CommonMessageType::CMD, CodecFunc::writeString, CodecFunc::readString);
-        return codec;
-    }
-    Links(Sockets *sockets, Scheduler *scheduler, LoggerFactory *logFac) : Network(sockets, buildCodec(), scheduler, logFac) {
-        this->gsAddress_ = address(GsBridge::bridge, host, gsPort);
-        this->fcAddress_ = address(FcBridge::bridge, host, fcPort);
+        // address
+        this->gsAddress_ = address(GsBridge::bridge, host, gsPort, codec);
+        this->fcAddress_ = address(FcBridge::bridge, host, fcPort, codec);
+        // address
+        Codec *codec2 = new LineCodec('\n');
+        this->simOutAddress_ = address(LineBridge::bridge, host, simOutPort, codec2);
+        this->simInAddress_ = address(LineBridge::bridge, host, simInPort, codec2);
     }
 
     Address *gsAddress() {
@@ -43,6 +50,14 @@ public:
 
     Address *fcAddress() {
         return this->fcAddress_;
+    }
+
+    Address *simOutAddress() {
+        return this->simOutAddress_;
+    }
+
+    Address *simInAddress() {
+        return this->simInAddress_;
     }
 };
 

@@ -13,7 +13,6 @@ public:
         return this->id;
     }
 
-    virtual void setup() = 0;
     /**
      * Velocity here a normalized scope: (-1, 1)
      */

@@ -18,6 +18,10 @@ public:
     SimpleCodec() : Codec() {
     }
 
+    void *startCodec() {
+        return 0;
+    }
+
     /**
      * Register a data type with encoder and decoder.
      * And optionally provide a default handle function pointer for receiving the data decoded.
@@ -64,7 +68,9 @@ public:
     /**
      * @override
      */
-    int read(Reader *reader, int &type, void *&data, Result &rst) override {
+    int read(Reader *reader, consume consume, void *context, Result &rst) override {
+        int type = -1;
+        void *data = 0;
         int ret2 = 0;
         int ret = CodecFunc::readInt8_(reader, type);
         if (ret < 0) {
@@ -78,11 +84,12 @@ public:
             return -2; // failed to decode buffer.
         }
 
-        ret = codec->read(reader, type, data, rst); // write ref back
+        ret = codec->read(reader, consume, context, rst); // write ref back
         if (ret < 0) {
             return ret;
         }
         ret2 += ret;
+
         return ret2;
         //
     }

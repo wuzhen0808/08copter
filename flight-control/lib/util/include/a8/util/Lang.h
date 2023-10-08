@@ -10,6 +10,15 @@ private:
 public:
     static const char END_OF_STR = '\0';
 
+    template <typename T>
+    static void replace(T *&ptr, T *ptr2) {
+        T *tmp = ptr;
+        ptr = ptr2;
+        if (tmp != 0) {
+            delete tmp;
+        }
+    }
+
     static void illegalArgument(const char *msg) {
         static_cast<Lang *>(0)->emptyMethod();
     }
@@ -74,7 +83,7 @@ public:
         appendStr(ret, len, cap, 1, buf1, from1, len1);
         return ret;
     }
-    
+
     static void appendStr(char *&bufferRef, const char *buf1, const int from1, const int len1) {
         int len = 0;
         int cap = 0;

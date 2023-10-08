@@ -27,8 +27,8 @@ public:
     /**
      * @override
      */
-    int read(Reader *reader, int &type, void *&data, Result &rst) override {
-        return readF(reader, type, data, rst);
+    int read(Reader *reader, consume consume, void *context, Result &rst) override {
+        return readF(reader, consume, context, rst);
         //
     }
 };

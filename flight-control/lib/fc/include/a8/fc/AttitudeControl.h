@@ -102,9 +102,17 @@ public:
 
     virtual void tick(TickingContext *ticking) override {
 
-        double altitude1 = attitudeSensor->getAlt();
-
-        Vector3f aVel1 = attitudeSensor->getAngVel();
+        double altitude1;
+        Result rst;
+        int ret = attitudeSensor->getAltitude(altitude1, rst);
+        if (ret < 0) {
+            return;
+        }
+        Vector3f aVel1;
+        ret = attitudeSensor->getAngVel(aVel1, rst);
+        if (ret < 0) {
+            return;
+        }
         //
         double altitude2 = 200; // Meter
         float cmdThrottle = altitudePid->update(altitude2, altitude1);

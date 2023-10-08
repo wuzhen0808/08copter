@@ -9,14 +9,14 @@
 
 namespace a8::util::net {
 using bridge = void (*)(int, void *, void *);
-
+using consume = void (*)(int, void *, void *);
 namespace FuncType {
 
 // encode data into the buffer.
 typedef int (*write)(Writer *writer, int type, void *data, Result &rst);
 
 // decode buffer into data with type.
-typedef int (*read)(Reader *reader, int &type, void *&data, Result &rst);
+typedef int (*read)(Reader *reader, consume consume, void *context, Result &rst);
 
 } // namespace FuncType
 
@@ -78,7 +78,7 @@ static int writeString(Writer *writer, int type, void *data, Result &rst) {
     return len;
 }
 
-static int readString(Reader *reader, int &type, void *&data, Result &rst) {
+static int readString(Reader *reader, consume consume, void *context, Result &rst) {
 
     // read length;
     int len;
@@ -89,7 +89,8 @@ static int readString(Reader *reader, int &type, void *&data, Result &rst) {
     // read text
     char buf[len];
     reader->read(buf, len);
-    data = new String(buf, len);
+    String *data = new String(buf, len);
+    consume(0, data, context);
     ret += len;
     return ret;
 }

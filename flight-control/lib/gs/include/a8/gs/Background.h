@@ -47,8 +47,7 @@ public:
             // TODO timeout for accept.
             int ret = gsAddress->accept(
                 bridge,
-                new GsSkeleton(this->loggerFactory), GsSkeleton::release, //
-                FcStub::create, FcStub::release,                          //
+                new GsSkeleton(this->loggerFactory), GsSkeleton::release, //                                       //
                 rst                                                       //
             );
 
