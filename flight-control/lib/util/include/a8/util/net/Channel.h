@@ -59,13 +59,11 @@ public:
 
         int received = 0;
         while ((len == -1 || received < len) && lastResult >= 0) {
-            int type;
-            void *data;
+            
             lastResult = codecs_->read(reader, bridgeF, skeleton, rst);
             if (lastResult <= 0) {                
                 break;
             }
-            bridgeF(type, data, skeleton);
             received++;
         }
 

@@ -63,7 +63,7 @@ TEST(TestCodec, testSimpleCodec) {
     EXPECT_EQ('\0', buf[4]);
 
     reader.reset();
-    
+
     Skeleton skeleton;
     ret = cd1->read(&reader, bridge_, &skeleton, rst);
     if (ret < 0) {
@@ -76,20 +76,6 @@ TEST(TestCodec, testSimpleCodec) {
     EXPECT_EQ(str, skeleton.lastMessage);
 }
 
-int writeInt16(Writer *writer, int iValue) {
-    char ch1 = iValue >> 0 & 0x00FF;
-    char ch2 = iValue >> 8 & 0x00FF;
-    writer->write(ch1);
-    writer->write(ch2);
-    return 2;
-}
-int readInt16(Reader *reader, char *buf) {
-    reader->read(buf, 2);
-    int i = 0;
-    i = i + ((buf[0] & 0x00FF) << 0);
-    i = i + ((buf[1] & 0x00FF) << 8);
-    return i;
-}
 TEST(TestCodec, testShift) {
     EXPECT_EQ(21, 0x0015);
     EXPECT_EQ(1 << 8, 0x0100);
@@ -117,19 +103,18 @@ TEST(TestCodec, testShift) {
 TEST(TestCodec, testInt16) {
     StringWriter sw;
 
-    writeInt16(&sw, 21);
+    CodecUtil::writeInt16(&sw, 21);
     String str = sw.toString();
     const char *buf1 = str.text();
     EXPECT_EQ(buf1[0], 21);
     EXPECT_EQ(buf1[1], 0);
 
     StringReader sr(str);
-    char buf2[2];
-    int i2 = readInt16(&sr, buf2);
-    EXPECT_EQ(buf2[0], 21);
-    EXPECT_EQ(buf2[1], 0);
+    int i16;
+    int ret = CodecUtil::readInt16(&sr, i16);
+    EXPECT_EQ(ret, 2);
+    EXPECT_EQ(i16, 21);
 
-    EXPECT_EQ(i2, 21);
 }
 int main(int argc, char **argv) {
 

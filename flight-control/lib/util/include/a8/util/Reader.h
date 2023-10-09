@@ -18,13 +18,33 @@ public:
     ~Reader() {
     }
     /**
-     * return :
+     * Return :
      * >0: the length read into buf parameter provided.
      * 0: no more data to read.
      * <0: error code.
+     *
      */
     virtual int read(char *buf, int bufLen) = 0;
-    int read(char& ch){        
+    int read(char *buf, int bufLen, bool full) {
+        if (!full) {
+            return read(buf, bufLen);
+        }
+
+        int len = 0;
+        while (len < bufLen) {
+
+            int ret = read(buf + len, bufLen - len);
+            if (ret < 0) {
+                return ret;
+            }
+            if (ret == 0) {
+                break;
+            }
+            len += ret;
+        }
+        return len;
+    }
+    int read(char &ch) {
         return read(&ch, 1);
     }
 };

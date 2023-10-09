@@ -8,41 +8,47 @@ class CodecUtil {
 public:
     template <typename T>
     static int readInt(Reader *reader, int size, T &intV) {
-        char buf[size];
-        int ret = reader->read(buf, size);
-        if (ret < 0) {
-            return ret;
-        }
+
+        int intV2 = 0;
         for (int i = 0; i < size; i++) {
-            intV = intV + ((buf[i] & 0xFF) << 8 * i);
+            char ch;
+            int ret = reader->read(ch);
+            if (ret != 1) {
+                return -1;
+            }
+
+            intV2 = intV2 + ((ch & 0xFF) << 8 * i);
         }
+        intV = intV2;
         return size;
     }
 
     template <typename T>
     static int writeInt(Writer *writer, int size, T intV) {
-        char buf[size];
         for (int i = 0; i < size; i++) {
-            buf[i] = intV >> 8 * i & 0xFF;
+            char ch = intV >> 8 * i & 0xFF;
+            int ret = writer->write(ch);
+            if (ret != 1) {
+                return -1;
+            }
         }
-        writer->write(buf, size);
         return size;
     }
 
     static int writeInt8(Writer *writer, int data) {
-        return writeInt(writer, 8 / 8, data);
+        return writeInt<int>(writer, 8 / 8, data);
     }
 
     static int readInt8(Reader *reader, int &data) {
         return readInt<int>(reader, 8 / 8, data);
     }
 
-    static int writeInt16_(Writer *writer, int iValue) {
-        return writeInt(writer, 16 / 8, iValue);
+    static int writeInt16(Writer *writer, int iValue) {
+        return writeInt<int>(writer, 16 / 8, iValue);
     }
 
     static int readInt16(Reader *reader, int &intV) {
-        return readInt(reader, 16 / 8, intV);
+        return readInt<int>(reader, 16 / 8, intV);
     }
 
     /**
@@ -131,11 +137,18 @@ public:
     static int writeString_(Writer *writer, String *data) {
         int len = 0;
         // write text
-        int ret = writer->write(data->text(), data->len());
-        if (ret < 0) {
-            return ret;
+        for (int i = 0; i < data->len(); i++) {
+            char ch = data->charAt(i);
+            if (ch == Lang::END_OF_STR) {
+                break;
+            }
+            int ret = writer->write(ch);
+            if (ret < 0) {
+                return ret;
+            }
+            len += ret;
         }
-        len += ret;
+
         writer->write(Lang::END_OF_STR);
         len += 1;
         return len;
