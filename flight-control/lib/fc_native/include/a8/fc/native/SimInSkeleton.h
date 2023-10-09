@@ -7,7 +7,9 @@ using namespace a8::link;
 using namespace a8::util::comp;
 
 namespace a8::fc::native {
-
+/**
+ * Accept the simulator's output which is as the sensor feedback for the attitude control to reaction with.
+ */
 class SimInSkeleton : public LineApi, public FlyWeight {
 
     int Col_Time = -2;     // Time
@@ -22,8 +24,8 @@ class SimInSkeleton : public LineApi, public FlyWeight {
 
     int lines = 0;
 
-    FinalRef<String> lastLineRaw;
-    FinalRef<Buffer<String>> lastLineParsed;
+    MovePtr<String> lastLineRaw;
+    MovePtr<Buffer<String>> lastLineParsed;
     Buffer<String> headers;
 
     int findIndex(int &idxR, String name, Result &rst) {
@@ -43,7 +45,6 @@ public:
     SimInSkeleton(LoggerFactory *logFac) : FlyWeight(logFac) {
     }
     ~SimInSkeleton() {
-        
     }
     void line(String line) override {
         if (lines == 0) {

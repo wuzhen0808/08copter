@@ -8,7 +8,7 @@ using namespace a8::util::net;
 using namespace a8::util::comp;
 namespace a8::gs {
 
-using bridgeHandle = void (*)(Bridge *, int, void *); // bridge,isCreate,context.
+using bridgeHandle = void (*)(Bridge *, int, void *); // bridge,eventType,context.
 
 class Background : public FlyWeight {
     class Entry {

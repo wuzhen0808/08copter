@@ -3,18 +3,18 @@
 #include "a8/link/GsBridge.h"
 #include "a8/link/LineBridge.h"
 #include "a8/link/defines.h"
+#include "a8/util.h"
 #include "a8/util/net.h"
 
-using namespace a8::util::net;
-
 namespace a8::link {
+using namespace a8::util;
+using namespace a8::util::net;
 
 /**
  *  Network is a utility wrapper on top of socket.
  *
  */
 class Links : public Network {
-
     //
     String host = "127.0.0.1";
     int fcPort = 8001;
@@ -31,15 +31,17 @@ public:
     Links(Sockets *sockets, Scheduler *scheduler, LoggerFactory *logFac) : Network(sockets, scheduler, logFac) {
 
         SimpleCodec *codec = new SimpleCodec();
+
         // register codecs
-        codec->add(CommonMessageType::PING, CodecFunc::writeString, CodecFunc::readString);
-        codec->add(CommonMessageType::LOG, CodecFunc::writeString, CodecFunc::readString);
-        codec->add(CommonMessageType::CMD, CodecFunc::writeString, CodecFunc::readString);
+        codec->add<String>(CommonMessageType::PING, CodecUtil::writeString_, CodecUtil::readString_);
+        codec->add<String>(CommonMessageType::LOG, CodecUtil::writeString_, CodecUtil::readString_);
+        codec->add<String>(CommonMessageType::CMD, CodecUtil::writeString_, CodecUtil::readString_);
+        codec->add<SensorsData>(CopterMessageType::SENSORS_DATA, SensorsData::write_, SensorsData::read_);
         // address
         this->gsAddress_ = address(GsBridge::bridge, host, gsPort, codec);
         this->fcAddress_ = address(FcBridge::bridge, host, fcPort, codec);
         // address
-        Codec *codec2 = new LineCodec('\n');
+        Codec *codec2 = new LineCodec(0, '\n');
         this->simOutAddress_ = address(LineBridge::bridge, host, simOutPort, codec2);
         this->simInAddress_ = address(LineBridge::bridge, host, simInPort, codec2);
     }

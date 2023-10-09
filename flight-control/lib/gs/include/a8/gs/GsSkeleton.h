@@ -26,6 +26,11 @@ public:
         logger->info(String() << "on log message:" << msg);
     }
 
+    void sensors(SensorsData ssd) override {
+        String str;
+        log(str << ssd);
+    }
+
     void unknownMessageReceived(int type, void *data) override {
         logger->info(String() << "unknownMessageReceived, type:" << type);
     }

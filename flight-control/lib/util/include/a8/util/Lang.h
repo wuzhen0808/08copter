@@ -24,17 +24,48 @@ public:
         }
         return ch;
     }
-    
+
     static bool equalsIgnoreCase(char c1, char c2) {
         return toLower(c1) == toLower(c2);
     }
 
     template <typename T>
-    static void replace(T *&ptr, T *ptr2) {
-        T *tmp = ptr;
+    static void replace(T **&ptr, int &len, T **ptr2, int len2, bool isArray) {
+        free(ptr, len, isArray);
         ptr = ptr2;
-        if (tmp != 0) {
-            delete tmp;
+        len = len2;
+    }
+
+    template <typename T>
+    static void replace(T *&ptr, T *ptr2, bool isArray) {
+        free(ptr, isArray);
+        ptr = ptr2;
+    }
+
+    template <typename T>
+    static void free(T **ptr, int len, bool isArray) {
+        if (ptr == 0) {
+            return;
+        }
+        for (int i = 0; i < len; i++) {
+            free(ptr[i], isArray);
+        }
+        delete[] ptr;
+    }
+
+    template <typename T>
+    static void free(T *ptr) {
+        free(ptr, false);
+    }
+    template <typename T>
+    static void free(T *ptr, bool isArray) {
+        if (ptr == 0) {
+            return;
+        }
+        if (isArray) {
+            delete[] ptr;
+        } else {
+            delete ptr;
         }
     }
 
@@ -101,6 +132,10 @@ public:
         int cap = 0;
         appendStr(ret, len, cap, 1, buf1, from1, len1);
         return ret;
+    }
+
+    static void appendStr(char *&bufferRef, const char *buf1) {
+        appendStr(bufferRef, buf1, 0, strLength(buf1));
     }
 
     static void appendStr(char *&bufferRef, const char *buf1, const int from1, const int len1) {
@@ -247,6 +282,15 @@ public:
             cap += deltaCap;
         }
         return cap;
+    }
+    template <typename T>
+    static void free(T **a2, int len) {
+        for (int i = 0; i < len; i++) {
+            delete[] a2[i];
+        }
+        if (a2 != 0) {
+            delete[] a2;
+        }
     }
 };
 

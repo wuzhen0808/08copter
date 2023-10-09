@@ -8,7 +8,6 @@
 using namespace std;
 using namespace a8::util;
 using namespace a8::hal;
-using namespace a8::util::sys;
 namespace a8::hal::native {
 
 NativeSystem::NativeSystem() {

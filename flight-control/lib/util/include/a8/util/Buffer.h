@@ -187,8 +187,15 @@ public:
         return this->buffer_[idx];
     }
 
-    void operator=(T* array){
-        
+    void operator=(T *array) {
+    }
+    Buffer<T> subBuffer(int from) {
+        Buffer<T> ret;
+        int len2 = this->length_ - from;
+        if (len2 > 0) {
+            ret.append(this->buffer_, from, len2);
+        }
+        return ret;
     }
 };
 

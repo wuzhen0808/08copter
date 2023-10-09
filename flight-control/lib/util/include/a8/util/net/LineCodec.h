@@ -9,13 +9,15 @@ using namespace a8::util::net;
 namespace a8::util::net {
 
 class LineCodec : public Codec {
-    char separator = 0;
+    char separator;
+    int type;
 
 public:
-    LineCodec(char sep) : Codec() {
+    LineCodec(int type, char sep) : Codec() {
+        this->type = type;
         this->separator = sep;
     }
-    void *startCodec() {
+    int getHeaderLength() override {
         return 0;
     }
     /**
@@ -42,7 +44,7 @@ public:
     /**
      * @override
      */
-    int read(Reader *reader, int type, bridge bridgeF, void *context, Result &rst) override {
+    int read(Reader *reader, bridge bridgeF, void *context, Result &rst) override {
 
         String *str = new String();
         char ch;
@@ -58,10 +60,11 @@ public:
             }
             str->append(ch);
         }
-        if (ret >= 0) {
-            bridgeF(type, str, context);
+        if (ret < 0) {
+            return ret;
         }
-        delete str;
+        bridgeF(type, str, context);
+        Lang::free(str);
         return ret;
     }
 };

@@ -34,6 +34,7 @@ public:
         this->totalServos_ = totalServos;
     }
     void init() {
+        
     }
     ~FlightControl() {
     }

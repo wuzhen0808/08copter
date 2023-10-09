@@ -1,10 +1,7 @@
 #pragma once
-#include "a8/util.h"
+#include "a8/util/Output.h"
 
-
-using namespace a8::util;
-
-namespace a8::util::sys {
+namespace a8::util {
     
 class System {
 public:

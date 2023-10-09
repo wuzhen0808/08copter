@@ -56,6 +56,7 @@ public:
             log("after fg delete");
             ticking->getStaging()->scheduler->endSchedule();//
             log("after scheduler end.");
+            exit(0);
         } else {
             log("unknow group of ticking.");
         }

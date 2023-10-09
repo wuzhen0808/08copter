@@ -7,44 +7,73 @@ using namespace a8::util;
 using namespace std;
 using namespace testing;
 using namespace a8::util::net;
+class Skeleton {
+
+public:
+    String lastMessage;
+    int lastType = 0;
+    void onMessage(String msg) {
+        this->lastMessage = msg;
+    }
+};
+void bridge_(int type, void *data, void *context) {
+
+    Skeleton *sk = static_cast<Skeleton *>(context);
+    sk->lastType = type;
+    if (type == 1) {
+        sk->onMessage(*static_cast<String *>(data));
+    }
+}
 
 TEST(TestCodec, testSimpleCodec) {
     SimpleCodec *cd1 = new SimpleCodec();
     const int type_ = 1;
-    const int headerLen_ = 3;
+    const int headerLen_ = cd1->getHeaderLength();
 
-    cd1->add(type_, CodecFunc::writeString, CodecFunc::readString);
+    cd1->add<String>(type_, CodecUtil::writeString_, CodecUtil::readString_);
 
     String str("123");
-    StringWriter writer;
-
+    BufferWriter writer;
+    const int strTail_ = 1;
     // encode
     Result rst;
     int ret = cd1->write(&writer, type_, &str, rst);
-    EXPECT_EQ(ret, headerLen_ + str.len());
-    String str2 = writer.toString();
-    EXPECT_EQ(str2.len(), headerLen_ + str.len());
+    EXPECT_EQ(ret, headerLen_ + str.len() + strTail_); //[00000001-<string>-00000000]:[type-<string>-<tail>]
 
-    char typeC = str2.charAt(0);
+    // check the encoded string.
+    EXPECT_EQ(writer.len(), headerLen_ + str.len() + strTail_);
+    // check first byte, it's the type id of data.
+    char typeC = writer[0];
     EXPECT_EQ(typeC, type_);
-    char lenLow = str2.charAt(1);
-    EXPECT_EQ(lenLow, 3);
-    char lenHigh = str2.charAt(2);
-    EXPECT_EQ(lenHigh, 0);
 
-    String str3 = str2.subStr(headerLen_); // remove header[0]:ver,header[1]:type,header[2,3]:length of body.
-    EXPECT_EQ(str, str3);
+    // check the body
+    Buffer<char> subBuffer = writer.subBuffer(headerLen_); // remove header, get the body.
+    String str2 = StringUtil::toString(subBuffer);
+    EXPECT_EQ(str, str2);
 
     // decode
-    StringReader reader(str2);
+    BufferReader reader(writer);
+    char buf[5];
+    int len = reader.read(buf, 5);
+    EXPECT_EQ(5, len);
+    EXPECT_EQ(type_, (int)buf[0]);
+    EXPECT_EQ('1', buf[1]);
+    EXPECT_EQ('2', buf[2]);
+    EXPECT_EQ('3', buf[3]);
+    EXPECT_EQ('\0', buf[4]);
 
-    int type = 0;
-    void *data2 = 0;
-    ret = cd1->read(&reader, type, data2, rst);
-    EXPECT_EQ(ret, str.len() + headerLen_);
-    EXPECT_EQ(type, type_);
-    String *str4 = static_cast<String *>(data2);
-    EXPECT_EQ(*str4, str);
+    reader.reset();
+    
+    Skeleton skeleton;
+    ret = cd1->read(&reader, bridge_, &skeleton, rst);
+    if (ret < 0) {
+        cout << "//:" << rst.errorMessage.text() << ":///" << endl;
+    }
+    EXPECT_EQ(ret, headerLen_ + str.len() + strTail_); //[00000001-<string>-00000000]:[type-<string>-<tail>]
+
+    // check the received type and body.
+    EXPECT_EQ(type_, skeleton.lastType);
+    EXPECT_EQ(str, skeleton.lastMessage);
 }
 
 int writeInt16(Writer *writer, int iValue) {

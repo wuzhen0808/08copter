@@ -3,12 +3,11 @@
 #include "a8/util/comp/Component.h"
 #include "a8/util/comp/StagingContext.h"
 #include "a8/util/comp/TickingContext.h"
-#include "a8/util/sys.h"
+#include "a8/util/System.h"
 #include "a8/util/thread.h"
 
 using namespace a8::util;
 using namespace a8::util::thread;
-using namespace a8::util::sys;
 namespace a8::util::comp {
 
 class TickRunner {

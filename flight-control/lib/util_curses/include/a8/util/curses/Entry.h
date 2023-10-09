@@ -25,6 +25,10 @@ public:
         command = str;
         return command.len();
     }
+    void clean(){
+        cleanCDKEntry(widget);
+    }
+
     EExitType exitType() {
         return widget->exitType;
     }

@@ -34,21 +34,37 @@ public:
      * Altitude in Meter.
      */
     int getAltitude(double &altitude, Result &rst) {
+        int ret = this->isReady(rst);
+        if (ret < 0) {
+            return ret;
+        }
         return sis->getAltitude(altitude, rst);
     }
     int getLongitude(double &longitude, Result &rst) {
+        int ret = this->isReady(rst);
+        if (ret < 0) {
+            return ret;
+        }
         return sis->getLongitude(longitude, rst);
     }
     /**
      * Angular velocity in Degree.
      */
     int getAngVel(Vector3f &angVel, Result &rst) override {
+        int ret = this->isReady(rst);
+        if (ret < 0) {
+            return ret;
+        }
         return sis->getAngVel(angVel, rst);
     }
     /**
      * Acceleration velocity in ?
      */
     int getAccVel(Vector3f &accVel, Result &rst) override {
+        int ret = this->isReady(rst);
+        if (ret < 0) {
+            return ret;
+        }
         return sis->getAccVel(accVel, rst);
     }
 };

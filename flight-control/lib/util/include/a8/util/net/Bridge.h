@@ -62,7 +62,7 @@ public:
     template <typename T>
     T *createStub(stubCreate create, stubRelease release) {
         if (this->stub_ != 0) {
-            this->stubRelease_(stub_);            
+            this->stubRelease_(stub_);
         }
         this->stubRelease_ = release;
         this->stub_ = create(this->channel);
@@ -78,7 +78,7 @@ public:
         log("running Bridge.");
         ret = channel->receive(bridge_, skeleton, -1, rst);
         if (ret < 0) {
-            // todo log.
+            log(String() << "Error while receiving data from channel," << rst);
         }
         this->running = false;
         log("Bridge exited.");

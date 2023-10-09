@@ -9,7 +9,7 @@
 #include "a8/link.h"
 #include "a8/util/comp.h"
 #include "a8/util/net.h"
-#include "a8/util/sys.h"
+#include "a8/util.h"
 
 #include <iostream>
 #include <stdio.h>

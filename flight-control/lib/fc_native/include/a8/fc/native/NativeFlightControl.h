@@ -147,6 +147,15 @@ public:
         // connected already.
         GsApi *gsApi = gsBridge->stub<GsApi>();
         gsApi->ping("hello gs, this is fc.");
+
+        SensorsData sd;
+        Result rst;
+        int ret = attitudeSensor_->getAltitude(sd.altitude, rst);
+        if (ret < 0) {
+            gsApi->log("cannot send sensors data, error to get data from sensor," << rst.errorMessage);
+        } else {
+            gsApi->sensors(sd);
+        }
     }
 
     virtual void populate(StagingContext *context) override {

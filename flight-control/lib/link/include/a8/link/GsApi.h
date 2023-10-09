@@ -1,6 +1,7 @@
 #pragma once
 
 #include "a8/util.h"
+#include "a8/link/SensorsData.h"
 
 using namespace a8::util;
 
@@ -15,6 +16,8 @@ public:
 
     // send log message to GS.
     virtual void log(String msg) = 0;
+
+    virtual void sensors(SensorsData ssd) = 0;
 
     virtual void unknownMessageReceived(int type, void *data) {
         // do nothing.

@@ -20,10 +20,10 @@ public:
         drawCDKDialog(widget, widget->obj.box);
     }
 
-    EExitType activate(int &selection) {
-        selection = activateCDKDialog(widget, 0);
-        return widget->exitType;
+    int activate(EExitType &exitType) {
+        int ret = activateCDKDialog(widget, 0);
+        exitType = this->widget->exitType;
+        return ret;
     }
-
 };
 } // namespace a8::util::curses

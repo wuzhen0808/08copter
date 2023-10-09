@@ -1,7 +1,7 @@
 #pragma once
 #include "a8/util.h"
 #include "a8/util/net/Codec.h"
-#include "a8/util/net/FunctionCodec.h"
+#include "a8/util/net/FunctionalCodec.h"
 
 using namespace a8::util;
 using namespace a8::util::net;
@@ -18,10 +18,9 @@ public:
     SimpleCodec() : Codec() {
     }
 
-    void *startCodec() {
-        return 0;
+    int getHeaderLength() override {
+        return 1;
     }
-
     /**
      * Register a data type with encoder and decoder.
      * And optionally provide a default handle function pointer for receiving the data decoded.
@@ -37,8 +36,14 @@ public:
         subCodecs.set(type, subCodec);
     }
 
-    void add(int type, a8::util::net::write write, a8::util::net::read read) {
-        add(type, new FunctionCodec(write, read));
+    template <typename T>
+    void add(int type, int (*writeF)(Writer *, T *), int (*readF)(Reader *, T *&)) {
+        add<T>(type, writeF, readF, [](T *ptr) { Lang::free(ptr); });
+    }
+
+    template <typename T>
+    void add(int type, int (*writeF)(Writer *, T *), int (*readF)(Reader *, T *&), void (*freeF)(T *)) {
+        add(type, new FunctionalCodec<T>(type, writeF, readF, freeF));
     }
 
     /**
@@ -48,7 +53,7 @@ public:
 
         int len = 0;
 
-        int ret = CodecFunc::writeInt8_(writer, type); // sub codec
+        int ret = CodecUtil::writeInt8(writer, type); // sub codec
         if (ret < 0) {
             return ret;
         }
@@ -68,23 +73,21 @@ public:
     /**
      * @override
      */
-    int read(Reader *reader, int type0, bridge bridgeF, void* context, Result &rst) override {
-        int type = -1;
-        void *data = 0;
+    int read(Reader *reader, bridge bridgeF, void *context, Result &rst) override {
         int ret2 = 0;
-        int ret = CodecFunc::readInt8_(reader, type);
+        int type;
+        int ret = CodecUtil::readInt8(reader, type);
         if (ret < 0) {
             return ret;
         }
         ret2 = ret;
         Codec *codec = subCodecs.get(type);
         if (codec == 0) {
-            data = 0; // write ref back
             rst.errorMessage << "cannot decode, no codec found for data type:" << type;
             return -2; // failed to decode buffer.
         }
 
-        ret = codec->read(reader, type, bridgeF, context, rst); // write ref back
+        ret = codec->read(reader, bridgeF, context, rst); // write ref back
         if (ret < 0) {
             return ret;
         }

@@ -36,7 +36,7 @@ public:
         return 60.0f / hz;
     }
     float radPs() const {
-        return 2.0f * M_PI / hz;
+        return 2.0f * M_PI_ / hz;
     }
 
     float degPs() const {

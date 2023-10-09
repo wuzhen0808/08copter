@@ -1,9 +1,10 @@
 #pragma once
+#include "a8/util/Strings.h"
 #include "a8/util/curses/Dialog.h"
 #include "a8/util/curses/Entry.h"
+#include "a8/util/curses/Label.h"
 #include "a8/util/curses/ScrollWindow.h"
 #include "a8/util/curses/defines.h"
-
 #include <cdk.h>
 
 namespace a8::util::curses {
@@ -19,6 +20,10 @@ public:
     Cdk() {
         window = initscr();
         screen = initCDKScreen(window);
+    }
+    void refresh() {
+        refreshCDKWindow(window);
+        refreshCDKScreen(screen);
     }
 
     ScrollWindow *newScrollWindow(int x, int y, int h, int w, String title, int saveLines, bool box, bool shadow) {
@@ -38,17 +43,33 @@ public:
                                        vMIXED, width, 1, 512, FALSE, FALSE);
         return new Entry(widget);
     }
-    
+
     Dialog *newDialog(int x, int y, Buffer<String> message, Buffer<String> buttons) {
-        char **msg = StringUtil::toCharArrayArray(message);
-        char **bts = StringUtil::toCharArrayArray(buttons);
+        Strings msg(message);
+        Strings bts(buttons);
+
         CDKDIALOG *widget = newCDKDialog(screen, CENTER, CENTER,
-                                         msg, message.len(),
-                                         bts, buttons.len(),
+                                         msg.content(), msg.len(),
+                                         bts.content(), bts.len(),
                                          COLOR_PAIR(2) | A_REVERSE,
                                          TRUE,
                                          TRUE, FALSE);
         return new Dialog(widget);
+    }
+
+    Label *newLabel(int x, int y, Buffer<String> message) {
+        if (message.isEmpty()) {
+            message.append("<empty>");
+        }
+        Strings msg(message);
+
+        CDKLABEL *widget = newCDKLabel(screen, x, y,
+                                       msg.content(), msg.len(),
+                                       TRUE, FALSE);
+        if (widget == 0) {
+            return 0;
+        }
+        return new Label(widget);
     }
 
     ~Cdk() {
@@ -59,6 +80,5 @@ public:
     void initColor() {
         initCDKColor();
     }
-
 };
 } // namespace a8::util::curses

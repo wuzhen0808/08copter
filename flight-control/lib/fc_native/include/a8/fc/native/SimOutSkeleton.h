@@ -7,7 +7,13 @@ using namespace a8::link;
 using namespace a8::util::comp;
 
 namespace a8::fc::native {
-
+/**
+ * Accept the simulator's response when sending instructions to simulator.
+ * Just logging the response and do nothing else.
+ * TODO :
+ * Provide such skelton with a more general way.
+ *
+ */
 class SimOutSkeleton : public LineApi, public FlyWeight {
     int lines;
 

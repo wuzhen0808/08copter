@@ -39,8 +39,10 @@ public:
         Result rst;
         this->channel->send(CommonMessageType::LOG, &msg, rst);
     }
-    
-
+    void sensors(SensorsData ssd) override {
+        Result rst;
+        this->channel->send(CopterMessageType::SENSORS_DATA, &ssd, rst);
+    }
 };
 
 } // namespace a8::link

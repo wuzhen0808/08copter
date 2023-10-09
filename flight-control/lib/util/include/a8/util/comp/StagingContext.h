@@ -2,12 +2,10 @@
 
 #include "a8/util.h"
 #include "a8/util/thread.h"
-#include "a8/util/sys.h"
-using namespace a8::util;
-using namespace a8::util::thread;
-using namespace a8::util::sys;
 
 namespace a8::util::comp {
+using namespace a8::util;
+using namespace a8::util::thread;
 
 class StagingContext {
 
@@ -16,14 +14,14 @@ private:
     String message_;
     bool stop_ = false;
     Buffer<String> *path;
-    System * sys;
+    System *sys;
 
 public:
     Properties *properties;
     Scheduler *scheduler;
     LoggerFactory *loggerFactory;
 
-    StagingContext(Scheduler *scheduler, LoggerFactory *loggerFactory, System * sys) {
+    StagingContext(Scheduler *scheduler, LoggerFactory *loggerFactory, System *sys) {
         this->properties = new Properties();
         this->loggerFactory = loggerFactory;
         this->scheduler = scheduler;
@@ -31,7 +29,7 @@ public:
         this->sys = sys;
     }
 
-    System * getSys(){
+    System *getSys() {
         return sys;
     }
 
@@ -65,4 +63,4 @@ public:
     }
 };
 
-} // namespace a8::util
+} // namespace a8::util::comp

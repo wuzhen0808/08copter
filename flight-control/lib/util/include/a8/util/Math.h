@@ -1,17 +1,13 @@
 #pragma once
-
-#define M_PI (3.141592653589793238462643383279502884)
+#define M_PI_ (3.14159265358979323846)
 #define FEET_TO_METERS (0.3048)
-#define RAD_TO_DEG (180.0f / M_PI)
+#define RAD_TO_DEG (180.0f / M_PI_)
 #define ZERO_NEAR (0.000001)
-
 namespace a8::util {
 
 class Math {
 public:
-    static long map(long x, long in_min, long in_max, long out_min, long out_max) {
-        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-    }
+    static long map(long x, long in_min, long in_max, long out_min, long out_max) ;
     template <typename T>
     static T &feetToMeters(T &feet) {
         return feet * FEET_TO_METERS;
@@ -39,5 +35,15 @@ public:
         }
         return rt;
     }
+
+    static double frexp(double m, int *e) ;
+
+    static float frexpf(float m, int *e) ;
+
+    static float trunc(float f) ;
+
+    static double trunc(double f) ;
+
+    static double ldexp(long m, int exp) ;
 };
 } // namespace a8::util

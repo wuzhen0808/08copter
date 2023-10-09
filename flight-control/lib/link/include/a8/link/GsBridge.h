@@ -20,8 +20,11 @@ public:
         case CommonMessageType::LOG:
             gss->log(*static_cast<String *>(data));
             break;
+        case CopterMessageType::SENSORS_DATA:
+            gss->sensors(*static_cast<SensorsData *>(data));
+            break;
         default:
-            gss->unknownMessageReceived(type,data);
+            gss->unknownMessageReceived(type, data);
         }
     }
 };

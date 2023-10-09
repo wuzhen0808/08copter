@@ -9,6 +9,7 @@ using namespace a8::util::thread;
 namespace a8::util::comp {
 
 /**
+ * 
  * Component is the middle-size building block.
  *
  * It is a object managed by the parent and the root component.

@@ -15,16 +15,6 @@ public:
         return ret;
     }
 
-    // static member funcs
-    static char **toCharArrayArray(Buffer<String> buf) {
-        char **ret = new char *[buf.length()] { 0 };
-        for (int i = 0; i < buf.len(); i++) {
-            String str = buf[i];
-            Lang::appendStr(ret[i], str.text(), 0, str.len());
-        }
-
-        return ret;
-    }
     static Buffer<String> strings(int argc, char **argv) {
         Buffer<String> ret;
         for (int i = 0; i < argc; i++) {
@@ -62,6 +52,17 @@ public:
         }
         ret.append(convert(str));
         return ret;
+    }
+    static String toString(Buffer<char> buf) {
+        String str;
+        for (int i = 0; i < buf.len(); i++) {
+            char ch = buf[i];
+            if (ch == '\0') {
+                break;
+            }
+            str.append(ch);
+        }
+        return str;
     }
 };
 } // namespace a8::util

@@ -3,7 +3,12 @@
 #include "debug.h"
 #define DELTA_STR_CAP (16)
 namespace a8::util {
-
+/**
+ * We do not check the content of the parameters.
+ * 
+ * So the length of the string may wrong if '\0' appended. 
+ * 
+*/
 class String {
 
 private:
