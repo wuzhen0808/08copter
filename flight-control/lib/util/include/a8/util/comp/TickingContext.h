@@ -49,7 +49,7 @@ public:
     }
 
     void beforTick() {
-        this->startTimestamp = staging->getSys()->millis();
+        this->startTimestamp = staging->getSys()->getSteadyTime();
     }
 };
 

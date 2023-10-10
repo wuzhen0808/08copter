@@ -31,7 +31,7 @@ public:
     float update(float desirePosition, float actualPosition) {
 
         float error = desirePosition - actualPosition;
-        unsigned long now = S->millis();
+        long now = S->getSteadyTime();
         if (lastUpdateTimeInMs == 0) {
             lastUpdateTimeInMs = now;
         }

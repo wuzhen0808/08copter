@@ -2,6 +2,9 @@
 #include "a8/util/Lang.h"
 #include "debug.h"
 #define DELTA_STR_CAP (16)
+#define SPACE (' ')
+#define NEW_LINE ('\n')
+
 namespace a8::util {
 /**
  * We do not check the content of the parameters.
@@ -128,14 +131,16 @@ public:
      *  or a char array end with '\0';
      *
      */
-    const char *text() const {
+    char *text() const {
         return this->text_;
     }
 
     int length() const {
         return this->length_;
     }
-
+    int size() {
+        return length_ + 1;
+    }
     int len() const {
         return this->length_;
     }
@@ -166,7 +171,12 @@ public:
 
     template <typename... Args>
     void appendFormat(const char formatStr[], Args... args) {
-        Lang::appendFormat(this->text_, this->length_, this->capacity_, DELTA_STR_CAP, formatStr, args...);
+        Lang::appendFormat(this->text_, this->length_, this->capacity_, DELTA_STR_CAP, formatStr, 1, ' ', args...);
+    }
+
+    template <typename... Args>
+    void appendFormat(const char formatStr[], int fieldWidth, char fillLeading, Args... args) {
+        Lang::appendFormat(this->text_, this->length_, this->capacity_, DELTA_STR_CAP, formatStr, fieldWidth, fillLeading, args...);
     }
 
     void append(const float fValue) {
@@ -177,12 +187,20 @@ public:
         appendFormat("%e", fValue);
     }
 
+    void append(const int iValue, const int width, const char fill) {
+        appendFormat("%i", iValue, width, fill);
+    }
+
     void append(const int iValue) {
-        appendFormat("%i", iValue);
+        append(iValue, 0, SPACE);
     }
 
     void append(const long lValue) {
-        appendFormat("%i", lValue);
+        appendFormat("%ld", lValue);
+    }
+
+    void append(const long long lValue) {
+        appendFormat("%lld", lValue);
     }
 
     void append(const unsigned iValue) {
@@ -240,7 +258,7 @@ public:
         int from = 0;
         for (int i = 0; i < this->length_; i++) {
             char ch = this->text_[i];
-            if (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n') {
+            if (ch == SPACE || ch == '\t' || ch == '\r' || ch == NEW_LINE) {
                 from = i;
                 continue;
             }
@@ -292,6 +310,12 @@ public:
         append(fValue);
         return *this;
     }
+
+    String &operator<<(const long long fValue) {
+        append(fValue);
+        return *this;
+    }
+
     String &operator<<(const unsigned fValue) {
         append(fValue);
         return *this;

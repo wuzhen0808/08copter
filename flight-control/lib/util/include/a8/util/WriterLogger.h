@@ -5,6 +5,7 @@
 #include "a8/util/Writer.h"
 
 using namespace a8::util;
+using namespace a8::hal;
 
 namespace a8::util {
 
@@ -19,9 +20,20 @@ public:
     ~WriterLogger() {
     }
 
-    virtual void log(int level, const String &msg) override {
-        a8::hal::S->out->println(msg);
-        writer->write(msg.text(), msg.length());
+    void writeLevel(Logger::Level level, String &msg) {
+    }
+
+    void writeTime() {
+    }
+
+    virtual void log(Logger::Level level, const String &msg) override {
+        long long stime = S->getSysTime();
+        String formatTime;
+        S->formatTime(stime, &formatTime);
+        String msg2;
+        msg2 << "[" << formatTime << "] [" << level << "] " << msg;
+        S->out->println(msg2);
+        writer->write(msg2.text(), msg2.length());
         writer->write("\n", 1);
     };
 };

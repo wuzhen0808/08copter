@@ -10,6 +10,11 @@ private:
 public:
     static const char END_OF_STR = '\0';
 
+    template <typename T>
+    static T *cast(void *ptr) {
+        return static_cast<T *>(ptr);
+    }
+
     static bool isLower(char ch) {
         return ch >= 'a' && ch <= 'z';
     }
@@ -82,7 +87,8 @@ public:
      *
      */
     template <typename... Args>
-    static void appendFormat(char *&bufRef, int &lenRef, int &capRef, int deltaCap, const char formatStr[], Args... args) {
+    static void appendFormat(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
+                             const char formatStr[], int fieldWidth, char fillLeading, Args... args) {
 
         char *buf = bufRef;
         int capacity = capRef;
@@ -97,6 +103,12 @@ public:
         int capRight = capacity - lenLeft; // remaining capacity
         char *bufRight = buf + lenLeft;    // give a offset to storage result.
         int lenRight = snprintf(bufRight, capRight, formatStr, args...);
+        int lenTail = lenRight; // the content
+        int leading = 0;
+        if (lenRight < fieldWidth) {
+            lenRight = fieldWidth;
+            leading = fieldWidth - lenRight;
+        }
 
         if (lenRight + 1 > capRight) { // str truncate,
 
@@ -108,18 +120,30 @@ public:
 
             capRight = capacity - lenLeft;
             bufRight = buf + lenLeft;
-            lenRight = snprintf(bufRight, capRight, formatStr, args...);
+            lenRight = snprintf(bufRight + leading, capRight - leading, formatStr, args...);
 
             if (lenRight + 1 > capRight) {
                 // error processing?
                 // exit(1);
             }
+        } else { // move for leading space
+            Lang::shift<char>(bufRight, lenTail, leading);
         }
+
         if (newBuf != 0) {
             bufRef = newBuf;   // write back new buf;
             capRef = capacity; // write back new capacity.
         }
+        // leading fill
+        Lang::fill<char>(bufRight, leading, fillLeading);
         lenRef = lenLeft + lenRight; // write back new length.
+    }
+
+    template <typename T>
+    static void fill(T *buf, int width, T fill) {
+        for (int i = 0; i < width; i++) {
+            buf[i] = fill;
+        }
     }
 
     static void bug() {
@@ -244,15 +268,27 @@ public:
             dest[from2 + i] = source[from1 + i];
         }
     }
+
+    template <typename T>
+    static void shift(T *buf, int len, int shift) {
+        if (shift == 0) {
+            return;
+        }
+        for (int i = 0; i < len; i++) {
+            if (shift < 0) { // shift left.
+                buf[i - shift] = buf[i];
+            } else { // shift right
+                buf[len - 1 - i] = buf[len - 1 - i - shift];
+            }
+        }
+    }
+
     static int strLength(const char *str) {
         if (str == 0) {
             return 0;
         }
         for (int i = 0;; i++) {
-            if (str[i] == END_OF_STR) {
-                if (i > 10000) {
-                    i = 0;
-                }
+            if (str[i] == END_OF_STR) {                
                 return i;
             }
         }

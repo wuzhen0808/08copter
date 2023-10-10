@@ -8,12 +8,18 @@ using namespace a8::util;
 namespace a8::util {
 
 class Logger {
-
 private:
+protected:
     String name;
 
-protected:
 public:
+    enum Level {
+        Error = 1,
+        Warn,
+        Info,
+        Debug,
+        Trace
+    };
     Logger(String name) {
         this->name = name;
     }
@@ -21,28 +27,51 @@ public:
     ~Logger() {
     }
 
-    virtual void log(int level, const String &msg){
-
+    virtual void log(Level level, const String &msg) {
     }
-    
+
     void error(const String &msg) {
-        log(1, msg);
+        log(Error, msg);
     }
 
     void warn(const String &msg) {
-        log(2, msg);
+        log(Warn, msg);
     }
 
     void info(const String &msg) {
-        log(3, msg);
+        log(Info, msg);
     }
 
     void debug(const String &msg) {
-        log(4, msg);
+        log(Debug, msg);
     }
 
     void trace(String &msg) {
-        log(5, msg);
+        log(Trace, msg);
+    }
+
+    friend String &operator<<(String &str, Level level) {
+        switch (level) {
+        case Trace:
+            str << "trace";
+            break;
+        case Debug:
+            str << "debug";
+            break;
+        case Info:
+            str << "info";
+            break;
+        case Warn:
+            str << "warn";
+            break;
+        case Error:
+            str << "error";
+            break;
+        default:
+            str << (int)level;
+            break;
+        }
+        return str;
     }
 };
 

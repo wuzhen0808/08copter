@@ -26,10 +26,10 @@ private:
     }
 
 public:
-    Buffer<T>() {
+    Buffer() {
         this->init();
     }
-    Buffer<T>(const Buffer<T> &buf) { // copy constructor
+    Buffer(const Buffer<T> &buf) { // copy constructor
         this->init();
         this->append(buf.buffer_, 0, buf.length_);
     }
@@ -38,7 +38,7 @@ public:
         this->append(buf.buffer_, 0, buf.length_);
     }
 
-    ~Buffer<T>() {
+    ~Buffer() {
         if (this->buffer_ != 0) {
             delete[] this->buffer_;
         }

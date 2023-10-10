@@ -1,9 +1,9 @@
-#include "TersePrinter.h"
-#include "TestSystem.h"
 #include "a8/hal.h"
 #include "a8/hal/native/NativeSystem.h"
 #include "a8/util/Buffer.h"
 #include "a8/util/String.h"
+#include "test/TersePrinter.h"
+#include "test/TestSystem.h"
 #include <fstream>
 #include <gtest/gtest.h>
 #include <iostream>
@@ -19,13 +19,15 @@ using ::testing::TestInfo;
 using ::testing::TestPartResult;
 using ::testing::UnitTest;
 
-System *a8::hal::S = new TestSystem();
+System *a8::hal::S = new test::TestSystem();
+TEST(TestString, testFormat) {
+    S->formatTime();
+}
 
-TEST(TestString, testEmpty){
+TEST(TestString, testEmpty) {
     String str0;
     int len0 = Lang::strLength(str0.text());
     EXPECT_EQ(0, len0);
-    
 }
 
 TEST(TestString, testFormatLongString) {
@@ -38,7 +40,7 @@ TEST(TestString, testFormatLongString) {
 }
 TEST(TestString, testSplit) {
     String line = "A,BC,DEF,G";
-    Buffer<String> fields = line.split(',');
+    Buffer<String> fields = StringUtil::split(line, ',');
     EXPECT_EQ(4, fields.length());
     EXPECT_EQ(fields.get(0), "A");
     EXPECT_EQ(fields.get(1), "BC");
@@ -182,7 +184,7 @@ int main(int argc, char **argv) {
 
     // logFile <<"The default event listener type is:" << typeid(defaultListener).name() << endl;
     // delete listeners.Release(defaultListener);
-    listeners.Append(new TersePrinter());
+    listeners.Append(new test::TersePrinter());
     int ret = RUN_ALL_TESTS();
     // logFile.close();
     return 0;
