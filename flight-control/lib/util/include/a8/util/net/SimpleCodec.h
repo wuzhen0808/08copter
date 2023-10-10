@@ -8,7 +8,11 @@ using namespace a8::util::net;
 #define SIMPLE_CODEC_ (0)
 
 namespace a8::util::net {
-
+/**
+ * -  First byte as the header which as the type indicator.
+ * -  Body of message is encoded/decoded by a sub codec.
+ * 
+*/
 class SimpleCodec : public Codec {
 
     // dynamic members.

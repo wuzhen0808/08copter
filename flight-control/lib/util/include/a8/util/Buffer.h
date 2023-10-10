@@ -3,6 +3,7 @@
 #include "a8/util/Callback3.h"
 #include "a8/util/ForEach.h"
 #include "a8/util/Lang.h"
+#include "a8/util/Math.h"
 #include "debug.h"
 
 #define DELTA_BUF_CAP (16)
@@ -118,11 +119,9 @@ public:
         if (from1 >= this->length_) {
             return -1;
         }
-        if (len > this->length_ - from1) {
-            len = this->length_ - from1;
-        }
-        Lang::copy<T>(this->buffer_, from1, len, buf);
-        return len;
+        int len2 = Math::min(len, this->length_ - from1);        
+        Lang::copy<T>(this->buffer_, from1, len2, buf);
+        return len2;
     }
 
     int toArray(T *buf, int len) {

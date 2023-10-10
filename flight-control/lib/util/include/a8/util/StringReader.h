@@ -13,6 +13,8 @@ protected:
     int from = 0;
 
 public:
+    StringReader() {
+    }
     StringReader(const char *str) {
         buffer.append(str, Lang::strLength(str));
     }
@@ -22,12 +24,20 @@ public:
 
     ~StringReader() {
     }
+    void append(String msg) {
+        buffer.append(msg.text(), msg.length());
+    }
 
     virtual int read(char *buf, int bufLen) override {
-        int len = buffer.read(from, buf, bufLen);
-        if (len > 0) {
-            from += len;
+        if (from == buffer.len()) {
+            return 0; // end of reading.
         }
+        int ret = buffer.read(from, buf, bufLen);
+        if (ret < 0) {
+            return ret;
+        }
+        int len = ret;
+        from += len;
         return len;
     };
 };

@@ -1,8 +1,8 @@
 #pragma once
 #include "a8/util/Buffer.h"
 #include "a8/util/Reader.h"
-#include "a8/util/String.h"
 #include "a8/util/Result.h"
+#include "a8/util/String.h"
 
 namespace a8::util {
 /**
@@ -13,13 +13,13 @@ private:
     // dynamic member
     Reader *reader;
     char buf[BUF_LEN];
-    int localPointer = -1;
+    int localPointer;
     int localResult;
     int globalResult;
 
     void syncLocalIfNeeded() {
-        if (this->localPointer >= 0) { // Read global at least once.
-            if (localResult > 0) {     // has local content waiting to be processed.
+        if (this->localPointer != -1) { // Read global at least once.
+            if (localResult > 0) {      // has local content waiting to be processed.
                 return;
             }
 
@@ -41,10 +41,15 @@ private:
 
 public:
     LineReader(Reader *reader) {
-        this->reader = reader;
+        this->setReader(reader);
     }
 
     ~LineReader() {}
+
+    void setReader(Reader *reader) {
+        this->reader = reader;
+        this->localPointer = -1; // indicated as not reading
+    }
     /**
      * Read one line and append to the ret parameter ref.
      *

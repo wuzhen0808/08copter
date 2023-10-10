@@ -1,7 +1,7 @@
 #pragma once
 #include "a8/gs/View.h"
 #include "a8/hal.h"
-#include "a8/util/Output.h"
+#include "a8/util.h"
 #include "a8/util/curses.h"
 
 using namespace a8::util::curses;
@@ -14,10 +14,13 @@ namespace a8::gs {
 class LogView : public Output, public View {
     ScrollWindow *scrollWindow;
     Output *sysOutput;
+    bool removeLn = true;
+    BufferLineReader *lReader;
 
 public:
     LogView(Cdk *cdk, LoggerFactory *logFac) : View(cdk, logFac) {
         this->scrollWindow = 0;
+        this->lReader = new BufferLineReader();
     }
     void draw() override {
         if (this->scrollWindow == 0) {
@@ -32,8 +35,16 @@ public:
         delete scrollWindow;
     }
 
-    void print(const String &msg) override {
-        append(msg);
+    void print(const String msg) override {
+        lReader->append(msg);
+        while (true) {
+            String line;
+            int ret = lReader->readLine(line);
+            if (ret <= 0) {
+                return;
+            }
+            append(line);
+        }
     }
 
     void append(String line) {

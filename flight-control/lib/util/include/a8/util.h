@@ -21,6 +21,7 @@
 #include "a8/util/Runnable.h"
 #include "a8/util/String.h"
 #include "a8/util/StringReader.h"
+#include "a8/util/BufferLineReader.h"
 #include "a8/util/StringUtil.h"
 #include "a8/util/StringWriter.h"
 #include "a8/util/Strings.h"

@@ -3,7 +3,6 @@
 #include "a8/fc.h"
 #include "a8/fc/FlightControl.h"
 #include "a8/fc/native/FcSkeleton.h"
-#include "a8/fc/native/JSBSimIO.h"
 #include "a8/fc/native/NativeAttitudeSensor.h"
 #include "a8/fc/native/NativeServosControl.h"
 #include "a8/fc/native/SimInSkeleton.h"

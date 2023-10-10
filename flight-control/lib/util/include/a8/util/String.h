@@ -5,10 +5,10 @@
 namespace a8::util {
 /**
  * We do not check the content of the parameters.
- * 
- * So the length of the string may wrong if '\0' appended. 
- * 
-*/
+ *
+ * So the length of the string may wrong if '\0' appended.
+ *
+ */
 class String {
 
 private:
@@ -41,6 +41,15 @@ public:
     //
     String(const String &str) { // copy constructor
         append(str.text_, 0, str.length_);
+    }
+
+    String(String &&str) { // move constructor
+        this->text_ = str.text_;
+        this->length_ = str.length_;
+        this->capacity_ = str.capacity_;
+        str.text_ = 0;
+        str.length_ = 0;
+        str.capacity_ = 0;
     }
 
     String(const float f) {
@@ -197,11 +206,32 @@ public:
         return -1;
     }
     String subStr(int from) const {
-        return subStr(from, this->length_ - from);
+        int len;
+        if (from >= 0) {
+            len = this->length_ - from;
+        } else {
+            len = -from;
+            from = length_ + from;
+        }
+        if (len < 0 || from >= this->length_) {
+            String str;
+            return str;
+        }
+
+        return subStr(from, len);
     }
+
     String subStr(int from, int len) const {
         String ret;
-        char *buf = this->text_ + from;
+        char *buf;
+        if (from >= 0) {
+            buf = this->text_ + from;
+        } else {
+            buf = this->text_ + this->length_ + from;
+        }
+        if (len < 0) {
+            len = this->length_ + len;
+        }
         ret.append(buf, len);
         return ret;
     }
@@ -282,10 +312,6 @@ public:
         return *this;
     }
 
-    friend String &operator<<(const char *str, String &str2) {
-        return String() << str << str2;
-    }
-
     char operator[](int idx) {
         if (idx < 0 || idx > this->length_) {
             Lang::illegalArgument("index out of bound.");
@@ -293,9 +319,15 @@ public:
         return this->text_[idx];
     }
 
-    // Other methods
-    bool endWith(const char *str) {
+    bool endWith(const char ch) const {
+        return endWith(&ch, 1);
+    }
+    bool endWith(const char *str) const {
         int len = Lang::strLength(str);
+        return endWith(str, len);
+    }
+    // Other methods
+    bool endWith(const char *str, int len) const {
         if (this->length_ < len) {
             return false;
         }
@@ -310,6 +342,14 @@ public:
     }
 
     // Friend operators
+
+    friend String operator<<(const char *str, String &str2) {
+        String str_;
+        str_.append(str);
+        str_.append(str2);
+        return str_;
+    }
+
     friend String operator+(String const &str1, String const &str2) {
         String ret;
         ret.append(str1);

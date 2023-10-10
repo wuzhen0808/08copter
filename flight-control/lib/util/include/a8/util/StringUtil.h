@@ -64,5 +64,10 @@ public:
         }
         return str;
     }
+
+    friend String &operator<<(String &str, Buffer<char> buf) {
+        str.append(buf.getAll(), buf.len());
+        return str;
+    }
 };
 } // namespace a8::util

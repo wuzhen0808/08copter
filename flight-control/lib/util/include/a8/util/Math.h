@@ -7,7 +7,12 @@ namespace a8::util {
 
 class Math {
 public:
-    static long map(long x, long in_min, long in_max, long out_min, long out_max) ;
+    template <typename T>
+    static T min(T t1, T t2) {
+        return t1 < t2 ? t1 : t2;
+    }
+
+    static long map(long x, long in_min, long in_max, long out_min, long out_max);
     template <typename T>
     static T &feetToMeters(T &feet) {
         return feet * FEET_TO_METERS;
@@ -36,14 +41,14 @@ public:
         return rt;
     }
 
-    static double frexp(double m, int *e) ;
+    static double frexp(double m, int *e);
 
-    static float frexpf(float m, int *e) ;
+    static float frexpf(float m, int *e);
 
-    static float trunc(float f) ;
+    static float trunc(float f);
 
-    static double trunc(double f) ;
+    static double trunc(double f);
 
-    static double ldexp(long m, int exp) ;
+    static double ldexp(long m, int exp);
 };
 } // namespace a8::util

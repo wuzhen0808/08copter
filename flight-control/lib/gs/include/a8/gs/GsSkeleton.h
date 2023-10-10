@@ -19,7 +19,7 @@ public:
     ~GsSkeleton() {
     }
     void ping(String msg) override {
-        log(String() << "on ping message:" << msg);
+        logger->info(String() << "on ping message:" << msg);
     }
 
     void log(String msg) override {
@@ -28,7 +28,7 @@ public:
 
     void sensors(SensorsData ssd) override {
         String str;
-        log(str << ssd);
+        logger->info(str << ssd);
     }
 
     void unknownMessageReceived(int type, void *data) override {
