@@ -25,17 +25,17 @@ public:
         vTaskEndScheduler();
     }
 
-    Thread *schedule(void *context, run run) override {
+    Thread *schedule(void *context, thread::run run) override {
         return FreeRtosThread::start(run, context);
     }
 
-    Thread *schedule(run run, void *context) override {
+    Thread *schedule(thread::run run, void *context) override {
         return FreeRtosThread::start(run, context);
     }
-    Timer *scheduleTimer(const Rate &rate, void *context, run run) override {
+    Timer *scheduleTimer(const Rate &rate, void *context, thread::run run) override {
         return FreeRtosTimer::start(run, context, rate);
     }
-    Timer *scheduleTimer(run run, void *context, const Rate &rate) override {
+    Timer *scheduleTimer(thread::run run, void *context, const Rate &rate) override {
         return FreeRtosTimer::start(run, context, rate);
     }
 };

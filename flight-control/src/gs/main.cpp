@@ -16,6 +16,7 @@ using namespace a8::hal;
 using namespace a8::hal::native;
 using namespace a8::gs;
 using namespace a8::hal::freertos;
+using namespace a8::util::thread;
 
 System *a8::hal::S = new NativeSystem();
 
@@ -39,6 +40,20 @@ int main(int argc, char **argv) {
     logFac->getLogger("default")->info("before startScheduler");
     sch->startSchedule();
     logFac->getLogger("default")->info("after startScheduler");
-
-
+    return 0;
 }
+
+
+// void timerRun(void *context) {
+//     Logger *log = Lang::cast<Logger>(context);
+//     log->info(String() << "timer called." << configTICK_RATE_HZ << "::" << portTICK_PERIOD_MS);
+// }
+
+// int xmain(int argc, char **argv) {
+//     Scheduler *sch = new FreeRtosScheduler();
+//     LoggerFactory *logFac = new NativeLoggerFactory();
+//     Logger *log = logFac->getLogger("timer");
+//     sch->scheduleTimer(1.0f, log, timerRun);
+//     sch->startSchedule();
+//     return 0;
+// }

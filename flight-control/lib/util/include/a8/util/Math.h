@@ -41,6 +41,8 @@ public:
         return rt;
     }
 
+    static float maxFloat();
+
     static double frexp(double m, int *e);
 
     static float frexpf(float m, int *e);

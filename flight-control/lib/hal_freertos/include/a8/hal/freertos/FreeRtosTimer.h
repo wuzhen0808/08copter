@@ -3,6 +3,8 @@
 #include "a8/util/thread.h"
 #include <FreeRTOS.h>
 #include <timers.h>
+// see the FreeRTOSConfig.h
+#define TICK_RATE_ (50)
 
 using namespace a8::util;
 using namespace a8::util::thread;
@@ -33,7 +35,7 @@ public:
         this->rate = rate;
         this->context = context;
         this->run_ = run;
-        long ticks = rate.ms();
+        long ticks = TICK_RATE_ / rate.Hz();
         handle = xTimerCreate(
             static_cast<const char *>("My Timer"), // name
             ticks,                                 /*  */

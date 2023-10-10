@@ -16,9 +16,9 @@ public:
 
     virtual void startSchedule() = 0;
     virtual void endSchedule() = 0;
-    virtual Thread *schedule(run run, void *context) = 0;
-    virtual Thread *schedule(void *context, run run) = 0;
-    virtual Timer *scheduleTimer(run run, void *context, const Rate &ticks) = 0;
-    virtual Timer *scheduleTimer(const Rate &ticks, void *context, run run) = 0;
+    virtual Thread *schedule(thread::run run, void *context) = 0;
+    virtual Thread *schedule(void *context, thread::run run) = 0;
+    virtual Timer *scheduleTimer(thread::run run, void *context, const Rate &ticks) = 0;
+    virtual Timer *scheduleTimer(const Rate &ticks, void *context, thread::run run) = 0;
 };
 } // namespace a8::util::thread

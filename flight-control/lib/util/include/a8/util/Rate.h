@@ -21,55 +21,79 @@ public:
     }
 
     float mHz() const {
-        return hz * 1000.0f;
+        return hz * 1.0e3f;
     }
 
     float kHz() const {
-        return hz * 1000;
+        return hz * 1.0e-3f;
     }
-
+    /**
+     * circle per second
+     */
     float cps() const {
-        return 1.0f / hz;
+        return hz;
     }
-
+    /**
+     * rotation per minute
+     */
     float rpm() const {
-        return 60.0f / hz;
+        return 60.0f * hz;
     }
     float radPs() const {
-        return 2.0f * M_PI_ / hz;
+        return 2.0f * M_PI_ * hz;
     }
 
     float degPs() const {
-        return 360.0f / hz;
+        return 360.0f * hz;
     }
-
+    /**
+     * seconds per rotation
+     */
     float sec() const {
+        if (isZero()) {
+            return -1;
+        }
         return 1.0f / hz;
     }
-
+    /**
+     * millisec per round
+     */
     float ms() const {
-        return 1.0e3 / hz;
+        if (isZero()) {
+            return -1;
+        }
+        return 1.0e3 * sec();
     }
-
+    /**
+     * time per round
+     */
     float us() const {
-        return 1.0e6 / hz;
+        if (isZero()) {
+            return -1;
+        }
+        return 1.0e6 * sec();
     }
-
+    /**
+     * time per round
+     */
     float ns() const {
-        return 1.0e9 / hz;
+        if (isZero()) {
+            return -1;
+        }
+        return 1.0e9 * sec();
     }
 
     /**
      * Zero means no frequency.
      * Do not schedule zero rate.
      */
-    bool isZero() {
+    bool isZero() const {
         return Math::isNear(hz, 0.0f);
     }
     /*
      * RUN means it's a runner to be called in separate thread.
      */
-    bool isRun() {
+    bool isRun() const {
         return Math::isNear(hz, -1.0f);
     }
 
