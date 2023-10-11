@@ -14,7 +14,7 @@ class FcStub : public FcApi {
     Channel *channel;
 
 public:
-    static void *create(Channel *channel) {
+    static FcStub *create(Channel *channel) {
         return new FcStub(channel);
     }
 
@@ -32,6 +32,10 @@ public:
     void command(String cmd) override {
         Result rst;
         this->channel->send(CommonMessageType::CMD, &cmd, rst);
+    }
+    void test() override {
+        Result rst;
+        this->channel->send(CommonMessageType::TEST, 0, rst);
     }
 };
 

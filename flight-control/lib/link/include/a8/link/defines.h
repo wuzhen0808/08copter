@@ -10,6 +10,7 @@ static const int PING = 1;
 static const int LOG = 2;
 static const int CMD = 3;
 static const int LINE = 4;
+static const int TEST = 5;
 
 }; // namespace CommonMessageType
 namespace CopterMessageType {

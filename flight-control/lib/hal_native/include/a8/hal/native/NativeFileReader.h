@@ -10,9 +10,9 @@ private:
     void * fobj;
 
 public:
-    NativeFileReader(String fpath);
+    NativeFileReader(String fpath);        
     ~NativeFileReader();
-
+    
     virtual int read(char *buf, int len) override;
 };
 

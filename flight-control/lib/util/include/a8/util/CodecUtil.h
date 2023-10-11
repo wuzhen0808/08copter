@@ -134,6 +134,15 @@ public:
         return len;
     }
 
+    static int writeNothing_(Writer *writer, int *data) {
+        return 0;
+    }
+
+    static int readNothing_(Reader *reader, int *&data) {
+        data = 0;
+        return 0;
+    }
+    
     static int writeString_(Writer *writer, String *data) {
         int len = 0;
         // write text

@@ -49,7 +49,7 @@ public:
         this->loggerFactory = loggerFactory;
     }
 
-    void close(){
+    void close() {
         this->sockets->close(this->sock);
     }
 
@@ -89,11 +89,22 @@ public:
         this->status = Listening;
         return ret;
     }
+
+    template <typename T>
+    int connect(Bridge<T> *&bridge, T *skeleton, Result &res) {
+
+        int ret = connect<T, T *>(
+            bridge, skeleton, [](T *skeleton) { return skeleton; }, res);
+        if (ret < 0) {
+            Lang::free<T>(skeleton);
+        }
+        return ret;
+    }
     /**
      * Double ways, sending and receiving.
      */
-
-    int connect(Bridge *&bridge, void *skeleton, anyRelease skeletonReleaseF, Result &res) {
+    template <typename T, typename C>
+    int connect(Bridge<T> *&bridge, C context, T *(*skeletonCreate)(C), Result &res) {
         if (this->status != Idle) {
             return -1;
         }
@@ -113,18 +124,21 @@ public:
 
         // client mode.
         Channel *channel = new Channel(sockets, sock, codec);
-        bridge = createBridge(skeleton, skeletonReleaseF, channel);
+
+        bridge = createBridge<T>(context, skeletonCreate, channel);
+
         return rst;
     }
 
-    Bridge *createBridge(void *skeleton, anyRelease skeletonReleaseF, Channel *channel) {
-        
-        Bridge *bridge = new Bridge(bridge_, skeleton, skeletonReleaseF, channel, loggerFactory);
+    template <typename T, typename C>
+    Bridge<T> *createBridge(C context, T *(*skeletonCreate)(C ), Channel *channel) {
+        T *skeleton = skeletonCreate(context);
+        Bridge<T> *bridge = new Bridge<T>(bridge_, skeleton, channel, loggerFactory);
         scheduler->schedule(
             [](void *bridge) {
-                static_cast<Bridge *>(bridge)->run();
-            },                                        //
-            bridge                                    //
+                static_cast<Bridge<T> *>(bridge)->run();
+            },     //
+            bridge //
         );
         return bridge;
     }
@@ -133,7 +147,18 @@ public:
      * Blocking until new connection come in.
      * TODO timeout arg.
      */
-    int accept(Bridge *&bridge, void *skeleton, anyRelease skeletonReleaseF, Result &rst) {
+    template <typename T>
+    int accept(Bridge<T> *&bridge, T *skeleton, Result &rst) {
+        int ret = accept<T, T *>(
+            bridge, skeleton, [](T *skeleton_) { return skeleton_; }, rst);
+        if (ret < 0) {
+            Lang::free<T>(skeleton);
+        }
+        return ret;
+    }
+
+    template <typename T, typename C>
+    int accept(Bridge<T> *&bridge, C context, T *(*skeletonCreate)(C ), Result &rst) {
 
         if (this->status != Listening) {
             rst.errorMessage << "Could not accept connection on address" << this << ",not listening yet.";
@@ -151,7 +176,7 @@ public:
         }
         Channel *channel = new Channel(sockets, sock2, codec);
 
-        bridge = createBridge(skeleton, skeletonReleaseF, channel);
+        bridge = createBridge<T>(context, skeletonCreate, channel);
         return ret;
     }
 

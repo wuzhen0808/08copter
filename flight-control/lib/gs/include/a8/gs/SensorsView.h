@@ -14,11 +14,10 @@ namespace a8::gs {
 class SensorsView : public View {
     Label *label;
     Buffer<String> lines;
-    Background * bg;
+    
 
 public:
-    SensorsView(Cdk *cdk, Background *bg, LoggerFactory *logFac) : View(cdk, logFac) {
-        this->bg = bg;
+    SensorsView(Cdk *cdk, EventCenter *eventCenter, LoggerFactory *logFac) : View(cdk, eventCenter, logFac) {
         this->label = 0;
     }
 

@@ -15,7 +15,7 @@ FileWriter::FileWriter(String file) {
 }
 
 int FileWriter::write(const char *buf, int bufLen) {
-    std::ofstream *ofstream = Lang::cast<std::ofstream>(fObj);
+    std::ofstream *ofstream = Lang::cast<std::ofstream *>(fObj);
     if (!ofstream->is_open()) {
         ofstream->open(file.text(), std::ios::out);
     }

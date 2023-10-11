@@ -10,4 +10,5 @@
 #include "a8/util/net/LineCodec.h"
 #include "a8/util/net/Address.h"
 #include "a8/util/net/Network.h"
+#include "a8/util/net/BridgeKeeper.h"
 

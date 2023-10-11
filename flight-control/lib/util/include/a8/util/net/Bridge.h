@@ -10,28 +10,26 @@
 using namespace a8::util::comp;
 namespace a8::util::net {
 
+template <typename T>
 class Bridge : public FlyWeight {
-    using skeletonRelease = void (*)(void *);
-    using stubRelease = void (*)(void *);
-    using stubCreate = void *(Channel *);
+    using skeletonRelease = void (*)(T *);
 
     bridge bridge_;
     skeletonRelease skeletonRelease_;
-    void *skeleton;
+    T *skeleton;
     Channel *channel;
     //
     void *stub_;
-    stubRelease stubRelease_;
+    void (*stubRelease_)(void *);
     //
     bool running = true;
     int ret = -1;
     Result rst;
 
 public:
-    Bridge(bridge bridge, void *skeleton, skeletonRelease skeletonRelease, Channel *channel, LoggerFactory *logF) : FlyWeight(logF) {
+    Bridge(bridge bridge, T *skeleton, Channel *channel, LoggerFactory *logF) : FlyWeight(logF) {
         this->bridge_ = bridge;
         this->skeleton = skeleton;
-        this->skeletonRelease_ = skeletonRelease;
         this->channel = channel;
         this->stub_ = 0;
         this->stubRelease_ = 0;
@@ -40,7 +38,7 @@ public:
         if (this->stub_ != 0) {
             this->stubRelease_(this->stub_);
         }
-        skeletonRelease_(this->skeleton);
+        Lang::free<T>(skeleton);
         delete this->channel;
     }
 
@@ -55,18 +53,20 @@ public:
         this->channel->close();
     }
 
-    template <typename T>
-    T *stub() {
-        return static_cast<T *>(this->stub_);
+    template <typename B>
+    B *stub() {
+        return Lang::cast<B *>(this->stub_);
     }
-    template <typename T>
-    T *createStub(stubCreate create, stubRelease release) {
+
+    template <typename B>
+    B *createStub(B *(*stubCreate)(Channel *), void (*stubRelease)(void *)) {
         if (this->stub_ != 0) {
             this->stubRelease_(stub_);
         }
-        this->stubRelease_ = release;
-        this->stub_ = create(this->channel);
-        return static_cast<T *>(this->stub_);
+        this->stubRelease_ = stubRelease;
+        B * stub = stubCreate(this->channel);
+        this->stub_ = Lang::cast<B *>(stub);
+        return stub;
     }
 
     Channel *getChannel() {

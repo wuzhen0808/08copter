@@ -43,4 +43,16 @@ void NativeSystem::formatTime(long long ms, String *str) {
     len = std::strftime(buf, sizeof(buf), "%z", &tm);
     str->append(buf, len);
 }
+int NativeSystem::openFile(String fpath, Reader *&fReaderCb) {
+    fReaderCb = new NativeFileReader(fpath);
+    return 1;
+}
+
+String NativeSystem::getEnv(String name) {
+    char *value = std::getenv(name.text());
+    String str;
+    str << value;
+    return str;
+}
+
 } // namespace a8::hal::native

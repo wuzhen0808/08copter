@@ -36,6 +36,8 @@ public:
         codec->add<String>(CommonMessageType::PING, CodecUtil::writeString_, CodecUtil::readString_);
         codec->add<String>(CommonMessageType::LOG, CodecUtil::writeString_, CodecUtil::readString_);
         codec->add<String>(CommonMessageType::CMD, CodecUtil::writeString_, CodecUtil::readString_);
+        codec->add<int>(CommonMessageType::TEST, CodecUtil::writeNothing_, CodecUtil::readNothing_);
+        
         codec->add<SensorsData>(CopterMessageType::SENSORS_DATA, SensorsData::write_, SensorsData::read_);
         // address
         this->gsAddress_ = address(GsBridge::bridge, host, gsPort, codec);

@@ -12,6 +12,7 @@ namespace a8::gs {
 class GroundStation : public Component {
 
     Links *links;
+    EventCenter * ec;
     Foreground *fg;
     Background *bg;
 
@@ -19,6 +20,7 @@ public:
     GroundStation(int argc, char **argv, Links *links) : Component("gs") {
         this->rates.append(Rate::RUN)->append(Rate::RUN);
         this->links = links;
+        
     }
 
     ~GroundStation() {
@@ -26,8 +28,9 @@ public:
 
     void populate(StagingContext *context) override {
         Component::populate(context);
-        this->bg = new Background(links, context->loggerFactory);
-        this->fg = new Foreground(bg, context->loggerFactory);
+        this->ec = new EventCenter();
+        this->bg = new Background(links, ec, context->loggerFactory);
+        this->fg = new Foreground(bg, ec, context->loggerFactory);
         Result rst;
         int ret = this->bg->open(rst);
         if (ret < 0) {

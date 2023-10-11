@@ -1,5 +1,8 @@
 #pragma once
-
+//config file path
+#define A8_PROPERTIES ("A8_PROPERTIES")
+#define a8_properties ("a8.properties")
+//
 #define P_fcs_servo_idx_fr ("fcs/servo-fr-idx")
 #define P_fcs_servo_idx_fl ("fcs/servo-fl-idx")
 #define P_fcs_servo_idx_ar ("fcs/servo-ar-idx")

@@ -12,14 +12,18 @@ class FcBridge {
 
 public:
     static void bridge(int type, void *data, void *context) {
-        FcApi *fcs = static_cast<FcApi *>(context);
+        FcApi *fcApi = Lang::cast<FcApi *>(context);
         switch (type) {
-        case CommonMessageType::PING:
-            String *pData = static_cast<String *>(data);
-            fcs->ping(*pData);
-            break;
+        case CommonMessageType::PING: {
+
+            String *pData = Lang::cast<String *>(data);
+            fcApi->ping(*pData);
+        } break;
+        case CommonMessageType::TEST: {
+
+            fcApi->test();
+        } break;
         }
-        delete fcs;
     }
 };
 

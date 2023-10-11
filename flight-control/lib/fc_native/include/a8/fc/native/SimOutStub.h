@@ -9,12 +9,12 @@ class SimOutStub {
     Channel *channel;
 
 public:
-    static void *create(Channel *channel) {
+    static SimOutStub *create(Channel *channel) {
         return new SimOutStub(channel);
     }
 
     static void release(void *stub) {
-        delete static_cast<SimOutStub *>(stub);
+        Lang::free<SimOutStub>(stub);
     }
 
     SimOutStub(Channel *channel) {

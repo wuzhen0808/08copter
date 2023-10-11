@@ -6,14 +6,10 @@
 using namespace a8::link;
 using namespace a8::util::comp;
 
-namespace a8::fc::native {
+namespace a8::fc {
 class FcSkeleton : public FcApi, public FlyWeight {
 
 public:
-    static void release(void *skeleton) {
-        delete static_cast<FcSkeleton *>(skeleton);
-    }
-    
     FcSkeleton(LoggerFactory *loggerFactory) : FlyWeight(loggerFactory) {
     }
 
@@ -24,5 +20,8 @@ public:
         // todo.
         log(String() << "received command:" << cmd);
     }
+    void test() override {
+        log(String() << "received test instruction");
+    }
 };
-} // namespace a8::fc::native
+} // namespace a8::fc

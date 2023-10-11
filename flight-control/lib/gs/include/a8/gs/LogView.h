@@ -1,5 +1,6 @@
 #pragma once
 #include "a8/gs/View.h"
+#include "a8/gs/defines.h"
 #include "a8/hal.h"
 #include "a8/util.h"
 #include "a8/util/curses.h"
@@ -17,11 +18,15 @@ class LogView : public Output, public View {
     bool removeLn = true;
     BufferLineReader *lReader;
 
+    void afterBridgeCreate(Bridge<GsSkeleton> *eventData) {
+    }
+
 public:
-    LogView(Cdk *cdk, LoggerFactory *logFac) : View(cdk, logFac) {
+    LogView(Cdk *cdk, EventCenter *eventCenter, LoggerFactory *logFac) : View(cdk, eventCenter, logFac) {
         this->scrollWindow = 0;
         this->lReader = new BufferLineReader();
     }
+
     void draw() override {
         if (this->scrollWindow == 0) {
             this->scrollWindow = cdk->newScrollWindow(CENTER, CENTER, 30, -2, "Log View", 200, true, true);

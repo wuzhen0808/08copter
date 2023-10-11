@@ -1,99 +1,81 @@
 #pragma once
 #include "a8/gs/GsSkeleton.h"
+#include "a8/gs/defines.h"
 #include "a8/link.h"
 #include "a8/util/comp.h"
 #include "a8/util/net.h"
+namespace a8::gs {
 using namespace a8::util;
 using namespace a8::util::net;
 using namespace a8::util::comp;
-namespace a8::gs {
 
-using bridgeHandle = void (*)(Bridge *, int, void *); // bridge,eventType,context.
+using bridgeHandle = void (*)(Bridge<GsSkeleton> *, int, void *); // bridge,eventType,context.
 
 class Background : public FlyWeight {
-    class Entry {
-    public:
-        bridgeHandle handle;
-        void *context;
-        void doHandle(Bridge *bridge, int isCreate) {
-            handle(bridge, isCreate, context);
-        }
-    };
-    Links *network;
-    FcApi *fcApi;
-    Address *gsAddress;
-    Buffer<Entry> entries;
 
-public:
-    Background(Links *network, LoggerFactory *logFac) : FlyWeight(logFac) {
-        this->network = network;
-        this->gsAddress = network->gsAddress();
+    static GsSkeleton *createSkeleton(Background *bg) {
+        return new GsSkeleton(bg->loggerFactory);
     }
 
-    void add(void *context, bridgeHandle bridgeHandle) {
-        Entry entry;
-        entry.handle = bridgeHandle;
-        entry.context = context;
-        entries.append(entry);
+    FcApi *fcApi;
+    BridgeKeeper<GsSkeleton, FcStub> *bridgeKeeper;
+
+public:
+    Background(Links *links, EventCenter *eventCenter, LoggerFactory *logFac) : FlyWeight(logFac) {
+
+        this->bridgeKeeper = new BridgeKeeper<GsSkeleton, FcStub>(links->gsAddress());
+        this->bridgeKeeper->setEventCenter(eventCenter);
+        this->bridgeKeeper->setEventTypeOfAfterBridgeCreate(EventTypes::AFTER_BRIDGE_CREATE_);
+        this->bridgeKeeper->setEventTypeOfBeforeBridgeFree(EventTypes::BEFORE_BRIDGE_FREE_);
+        eventCenter->add<Bridge<GsSkeleton> *, Background *>(
+            EventTypes::AFTER_BRIDGE_CREATE_,
+            this,
+            [](Bridge<GsSkeleton> *bridge, Background *this_) {
+                this_->afterBridgeCreate(bridge);
+            });
+        eventCenter->add<Bridge<GsSkeleton> *, Background *>(
+            EventTypes::BEFORE_BRIDGE_FREE_,
+            this,
+            [](Bridge<GsSkeleton> *bridge, Background *this_) {
+                this_->beforeBridgeFree(bridge);
+            });
+        eventCenter->add<void *, Background *>(
+            EventTypes::BEFORE_QUIT,
+            this,
+            [](void *zero, Background *this_) {
+                this_->close();
+            });
+    }
+
+    void beforeBridgeFree(Bridge<GsSkeleton> *bridge) {
+        log("beforeBridgeFree");
+    }
+
+    void afterBridgeCreate(Bridge<GsSkeleton> *bridge) {
+        log("afterBridgeCreate.");
     }
 
     int open(Result &rst) {
         // waiting fcs to connect
-        int ret = this->gsAddress->bind(rst);
-        if (ret < 0) {
-            return ret;
-        }
-        ret = gsAddress->listen(rst);
-        if (ret < 0) {
-            return ret;
-        }
+        int ret = bridgeKeeper->bindAndListen(rst);
         log("listening connect in on port of gs.");
         return ret;
     }
+
     void close() {
-        this->gsAddress->close();
+        bridgeKeeper->close();
+    }
+
+    BridgeKeeper<GsSkeleton, FcStub> *getBridgeKeeper() {
+        return this->bridgeKeeper;
     }
 
     int run(TickingContext *ticking) {
         log("GS net accepter running...");
-        Bridge *bridge = 0;
-        while (true) {
-            Bridge *bridge2 = 0;
-            Result rst;
-            int ret = gsAddress->accept(
-                bridge2,
-                new GsSkeleton(this->loggerFactory), GsSkeleton::release, //                                       //
-                rst                                                       //
-            );
-
-            if (ret < 0) {
-                log(rst.errorMessage);
-                break;
-            }
-
-            bridge2->createStub<FcApi>(FcStub::create, FcStub::release);
-
-            if (bridge != 0) {
-                bridge->close();
-                for (int j = 0; j < entries.len(); j++) {
-                    entries[j].doHandle(bridge, 0);
-                }
-                delete bridge;
-            }
-
-            for (int j = 0; j < entries.len(); j++) {
-                entries[j].doHandle(bridge2, 1);
-            }
-            bridge = bridge2;
-            log("A new GS client connected in.");
-        }
-
-        if (bridge != 0) {
-            bridge->close();
-            delete bridge;
-        }
+        Result rst;
+        int ret = bridgeKeeper->run(createSkeleton, FcStub::create, this, rst);
         log(String() << "Warning: GS main loop exit.");
-        return 1;
+        return ret;
     }
 };
 

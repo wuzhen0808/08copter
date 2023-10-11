@@ -16,12 +16,9 @@ protected:
     Channel *channel;
 
 public:
-    static void *create(Channel *channel) {
-        return new GsStub(channel);
-    }
 
-    static void release(void *stub) {
-        delete static_cast<GsStub *>(stub);
+    static GsStub *create(Channel *channel) {
+        return new GsStub(channel);
     }
 
     GsStub(Channel *channel) {

@@ -11,9 +11,11 @@ namespace a8::gs {
 class View : public FlyWeight {
 protected:
     Cdk *cdk;
+    EventCenter *eventCenter;
 public:
-    View(Cdk *cdk, LoggerFactory *logFac) : FlyWeight(logFac) {
+    View(Cdk *cdk, EventCenter *ec, LoggerFactory *logFac) : FlyWeight(logFac) {
         this->cdk = cdk;
+        this->eventCenter = ec;
     }
 
     virtual ~View() {

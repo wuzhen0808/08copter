@@ -15,7 +15,7 @@ class DialogView : public View {
     Buffer<String> buttons;
 
 public:
-    DialogView(Cdk *cdk, LoggerFactory *logFac) : View(cdk, logFac) {
+    DialogView(Cdk *cdk, EventCenter *ec, LoggerFactory *logFac) : View(cdk, ec, logFac) {
         this->dialog = 0;
     }
 

@@ -11,13 +11,18 @@ using namespace a8::util::curses;
 namespace a8::gs {
 
 class CommandView : public View {
+
+    static void onBridgeCreate(Bridge<GsSkeleton> *bridge, CommandView *context) {
+        context->bridge = bridge;
+    }
+
     Entry *entry;
-    Background *bg;
-    Bridge *bridge;
+
+    Bridge<GsSkeleton> *bridge;
 
 public:
-    CommandView(Cdk *cdk, Background *bg, LoggerFactory *logFac) : View(cdk, logFac) {
-        this->bg = bg;
+    CommandView(Cdk *cdk, EventCenter *ec, LoggerFactory *logFac) : View(cdk, ec, logFac) {
+        this->eventCenter = ec;
         this->entry = 0;
     }
 
@@ -33,19 +38,8 @@ public:
         this->entry->draw();
     }
 
-    void onBridge(Bridge *bridge, int type) {
-        switch (type) {
-        case 0:
-            this->bridge = 0;
-            break;
-        case 1:
-            this->bridge = bridge;
-            break;
-        }
-    }
-
     bool ifExit() {
-        DialogView dialog(cdk, loggerFactory);
+        DialogView dialog(cdk, this->eventCenter, loggerFactory);
         dialog << "<C></U>Dialog"
                << " "
                << "<C>Going to exit the </B/32>GS<!B!32>?";
@@ -64,7 +58,7 @@ public:
 
     void cmdTakeoff() {
         //
-        Bridge *bridge = this->bridge;
+        Bridge<GsSkeleton> *bridge = this->bridge;
         if (bridge == 0) {
             //
             log("bridge is broken or not established yet.");
@@ -77,9 +71,6 @@ public:
     }
     int run(Result &rst) {
 
-        bg->add(this, [](Bridge *bridge, int type, void *this_) {
-            static_cast<CommandView *>(this_)->onBridge(bridge, type);
-        });
         int ret = -1;
         for (;;) {
             entry->draw();
@@ -106,7 +97,7 @@ public:
             }
 
         } //
-        bg->close();
+        this->eventCenter->notifyEvent(EventTypes::BEFORE_QUIT, 0);
 
         return ret;
     }

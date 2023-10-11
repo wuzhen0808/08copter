@@ -37,7 +37,7 @@ public:
         if (this->type != type) {
             return -1;
         }
-        ret += write_(writer, static_cast<T *>(data));
+        ret += write_(writer, Lang::cast<T *>(data));
         return ret;
     }
 

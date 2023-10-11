@@ -11,8 +11,8 @@ public:
     static const char END_OF_STR = '\0';
 
     template <typename T>
-    static T *cast(void *ptr) {
-        return static_cast<T *>(ptr);
+    static T cast(void *ptr) {
+        return static_cast<T>(ptr);
     }
 
     static bool isLower(char ch) {
@@ -57,11 +57,16 @@ public:
         }
         delete[] ptr;
     }
+    template <typename T>
+    static void free(void *ptr) {
+        free<T>(Lang::cast<T *>(ptr));
+    }
 
     template <typename T>
     static void free(T *ptr) {
         free(ptr, false);
     }
+    
     template <typename T>
     static void free(T *ptr, bool isArray) {
         if (ptr == 0) {
@@ -288,7 +293,7 @@ public:
             return 0;
         }
         for (int i = 0;; i++) {
-            if (str[i] == END_OF_STR) {                
+            if (str[i] == END_OF_STR) {
                 return i;
             }
         }

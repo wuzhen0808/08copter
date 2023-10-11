@@ -20,17 +20,17 @@ class Foreground : public FlyWeight {
     SensorsView *sensorsView = 0;
     Cdk *cdk;
     Background *bg;
-
+    EventCenter * eventCenter;
 
 public:
-    Foreground(Background *bg, LoggerFactory *logFac) : FlyWeight(logFac) {
+    Foreground(Background *bg, EventCenter * eventCenter, LoggerFactory *logFac) : FlyWeight(logFac) {
         this->bg = bg;
-
+        this->eventCenter = eventCenter;
         this->cdk = new Cdk();
         this->cdk->initColor();
-        logView = new LogView(cdk, logFac);
-        cmdView = new CommandView(cdk, bg, loggerFactory);
-        sensorsView = new SensorsView(cdk, bg, logFac);
+        logView = new LogView(cdk, eventCenter, logFac);
+        cmdView = new CommandView(cdk, eventCenter, loggerFactory);
+        sensorsView = new SensorsView(cdk, eventCenter, logFac);
     }
 
     ~Foreground() {
