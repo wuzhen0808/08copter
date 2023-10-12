@@ -63,8 +63,11 @@ public:
         if (ret < 0) {
             return ret;
         }
-        bridgeF(type, str, context);
+        ret = bridgeF(type, str, context, rst);
         Lang::free(str);
+        if (ret < 0) {
+            return ret;
+        }
         return ret;
     }
 };

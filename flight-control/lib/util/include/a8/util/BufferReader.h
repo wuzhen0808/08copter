@@ -7,22 +7,22 @@ namespace a8::util {
 
 /**
  */
-class BufferReader : public Reader {
+class BufferReader : public Reader, public Buffer<char> {
 protected:
-    Buffer<char> buf;
     int from = 0;
 
 public:
-    BufferReader(Buffer<char> buf) {
-        this->buf = buf;
+    BufferReader(Buffer<char> buf) : Buffer<char>(buf) {
+    }
+    BufferReader() {
     }
 
     int read(char *buf, int bufLen) override {
-        int len = this->buf.len() - from;
+        int len = this->len() - from;
         if (len > bufLen) {
             len = bufLen;
         }
-        Lang::copy(this->buf.getAll(), from, len, buf);
+        Lang::copy(this->buffer(), from, len, buf);
         from += len;
         return len;
     };

@@ -28,6 +28,8 @@ using namespace a8::hal::freertos;
 
 System *a8::hal::S = new NativeSystem();
 
+System &SR = *S;
+
 int main(int argc, char **argv) {
     Scheduler *sch = new FreeRtosScheduler();
     Sockets *sockets = new NativeSockets();

@@ -43,8 +43,17 @@ public:
             delete[] this->buffer_;
         }
     }
+    template <typename S, typename C>
+    Buffer<T> &append(const Buffer<S> &buf, const C context, T (*convert)(S, C)) {
+        for (int i = 0; i < buf.len(); i++) {
+            this.append(convert(buf[i], context));
+        }
+        return *this;
+    }
 
-    int length() const;
+    int length() const {
+        return this->length_;
+    }
 
     int len() const {
         return this->length_;
@@ -63,7 +72,9 @@ public:
         }
         return this->buffer_[idx];
     }
-    T *getAll() const;
+    T *buffer() const {
+        return this->buffer_;
+    }
 
     int removeIndexFrom(int from) {
         int removed = this->length_ - from;
@@ -119,7 +130,7 @@ public:
         if (from1 >= this->length_) {
             return -1;
         }
-        int len2 = Math::min(len, this->length_ - from1);        
+        int len2 = Math::min(len, this->length_ - from1);
         Lang::copy<T>(this->buffer_, from1, len2, buf);
         return len2;
     }
@@ -138,11 +149,17 @@ public:
     }
 
     Buffer<T> *append(const T &element) {
-        return append(&element, 1);
+        return append(&element, 0, 1);
     }
 
     Buffer<T> *append(const T *elements, int length_) {
         return append(elements, 0, length_);
+    }
+
+    template <typename S>
+    Buffer<T> *append(const S &element, T (*convert)(const S &)) {
+        T ele = convert(element);
+        return append(&ele, 0, 1);
     }
 
     Buffer<T> *append(const Buffer<T> &buf) {
@@ -199,15 +216,5 @@ public:
 };
 
 // implementation
-
-template <typename T>
-int Buffer<T>::length() const {
-    return this->length_;
-}
-
-template <typename T>
-T *Buffer<T>::getAll() const {
-    return this->buffer_;
-}
 
 } // namespace a8::util

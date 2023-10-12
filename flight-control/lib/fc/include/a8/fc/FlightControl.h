@@ -1,4 +1,5 @@
 #pragma once
+#include "a8/common.h"
 #include "a8/fc/AttitudeControl.h"
 #include "a8/fc/AttitudeSensor.h"
 #include "a8/fc/FcSkeleton.h"
@@ -14,9 +15,9 @@ using a8::hal::S;
 using namespace a8::util;
 using namespace a8::util::thread;
 using namespace a8::util::comp;
+using namespace a8::common;
 
 namespace a8::fc {
-
 class FlightControl : public Component {
     static const int TICKING_KEY_BRIDGE = 0;
 
@@ -47,54 +48,6 @@ protected: // functions
         this->bridgeKeeper = new BridgeKeeper<FcSkeleton, GsStub>(this->links->gsAddress());
     }
 
-    String resolveConfFile(Properties &pts) {
-
-        String fpath = pts.getString(a8_properties, "");
-        if (fpath != "") {
-            return fpath;
-        }
-        String file2 = S->getEnv(A8_PROPERTIES);
-        return file2;
-    }
-
-    void loadDefaultProperties(Properties &properties) {
-        properties.set(P_fcs_servo_idx_ar, 0);
-        properties.set(P_fcs_servo_idx_fl, 1);
-        properties.set(P_fcs_servo_idx_al, 2);
-        properties.set(P_fcs_servo_idx_fr, 3);
-        properties.set(P_fcs_servo_fr_clockwise, true);
-        properties.set(P_fcs_att_tick_rate, 1000); // HZ
-    }
-
-    void resolveProperties(Properties &pts) {
-
-        // build int properties
-        loadDefaultProperties(pts);
-
-        // command line arguments
-        Buffer<String> buf;
-        Buffer<String> args = StringUtil::strings(argc, argv);
-        for (int i = 0; i < args.length(); i++) {
-            String str = args.get(i);
-            if (str.length() > 10000) {
-                Lang::bug();
-            }
-        }
-        pts.setLines(args);
-
-        // configuration file
-        String fpath = resolveConfFile(pts);
-        S->out->println(String::format("a8 properties file path:%s", fpath.text()));
-
-        if (fpath != 0) {
-            Reader *fr;
-            int ret = S->openFile(fpath, fr);
-            Properties *pts2 = new Properties();
-            pts2->load(*fr);
-            pts.mergeFrom(pts2, false);
-        }
-    }
-
 public:
     FlightControl(const String &name, int argc, char **argv, Links *links) : Component(name) {
         this->init(argc, argv, links);
@@ -109,7 +62,8 @@ public:
     }
 
     virtual void boot(StagingContext *context) override {
-        resolveProperties(*context->properties);
+
+        CommonUtil::resolveProperties(argc, argv, context->properties, context->getSys());
         Component::boot(context);
     }
 
@@ -124,14 +78,17 @@ public:
 
         // connected already.
         GsApi *gsApi = gsBridge->stub<GsApi>();
-        gsApi->ping("hello gs, this is fc.");
+        ret = gsApi->ping("hello gs, this is fc.", rst);
+        if (ret < 0) {
+            return;
+        }
 
         SensorsData sd;
         ret = attitudeSensor_->getAltitude(sd.altitude, rst);
         if (ret < 0) {
-            gsApi->log("cannot send sensors data, error to get data from sensor," << rst.errorMessage);
+            ret = gsApi->log("cannot send sensors data, error to get data from sensor," << rst.errorMessage, rst);
         } else {
-            gsApi->sensors(sd);
+            ret = gsApi->sensors(sd, rst);
         }
     }
     virtual void populate(StagingContext *context) override {

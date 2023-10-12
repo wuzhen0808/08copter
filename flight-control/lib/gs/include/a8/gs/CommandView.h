@@ -56,23 +56,26 @@ public:
         return false;
     }
 
-    void cmdTakeoff() {
+    int cmdTakeoff(Result &rst) {
         //
         Bridge<GsSkeleton> *bridge = this->bridge;
+        int ret = 0;
         if (bridge == 0) {
             //
             log("bridge is broken or not established yet.");
+            ret = -1;
         } else {
             FcApi *fcApi = bridge->stub<FcApi>();
-            fcApi->ping("take off.");
+            ret = fcApi->ping("take off.", rst);
         }
+        return ret;
     }
     void cmdHelp() {
     }
     int run(Result &rst) {
 
-        int ret = -1;
-        for (;;) {
+        int ret = 0;
+        for (; ret >= 0;) {
             entry->draw();
             String cmd;
             ret = entry->activate(cmd);
@@ -89,11 +92,16 @@ public:
             } else if (cmd.equalsIgnoreCase("help")) {
                 cmdHelp();
             } else if (cmd.equalsIgnoreCase("takeoff")) {
-                cmdTakeoff();
+                ret = cmdTakeoff(rst);
             } else if (cmd.equalsIgnoreCase("refresh")) {
                 cdk->refresh();
             } else {
                 log("no such command" << cmd);
+            }
+
+            if (ret < 0) {
+                log(rst.errorMessage);
+                ret = rst.reset();
             }
 
         } //

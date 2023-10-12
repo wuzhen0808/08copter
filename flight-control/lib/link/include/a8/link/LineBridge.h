@@ -11,10 +11,10 @@ namespace a8::link {
 class LineBridge {
 
 public:
-    static void bridge(int type, void *data, void *context) {
+    static int bridge(int type, void *data, void *context, Result &rst) {
         LineApi *api = static_cast<LineApi *>(context);
         String *pData = static_cast<String *>(data);
-        api->line(*pData);
+        return api->line(*pData, rst);
     }
 };
 

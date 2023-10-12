@@ -66,7 +66,7 @@ public:
     static void free(T *ptr) {
         free(ptr, false);
     }
-    
+
     template <typename T>
     static void free(T *ptr, bool isArray) {
         if (ptr == 0) {
@@ -332,6 +332,11 @@ public:
         if (a2 != 0) {
             delete[] a2;
         }
+    }
+
+    template <typename T>
+    static T noneConvert(const T &value) {        
+        return value;
     }
 };
 

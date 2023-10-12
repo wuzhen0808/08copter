@@ -11,21 +11,23 @@ namespace a8::link {
 // Stub to ground station interface.
 class GsBridge {
 public:
-    static void bridge(int type, void *data, void *context) {
-        GsApi *gss = static_cast<GsApi *>(context);
+    static int bridge(int type, void *data, void *context, Result &rst) {
+        GsApi *gss = Lang::cast<GsApi *>(context);
+        int ret = -1;
         switch (type) {
         case CommonMessageType::PING:
-            gss->ping(*static_cast<String *>(data));
+            ret = gss->ping(*Lang::cast<String *>(data), rst);
             break;
         case CommonMessageType::LOG:
-            gss->log(*static_cast<String *>(data));
+            ret = gss->log(*Lang::cast<String *>(data), rst);
             break;
         case CopterMessageType::SENSORS_DATA:
-            gss->sensors(*static_cast<SensorsData *>(data));
+            ret = gss->sensors(*Lang::cast<SensorsData *>(data), rst);
             break;
         default:
-            gss->unknownMessageReceived(type, data);
+            ret = gss->unknownMessageReceived(type, data, rst);
         }
+        return ret;
     }
 };
 

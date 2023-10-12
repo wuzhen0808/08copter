@@ -39,20 +39,18 @@ class SimInSkeleton : public LineApi, public FlyWeight {
     }
 
 public:
-    static void release(void *skeleton) {
-        delete static_cast<SimInSkeleton *>(skeleton);
-    }
     SimInSkeleton(LoggerFactory *logFac) : FlyWeight(logFac) {
     }
     ~SimInSkeleton() {
     }
-    void line(String line) override {
+    int line(String line, Result &rst) override {
         if (lines == 0) {
             headers = StringUtil::split(line, ',');
         } else {
             lastLineRaw = new String(line);
         }
         lines++;
+        return 1;
     }
 
     int get(int &fIdx, String fName, String &fValue, Result &rst) {
@@ -70,7 +68,7 @@ public:
             return -1;
         }
         if (lastLineParsed == 0) {
-            lastLineParsed = new Buffer<String>(StringUtil::split(lastLineRaw.ptr, ','));
+            lastLineParsed = new Buffer<String>(StringUtil::split(*lastLineRaw.ptr, ','));
         }
         fValue = lastLineParsed.ptr->get(fIdx);
         return 1;
@@ -111,25 +109,27 @@ public:
         return readDouble(Col_Altitude, "Altitude", altitude, rst);
     }
     int getLatitude(double &latitude, Result &rst) {
-        return readDouble(Col_Altitude, "Latitude (deg)", latitude, rst);
+        return readDouble(Col_Latitude, "Latitude (deg)", latitude, rst);
     }
     int getLongitude(double &longitude, Result &rst) {
-        return readDouble(Col_Altitude, "Longitude (deg)", longitude, rst);
+        return readDouble(Col_Longitude, "Longitude (deg)", longitude, rst);
     }
 
     int getTime(long &time, Result &rst) {
-        return readLong(Col_Altitude, "Time", time, rst);
+        return readLong(Col_Time, "Time", time, rst);
     }
     int getPhi(float &phi, Result &rst) {
         return readFloat(Col_Phi, "Phi (deg)", phi, rst);
     }
 
-    int getTheta(float &theta, Result &rst) { return readFloat(Col_Phi, "Tht (deg)", theta, rst); }
-    int getPsi(float &psi, Result &rst) { return readFloat(Col_Phi, "Psi (deg)", psi, rst); }
+    int getTht(float &theta, Result &rst) { return readFloat(Col_Tht, "Tht (deg)", theta, rst); }
+    int getPsi(float &psi, Result &rst) { return readFloat(Col_Psi, "Psi (deg)", psi, rst); }
     int getAccVel(Vector3f &vel, Result &rst) {
+        rst << "TODO getAccVel";
         return -1;
     }
     int getAngVel(Vector3f &vel, Result &rst) {
+        rst << "TODO getAngVel";
         return -1;
     }
 };

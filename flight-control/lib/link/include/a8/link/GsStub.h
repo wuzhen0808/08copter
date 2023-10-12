@@ -16,7 +16,6 @@ protected:
     Channel *channel;
 
 public:
-
     static GsStub *create(Channel *channel) {
         return new GsStub(channel);
     }
@@ -26,19 +25,16 @@ public:
     }
 
     // check if the GS responsible or not.
-    void ping(String msg) override {
-        Result rst;
-        this->channel->send(CommonMessageType::PING, &msg, rst);
+    int ping(String msg, Result &rst) override {
+        return this->channel->send(CommonMessageType::PING, &msg, rst);
     }
 
     // send log message to GS.
-    void log(String msg) override {
-        Result rst;
-        this->channel->send(CommonMessageType::LOG, &msg, rst);
+    int log(String msg, Result &rst) override {
+        return this->channel->send(CommonMessageType::LOG, &msg, rst);
     }
-    void sensors(SensorsData ssd) override {
-        Result rst;
-        this->channel->send(CopterMessageType::SENSORS_DATA, &ssd, rst);
+    int sensors(SensorsData ssd, Result &rst) override {
+        return this->channel->send(CopterMessageType::SENSORS_DATA, &ssd, rst);
     }
 };
 

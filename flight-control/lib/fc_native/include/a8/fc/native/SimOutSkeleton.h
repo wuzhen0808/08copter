@@ -24,9 +24,10 @@ public:
     SimOutSkeleton(LoggerFactory *logFac) : FlyWeight(logFac) {
         lines = 0;
     }
-    void line(String line) override {
+    int line(String line, Result &rst) override {
         lines++;
         log(line);
+        return 1;
     }
 };
 } // namespace a8::fc::native

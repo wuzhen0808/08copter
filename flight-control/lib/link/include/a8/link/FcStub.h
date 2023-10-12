@@ -25,17 +25,15 @@ public:
     FcStub(Channel *channel) {
         this->channel = channel;
     }
-    void ping(String msg) override {
-        Result rst;
-        this->channel->send(CommonMessageType::PING, &msg, rst);
+    int ping(String msg, Result &rst) override {
+
+        return this->channel->send(CommonMessageType::PING, &msg, rst);
     }
-    void command(String cmd) override {
-        Result rst;
-        this->channel->send(CommonMessageType::CMD, &cmd, rst);
+    int command(String cmd, Result &rst) override {
+        return this->channel->send(CommonMessageType::CMD, &cmd, rst);
     }
-    void test() override {
-        Result rst;
-        this->channel->send(CommonMessageType::TEST, 0, rst);
+    int test(Result &rst) override {
+        return this->channel->send(CommonMessageType::TEST, 0, rst);
     }
 };
 

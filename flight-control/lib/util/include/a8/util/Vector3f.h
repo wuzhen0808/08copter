@@ -21,6 +21,16 @@ public:
         return ret;
     }
 
+    friend bool operator==(const Vector3f &vec, const Vector3f &vec2) {
+        if (&vec == 0 && &vec2 != 0 || &vec != 0 && &vec2 == 0) {
+            return false;
+        }
+        return vec.x == vec2.x    //
+               && vec.y == vec2.y //
+               && vec.z == vec2.z //
+            ;
+    }
+
     friend String &operator<<(String &str, const Vector3f &vec) {
         return str << "(" << vec.x << "," << vec.y << "," << vec.z << ")";
     }
@@ -28,8 +38,13 @@ public:
     float x;
     float y;
     float z;
-    Vector3f() {
+    Vector3f() { // default constructor
         x = y = z = 0;
+    }
+    Vector3f(Vector3f &v) { // copy constructor
+        this->x = v.x;
+        this->y = v.y;
+        this->z = v.z;
     }
     Vector3f(float x, float y, float z) {
         this->x = x;

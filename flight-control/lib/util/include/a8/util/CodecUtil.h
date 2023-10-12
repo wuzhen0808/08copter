@@ -3,30 +3,36 @@
 #include "a8/util/Reader.h"
 #include "a8/util/Writer.h"
 
+#define FLOAT_MANTISSA_BITS (24)
+#define FLOAT_EXP_BITS (8)
+
+#define DOUBLE_MANTISSA_BITS (53)
+#define DOUBLE_EXP_BITS = (11)
+
 namespace a8::util {
 class CodecUtil {
-public:
-    template <typename T>
-    static int readInt(Reader *reader, int size, T &intV) {
 
-        int intV2 = 0;
+public:
+    template <typename T, typename U>
+    static int readInt(Reader *reader, int size, T &intV) {
+        U uInt = 0x0U;
         for (int i = 0; i < size; i++) {
             char ch;
             int ret = reader->read(ch);
             if (ret != 1) {
                 return -1;
             }
-
-            intV2 = intV2 + ((ch & 0xFF) << 8 * i);
+            uInt = uInt | ((U)ch << 8 * (size - i - 1));
         }
-        intV = intV2;
+        intV = (T)uInt;
         return size;
     }
 
-    template <typename T>
+    template <typename T, typename U>
     static int writeInt(Writer *writer, int size, T intV) {
+        U uInt = (U)intV;
         for (int i = 0; i < size; i++) {
-            char ch = intV >> 8 * i & 0xFF;
+            char ch = uInt >> 8 * (size - i - 1) & 0xFF;
             int ret = writer->write(ch);
             if (ret != 1) {
                 return -1;
@@ -35,119 +41,140 @@ public:
         return size;
     }
 
-    static int writeInt8(Writer *writer, int data) {
-        return writeInt<int>(writer, 8 / 8, data);
+    static int writeInt8(Writer *writer, char data) {
+        return writeInt<char, unsigned char>(writer, sizeof(unsigned char), data);
     }
 
     static int readInt8(Reader *reader, int &data) {
-        return readInt<int>(reader, 8 / 8, data);
+        char ch;
+        int ret = readInt8(reader, ch);
+        if (ret < 0) {
+            return ret;
+        }
+        data = (int)ch;
+        return ret;
     }
 
-    static int writeInt16(Writer *writer, int iValue) {
-        return writeInt<int>(writer, 16 / 8, iValue);
+    static int readInt8(Reader *reader, char &data) {
+        return readInt<char, unsigned char>(reader, sizeof(unsigned char), data);
     }
 
-    static int readInt16(Reader *reader, int &intV) {
-        return readInt<int>(reader, 16 / 8, intV);
+    static int writeInt16(Writer *writer, short iValue) {
+        return writeInt<short, unsigned short>(writer, sizeof(unsigned short), iValue);
+    }
+
+    static int readInt16(Reader *reader, short &intV) {
+        return readInt<short, unsigned short>(reader, sizeof(unsigned short), intV);
+    }
+
+    static int writeInt32(Writer *writer, int iValue) {
+        return writeInt<int, unsigned int>(writer, sizeof(unsigned int), iValue);
+    }
+
+    static int readInt32(Reader *reader, int &intV) {
+        return readInt<int, unsigned int>(reader, sizeof(unsigned int), intV);
+    }
+
+    static int writeInt64(Writer *writer, long long iValue) {
+        return writeInt<long long, unsigned long long>(writer, sizeof(unsigned long long), iValue);
+    }
+
+    static int readInt64(Reader *reader, long long &intV) {
+        return readInt<long long, unsigned long long>(reader, sizeof(unsigned long long), intV);
     }
 
     /**
+     * Float:
      * exp: 1+7 bits;
      * mantissa:1+23 bits;
+     * Double:
+     * exp: 11 bits,
+     * mantissa: 53 bits;
+     *
      */
-    static int writeFloat(Writer *writer, float fValue) {
-        int ie = 0;
-        float m = Math::frexpf(fValue, &ie);
-        m = Math::ldexp(m, 53);
-        long im = Math::trunc(m);
-        int len = 0;
-        int ret = writeInt<long>(writer, 24 / 8, im); //
-        if (ret < 0) {
-            return ret;
-        }
-        len += ret;
-        ret += writeInt<int>(writer, 8 / 8, ie);
-        if (ret < 0) {
-            return ret;
-        }
-        len += ret;
 
+    template <typename M, typename UM, typename E, typename UE>
+    static int writeFloat(Writer *writer, M mantissas, E exp) {
+        int len = 0;
+        int ret = writeInt<M, UM>(writer, sizeof(UM), mantissas); //
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+        ret = writeInt<E, UE>(writer, sizeof(UE), exp);
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
         return len;
+    }
+
+    template <typename M, typename UM, typename E, typename UE>
+    static int readFloat(Reader *reader, M &mantissas, E &exp) {
+
+        int len = 0;
+        int ret = readInt<M, UM>(reader, sizeof(UM), mantissas);
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+        ret = readInt<E, UE>(reader, sizeof(UE), exp);
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+        return len;
+    }
+
+    static int writeFloat(Writer *writer, float fValue) {
+        int exp;
+        float mantissas = Math::frexp(fValue, &exp);
+        float m2 = Math::ldexp(mantissas, 23);
+        return writeFloat<long, unsigned long, char, unsigned char>(writer, (long)m2, (char)(exp - 23));
     }
 
     static int readFloat(Reader *reader, float &fValue) {
-        long im;
-        int ie;
-        int len = 0;
-        int ret = readInt<long>(reader, 24 / 8, im);
-        if (ret < 0) {
-            return ret;
-        }
-        len += ret;
-        ret = readInt<int>(reader, 8 / 8, ie);
-        if (ret < 0) {
-            return ret;
-        }
-        len += ret;
-        fValue = Math::ldexp(im, ie);
-        return len;
+        long mantissas;
+        char exp;
+        int ret = readFloat<long, unsigned long, char, unsigned char>(reader, mantissas, exp);
+        fValue = Math::ldexp((float)mantissas, (int)exp);
+        return ret;
     }
-
     /**
      * exp:1+10bits,
      * mantissa :1sign+52bits.
      */
-    static int writeDouble(Writer *writer, double dValue) {
-        int ie = 0;
-        double m = Math::frexp(dValue, &ie);
-        m = Math::ldexp(m, 53);
-        long long im = Math::trunc(m);
-        int len = 0;
-        int ret = writeInt<long long>(writer, 64 / 8, im);
-        if (ret < 0) {
-            return ret;
-        }
-        len += ret;
-        ret = writeInt<int>(writer, 16 / 8, ie);
-        if (ret < 0) {
-            return ret;
-        }
-        len += ret;
 
-        return len;
+    static int writeDouble(Writer *writer, double fValue) {
+        int exp;
+        double mantissas = Math::frexp(fValue, &exp);
+        double m2 = Math::ldexp(mantissas, 52);
+        return writeFloat<long long, unsigned long long, short, unsigned short>(writer, (long long)m2, (short)(exp - 52));
     }
 
-    static int readDouble(Reader *reader, double &dValue) {
-        long long im;
-        int ie;
-        int len = 0;
-        int ret = readInt<long long>(reader, 64 / 8, im);
-        if (ret < 0) {
-            return ret;
-        }
-        ret = readInt<int>(reader, 16 / 8, ie);
-        if (ret < 0) {
-            return ret;
-        }
-        len += ret;
-        dValue = Math::ldexp(im, ie);
-        return len;
+    static int readDouble(Reader *reader, double &fValue) {
+        long long mantissas;
+        short exp;
+        int ret = readFloat<long long, unsigned long long, short, unsigned short>(reader, mantissas, exp);
+        fValue = Math::ldexp((double)mantissas, (int)exp);
+        return ret;
     }
 
-    static int writeNothing_(Writer *writer, int *data) {
+    template <typename T>
+    static int writeNothing(Writer *writer, T &data) {
         return 0;
     }
 
-    static int readNothing_(Reader *reader, int *&data) {
-        data = 0;
+    template <typename T>
+    static int readNothing(Reader *reader, T &data) {
         return 0;
     }
-    
-    static int writeString_(Writer *writer, String *data) {
+
+    static int writeString(Writer *writer, String data) {
         int len = 0;
         // write text
-        for (int i = 0; i < data->len(); i++) {
-            char ch = data->charAt(i);
+        for (int i = 0; i < data.len(); i++) {
+            char ch = data.charAt(i);
             if (ch == Lang::END_OF_STR) {
                 break;
             }
@@ -162,16 +189,7 @@ public:
         len += 1;
         return len;
     }
-    static int readString_(Reader *reader, String *&data) {
-        String *tmp = new String();
-        int ret = readString(reader, *tmp);
-        if (ret < 0) {
-            delete tmp;
-        } else {
-            data = tmp;
-        }
-        return ret;
-    }
+
     static int readString(Reader *reader, String &data) {
         // read length;
         int len = 0;

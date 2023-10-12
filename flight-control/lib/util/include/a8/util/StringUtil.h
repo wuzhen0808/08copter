@@ -24,33 +24,24 @@ public:
         return ret;
     }
 
-    static Buffer<String> split(String str, const char separator) {
-        return StringUtil::split(&str, separator);
-    }
-
-    static Buffer<String> split(String *str, const char separator) {
-        return StringUtil::split<String>(str, separator, [](String &s) { return s; });
+    static Buffer<String> split(const String &str, const char separator) {
+        return StringUtil::split<String>(str, separator, Lang::noneConvert<String>);
     }
 
     template <typename T>
-    static Buffer<T> split(String string, const char separator, T (*convert)(String &)) {
-        return StringUtil::split(&string, separator, convert);
-    }
-
-    template <typename T>
-    static Buffer<T> split(String *string, const char separator, T (*convert)(String &)) {
+    static Buffer<T> split(const String &string, const char separator, T (*convert)(const String &)) {
 
         String str;
         Buffer<T> ret;
-        for (int i = 0; i < string->length(); i++) {
-            if (string->charAt(i) == separator) {
-                ret.append(convert(str));
+        for (int i = 0; i < string.length(); i++) {
+            if (string.charAt(i) == separator) {
+                ret.template append<String>(str, convert);
                 str = "";
                 continue;
             }
-            str.append(string->charAt(i));
+            str.append(string.charAt(i));
         }
-        ret.append(convert(str));
+        ret.template append<String>(str, convert);
         return ret;
     }
     static String toString(Buffer<char> buf) {
@@ -66,7 +57,7 @@ public:
     }
 
     friend String &operator<<(String &str, Buffer<char> buf) {
-        str.append(buf.getAll(), buf.len());
+        str.append(buf.buffer(), buf.len());
         return str;
     }
 };

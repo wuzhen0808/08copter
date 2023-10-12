@@ -13,15 +13,18 @@ public:
     FcSkeleton(LoggerFactory *loggerFactory) : FlyWeight(loggerFactory) {
     }
 
-    void ping(String msg) override {
+    int ping(String msg, Result &rst) override {
         log(String() << "received ping msg:" << msg);
+        return 1;
     }
-    void command(String cmd) override {
+    int command(String cmd, Result &rst) override {
         // todo.
         log(String() << "received command:" << cmd);
+        return 1;
     }
-    void test() override {
+    int test(Result &rst) override {
         log(String() << "received test instruction");
+        return 1;
     }
 };
 } // namespace a8::fc

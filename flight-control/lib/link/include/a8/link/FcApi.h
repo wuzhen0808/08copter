@@ -8,9 +8,9 @@ namespace a8::link {
 class FcApi {
 public:
     // send a message to see if the FCS is responsible or not.
-    virtual void ping(String msg) = 0;
-    virtual void command(String cmd) = 0;
-    virtual void test() = 0;
+    virtual int ping(String msg, Result &rst) = 0;
+    virtual int command(String cmd, Result &rst) = 0;
+    virtual int test(Result &rst) = 0;
 };
 
 } // namespace a8::link

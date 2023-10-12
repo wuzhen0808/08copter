@@ -18,21 +18,20 @@ public:
     }
     ~GsSkeleton() {
     }
-    void ping(String msg) override {
+    int ping(String msg, Result &rst) override {
         logger->info(String() << "on ping message:" << msg);
+        return 1;
     }
 
-    void log(String msg) override {
+    int log(String msg, Result &rst) override {
         logger->info(String() << "on log message:" << msg);
+        return 1;
     }
 
-    void sensors(SensorsData ssd) override {
+    int sensors(SensorsData ssd, Result &rst) override {
         String str;
         logger->info(str << ssd);
-    }
-
-    void unknownMessageReceived(int type, void *data) override {
-        logger->info(String() << "unknownMessageReceived, type:" << type);
+        return 1;
     }
 };
 } // namespace a8::gs

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "a8/util.h"
 #include "a8/link/SensorsData.h"
+#include "a8/util.h"
 
 using namespace a8::util;
 
@@ -12,15 +12,16 @@ class GsApi {
 
 public:
     // check if the GS responsible or not.
-    virtual void ping(String msg) = 0;
+    virtual int ping(String msg, Result &rst) = 0;
 
     // send log message to GS.
-    virtual void log(String msg) = 0;
+    virtual int log(String msg, Result &rst) = 0;
 
-    virtual void sensors(SensorsData ssd) = 0;
+    virtual int sensors(SensorsData ssd, Result &rst) = 0;
 
-    virtual void unknownMessageReceived(int type, void *data) {
-        // do nothing.
+    virtual int unknownMessageReceived(int type, void *data, Result &rst) {
+        rst << "unknown message received, type:" << type;
+        return 1;
     }
 };
 } // namespace a8::link

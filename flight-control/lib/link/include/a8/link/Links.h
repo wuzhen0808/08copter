@@ -33,12 +33,12 @@ public:
         SimpleCodec *codec = new SimpleCodec();
 
         // register codecs
-        codec->add<String>(CommonMessageType::PING, CodecUtil::writeString_, CodecUtil::readString_);
-        codec->add<String>(CommonMessageType::LOG, CodecUtil::writeString_, CodecUtil::readString_);
-        codec->add<String>(CommonMessageType::CMD, CodecUtil::writeString_, CodecUtil::readString_);
-        codec->add<int>(CommonMessageType::TEST, CodecUtil::writeNothing_, CodecUtil::readNothing_);
-        
-        codec->add<SensorsData>(CopterMessageType::SENSORS_DATA, SensorsData::write_, SensorsData::read_);
+        codec->add<String>(CommonMessageType::PING, CodecUtil::writeString, CodecUtil::readString, [](String &def) { def << "hi"; });
+        codec->add<String>(CommonMessageType::LOG, CodecUtil::writeString, CodecUtil::readString, [](String &def) { def << "hi"; });
+        codec->add<String>(CommonMessageType::CMD, CodecUtil::writeString, CodecUtil::readString, [](String &def) { def << "hi"; });
+        codec->add(CommonMessageType::TEST);
+        codec->add<SensorsData>(CopterMessageType::SENSORS_DATA, SensorsData::write, SensorsData::read);
+
         // address
         this->gsAddress_ = address(GsBridge::bridge, host, gsPort, codec);
         this->fcAddress_ = address(FcBridge::bridge, host, fcPort, codec);

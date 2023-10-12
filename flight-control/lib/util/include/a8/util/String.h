@@ -22,6 +22,10 @@ private:
     int capacity_ = 0;
 
 public:
+    static String *new_() {
+        return new String();
+    }
+
     static String string(const char *str) {
         return String(str, Lang::strLength(str));
     }
@@ -122,8 +126,8 @@ public:
         this->length_ = 0;
     }
 
-    bool isEmpty() {
-        return this->length_ = 0;
+    bool isEmpty() const {
+        return this->length_ == 0;
     }
     /**
      * Return:
@@ -138,7 +142,7 @@ public:
     int length() const {
         return this->length_;
     }
-    int size() {
+    int size() const {
         return length_ + 1;
     }
     int len() const {
@@ -207,7 +211,7 @@ public:
         appendFormat("%i", iValue);
     }
 
-    int lastIndexOf(char ch) {
+    int lastIndexOf(char ch) const {
         for (int i = this->length_ - 1; i >= 0; i--) {
             if (this->text_[i] == ch) {
                 return i;
@@ -336,7 +340,7 @@ public:
         return *this;
     }
 
-    char operator[](int idx) {
+    char operator[](int idx) const {
         if (idx < 0 || idx > this->length_) {
             Lang::illegalArgument("index out of bound.");
         }
@@ -405,7 +409,5 @@ public:
         return false;
     }
 };
-
-bool operator==(const String &str1, const String &str2);
 
 } // namespace a8::util

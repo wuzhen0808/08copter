@@ -11,19 +11,21 @@ namespace a8::link {
 class FcBridge {
 
 public:
-    static void bridge(int type, void *data, void *context) {
+    static int bridge(int type, void *data, void *context, Result &rst) {
         FcApi *fcApi = Lang::cast<FcApi *>(context);
+        int ret = -1;
         switch (type) {
         case CommonMessageType::PING: {
 
             String *pData = Lang::cast<String *>(data);
-            fcApi->ping(*pData);
+            ret = fcApi->ping(*pData, rst);
         } break;
         case CommonMessageType::TEST: {
 
-            fcApi->test();
+            ret = fcApi->test(rst);
         } break;
         }
+        return ret;
     }
 };
 

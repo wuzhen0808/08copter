@@ -44,6 +44,17 @@ public:
         }
         return len;
     }
+    template <typename T>
+    int read(T &i) {
+        char ch;
+        int ret = read(&ch, 1);
+        if (ret < 0) {
+            return ret;
+        }
+        i = (T)ch;
+        return ret;
+    }
+
     int read(char &ch) {
         return read(&ch, 1);
     }

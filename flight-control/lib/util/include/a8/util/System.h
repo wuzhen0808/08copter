@@ -22,8 +22,16 @@ public:
     virtual void formatTime(long long ms, String *str) = 0;
 
     virtual int openFile(String fpath, Reader *&fReaderCb) = 0;
-    
+
     virtual String getEnv(String name) = 0;
+    System &operator<<(const char *str) {
+        out->print(String() << str);
+        return *this;
+    }
+    System &operator<<(String &str) {
+        out->print(str);
+        return *this;
+    }
 };
 
 } // namespace a8::util

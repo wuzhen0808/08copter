@@ -1,5 +1,5 @@
 #pragma once
-
+#include "a8/common.h"
 #include "a8/fc/AttitudeSensor.h"
 #include "a8/fc/PidControl.h"
 #include "a8/fc/ServosControl.h"

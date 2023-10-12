@@ -1,4 +1,5 @@
 #pragma once
+#include "a8/util/Bool.h"
 #include "a8/util/Buffer.h"
 #include "a8/util/Float.h"
 #include "a8/util/LineReader.h"
@@ -8,6 +9,7 @@
 
 #define PT_FLOAT ("float")
 #define PT_INT ("int")
+#define PT_BOOL ("bool")
 #define PT_STRING ("string")
 
 namespace a8::util {
@@ -36,54 +38,31 @@ class Properties {
             return name + "=" + value;
         }
 
-        Buffer<float> getFloatArray() {
-            Buffer<float> ret;
-            if (type != PT_FLOAT) {
+        template <typename T>
+        Buffer<T> getArray(String type, T (*convert)(const String &)) {
+            if (this->type != type) {
+                Buffer<T> ret;
                 return ret;
             }
-            ret = Float::parseAll<float>(value, ',', [](double d) { return (float)d; });
-
-            return ret;
+            return StringUtil::split<T>(value, ',', convert);
+        }
+        template <typename T>
+        T get(String type, T (*convert)(const String &), int idx, T def) {
+            Buffer<T> buf = getArray(type, convert);
+            return buf.get(idx, def);
         }
 
-        Buffer<int> getIntArray() {
-            Buffer<int> ret;
-            if (type != PT_INT) {
-                return ret;
-            }
-            ret = Float::parseAll<int>(value, ',', [](double d) { return (int)d; });
-            return ret;
+        float getFloat(int idx, float defValue) {
+            return get<float>(PT_FLOAT, Float::parse<float>, idx, defValue);
         }
-
-        Buffer<String> getStringArray() {
-            Buffer<String> ret;
-            if (type != PT_STRING) {
-                return ret;
-            }
-            ret = StringUtil::split(value, ',');
-            return ret;
+        int getInt(int idx, int defValue) {
+            return get<int>(PT_INT, Float::parse<int>, idx, defValue);
         }
-
-        float getFloat(float defValue) {
-            Buffer<float> buf = getFloatArray();
-            if (value == 0 || buf.isEmpty()) {
-                return defValue;
-            }
-            return buf.get(0);
+        String getString(int idx, String defValue) {
+            return get<String>(PT_STRING, Lang::noneConvert<String>, idx, defValue);
         }
-        int getInt(int defValue) {
-            Buffer<int> buf = getIntArray();
-            if (value == 0 || buf.isEmpty()) {
-                return defValue;
-            }
-            return buf.get(0);
-        }
-        String getString(String defValue) {
-            Buffer<String> buf = getStringArray();
-            if (value == 0 || buf.isEmpty()) {
-                return defValue;
-            }
-            return buf.get(0);
+        bool getBool(int idx, bool defValue) {
+            return get<bool>(PT_BOOL, Bool::parse, idx, defValue);
         }
     };
     Entry *zeroEntry;
@@ -244,29 +223,33 @@ public:
     // start get methods
 
     float getFloat(const String &name, float defValue) {
-        return findEntry(name, true)->getFloat(defValue);
+        return findEntry(name, true)->getFloat(0, defValue);
     }
 
     int getInt(const String &name, int defValue) {
-        return findEntry(name, true)->getInt(defValue);
+        return findEntry(name, true)->getInt(0, defValue);
+    }
+
+    bool getBool(const String &name, bool defValue) {
+        return findEntry(name, true)->getBool(0, defValue);
     }
 
     String getString(const String &name, const String &defValue) {
-        return findEntry(name, true)->getString(defValue);
+        return findEntry(name, true)->getString(0, defValue);
     }
 
     // get as array
 
     Buffer<float> getFloatArray(const String &name) {
-        return findEntry(name, true)->getFloatArray();
+        return findEntry(name, true)->getArray<float>(PT_FLOAT, Float::parse<float>);
     }
 
     Buffer<int> getIntArray(const String &name) {
-        return findEntry(name, true)->getIntArray();
+        return findEntry(name, true)->getArray<int>(PT_INT, Float::parse<int>);
     }
 
     Buffer<String> getStringArray(const String &name) {
-        return findEntry(name, true)->getStringArray();
+        return findEntry(name, true)->getArray<String>(PT_STRING, Lang::noneConvert<String>);
     }
     // end get methods
     void mergeFrom(Properties *pts, bool overwrite) {

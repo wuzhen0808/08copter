@@ -1,4 +1,4 @@
 #pragma once
 namespace a8::util::net {
-using bridge = void (*)(int, void *, void *);
+using bridge = int (*)(int, void *, void *, Result &);
 } // namespace a8::util::net

@@ -27,6 +27,7 @@ public:
         float diff = fValue1 - fValue2;
         return -ZERO_NEAR < diff && diff < ZERO_NEAR;
     }
+
     static double power(double d1, int exp) {
         double rt = 1;
         if (exp > 0) {
@@ -42,15 +43,17 @@ public:
     }
 
     static float maxFloat();
-
-    static double frexp(double m, int *e);
-
-    static float frexpf(float m, int *e);
-
+    
+    
+    static float frexp(float m, int *e);
     static float trunc(float f);
 
+    static float ldexp(float m, int exp);
+
+    static double frexp(double m, int *e);
     static double trunc(double f);
 
-    static double ldexp(long m, int exp);
+    static double ldexp(double m, int exp);
+    
 };
 } // namespace a8::util

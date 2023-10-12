@@ -7,7 +7,7 @@ namespace a8::link {
 
 class LineApi {
 public:
-    virtual void line(String line) = 0;
+    virtual int line(String line, Result &rst) = 0;
 };
 
 } // namespace a8::link

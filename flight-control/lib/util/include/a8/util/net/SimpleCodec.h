@@ -1,7 +1,9 @@
 #pragma once
 #include "a8/util.h"
 #include "a8/util/net/Codec.h"
+#include "a8/util/net/EmptyCodec.h"
 #include "a8/util/net/FunctionalCodec.h"
+#include "a8/util/net/FunctionalCodec2.h"
 
 using namespace a8::util;
 using namespace a8::util::net;
@@ -11,8 +13,8 @@ namespace a8::util::net {
 /**
  * -  First byte as the header which as the type indicator.
  * -  Body of message is encoded/decoded by a sub codec.
- * 
-*/
+ *
+ */
 class SimpleCodec : public Codec {
 
     // dynamic members.
@@ -31,23 +33,26 @@ public:
      * If no the handle function pointer not provided, the received data will be ignored.
      */
     void add(int type, Codec *subCodec) {
-        while (subCodecs.length() < type + 1) {
-            subCodecs.append(static_cast<Codec *>(0));
-        }
-        if (subCodecs.get(type) != 0) {
-            // TODO error process?
-        }
-        subCodecs.set(type, subCodec);
+        subCodecs.set(type, 0, subCodec);
     }
 
     template <typename T>
     void add(int type, int (*writeF)(Writer *, T *), int (*readF)(Reader *, T *&)) {
-        add<T>(type, writeF, readF, [](T *ptr) { Lang::free(ptr); });
+        add(type, new FunctionalCodec<T>(type, writeF, readF));
     }
 
     template <typename T>
-    void add(int type, int (*writeF)(Writer *, T *), int (*readF)(Reader *, T *&), void (*freeF)(T *)) {
-        add(type, new FunctionalCodec<T>(type, writeF, readF, freeF));
+    void add(int type, int (*writeF)(Writer *, T), int (*readF)(Reader *, T &)) {
+        add(type, new FunctionalCodec2<T>(type, writeF, readF, 0));
+    }
+    
+    template <typename T>
+    void add(int type, int (*writeF)(Writer *, T), int (*readF)(Reader *, T &), void (*defaultF)(T &)) {
+        add(type, new FunctionalCodec2<T>(type, writeF, readF, defaultF));
+    }
+
+    void add(int type) {
+        add(type, new EmptyCodec(type));
     }
 
     /**
@@ -79,6 +84,7 @@ public:
      */
     int read(Reader *reader, bridge bridgeF, void *context, Result &rst) override {
         int ret2 = 0;
+        
         int type;
         int ret = CodecUtil::readInt8(reader, type);
         if (ret < 0) {

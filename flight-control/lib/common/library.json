@@ -1,5 +1,5 @@
 {
-  "name": "gs",
+  "name": "common",
   "version": "1.0",
   "description": "test",
   "keywords": "no",
@@ -12,11 +12,9 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "common": "^1.0",
-    "util_curses": "^1.0",
-    "hal_native": "^1.0",
-    "hal_freertos": "^1.0",
-    "FreeRTOS-Kernel-MingW": "^1.0"
+    "util":"^1.0",
+    "link":"^1.0",
+    "hal":"^1.0"
   },
   "frameworks": "*",
   "platforms": "*"

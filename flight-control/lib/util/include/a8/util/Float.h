@@ -10,44 +10,17 @@ public:
     static bool isNear(double d1, double d2) {
         return Math::isNear(d1, d2);
     }
-
-    static Buffer<double> parseAll(String fStr, char sep) {
-        return parseAll<double>(fStr, sep, [](double d) { return d; });
-    }
+    
     template <typename T>
-    static Buffer<T> parseAll2(String fStr, char sep, T (*converter)(double)) {
-        Buffer<T> ret;
-        ret.append(converter(1));
-        return ret;
-    }
-    template <typename T>
-    static Buffer<T> parseAll(String fStr, char sep, T (*converter)(double)) {
-
-        Buffer<String> buf = StringUtil::split(fStr, sep);
-
-        Buffer<T> ret;
-        for (int i = 0; i < buf.len(); i++) {
-            String str = buf[i];
-            T dV = parse(str, converter);
-            ret.append(dV);
-        }
-        return ret;
-    }
-
-    static double parse(String fStr) {
-        return parse<double>(fStr, [](double d) { return d; });
-    }
-
-    template <typename T>
-    static T parse(String fStr, T (*converter)(double)) {
-        int dotIdx = fStr.indexOf('.');
+    static T parse(const String &fStr) {
+        int dotIdx = fStr.indexOf('.');        
         int exp = dotIdx;
         if (dotIdx < 0) {
             exp = fStr.length();
         }
         exp -= 1;
 
-        double fValue = 0.0f;
+        T fValue = 0.0f;
 
         int i = 0;
 
@@ -63,10 +36,10 @@ public:
                 sCh = 0;
             }
 
-            fValue += (double)sCh * Math::power(10, exp);
+            fValue += (T)sCh * Math::power(10, exp);
             exp--;
         }
-        return converter(fValue);
+        return fValue;
     }
 };
 

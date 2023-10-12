@@ -9,22 +9,23 @@ using namespace a8::util::net;
 namespace a8::util::net {
 
 template <typename T>
-class FunctionalCodec : public Codec {
-    using writeF = int (*)(Writer *, T *);
-    using readF = int (*)(Reader *, T *&);
-    using freeF = void (*)(T *);
+class FunctionalCodec2 : public Codec {
+    using writeF = int (*)(Writer *, T);
+
+    using readF = int (*)(Reader *, T &);
+    using defaultF = void (*)(T &);
 
     int type;
     writeF write_;
     readF read_;
-    freeF free_;
+    defaultF default_;
 
 public:
-    FunctionalCodec(int type, writeF writeF, readF readF) : Codec() {
+    FunctionalCodec2(int type, writeF writeF, readF readF, defaultF defaultF) : Codec() {
         this->type = type;
         this->write_ = writeF;
         this->read_ = readF;
-        this->free_ = Lang::free<T>;
+        this->default_ = defaultF;
     }
     int getHeaderLength() override {
         return 0;
@@ -37,7 +38,16 @@ public:
         if (this->type != type) {
             return -1;
         }
-        ret += write_(writer, Lang::cast<T *>(data));
+        if (data == 0) {
+            T defaultV;
+            if (default_) {
+                default_(defaultV);
+            }
+            ret += write_(writer, defaultV);
+        } else {
+            T *dataPtr = Lang::cast<T *>(data);
+            ret += write_(writer, *dataPtr);
+        }
         return ret;
     }
 
@@ -45,13 +55,15 @@ public:
      * @override
      */
     int read(Reader *reader, bridge bridgeF, void *context, Result &rst) override {
-        T * dataPtr = 0;
-        int ret = read_(reader, dataPtr);
-        if (ret < 0) {            
+        T data;
+        int ret = read_(reader, data);
+        if (ret < 0) {
             return ret;
         }
-        bridgeF(type, dataPtr, context);
-        free_(dataPtr);
+        ret = bridgeF(type, &data, context, rst);
+        if (ret < 0) {
+            return ret;
+        }
         return ret;
         //
     }

@@ -25,9 +25,8 @@ public:
         this->channel = channel;
     }
 
-    void line(String line) override {
-        Result rst;
-        this->channel->send(CommonMessageType::LINE, &line, rst);
+    int line(String line, Result &rst) override {
+        return this->channel->send(CommonMessageType::LINE, &line, rst);
     }
 };
 

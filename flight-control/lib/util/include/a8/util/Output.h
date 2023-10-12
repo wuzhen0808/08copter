@@ -12,5 +12,10 @@ public:
         this->print(msg);
         this->print("\n");
     }
+
+    Output &operator<<(String &str) {
+        this->print(str);
+        return *this;
+    }
 };
 } // namespace a8::util
