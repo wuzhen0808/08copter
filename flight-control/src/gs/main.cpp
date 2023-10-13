@@ -22,14 +22,14 @@ System *a8::hal::S = new NativeSystem();
 
 int main(int argc, char **argv) {
     Scheduler *sch = new FreeRtosScheduler();
-    LoggerFactory *logFac = new NativeLoggerFactory();
-
+    LoggerFactory *logFac = new NativeLoggerFactory(S);
+    Sockets * sockets = new NativeSockets();
     Application::start("appGs", new StagingContext(sch,    //
                                                    logFac, //
                                                    a8::hal::S),
                        new GroundStation(argc,                          //
                                          argv,                          //
-                                         new Links(new NativeSockets(), //
+                                         new Links(sockets, //
                                                    sch,                 //
                                                    logFac               //
                                                    )                    //

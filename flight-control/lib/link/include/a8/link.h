@@ -8,3 +8,4 @@
 #include "a8/link/GsStub.h"
 #include "a8/link/LineStub.h"
 #include "a8/link/Links.h"
+#include "a8/link/SensorsData.h"

@@ -1,5 +1,6 @@
 #pragma once
 #include "a8/link.h"
+#include "a8/gs/defines.h"
 using namespace a8::link;
 
 namespace a8::gs {
@@ -7,12 +8,15 @@ namespace a8::gs {
 class GsSkeleton : public GsApi {
     LoggerFactory *loggerFactory;
     Logger *logger;
+    EventCenter *ec;
 
 public:
     static void release(void *skeleton) {
         delete static_cast<GsApi *>(skeleton);
     }
-    GsSkeleton(LoggerFactory *logFac) {
+
+    GsSkeleton(EventCenter *ec, LoggerFactory *logFac) {
+        this->ec = ec;
         this->loggerFactory = logFac;
         this->logger = logFac->getLogger("gsNetImpl");
     }
@@ -31,6 +35,7 @@ public:
     int sensors(SensorsData ssd, Result &rst) override {
         String str;
         logger->info(str << ssd);
+        ec->notifyEvent(EventTypes::ON_SENSORS_DATA, &ssd);
         return 1;
     }
 };

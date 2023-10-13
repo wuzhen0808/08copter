@@ -14,32 +14,32 @@ using bridgeHandle = void (*)(Bridge<GsSkeleton> *, int, void *); // bridge,even
 class Background : public FlyWeight {
 
     static GsSkeleton *createSkeleton(Background *bg) {
-        return new GsSkeleton(bg->loggerFactory);
+        return new GsSkeleton(bg->ec, bg->loggerFactory);
     }
-
+    EventCenter *ec;
     FcApi *fcApi;
     BridgeKeeper<GsSkeleton, FcStub> *bridgeKeeper;
 
 public:
-    Background(Links *links, EventCenter *eventCenter, LoggerFactory *logFac) : FlyWeight(logFac) {
-
+    Background(Links *links, EventCenter *ec, LoggerFactory *logFac) : FlyWeight(logFac) {
+        this->ec = ec;
         this->bridgeKeeper = new BridgeKeeper<GsSkeleton, FcStub>(links->gsAddress());
-        this->bridgeKeeper->setEventCenter(eventCenter);
+        this->bridgeKeeper->setEventCenter(ec);
         this->bridgeKeeper->setEventTypeOfAfterBridgeCreate(EventTypes::AFTER_BRIDGE_CREATE_);
         this->bridgeKeeper->setEventTypeOfBeforeBridgeFree(EventTypes::BEFORE_BRIDGE_FREE_);
-        eventCenter->add<Bridge<GsSkeleton> *, Background *>(
+        ec->add<Bridge<GsSkeleton> *, Background *>(
             EventTypes::AFTER_BRIDGE_CREATE_,
             this,
             [](Bridge<GsSkeleton> *bridge, Background *this_) {
                 this_->afterBridgeCreate(bridge);
             });
-        eventCenter->add<Bridge<GsSkeleton> *, Background *>(
+        ec->add<Bridge<GsSkeleton> *, Background *>(
             EventTypes::BEFORE_BRIDGE_FREE_,
             this,
             [](Bridge<GsSkeleton> *bridge, Background *this_) {
                 this_->beforeBridgeFree(bridge);
             });
-        eventCenter->add<void *, Background *>(
+        ec->add<void *, Background *>(
             EventTypes::BEFORE_QUIT,
             this,
             [](void *zero, Background *this_) {

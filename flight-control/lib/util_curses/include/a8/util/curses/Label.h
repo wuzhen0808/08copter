@@ -19,6 +19,7 @@ public:
     void setMessages(Buffer<String> lines) {
         Strings strs = lines;
         setCDKLabelMessage(widget, strs.content(), strs.len());
+        
     }
 
     void draw() override {

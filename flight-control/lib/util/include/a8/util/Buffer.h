@@ -60,10 +60,14 @@ public:
     }
 
     T get(int idx, T def) const {
-        if (idx < 0 || idx >= length_) {
-            return def;
+        if (this->hasIndex(idx)) {
+            return this->buffer_[idx];
         }
-        return this->buffer_[idx];
+        return def;
+    }
+
+    bool hasIndex(int idx) const {
+        return idx >= 0 && idx < length_;
     }
 
     T get(int idx) const {
@@ -178,6 +182,20 @@ public:
         LOG2("this->buffer_:", this->buffer_);
         LOG("<<Buffer<T> *append(const T *elements, const int from, const int len)");
         return this;
+    }
+    bool setIfNeeded(int idx, T emptyValue, T element) {
+        if (this->isEquals(idx, element)) {
+            return false;
+        }
+        set(idx, emptyValue, element);
+        return true;
+    }
+
+    bool isEquals(int idx, const T &ele) {
+        if (this->hasIndex(idx)) {
+            return this->buffer_[idx] == ele;
+        }
+        return false;
     }
     void set(int idx, T emptyValue, T element) {
         while (this->length_ - 1 < idx) {

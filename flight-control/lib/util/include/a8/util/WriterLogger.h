@@ -1,7 +1,7 @@
 #pragma once
-#include "a8/hal.h"
 #include "a8/util/Logger.h"
 #include "a8/util/String.h"
+#include "a8/util/System.h"
 #include "a8/util/Writer.h"
 
 using namespace a8::util;
@@ -12,10 +12,12 @@ namespace a8::util {
 class WriterLogger : public Logger {
 protected:
     Writer *writer;
+    System *sys;
 
 public:
-    WriterLogger(String name, Writer *writer) : Logger(name) {
+    WriterLogger(String name, Writer *writer, System *sys) : Logger(name) {
         this->writer = writer;
+        this->sys = sys;
     }
     ~WriterLogger() {
     }
@@ -27,12 +29,12 @@ public:
     }
 
     virtual void log(Logger::Level level, const String &msg) override {
-        long long stime = S->getSysTime();
+        long long stime = sys->getSysTime();
         String formatTime;
-        S->formatTime(stime, &formatTime);
+        sys->formatTime(stime, &formatTime);
         String msg2;
         msg2 << "[" << formatTime << "] [" << level << "] " << msg;
-        S->out->println(msg2);
+        sys->out->println(msg2);
         writer->write(msg2.text(), msg2.length());
         writer->write("\n", 1);
     };

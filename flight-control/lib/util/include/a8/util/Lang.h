@@ -75,12 +75,12 @@ public:
     }
 
     template <typename T>
-    static void free(T *ptr) {
+    static void free(T *&ptr) {
         free(ptr, false);
     }
 
     template <typename T>
-    static void free(T *ptr, bool isArray) {
+    static void free(T *&ptr, bool isArray) {
         if (ptr == 0) {
             return;
         }
@@ -89,6 +89,7 @@ public:
         } else {
             delete ptr;
         }
+        ptr = 0;
     }
 
     static void illegalArgument(const char *msg) {
@@ -367,7 +368,7 @@ public:
 
     template <typename T>
     static int parseIntBinaries(T *intVs, int len1, const char *str, int from, int len2) {
-        
+
         if (len2 != sizeof(T) * 8 * len1) {
             return -1;
         }

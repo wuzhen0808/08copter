@@ -7,9 +7,9 @@
 #include "a8/hal/freertos.h"
 #include "a8/hal/native.h"
 #include "a8/link.h"
+#include "a8/util.h"
 #include "a8/util/comp.h"
 #include "a8/util/net.h"
-#include "a8/util.h"
 
 #include <iostream>
 #include <stdio.h>
@@ -33,18 +33,14 @@ System &SR = *S;
 int main(int argc, char **argv) {
     Scheduler *sch = new FreeRtosScheduler();
     Sockets *sockets = new NativeSockets();
-    LoggerFactory *logFac = new NativeLoggerFactory();
+    LoggerFactory *logFac = new NativeLoggerFactory(S);
     Links *links = new Links(sockets, sch, logFac);
+    FlightControl *fc = new NativeFlightControl(argc, argv, links);
     StagingContext *context = new StagingContext(sch,       //
                                                  logFac,    //
                                                  a8::hal::S //
     );
-    Application::start("appFc", context,
-                       new NativeFlightControl(argc, //
-                                               argv, //
-                                               links //
-                                               )     //
-    );
+    Application::start("appFc", context, fc);
     if (context->isStop()) {
         return 0;
     }

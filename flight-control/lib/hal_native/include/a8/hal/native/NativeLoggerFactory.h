@@ -8,10 +8,12 @@ using namespace a8::util;
 namespace a8::hal::native {
 class NativeLoggerFactory : public LoggerFactory {
     Logger *defaultLogger;
+    System *sys;
 
 public:
-    NativeLoggerFactory() {
-        defaultLogger = new WriterLogger("default", new FileWriter("D:/tmp/a8.log"));
+    NativeLoggerFactory(System *sys) {
+        this->sys = sys;
+        defaultLogger = new WriterLogger("default", new FileWriter("D:/tmp/a8.log"), sys);
     }
     virtual Logger *getLogger(const String &name) override {
         return defaultLogger;
