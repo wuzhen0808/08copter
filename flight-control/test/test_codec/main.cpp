@@ -30,7 +30,7 @@ TEST(TestCodec, testSimpleCodec) {
     const int type_ = 1;
     const int headerLen_ = cd1->getHeaderLength();
 
-    cd1->add<String>(type_, CodecUtil::writeString_, CodecUtil::readString_);
+    cd1->add<String>(type_, CodecUtil::writeString, CodecUtil::readString);
 
     String str("123");
     BufferWriter writer;

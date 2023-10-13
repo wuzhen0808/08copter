@@ -15,9 +15,9 @@ struct SensorsData {
 
     static int write(Writer *writer, SensorsData data) {
         int ret = 0;
-        ret += CodecUtil::writeDouble(writer, data.altitude);
-        ret += CodecUtil::writeDouble(writer, data.latitude);
-        ret += CodecUtil::writeDouble(writer, data.longitude);
+        ret += CodecUtil::writeFloat64(writer, data.altitude);
+        ret += CodecUtil::writeFloat64(writer, data.latitude);
+        ret += CodecUtil::writeFloat64(writer, data.longitude);
         ret += Vector3f::write(writer, data.angVel);
         ret += Vector3f::write(writer, data.accVel);
         ret += CodecUtil::writeString(writer, data.errorMessage);
@@ -26,9 +26,9 @@ struct SensorsData {
 
     static int read(Reader *reader, SensorsData &data) {
         int ret = 0;
-        ret += CodecUtil::readDouble(reader, data.altitude);
-        ret += CodecUtil::readDouble(reader, data.latitude);
-        ret += CodecUtil::readDouble(reader, data.longitude);
+        ret += CodecUtil::readFloat64(reader, data.altitude);
+        ret += CodecUtil::readFloat64(reader, data.latitude);
+        ret += CodecUtil::readFloat64(reader, data.longitude);
         ret += Vector3f::read(reader, data.angVel);
         ret += Vector3f::read(reader, data.accVel);
         ret += CodecUtil::readString(reader, data.errorMessage);

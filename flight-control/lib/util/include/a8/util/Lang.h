@@ -1,6 +1,18 @@
 #pragma once
 #include <stdio.h>
+
 namespace a8::util {
+typedef bool int1;
+typedef char int8;
+typedef unsigned char uint8;
+typedef short int16;
+typedef unsigned short uint16;
+typedef int int32;
+typedef unsigned int uint32;
+typedef long long int64;
+typedef unsigned long long uint64;
+typedef float float32;
+typedef double float64;
 
 class Lang {
 private:
@@ -335,8 +347,70 @@ public:
     }
 
     template <typename T>
-    static T noneConvert(const T &value) {        
+    static T noneConvert(const T &value) {
         return value;
+    }
+
+    template <typename T>
+    static int toIntBinaries(const T *value, int len1, char *str2, int len2) {
+        int len11 = len1 * sizeof(T) * 8;
+        int ret = -1;
+        if (len2 < len11) {
+            return ret; // no space enough to storage the result.
+        }
+
+        for (int i = 0; i < len1; i++) {
+            ret = toIntBinary(*value[i], str2, i * sizeof(T) * 8, sizeof(T));
+        }
+        return len11;
+    }
+
+    template <typename T>
+    static int parseIntBinaries(T *intVs, int len1, const char *str, int from, int len2) {
+        
+        if (len2 != sizeof(T) * 8 * len1) {
+            return -1;
+        }
+        for (int i = 0; i < len1; i++) {
+
+            intVs[i] = parseIntBinary(&intVs[i], str, from + sizeof(T) * 8 * i, sizeof(T) * 8);
+        }
+    }
+
+    template <typename T>
+    static int toIntBinary(const T value, char *str, int len) {
+        int len2 = sizeof(T) * 8;
+        if (len < len2) {
+            return -1;
+        }
+        for (int i = 0; i < len2; i++) {
+            int bitV = (value >> (len2 - i - 1)) & 0x1U;
+
+            str[i] = bitV == 0 ? '0' : '1';
+        }
+        return len2;
+    }
+
+    template <typename T>
+    static int parseIntBinary(T &intV, const char *str, int from, int len) {
+        T intV2 = 0;
+        int len2 = sizeof(T) * 8;
+        if (len > len2) {
+            return -1;
+        }
+        for (int i = 0; i < len2 && i < len; i++) {
+            char ch = str[from + len - 1 - i];
+            //
+            if (ch <= '0') {
+                ch = 0x0; //
+            } else {
+                ch = 0x1; //
+            }
+            //
+            intV2 = intV2 | ((T)ch << i);
+        }
+        intV = intV2;
+        return 1;
     }
 };
 

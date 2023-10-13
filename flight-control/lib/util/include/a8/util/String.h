@@ -70,6 +70,10 @@ public:
     String(const char ch) {
         append(&ch, 0, 1);
     }
+    
+    char get(int i){
+        return charAt(i);
+    }
 
     String &operator=(const String &str) { // assign operator
         this->clear();
@@ -347,22 +351,47 @@ public:
         return this->text_[idx];
     }
 
+    bool startWith(const String &str, int from2) const {
+        return isMatch(0, str.text_, from2, str.length_ - from2);
+    }
+
+    bool startWith(const String &str) const {
+        return isMatch(0, str.text_, 0, str.length_);
+    }
+
+    bool startWith(const char ch) const {
+        return isMatch(0, &ch, 0, 1);
+    }
+
+    bool endWith(const String &str) const {
+        return isMatch(this->length_ - str.length_, str.text_, 0, str.length_);
+    }
+
     bool endWith(const char ch) const {
-        return endWith(&ch, 1);
+        return isMatch(this->length_ - 1, &ch, 0, 1);
     }
-    bool endWith(const char *str) const {
-        int len = Lang::strLength(str);
-        return endWith(str, len);
-    }
+
     // Other methods
     bool endWith(const char *str, int len) const {
-        if (this->length_ < len) {
+        return isMatch(this->length_ - len, str, 0, len);
+    }
+
+    int indexOf(int from, const char *str, int from2, int len2) const {
+        for (int i = from; i < this->length_ - len2; i++) {
+            if (isMatch(i, str, from2, len2)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    // Other methods
+    bool isMatch(int from, const char *str, int from2, int len2) const {
+        if (this->length_ - from < len2) {
             return false;
         }
 
-        for (int i = 0; i < len; i++) {
-            int idx = this->length_ - len + i;
-            if (this->text_[idx] != str[i]) {
+        for (int i = 0; i < len2; i++) {
+            if (this->text_[from + i] != str[from2 + i]) {
                 return false;
             }
         }

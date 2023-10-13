@@ -1,21 +1,21 @@
 #pragma once
 #include "a8/util/Buffer.h"
-#include "a8/util/Reader.h"
 #include "a8/util/String.h"
+#include "a8/util/Writer.h"
+#include "a8/util/Reader.h"
 
 namespace a8::util {
 
 /**
  */
-class BufferReader : public Reader, public Buffer<char> {
-protected:
+class BufferWriterReader : public Writer, public Reader, public Buffer<char> {
     int from = 0;
 
 public:
-    BufferReader(Buffer<char> buf) : Buffer<char>(buf) {
-    }
-    BufferReader() {
-    }
+    int write(const char *buf, int bufLen) override {
+        this->append(buf, bufLen);
+        return bufLen;
+    };
 
     int read(char *buf, int bufLen) override {
         int len = this->len() - from;

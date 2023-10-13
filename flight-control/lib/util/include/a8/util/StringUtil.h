@@ -6,6 +6,13 @@ namespace a8::util {
 
 class StringUtil {
 public:
+    static String buildStr(Buffer<char> buf) {
+        String str;
+        for (int i = 0; i < buf.len(); i++) {
+            str.append(buf[i]);
+        }
+        return str;
+    }
     static String buildStr(Buffer<String> buffer, char separator) {
         String ret;
         int len = buffer.len();

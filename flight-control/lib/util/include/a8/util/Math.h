@@ -27,9 +27,10 @@ public:
         float diff = fValue1 - fValue2;
         return -ZERO_NEAR < diff && diff < ZERO_NEAR;
     }
-
-    static double power(double d1, int exp) {
-        double rt = 1;
+    
+    template<typename T>
+    static T power(T d1, int exp) {
+        T rt = 1;
         if (exp > 0) {
             for (int i = 0; i < exp; i++) {
                 rt = rt * d1;
