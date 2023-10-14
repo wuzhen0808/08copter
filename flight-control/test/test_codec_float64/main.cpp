@@ -17,29 +17,29 @@ void testFloatSame() {
 
 }
 
-void testFloat32(float32 fv) {
+void testFloat64(float64 fv) {
     WriterReaderBuffer wr;
 
-    CodecUtil::writeFloat32(&wr, fv);
-    float32 fv2;
-    CodecUtil::readFloat32(&wr, fv2);
+    CodecUtil::writeFloat64(&wr, fv);
+    float64 fv2;
+    CodecUtil::readFloat64(&wr, fv2);
 
     EXPECT_TRUE(Float::isSame(fv, fv2, 23));
 }
 
-TEST(TestCodec, testFloat) {
+TEST(TestCodec, testFloat64) {
     testFloatSame();
-    testFloat32(1.0f);
-    testFloat32(1.0e2f);
-    testFloat32(1.0e3f);
-    testFloat32(1.0e-1f);
-    testFloat32(1.0e-2f);
-    testFloat32(1.0e-3f);
+    testFloat64(1.0);
+    testFloat64(1.0e2);
+    testFloat64(1.0e3);
+    testFloat64(1.0e-1);
+    testFloat64(1.0e-2);
+    testFloat64(1.0e-3);
 
-    testFloat32(0.0f);
-    testFloat32(-1.0e-1f);
-    testFloat32(-1.0e-2f);
-    testFloat32(-1.0e-3f);
+    testFloat64(0.0);
+    testFloat64(-1.0e-1);
+    testFloat64(-1.0e-2);
+    testFloat64(-1.0e-3);
 }
 
 int main(int argc, char **argv) {

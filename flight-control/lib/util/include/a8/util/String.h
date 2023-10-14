@@ -1,9 +1,7 @@
 #pragma once
 #include "a8/util/Lang.h"
+#include "a8/util/defines.h"
 #include "debug.h"
-#define DELTA_STR_CAP (16)
-#define SPACE (' ')
-#define NEW_LINE ('\n')
 
 namespace a8::util {
 /**
@@ -70,8 +68,8 @@ public:
     String(const char ch) {
         append(&ch, 0, 1);
     }
-    
-    char get(int i){
+
+    char get(int i) {
         return charAt(i);
     }
 
@@ -156,7 +154,11 @@ public:
     char charAt(int idx) const {
         return this->text_[idx];
     }
-
+    void setLength(char fill, int len) {
+        while (this->length_ < len) {
+            append(fill);
+        }
+    }
     void append(const char *str) {
         append(str, 0, Lang::strLength(str));
     }

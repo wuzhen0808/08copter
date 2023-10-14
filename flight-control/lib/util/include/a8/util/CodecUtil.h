@@ -23,7 +23,7 @@ public:
             if (ret != 1) {
                 return -1;
             }
-            tmpInt = tmpInt | ((unsigned char)ch << 8 * (size - i - 1));
+            tmpInt = tmpInt | ((U)(unsigned char)ch << 8 * (size - i - 1));
         }
         intV = tmpInt;
         return size;

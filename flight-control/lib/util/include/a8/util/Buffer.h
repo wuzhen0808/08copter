@@ -1,4 +1,5 @@
 #pragma once
+#include "a8/util/defines.h"
 #include "a8/util/Assert.h"
 #include "a8/util/Callback3.h"
 #include "a8/util/ForEach.h"
@@ -6,7 +7,6 @@
 #include "a8/util/Math.h"
 #include "debug.h"
 
-#define DELTA_BUF_CAP (16)
 
 namespace a8::util {
 

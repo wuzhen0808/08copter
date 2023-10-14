@@ -1,7 +1,6 @@
 #pragma once
 #include "a8/util/Buffer.h"
 #include "a8/util/String.h"
-#define DELTA_STR_CAP (16)
 namespace a8::util {
 
 class StringUtil {

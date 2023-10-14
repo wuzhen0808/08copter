@@ -8,7 +8,7 @@ namespace a8::util {
 
 /**
  */
-class BufferWriterReader : public Writer, public Reader, public Buffer<char> {
+class WriterReaderBuffer : public Writer, public Reader, public Buffer<char> {
     int from = 0;
 
 public:

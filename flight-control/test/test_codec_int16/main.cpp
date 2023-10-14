@@ -10,12 +10,12 @@ using namespace a8::util;
 
 template <typename T, typename U>
 void testWriteInt(T intV, const String &binStr2) {
-    BufferWriter writer;
-    int ret = CodecUtil::writeInt<T, U>(&writer, intV);
+    WriterReaderBuffer wr;
+    int ret = CodecUtil::writeInt<T, U>(&wr, intV);
     EXPECT_EQ(sizeof(T), ret);
-    EXPECT_EQ(sizeof(T), writer.len());
+    EXPECT_EQ(sizeof(T), wr.len());
     String binStr;
-    ret = Int::toBinaries<char>(writer, binStr);
+    ret = Int::toBinaries<char>(wr, binStr);
     EXPECT_EQ(sizeof(T) * 8, ret);
     EXPECT_EQ(ret, binStr.len());
     EXPECT_EQ(ret, binStr2.len());
@@ -24,25 +24,23 @@ void testWriteInt(T intV, const String &binStr2) {
 
 template <typename T, typename U>
 void testReadInt(const String &binStr, const T &intV) {
-    Buffer<char> buf;
-    int ret = Char::binaryToChars(binStr, buf);
+    WriterReaderBuffer wr;
+    int ret = Char::writeBinary(&wr, binStr);
     EXPECT_EQ(sizeof(T), ret);
-    BufferReader reader(buf);
 
     T intV2;
-    ret = CodecUtil::readInt<T, U>(&reader, intV2);
+    ret = CodecUtil::readInt<T, U>(&wr, intV2);
     EXPECT_EQ(sizeof(T), ret);
     EXPECT_EQ(intV, intV2);
 }
 template <typename T, typename U>
 bool testWriteRead(T intV) {
-    BufferWriter writer;
-    int ret = CodecUtil::writeInt<T, U>(&writer, intV);
+    WriterReaderBuffer wrb;
+    int ret = CodecUtil::writeInt<T, U>(&wrb, intV);
     EXPECT_EQ(sizeof(T), ret);
 
-    BufferReader reader(writer);
     T intV2;
-    ret = CodecUtil::readInt<T, U>(&reader, intV2);
+    ret = CodecUtil::readInt<T, U>(&wrb, intV2);
     EXPECT_EQ(sizeof(T), ret);
     EXPECT_EQ(intV, intV2);
     return intV == intV2;
