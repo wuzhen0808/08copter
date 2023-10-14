@@ -6,6 +6,14 @@
 namespace a8::util {
 
 class Math {
+private:
+    static float frexp_(float f, int *e);
+    static float ldexp_(float f, int e);
+    static float trunc_(float f);
+    static double frexp_(double f, int *e);
+    static double ldexp_(double f, int e);
+    static double trunc_(double f);
+
 public:
     template <typename T>
     static T min(T t1, T t2) {
@@ -27,8 +35,8 @@ public:
         float diff = fValue1 - fValue2;
         return -ZERO_NEAR < diff && diff < ZERO_NEAR;
     }
-    
-    template<typename T>
+
+    template <typename T>
     static T power(T d1, int exp) {
         T rt = 1;
         if (exp > 0) {
@@ -44,17 +52,32 @@ public:
     }
 
     static float maxFloat();
-    
-    
-    static float frexp(float m, int *e);
-    static float trunc(float f);
 
-    static float ldexp(float m, int exp);
+    template <typename F>
+    static F frexp(F m, int *e) {
+        if (sizeof(F) < 33) {
+            return frexp_((float)m, e);
+        } else {
+            return frexp_((double)m, e);
+        }
+    }
 
-    static double frexp(double m, int *e);
-    static double trunc(double f);
+    template <typename F>
+    static F trunc(F f) {
+        if (sizeof(F) < 33) {
+            return trunc_((float)f);
+        } else {
+            return trunc_((double)f);
+        }
+    }
 
-    static double ldexp(double m, int exp);
-    
+    template <typename F>
+    static F ldexp(F m, int exp) {
+        if (sizeof(F) < 33) {
+            return ldexp_((float)m, exp);
+        } else {
+            return ldexp_((double)m, exp);
+        }
+    }
 };
 } // namespace a8::util

@@ -37,4 +37,13 @@ int main() {
     print("(ch>>32:):", (ch >> 32));
     print("((long long)ch<<32:):", ((long long)ch << 32));
     print("(ch<<8:):", (ch << 8));
+    //
+    print("ch<<1>>1:", ch << 1 >> 1);
+    //
+    int i = 0b10000000000000000000000000000000;
+    print("i:", i);
+    print("i<<1:", i<<1);
+    print("i<<1>>1:", i<<1>>1);
+
+    
 }

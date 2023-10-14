@@ -378,41 +378,6 @@ public:
         }
     }
 
-    template <typename T>
-    static int toIntBinary(const T value, char *str, int len) {
-        int len2 = sizeof(T) * 8;
-        if (len < len2) {
-            return -1;
-        }
-        for (int i = 0; i < len2; i++) {
-            int bitV = (value >> (len2 - i - 1)) & 0x1U;
-
-            str[i] = bitV == 0 ? '0' : '1';
-        }
-        return len2;
-    }
-
-    template <typename T>
-    static int parseIntBinary(T &intV, const char *str, int from, int len) {
-        T intV2 = 0;
-        int len2 = sizeof(T) * 8;
-        if (len > len2) {
-            return -1;
-        }
-        for (int i = 0; i < len2 && i < len; i++) {
-            char ch = str[from + len - 1 - i];
-            //
-            if (ch <= '0') {
-                ch = 0x0; //
-            } else {
-                ch = 0x1; //
-            }
-            //
-            intV2 = intV2 | ((T)ch << i);
-        }
-        intV = intV2;
-        return 1;
-    }
 };
 
 } // namespace a8::util

@@ -8,7 +8,6 @@
 #include "a8/util/EventCenter.h"
 #include "a8/util/Finally.h"
 #include "a8/util/ForEach.h"
-#include "a8/util/BitUtil.h"
 #include "a8/util/Lang.h"
 #include "a8/util/Logger.h"
 #include "a8/util/LoggerFactory.h"

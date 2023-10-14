@@ -7,15 +7,15 @@ namespace util {
 using namespace a8::util;
 class Float {
 public:
-
-    static bool isSame(double d1, double d2, int precision) {
+    template <typename T>
+    static bool isSame(T d1, T d2, int precision) {
         int e1;
-        double m1 = Math::frexp(d1, &e1);
-        long long l1 = Math::ldexp(m1, precision);
+        T m1 = Math::frexp<T>(d1, &e1);
+        long l1 = (long)Math::ldexp<T>(m1, precision);
 
         int e2;
-        double m2 = Math::frexp(d2, &e2);
-        long long l2 = Math::ldexp(m2, precision);
+        T m2 = Math::frexp<T>(d2, &e2);
+        long l2 = (long)Math::ldexp<T>(m2, precision);
 
         return e1 == e2 && l1 == l2;
     }
