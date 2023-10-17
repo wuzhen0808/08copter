@@ -24,6 +24,10 @@ namespace a8::fc {
 class AttitudeControl : public Component {
 
 private:
+    static void tick_(TickingContext *ticking, AttitudeControl *this_) {
+        this_->tick(ticking);
+    }
+    
     PidControl *altitudePid;
     PidControl *rollPid;
     PidControl *pitchPid;
@@ -52,7 +56,7 @@ public:
         this->attitudeSensor = attitudeSensor;
         this->servosControl = servosControl;
         this->dataLog = 0;
-        this->rates.append(1); // hz
+        this->schedule(1.0f, tick_); // hz
     }
     ~AttitudeControl() {
         delete altitudePid;
@@ -107,7 +111,7 @@ public:
         Component::setup(context);
     }
 
-    virtual void tick(TickingContext *ticking) override {
+    void tick(TickingContext *ticking) {
         int ret;
         Result rst;
         ret = attitudeSensor->isReady(rst);

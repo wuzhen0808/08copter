@@ -1,23 +1,12 @@
-#include "a8/hal.h"
-#include "a8/arduino/ArduinoCopter.h"
-#include "a8/arduino/ArduinoSystem.h"
-#include "a8/hal/freertos/FreeRtosScheduler.h"
-
-using a8::arduino::ArduinoCopter;
-using a8::arduino::ArduinoSystem;
-using a8::hal::System;
-using a8::hal::freertos::FreeRtosScheduler;
-using AString = a8::util::String;
-
-System * a8::hal::S = new ArduinoSystem();
-Scheduler* scheduler = new FreeRtosScheduler();
-void setup() {
-    
-    Serial.begin(9600);
-    while (!Serial) {
-    }
-    S->out->println("::setup()");
-    Copter *copter = new ArduinoCopter(scheduler);
-    copter->start();
+#include <Arduino.h>
+#include "arduino_setup.h"
+#include "a8/util.h"
+using namespace a8::util;
+a8::util::String * s = new a8::util::String();
+void setup(){
+    setup_();
 }
-void loop() {}
+
+void loop(){
+
+}

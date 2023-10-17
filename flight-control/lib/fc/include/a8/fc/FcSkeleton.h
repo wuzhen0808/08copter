@@ -26,5 +26,17 @@ public:
         log(String() << "received test instruction");
         return 1;
     }
+    int throttle(float throttle, Result &rst) override {
+        return 1;
+    }
+    int roll(float roll, Result &rst) override {
+        return 1;
+    }
+    int pitch(float pitch, Result &rst) override {
+        return 1;
+    }
+    int yaw(float yaw, Result &rst) override {
+        return 1;
+    }
 };
 } // namespace a8::fc

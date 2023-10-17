@@ -1,16 +1,14 @@
 #include "a8/fc/arduino/ArduinoServosControl.h"
-#include "a8/fc/arduino/ArduinoServo.h"
 
 namespace a8::fc::arduino {
 
-ArduinoServosControl::ArduinoServosControl(int totalServos, int *servoAttachPins) : ServosControl(totalServos, servoAttachPins) {
+ArduinoServosControl::ArduinoServosControl(int totalServos, LoggerFactory *logFac) : ServosControl(totalServos, logFac) {
 }
 
-Servo *ArduinoServosControl::newServo(int servoId) {
-    return new ArduinoServo();
+void ArduinoServosControl::setThrottleNorm(int servoId, float velocity) {
 }
 
 ArduinoServosControl::~ArduinoServosControl() {
 }
 
-} // namespace a8::arduino
+} // namespace a8::fc::arduino

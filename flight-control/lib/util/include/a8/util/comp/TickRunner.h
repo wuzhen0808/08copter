@@ -11,10 +11,11 @@ using namespace a8::util::thread;
 namespace a8::util::comp {
 
 class TickRunner {
+    using tickHandle = void (*)(TickingContext *, void *, void *);//ticking, component, handle
 
     Timer *timer;
     Thread *thread;
-    Buffer<Component *> *components;
+    Buffer<Component::TickEntry *> *entries;
     TickingContext *ticking;
 
 public:
@@ -25,13 +26,13 @@ public:
 
     TickRunner(TickingContext *ticking) {
         this->ticking = ticking;
-        this->components = new Buffer<Component *>();
+        this->entries = new Buffer<Component::TickEntry *>();
     }
     TickingContext *getTicking() {
         return this->ticking;
     }
-    void add(Component *component) {
-        components->append(component);
+    void add(Component::TickEntry *entry) {
+        entries->append(entry);
     }
 
     void tick() {
@@ -39,12 +40,12 @@ public:
         this->ticking->beforTick();
         bool isInThread = this->ticking->getRate().isRun();
 
-        for (int i = 0; i < components->length(); i++) {
-            Component *comp = components->get(i);
+        for (int i = 0; i < entries->length(); i++) {
+            Component::TickEntry *entry = entries->get(i);
             if (isInThread) {
-                comp->run(ticking);
+                entry->tickHandle(ticking, entry->component, entry->handle);
             } else {
-                comp->tick(ticking);
+                entry->tickHandle(ticking, entry->component, entry->handle);
             }
         }
     }
@@ -58,12 +59,11 @@ public:
             this->timer = context->scheduler->scheduleTimer(TickRunner::tickFunc, this, rate);
             return;
         }
-        for (int j = 0; j < components->length(); j++) {
-            Component *com = components->get(j);
+        for (int j = 0; j < entries->length(); j++) {
+            Component::TickEntry *entry = entries->get(j);
             TickRunner *runner = new TickRunner(this->ticking);
-            runner->add(com);
-            runner->thread = context->scheduler->schedule(tickFunc, runner);
-            com->log(String() << "a new thread scheduled for component:" << com);
+            runner->add(entry);
+            runner->thread = context->scheduler->schedule(tickFunc, runner);            
             // todo storage of thread?
         }
 

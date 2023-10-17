@@ -40,12 +40,24 @@ protected: // functions
         return new FcSkeleton(this_->loggerFactory);
     }
 
+    // TOTO do not actively sending data to gs.
+    // only reactive to the command from gs.
+    // processing command from gs.
+    static void processGsCommands_(TickingContext *ticking, FlightControl *this_) {
+        this_->processGsCommands(ticking);
+    }
+    static void processTsCommands_(TickingContext *ticking, FlightControl *this_) {
+        this_->processTsCommands(ticking);
+    }
+
     void init(int argc, char **argv, Links *links) {
         this->links = links;
         this->argc = argc;
         this->argv = argv;
-        this->rates.append(Rate::RUN)->append(1.0f); // calling run() in a thread, calling tick in 1Hz.
         this->bridgeKeeper = new BridgeKeeper<FcSkeleton, GsStub>(this->links->gsAddress());
+
+        this->schedule<FlightControl>(1.0f, processGsCommands_); //
+        this->schedule<FlightControl>(1.0f, processTsCommands_);     //
     }
 
 public:
@@ -67,11 +79,11 @@ public:
         Component::boot(context);
     }
 
-    void tick(TickingContext *ticking) override {
+    void processGsCommands(TickingContext *ticking) {
         // Or use sync lock to access component fields.
         Result rst;
         Bridge<FcSkeleton> *gsBridge = 0;
-        int ret = bridgeKeeper->get(gsBridge, FlightControl::createSkeleton, GsStub::create, this, rst);
+        int ret = this->bridgeKeeper->get(gsBridge, FlightControl::createSkeleton, GsStub::create, this, rst);
         if (ret < 0) {
             return;
         }
@@ -82,15 +94,28 @@ public:
         if (ret < 0) {
             return;
         }
-
-        SensorsData sd;
-        ret = attitudeSensor_->getAltitude(sd.altitude, rst);
         if (ret < 0) {
             ret = gsApi->log("cannot send sensors data, error to get data from sensor," << rst.errorMessage, rst);
         } else {
+            SensorsData sd;
+            Result rst;
+            int ret = attitudeSensor_->getAltitude(sd.altitude, rst);
             ret = gsApi->sensors(sd, rst);
         }
     }
+
+    void processTsCommands(TickingContext * ticking) {
+        Result rst;
+        Bridge<FcSkeleton> *gsBridge = 0;
+        int ret = bridgeKeeper->get(gsBridge, FlightControl::createSkeleton, GsStub::create, this, rst);
+        if (ret < 0) {
+            return;
+        }
+
+        // connected already.
+        GsApi *gsApi = gsBridge->stub<GsApi>();
+    }
+    
     virtual void populate(StagingContext *context) override {
         Component::populate(context);
         attitudeControl_ = new AttitudeControl(servosControl_, attitudeSensor_);

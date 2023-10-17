@@ -65,7 +65,15 @@ namespace a8::util::comp {
  *
  */
 class Component {
-
+public:
+    struct TickEntry {
+        Rate rate;
+        void * component;
+        void * handle;
+        void (*tickHandle)(TickingContext * tc, void * component, void * handle);
+    };
+private:
+    Buffer<TickEntry*> ticks; // in mHz = 0.001Hz
 protected:
     Logger *logger;
     LoggerFactory *loggerFactory;
@@ -74,8 +82,6 @@ protected:
     String path; //
     String name;
     
-    Buffer<Rate> rates; // in mHz = 0.001Hz
-
     void print(Writer *writer, bool recursive, int indent) {
         for (int i = 0; i < indent; i++) {
             *writer << ' ';
@@ -120,6 +126,20 @@ public:
         delete this->children;
         log(String() << "<<~Component(),this is(" << this_ << ").");
     }
+    
+    template<typename T>
+    void schedule(Rate rate, void (*handleF)(TickingContext * tc, T* this_)){
+        using handleT = void (*)(TickingContext * tc, T* this_);
+        TickEntry * entry = new TickEntry();
+        entry->rate = rate;
+        entry->component = this;
+        entry->handle = reinterpret_cast<void *>(handleF);
+        entry->tickHandle = [](TickingContext* tc, void * this_, void * handleF2){
+            handleT handleF3 = reinterpret_cast<handleT>(handleF2);
+            handleF3(tc, Lang::cast<T*>(this_));
+        };
+        this->ticks.append(entry);
+    }
 
     void deleteChild(Component *child) {
         String child_;
@@ -144,9 +164,11 @@ public:
         this->stage = Zero;
         this->name = name;        
     }
-    Buffer<Rate> getRates() {
-        return rates;
+
+    Buffer<TickEntry*> getTicks() {
+        return ticks;
     }
+
     Logger *getLogger() {
         if (this->logger == 0) {
             this->logger = loggerFactory->getLogger("default"); // TODO name?
@@ -192,17 +214,7 @@ public:
         }
         return buffer;
     }
-    /**
-     * Tick method must not blocked and should be quickly returned.
-     */
-    virtual void tick(TickingContext *ticking) {
-    }
-    /*
-     * Run method is in a separate thread. It's a loop never end until system shutdown.
-     */
-    virtual void run(TickingContext *ticking) {
-    }
-
+    
     void log(const Result rst) {
         log(rst.errorMessage);
     }

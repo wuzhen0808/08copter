@@ -29,3 +29,5 @@
 #include "a8/util/Tuple2.h"
 #include "a8/util/Vector3f.h"
 #include "a8/util/Writer.h"
+#include "a8/util/WriterLogger.h"
+#include "a8/util/EmptyWriter.h"

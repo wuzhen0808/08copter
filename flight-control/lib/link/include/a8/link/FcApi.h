@@ -11,6 +11,10 @@ public:
     virtual int ping(String msg, Result &rst) = 0;
     virtual int command(String cmd, Result &rst) = 0;
     virtual int test(Result &rst) = 0;
+    virtual int throttle(float throttle, Result &rst) = 0;
+    virtual int roll(float roll, Result &rst) = 0;
+    virtual int pitch(float pitch, Result &rst) = 0;
+    virtual int yaw(float yaw, Result &rst) = 0;
 };
 
 } // namespace a8::link

@@ -1,11 +1,8 @@
 #pragma once
-#include "a8/util/Logger.h"
-#include "a8/util/String.h"
-#include "a8/util/System.h"
 #include "a8/util/Writer.h"
+#include "a8/util/Logger.h"
 
 using namespace a8::util;
-using namespace a8::hal;
 
 namespace a8::util {
 

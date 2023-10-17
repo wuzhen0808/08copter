@@ -1,0 +1,25 @@
+{
+  "name": "fc_arduino",
+  "version": "1.0",
+  "description": "test",
+  "keywords": "no",
+  "authors": [
+    {
+      "name": "Wu Zhen",
+      "email": "wuzhen0808@163.com",
+      "maintainer": true
+    }
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "util": "^1.0",
+    "fc": "^1.0",
+    "hal_arduino": "^1.0",
+    "FreeRTOS-Kernel-ArUNO": "^1.0",
+    "arduino-libraries/Servo":"^1.2.1",
+    "Wire":"^0.0",
+    "hideakitai/MPU9250": "^0.4.8"
+  },
+  "frameworks": "*",
+  "platforms": "*"
+}

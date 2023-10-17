@@ -26,7 +26,8 @@ public:
     GroundStation(int argc, char **argv, Links *links) : Component("gs") {
         this->argc = argc;
         this->argv = argv;
-        this->rates.append(Rate::RUN)->append(Rate::RUN);
+        this->rates.append(Rate::RUN) // one run for foreground thread.
+            ->append(Rate::RUN);      // another run for background thread.
         this->links = links;
         this->fg = 0;
     }
@@ -36,7 +37,7 @@ public:
 
     void boot(StagingContext *context) override {
         CommonUtil::resolveProperties(argc, argv, context->properties, context->getSys());
-        Component::boot(context);        
+        Component::boot(context);
     }
 
     void populate(StagingContext *context) override {

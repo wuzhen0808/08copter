@@ -27,17 +27,18 @@ protected:
         for (int i = 0; i < allComponents->length(); i++) {
             Component *component = allComponents->get(i);
 
-            Buffer<Rate> rates = component->getRates();
-            for (int j = 0; j < rates.len(); j++) {
-                Rate rate = rates.get(j);
+            Buffer<Component::TickEntry*> entries = component->getTicks();
+
+            for (int j = 0; j < entries.len(); j++) {
+                Component::TickEntry * entry = entries.get(j);
                 // find a runner for the component.
-                TickRunner *runner = this->findTickRunner(runners, rate, j);
+                TickRunner *runner = this->findTickRunner(runners, entry->rate, j);
                 if (runner == 0) {
-                    TickingContext *ticking = new TickingContext(context, rate, j);
+                    TickingContext *ticking = new TickingContext(context, entry->rate, j);
                     runner = new TickRunner(ticking);
                     runners->append(runner);
                 }
-                runner->add(component);
+                runner->add(entry);
             }
         }
         return runners;

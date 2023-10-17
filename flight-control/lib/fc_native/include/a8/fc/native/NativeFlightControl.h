@@ -28,11 +28,17 @@ namespace a8::fc::native {
 class NativeFlightControl : public FlightControl {
 private:
 protected:
-public:
-    NativeFlightControl(int argc, char **argv, Links *links) : FlightControl("fcs", argc, argv, links, 4) {
+    static void run_(TickingContext *tc, NativeFlightControl *this_) {
+        this_->run(tc);
     }
-    ~NativeFlightControl() {}
 
+public:
+    
+    NativeFlightControl(int argc, char **argv, Links *links) : FlightControl("fcs", argc, argv, links, 4) {
+        this->schedule(Rate::RUN, run_);
+    }
+
+    ~NativeFlightControl() {}
 
     virtual void populate(StagingContext *context) override {
 
@@ -59,7 +65,7 @@ public:
         FlightControl::populate(context);
     }
 
-    void run(TickingContext *context) override {
+    void run(TickingContext *context) {
 
         Bridge<SimInSkeleton> *simInBridge = 0;
         Bridge<SimOutSkeleton> *simOutBridge = 0;

@@ -35,6 +35,18 @@ public:
     int test(Result &rst) override {
         return this->channel->send(CommonMessageType::TEST, 0, rst);
     }
+    int throttle(float throttle, Result &rst) override {
+        return this->channel->send(CopterMessageType::THROTTLE, &throttle, rst);
+    }
+    int roll(float roll, Result &rst) override {
+        return this->channel->send(CopterMessageType::ROLL, &roll, rst);
+    }
+    int pitch(float pitch, Result &rst) override {
+        return this->channel->send(CopterMessageType::PITCH, &pitch, rst);
+    }
+    int yaw(float yaw, Result &rst) override {
+        return this->channel->send(CopterMessageType::YAW, &yaw, rst);
+    }
 };
 
 } // namespace a8::link

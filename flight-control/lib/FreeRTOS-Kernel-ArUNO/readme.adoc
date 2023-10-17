@@ -1,0 +1,4 @@
+- Code in this folder is from here:
+https://github.com/legicore/ArduinoFreeRTOS.git
+
+- And heap_4.c is from FreeRTOS git hub.

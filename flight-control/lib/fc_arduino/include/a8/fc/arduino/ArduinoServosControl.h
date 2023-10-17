@@ -8,9 +8,9 @@ class ArduinoServosControl : public ServosControl {
 
 private:
 public:
-    ArduinoServosControl(int totalServos, int *servoAttachPins);
+    ArduinoServosControl(int totalServos, LoggerFactory *logFac);
     ~ArduinoServosControl();
-    virtual Servo *newServo(int servoId);
+    void setThrottleNorm(int servoId, float velocity) override;
 };
 
-} // namespace a8::arduino
+} // namespace a8::fc::arduino

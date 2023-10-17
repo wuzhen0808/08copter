@@ -24,6 +24,22 @@ public:
 
             ret = fcApi->test(rst);
         } break;
+        case CopterMessageType::THROTTLE: {
+            float *fV = Lang::cast<float *>(data);
+            ret = fcApi->throttle(*fV, rst);
+        } break;
+        case CopterMessageType::ROLL: {
+            float *fV = Lang::cast<float *>(data);
+            ret = fcApi->roll(*fV, rst);
+        } break;
+        case CopterMessageType::PITCH: {
+            float *fV = Lang::cast<float *>(data);
+            ret = fcApi->pitch(*fV, rst);
+        } break;
+        case CopterMessageType::YAW: {
+            float *fV = Lang::cast<float *>(data);
+            ret = fcApi->yaw(*fV, rst);
+        } break;
         }
         return ret;
     }

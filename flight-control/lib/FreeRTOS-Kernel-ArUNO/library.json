@@ -1,0 +1,19 @@
+{
+  "name": "FreeRTOS-Kernel-ArUNO",
+  "version": "1.0",
+  "description": "FreeRTOS-Kernel port for Arduino Renesas uno",
+  "keywords": "no",
+  "authors": [
+    {
+      "name": "Wu Zhen",
+      "email": "wuzhen0808@163.com",
+      "maintainer": true
+    }
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "FreeRTOS-Kernel": "^1.0"
+  },
+  "frameworks": "*",
+  "platforms": "*"
+}
