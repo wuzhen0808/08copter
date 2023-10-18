@@ -1,6 +1,6 @@
 #pragma once
 #include "a8/fc.h"
-#include "a8/util/thread.h"
+#include "a8/util/schedule.h"
 #include "a8/link.h"
 
 using namespace a8::fc;

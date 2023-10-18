@@ -1,13 +1,11 @@
 #pragma once
 #include "a8/util.h"
-#include "a8/util/thread.h"
+#include "a8/util/schedule.h"
 #include <FreeRTOS.h>
 #include <timers.h>
-// see the FreeRTOSConfig.h
-#define TICK_RATE_ (50)
 
 using namespace a8::util;
-using namespace a8::util::thread;
+using namespace a8::util::schedule;
 
 namespace a8::hal::freertos {
 class FreeRtosTimer : public Timer {
@@ -35,7 +33,7 @@ public:
         this->rate = rate;
         this->context = context;
         this->run_ = run;
-        long ticks = TICK_RATE_ / rate.Hz();
+        long ticks = configTICK_RATE_HZ / rate.Hz();
         handle = xTimerCreate(
             static_cast<const char *>("My Timer"), // name
             ticks,                                 /*  */

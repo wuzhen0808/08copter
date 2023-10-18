@@ -2,7 +2,7 @@
 #include "a8/util/comp/Component.h"
 
 using namespace a8::util;
-using namespace a8::util::thread;
+using namespace a8::util::schedule;
 
 namespace a8::util::comp {
 template <class T>

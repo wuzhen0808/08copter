@@ -22,7 +22,7 @@ using namespace a8::fc::native;
 using namespace a8::link;
 using namespace a8::util;
 using namespace a8::util::net;
-using namespace a8::util::thread;
+using namespace a8::util::schedule;
 using namespace a8::util::comp;
 using namespace a8::hal::freertos;
 

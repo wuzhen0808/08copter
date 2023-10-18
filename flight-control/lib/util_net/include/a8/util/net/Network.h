@@ -3,9 +3,9 @@
 #include "a8/util/net/Channel.h"
 #include "a8/util/net/Bridge.h"
 #include "a8/util/net/SimpleCodec.h"
-#include "a8/util/thread.h"
+#include "a8/util/schedule.h"
 
-using namespace a8::util::thread;
+using namespace a8::util::schedule;
 
 namespace a8::util::net {
 

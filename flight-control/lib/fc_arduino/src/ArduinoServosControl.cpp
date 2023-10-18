@@ -6,6 +6,7 @@ ArduinoServosControl::ArduinoServosControl(int totalServos, LoggerFactory *logFa
 }
 
 void ArduinoServosControl::setThrottleNorm(int servoId, float velocity) {
+    logger->info("ArduinoServosControl::setThrottleNorm");
 }
 
 ArduinoServosControl::~ArduinoServosControl() {

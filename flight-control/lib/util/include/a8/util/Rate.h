@@ -64,37 +64,19 @@ public:
         }
         return 1.0e3 * sec();
     }
-    /**
-     * time per round
-     */
-    float us() const {
-        if (isZero()) {
-            return -1;
-        }
-        return 1.0e6 * sec();
-    }
-    /**
-     * time per round
-     */
-    float ns() const {
-        if (isZero()) {
-            return -1;
-        }
-        return 1.0e9 * sec();
-    }
-
+        
     /**
      * Zero means no frequency.
      * Do not schedule zero rate.
      */
     bool isZero() const {
-        return Math::isNear(hz, 0.0f);
+        return (int)mHz() == 0;
     }
     /*
      * RUN means it's a runner to be called in separate thread.
      */
     bool isRun() const {
-        return Math::isNear(hz, -1.0f);
+        return (int)hz == -1;
     }
 
     Rate &operator=(int hz) {

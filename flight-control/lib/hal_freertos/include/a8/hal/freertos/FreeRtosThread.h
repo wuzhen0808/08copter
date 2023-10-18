@@ -1,9 +1,9 @@
 #pragma once
 #include "a8/util.h"
-#include "a8/util/thread.h"
+#include "a8/util/schedule.h"
 
 using namespace a8::util;
-using namespace a8::util::thread;
+using namespace a8::util::schedule;
 
 namespace a8::hal::freertos {
 

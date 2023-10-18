@@ -1,11 +1,11 @@
 #pragma once
 
 #include "a8/util.h"
-#include "a8/util/thread.h"
+#include "a8/util/schedule.h"
 
 namespace a8::util::comp {
 using namespace a8::util;
-using namespace a8::util::thread;
+using namespace a8::util::schedule;
 
 class StagingContext {
 

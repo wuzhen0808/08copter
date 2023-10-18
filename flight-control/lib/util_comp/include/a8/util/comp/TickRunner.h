@@ -5,10 +5,10 @@
 #include "a8/util/comp/FlyWeight.h"
 #include "a8/util/comp/StagingContext.h"
 #include "a8/util/comp/TickingContext.h"
-#include "a8/util/thread.h"
+#include "a8/util/schedule.h"
 
 using namespace a8::util;
-using namespace a8::util::thread;
+using namespace a8::util::schedule;
 namespace a8::util::comp {
 
 class TickRunner : public FlyWeight {
@@ -33,23 +33,19 @@ public:
 
     void tick() {
 
-        logger->info(String() << ">>TickRunner::tick(),rate:");
-        logger->info(String() << this->ticking->getRate().Hz());
+        logger->info(String() << ">>TickRunner::tick(),rate:" << this->ticking->getRate().Hz());
 
         this->ticking->beforTick();
-        bool isInThread = this->ticking->getRate().isRun();
 
         for (int i = 0; i < entries->length(); i++) {
             Component::TickEntry *entry = entries->get(i);
-            if (isInThread) {
-                entry->tickHandle(ticking, entry->component, entry->handle);
-            } else {
-                entry->tickHandle(ticking, entry->component, entry->handle);
-            }
+            entry->tickHandle(ticking, entry->component, entry->handle);
         }
+
         if (this->ticking->ret < 0) {
             logger->warn(this->ticking->rst.errorMessage);
         }
+
         this->ticking->afterTick();
         logger->info("<<TickRunner::tick()");
     }
@@ -64,18 +60,20 @@ public:
         if (ticking->getRate().isZero()) {
             return;
         }
-        if (!ticking->getRate().isRun()) {
-            logger->info("scheduleTimer.");
+        if (ticking->getRate().isRun()) {
+            // start 1 thread for each ticking.
+            for (int j = 0; j < entries->length(); j++) {
+                Component::TickEntry *entry = entries->get(j);
+                TickRunner *runner = new TickRunner(this->ticking->getStaging(), entry->rate, j);
+                runner->add(entry);
+                logger->info(String() << "schedule thread for runner:" << j);
+                runner->thread = context->scheduler->schedule(runner, tickFunc);
+                // todo storage of thread?
+            }
+        } else {
+
+            logger->info(String() << "scheduleTimer:rate:" << rate);
             this->timer = context->scheduler->scheduleTimer(tickFunc, this, rate);
-            return;
-        }
-        for (int j = 0; j < entries->length(); j++) {
-            Component::TickEntry *entry = entries->get(j);
-            TickRunner *runner = new TickRunner(this->ticking->getStaging(), entry->rate, j);
-            runner->add(entry);
-            logger->info("schedule thread.");
-            runner->thread = context->scheduler->schedule(runner, tickFunc);
-            // todo storage of thread?
         }
 
         return;

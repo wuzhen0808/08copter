@@ -3,9 +3,9 @@
 #include "a8/util/comp/Component.h"
 #include "a8/util/comp/StagingContext.h"
 #include "a8/util/comp/TickRunner.h"
-#include "a8/util/thread.h"
+#include "a8/util/schedule.h"
 using namespace a8::util;
-using namespace a8::util::thread;
+using namespace a8::util::schedule;
 namespace a8::util::comp {
 
 /**

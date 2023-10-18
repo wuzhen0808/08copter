@@ -62,11 +62,6 @@ public:
         return radian * RAD_TO_DEG;
     }
 
-    static bool isNear(double fValue1, double fValue2) {
-        float diff = fValue1 - fValue2;
-        return -ZERO_NEAR < diff && diff < ZERO_NEAR;
-    }
-
     template <typename T>
     static T power(T d1, int exp) {
         T rt = 1;

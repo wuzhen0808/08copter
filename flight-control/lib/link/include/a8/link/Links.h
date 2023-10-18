@@ -1,6 +1,7 @@
 #pragma once
 #include "a8/link/FcBridge.h"
 #include "a8/link/GsBridge.h"
+#include "a8/link/TsBridge.h"
 #include "a8/link/LineBridge.h"
 #include "a8/link/defines.h"
 #include "a8/util.h"
@@ -17,13 +18,17 @@ using namespace a8::util::net;
 class Links : public Network {
     //
     String host = "127.0.0.1";
-    int fcPort = 8001;
+    int tsPort = 8001;
     int gsPort = 8002;
+    int fcPort = 8003;
+
     int simOutPort = 5126;
     int simInPort = 5502;
 
     Address *fcAddress_;
     Address *gsAddress_;
+    Address *tsAddress_;
+
     Address *simOutAddress_;
     Address *simInAddress_;
 
@@ -42,10 +47,16 @@ public:
         // address
         this->gsAddress_ = address(GsBridge::bridge, host, gsPort, codec);
         this->fcAddress_ = address(FcBridge::bridge, host, fcPort, codec);
+        this->tsAddress_ = address(TsBridge::bridge, host, tsPort, codec);
+
         // address
         Codec *codec2 = new LineCodec(0, '\n');
         this->simOutAddress_ = address(LineBridge::bridge, host, simOutPort, codec2);
         this->simInAddress_ = address(LineBridge::bridge, host, simInPort, codec2);
+    }
+
+    Address *tsAddress() {
+        return this->tsAddress_;
     }
 
     Address *gsAddress() {

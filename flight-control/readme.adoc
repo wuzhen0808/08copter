@@ -496,6 +496,11 @@ $ pio run -e gs_native
 === {chapter}.{counter:wiring}. Arduino-UNO-R4-Minima
 
 === {chapter}.{counter:wiring}. MPU9250
+*** Pins.
+- VCC: 3/5v
+- GND: 
+- SCL:
+- SDA:
 *** Interface: I2C
 Reference:
 https://www.cnblogs.com/leptonation/p/5225889.html

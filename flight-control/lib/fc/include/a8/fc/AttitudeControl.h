@@ -52,10 +52,6 @@ public:
         this->attitudeSensor = attitudeSensor;
         this->servosControl = servosControl;
         this->dataLog = 0;
-
-        this->scheduleHz1<AttitudeControl>([](TickingContext *ticking, AttitudeControl *this_) {
-            this_->tick(ticking);
-        }); // hz
     }
     ~AttitudeControl() {
         delete altitudePid;
@@ -109,27 +105,28 @@ public:
     }
     virtual void setup(StagingContext *context) override {
         Component::setup(context);
+
+        this->scheduleHz1<AttitudeControl>([](TickingContext *ticking, AttitudeControl *this_) {
+            this_->tick(ticking);
+            //TODO
+        }); // hz
     }
 
     void tick(TickingContext *ticking) {
-        int ret;
-        Result rst;
-        ret = attitudeSensor->isReady(rst);
-        if (ret < 0) {
-            log(rst.errorMessage);
+
+        ticking->ret = attitudeSensor->isReady(ticking->rst);
+        if (ticking->ret < 0) {
             return;
         }
 
         double altitude1;
-        ret = attitudeSensor->getAltitude(altitude1, rst);
-        if (ret < 0) {
-            log(rst.errorMessage);
+        ticking->ret = attitudeSensor->getAltitude(altitude1, ticking->rst);
+        if (ticking->ret < 0) {
             return;
         }
         Vector3f aVel1;
-        ret = attitudeSensor->getAngVel(aVel1, rst);
-        if (ret < 0) {
-            log(rst.errorMessage);
+        ticking->ret = attitudeSensor->getAngVel(aVel1, ticking->rst);
+        if (ticking->ret < 0) {
             return;
         }
         //
@@ -163,6 +160,7 @@ public:
 
         );
         servosControl->setThrottleNorm(idxFL, fl, idxFR, fr, idxAR, ar, idxAL, al);
+        log("after setThrottleNorm");
     }
 
     void trim(float &throttle) {

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace a8::util::thread {
+namespace a8::util::schedule {
 class Thread {
 public:
     Thread() {
@@ -10,4 +10,4 @@ public:
     virtual void start() = 0;
 };
 
-} // namespace a8::util::thread
+} // namespace a8::util::schedule

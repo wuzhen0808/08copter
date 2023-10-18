@@ -1,31 +1,33 @@
 #pragma once
 #include "a8/util.h"
 #include "a8/util/comp/StagingContext.h"
-#include "a8/util/thread.h"
+#include "a8/util/schedule.h"
 
 using namespace a8::util;
-using namespace a8::util::thread;
+using namespace a8::util::schedule;
 namespace a8::util::comp {
 
 class TickingContext {
     StagingContext *staging;
     Rate rate;
     int group;
-    long startTimestamp;
+    long startTimestamp_;
     // for thead safe, attributes is used to store thread local variables.
     Buffer<void *> variables;
-    //
-
-
+    //    
 public:
     int ret;
-    
+
     Result rst;
 
     TickingContext(StagingContext *staging, Rate rate, int group) {
         this->staging = staging;
         this->rate = rate;
         this->group = group;
+        this->ret = 0;
+    }
+    long getStartTimestamp(){
+        return startTimestamp_;
     }
 
     void setVar(int key, void *var) {
@@ -55,9 +57,9 @@ public:
     }
 
     void beforTick() {
-        this->startTimestamp = staging->getSys()->getSteadyTime();        
+        this->startTimestamp_ = staging->getSys()->getSteadyTime();
     }
-    void afterTick(){
+    void afterTick() {
         this->ret = 0;
         this->rst.reset();
     }

@@ -5,7 +5,7 @@
 
 using namespace a8::fc;
 using namespace a8::util;
-using namespace a8::util::thread;
+using namespace a8::util::schedule;
 using namespace a8::hal::freertos;
 namespace a8::fc::arduino {
 
@@ -17,13 +17,13 @@ ArduinoFlightControl::~ArduinoFlightControl() {
     delete[] this->servoAttachPins;
 }
 
-void ArduinoFlightControl::populate(StagingContext * context) {
+void ArduinoFlightControl::populate(StagingContext *context) {
     servosControl_ = new ArduinoServosControl(totalServos_, context->loggerFactory);
-    attitudeSensor_ = new Mpu9250AttitudeSensor();
+    attitudeSensor_ = new Mpu9250AttitudeSensor(context->loggerFactory);
     FlightControl::populate(context);
 }
 
-void ArduinoFlightControl::start(StagingContext * context) {
+void ArduinoFlightControl::start(StagingContext *context) {
     FlightControl::start(context);
 }
 

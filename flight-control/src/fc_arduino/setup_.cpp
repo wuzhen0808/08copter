@@ -23,6 +23,13 @@ FlightControl *setupFc(Scheduler *sch, LoggerFactory *logFac) {
     return fc;
 }
 
+void setup__(void *ctx, void (*func)(void *)) {
+    Scheduler *sch = new FreeRtosScheduler();
+    Rate hz(1.0f);
+    sch->scheduleTimer(hz, ctx, func);
+    sch->startSchedule();
+}
+
 void setup_() {
 
     System *sys = setupSystem();
@@ -31,7 +38,7 @@ void setup_() {
     LoggerFactory *logFac = new ArduinoLoggerFactory(sys);
     Logger *log = logFac->getLogger();
     log->info("1.0");
-    
+
     log->info(String() << 1.0f);
 
     log->info(String() << 1.0f);

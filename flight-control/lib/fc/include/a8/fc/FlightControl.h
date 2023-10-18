@@ -8,10 +8,10 @@
 #include "a8/hal.h"
 #include "a8/util.h"
 #include "a8/util/net.h"
-#include "a8/util/thread.h"
+#include "a8/util/schedule.h"
 
 using namespace a8::util;
-using namespace a8::util::thread;
+using namespace a8::util::schedule;
 using namespace a8::util::comp;
 using namespace a8::common;
 
@@ -31,7 +31,8 @@ protected: // fields
     char **argv;
     //
     Links *links;
-    BridgeKeeper<FcSkeleton, GsStub> *bridgeKeeper;
+    BridgeKeeper<FcSkeleton, GsStub> *bridgeKeeperGs;
+    BridgeKeeper<FcSkeleton, TsStub> *bridgeKeeperTs;
 
 protected: // functions
     static FcSkeleton *createSkeleton(FlightControl *this_) {
@@ -41,21 +42,20 @@ protected: // functions
     // TOTO do not actively sending data to gs.
     // only reactive to the command from gs.
     // processing command from gs.
-    static void processGsCommands_(TickingContext *ticking, FlightControl *this_) {
-        this_->processGsCommands(ticking);
-    }
-    static void processTsCommands_(TickingContext *ticking, FlightControl *this_) {
-        this_->processTsCommands(ticking);
-    }
 
     void init(int argc, char **argv, Links *links) {
         this->links = links;
         this->argc = argc;
         this->argv = argv;
-        this->bridgeKeeper = new BridgeKeeper<FcSkeleton, GsStub>(this->links->gsAddress());
+        this->bridgeKeeperTs = new BridgeKeeper<FcSkeleton, TsStub>(this->links->gsAddress());
+        this->bridgeKeeperGs = new BridgeKeeper<FcSkeleton, GsStub>(this->links->tsAddress());
 
-        this->schedule<FlightControl>(1.0f, processGsCommands_); //
-        this->schedule<FlightControl>(1.0f, processTsCommands_); //
+        this->schedule<FlightControl>(1.0f, [](TickingContext *ticking, FlightControl *this_) {
+            this_->processGsCommands(ticking);
+        }); //
+        this->schedule<FlightControl>(1.0f, [](TickingContext *ticking, FlightControl *this_) {
+            this_->processTsCommands(ticking);
+        }); //
     }
 
 public:
@@ -79,38 +79,45 @@ public:
 
     void processGsCommands(TickingContext *ticking) {
         // Or use sync lock to access component fields.
-        
+
         Bridge<FcSkeleton> *gsBridge = 0;
-        int ret = this->bridgeKeeper->get(gsBridge, FlightControl::createSkeleton, GsStub::create, this, ticking->rst);
-        if (ret < 0) {            
+        ticking->ret = this->bridgeKeeperGs->get(gsBridge, FlightControl::createSkeleton, GsStub::create, this, ticking->rst);
+        if (ticking->ret < 0) {
             return;
         }
 
         // connected already.
         GsApi *gsApi = gsBridge->stub<GsApi>();
-        ret = gsApi->ping("hello gs, this is fc.", ticking->rst);
-        if (ret < 0) {
+        ticking->ret = gsApi->ping("hello gs, this is fc.", ticking->rst);
+        if (ticking->ret < 0) {
             return;
         }
-        if (ret < 0) {
-            ret = gsApi->log("cannot send sensors data, error to get data from sensor," << ticking->rst.errorMessage, ticking->rst);
+        if (ticking->ret < 0) {
+            int ret = gsApi->log("cannot send sensors data, error to get data from sensor," << ticking->rst.errorMessage, ticking->rst);
+            if (ret < 0) {
+                ticking->rst << "failed to log message to gs.";
+            }
         } else {
-            SensorsData sd;            
+            SensorsData sd;
             int ret = attitudeSensor_->getAltitude(sd.altitude, ticking->rst);
             ret = gsApi->sensors(sd, ticking->rst);
+            if (ret < 0) {
+                ticking->rst << "failed to send sensor dat to gs.";
+            }
         }
     }
 
     void processTsCommands(TickingContext *ticking) {
-        Bridge<FcSkeleton> *gsBridge = 0;
-        int ret = bridgeKeeper->get(gsBridge, FlightControl::createSkeleton, GsStub::create, this, ticking->rst);
+        Bridge<FcSkeleton> *tsBridge = 0;
+        int ret = bridgeKeeperTs->get(tsBridge, FlightControl::createSkeleton, TsStub::create, this, ticking->rst);
         if (ret < 0) {
             ticking->ret = ret;
+            ticking->rst << "failed to establish ts bridge.";
             return;
         }
 
         // connected already.
-        GsApi *gsApi = gsBridge->stub<GsApi>();
+        TsApi *tsApi = tsBridge->stub<TsApi>();
     }
 
     virtual void populate(StagingContext *context) override {

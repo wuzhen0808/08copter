@@ -5,9 +5,9 @@
 #include "a8/util/net/Codec.h"
 #include "a8/util/net/Sockets.h"
 #include "a8/util/net/defines.h"
-#include "a8/util/thread.h"
+#include "a8/util/schedule.h"
 
-using namespace a8::util::thread;
+using namespace a8::util::schedule;
 using stubCreate = void *(*)(Channel *);
 using anyRelease = void (*)(void *);
 
