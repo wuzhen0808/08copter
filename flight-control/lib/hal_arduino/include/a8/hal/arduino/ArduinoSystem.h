@@ -5,7 +5,6 @@ namespace a8::hal::arduino {
 class ArduinoSystem : public System {
 public:    
     ArduinoSystem();
-    void sleep(long ms) override;
     long long getSysTime() override;
     long long getSteadyTime() override;
     void formatTime(long long ms, String *str) override;

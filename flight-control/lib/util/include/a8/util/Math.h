@@ -14,7 +14,38 @@ private:
     static double ldexp_(double f, int e);
     static double trunc_(double f);
 
+    static float log10(float f);
+    static double log10(double f);
+    static float pow10(float f);
+    static double pow10(double f);
+
 public:
+    template <typename T>
+    static T mod10(T value) {
+        if (sizeof(T) == sizeof(int)) {
+            return int(value) % 10;
+        } else {
+            return long(value) % 10;
+        }
+    }
+    template <typename T>
+    static T log10(T value) {
+        if (sizeof(T) == sizeof(float)) {
+            return log10((float)value);
+        } else {
+            return log10((double)value);
+        }
+    }
+
+    template <typename T>
+    static T pow10(T value) {
+        if (sizeof(T) == sizeof(float)) {
+            return pow10((float)value);
+        } else {
+            return pow10((double)value);
+        }
+    }
+
     template <typename T>
     static T min(T t1, T t2) {
         return t1 < t2 ? t1 : t2;

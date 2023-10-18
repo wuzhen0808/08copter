@@ -1,5 +1,4 @@
 #pragma once
-#include <stdio.h>
 
 namespace a8::util {
 typedef bool int1;
@@ -94,67 +93,6 @@ public:
 
     static void illegalArgument(const char *msg) {
         static_cast<Lang *>(0)->emptyMethod();
-    }
-
-    /**
-     * Format and append the formatted string to the buffer.
-     *
-     * Write back the results by reference.
-     *
-     * The buffer must be a space created by new in heap or zero in which case a new one will be created.
-     *
-     */
-    template <typename... Args>
-    static void appendFormat(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
-                             const char formatStr[], int fieldWidth, char fillLeading, Args... args) {
-
-        char *buf = bufRef;
-        int capacity = capRef;
-        int lenLeft = lenRef;
-        char *newBuf = 0;
-        if (buf == 0) {
-            // assume capacity == lenLeft == 0;
-            capacity = deltaCap;
-            buf = newBuf = new char[capacity]; // init with a capacity to try format.
-        }
-
-        int capRight = capacity - lenLeft; // remaining capacity
-        char *bufRight = buf + lenLeft;    // give a offset to storage result.
-        int lenRight = snprintf(bufRight, capRight, formatStr, args...);
-        int lenTail = lenRight; // the content
-        int leading = 0;
-        if (lenRight < fieldWidth) {
-            lenRight = fieldWidth;
-            leading = fieldWidth - lenRight;
-        }
-
-        if (lenRight + 1 > capRight) { // str truncate,
-
-            capacity = Lang::makeCapacity(capacity, deltaCap, lenLeft + lenRight + 1);
-            newBuf = new char[capacity];
-            Lang::copy<char>(buf, 0, lenLeft, newBuf);
-            delete[] buf;
-            buf = newBuf;
-
-            capRight = capacity - lenLeft;
-            bufRight = buf + lenLeft;
-            lenRight = snprintf(bufRight + leading, capRight - leading, formatStr, args...);
-
-            if (lenRight + 1 > capRight) {
-                // error processing?
-                // exit(1);
-            }
-        } else { // move for leading space
-            Lang::shift<char>(bufRight, lenTail, leading);
-        }
-
-        if (newBuf != 0) {
-            bufRef = newBuf;   // write back new buf;
-            capRef = capacity; // write back new capacity.
-        }
-        // leading fill
-        Lang::fill<char>(bufRight, leading, fillLeading);
-        lenRef = lenLeft + lenRight; // write back new length.
     }
 
     template <typename T>
@@ -294,9 +232,9 @@ public:
         }
         for (int i = 0; i < len; i++) {
             if (shift < 0) { // shift left.
-                buf[i - shift] = buf[i];
+                buf[i + shift] = buf[i];
             } else { // shift right
-                buf[len - 1 - i] = buf[len - 1 - i - shift];
+                buf[len - 1 - i + shift] = buf[len - 1 - i];
             }
         }
     }
@@ -377,7 +315,6 @@ public:
             intVs[i] = parseIntBinary(&intVs[i], str, from + sizeof(T) * 8 * i, sizeof(T) * 8);
         }
     }
-
 };
 
 } // namespace a8::util

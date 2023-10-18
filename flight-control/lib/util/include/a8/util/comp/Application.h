@@ -33,9 +33,8 @@ protected:
                 Component::TickEntry * entry = entries.get(j);
                 // find a runner for the component.
                 TickRunner *runner = this->findTickRunner(runners, entry->rate, j);
-                if (runner == 0) {
-                    TickingContext *ticking = new TickingContext(context, entry->rate, j);
-                    runner = new TickRunner(ticking);
+                if (runner == 0) {                    
+                    runner = new TickRunner(context, entry->rate, j);
                     runners->append(runner);
                 }
                 runner->add(entry);
@@ -108,7 +107,7 @@ public:
         this->rateRunners_ = buildTickRunners(context, new Buffer<TickRunner *>());
         for (int i = 0; i < rateRunners_->length(); i++) {
             TickRunner *runner = rateRunners_->get(i);
-            runner->run(context);
+            runner->start(context);
         }
     }
 

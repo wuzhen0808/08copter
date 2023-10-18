@@ -6,9 +6,7 @@ namespace a8::hal::arduino {
 using namespace a8::util;
 ArduinoSystem::ArduinoSystem() {
     out = new ArduinoOutput();
-}
-
-void ArduinoSystem::sleep(long ms) {
+    
 }
 
 long long ArduinoSystem::getSteadyTime() {

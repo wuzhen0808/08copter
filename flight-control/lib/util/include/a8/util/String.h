@@ -1,7 +1,11 @@
 #pragma once
+#include "a8/util/Format.h"
 #include "a8/util/Lang.h"
 #include "a8/util/defines.h"
 #include "debug.h"
+#define PREFER_INT_WIDTH 1
+#define FORMAT_FLOAT32_PRECISION 3
+#define FORMAT_FLOAT64_PRECISION 6
 
 namespace a8::util {
 /**
@@ -26,14 +30,6 @@ public:
 
     static String string(const char *str) {
         return String(str, Lang::strLength(str));
-    }
-
-    template <typename... Args>
-    static String format(const char format[], Args... args) {
-        String ret;
-        ret.appendFormat(format, args...);
-        // TODO use move constructor?
-        return ret;
     }
 
     // dynamic methods
@@ -179,42 +175,38 @@ public:
         Lang::appendStr(this->text_, this->length_, this->capacity_, DELTA_STR_CAP, buf, from, len);
     }
 
-    template <typename... Args>
-    void appendFormat(const char formatStr[], Args... args) {
-        Lang::appendFormat(this->text_, this->length_, this->capacity_, DELTA_STR_CAP, formatStr, 1, ' ', args...);
-    }
-
-    template <typename... Args>
-    void appendFormat(const char formatStr[], int fieldWidth, char fillLeading, Args... args) {
-        Lang::appendFormat(this->text_, this->length_, this->capacity_, DELTA_STR_CAP, formatStr, fieldWidth, fillLeading, args...);
-    }
-
     void append(const float fValue) {
-        appendFormat("%e", fValue);
+        append<float>(0, ' ', fValue, FORMAT_FLOAT32_PRECISION);
     }
 
     void append(const double fValue) {
-        appendFormat("%e", fValue);
+        append<double>(0, ' ', fValue, FORMAT_FLOAT64_PRECISION);
     }
 
     void append(const int iValue, const int width, const char fill) {
-        appendFormat("%i", iValue, width, fill);
+        append<int>(width, fill, iValue, 0);
+    }
+
+    template <typename T>
+    void append(int width, char fill, T value, int precision) {
+        Format::append<T>(this->text_, this->length_, this->capacity_, DELTA_STR_CAP,
+                          width, fill, value, precision, true);
     }
 
     void append(const int iValue) {
-        append(iValue, 0, SPACE);
+        append<int>(0, ' ', iValue, 0);
     }
 
     void append(const long lValue) {
-        appendFormat("%ld", lValue);
+        append<int>(0, ' ', lValue, 0);
     }
 
     void append(const long long lValue) {
-        appendFormat("%lld", lValue);
+        append<int>(0, ' ', lValue, 0);
     }
 
     void append(const unsigned iValue) {
-        appendFormat("%i", iValue);
+        append<unsigned>(0, ' ', iValue, true);
     }
 
     int lastIndexOf(char ch) const {

@@ -1,17 +1,18 @@
 #pragma once
 #include "a8/util.h"
+#include "a8/util/System.h"
 #include "a8/util/comp/Component.h"
+#include "a8/util/comp/FlyWeight.h"
 #include "a8/util/comp/StagingContext.h"
 #include "a8/util/comp/TickingContext.h"
-#include "a8/util/System.h"
 #include "a8/util/thread.h"
 
 using namespace a8::util;
 using namespace a8::util::thread;
 namespace a8::util::comp {
 
-class TickRunner {
-    using tickHandle = void (*)(TickingContext *, void *, void *);//ticking, component, handle
+class TickRunner : public FlyWeight {
+    using tickHandle = void (*)(TickingContext *, void *, void *); // ticking, component, handle
 
     Timer *timer;
     Thread *thread;
@@ -19,13 +20,8 @@ class TickRunner {
     TickingContext *ticking;
 
 public:
-    static void tickFunc(void *me) {
-        TickRunner *rr = static_cast<TickRunner *>(me);
-        rr->tick();
-    }
-
-    TickRunner(TickingContext *ticking) {
-        this->ticking = ticking;
+    TickRunner(StagingContext *staging, Rate rate, int group) : FlyWeight(staging->loggerFactory) {
+        this->ticking = new TickingContext(staging, rate, group);
         this->entries = new Buffer<Component::TickEntry *>();
     }
     TickingContext *getTicking() {
@@ -36,6 +32,9 @@ public:
     }
 
     void tick() {
+
+        logger->info(String() << ">>TickRunner::tick(),rate:");
+        logger->info(String() << this->ticking->getRate().Hz());
 
         this->ticking->beforTick();
         bool isInThread = this->ticking->getRate().isRun();
@@ -48,22 +47,34 @@ public:
                 entry->tickHandle(ticking, entry->component, entry->handle);
             }
         }
+        if (this->ticking->ret < 0) {
+            logger->warn(this->ticking->rst.errorMessage);
+        }
+        this->ticking->afterTick();
+        logger->info("<<TickRunner::tick()");
     }
 
-    void run(StagingContext *context) {
+    void start(StagingContext *context) {
+        logger->info(">>TickRunner::start()");
+        void (*tickFunc)(void *) = [](void *this_) {
+            TickRunner *this__ = Lang::cast<TickRunner *>(this_);
+            this__->tick();
+        };
         Rate rate = ticking->getRate();
         if (ticking->getRate().isZero()) {
             return;
         }
         if (!ticking->getRate().isRun()) {
-            this->timer = context->scheduler->scheduleTimer(TickRunner::tickFunc, this, rate);
+            logger->info("scheduleTimer.");
+            this->timer = context->scheduler->scheduleTimer(tickFunc, this, rate);
             return;
         }
         for (int j = 0; j < entries->length(); j++) {
             Component::TickEntry *entry = entries->get(j);
-            TickRunner *runner = new TickRunner(this->ticking);
+            TickRunner *runner = new TickRunner(this->ticking->getStaging(), entry->rate, j);
             runner->add(entry);
-            runner->thread = context->scheduler->schedule(tickFunc, runner);            
+            logger->info("schedule thread.");
+            runner->thread = context->scheduler->schedule(runner, tickFunc);
             // todo storage of thread?
         }
 

@@ -17,8 +17,6 @@ public:
 
     virtual long long getSteadyTime() = 0;
 
-    virtual void sleep(long ms) = 0;
-
     virtual void formatTime(long long ms, String *str) = 0;
 
     virtual int openFile(String fpath, Reader *&fReaderCb) = 0;

@@ -8,6 +8,11 @@ using a8::util::String;
 class Output {
 public:
     virtual void print(const String msg) = 0;
+
+    void print(const char *buf, int len) {
+        print(String(buf, len));
+    }
+
     void println(const String msg) {
         this->print(msg);
         this->print("\n");

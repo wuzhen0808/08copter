@@ -48,8 +48,7 @@ void FreeRtosThread::start() {
     );
 
     if (result != pdPASS) {
-        // a8::hal::S->out->println("Failed to create a thread");
-        //  throw std::invalid_argument("failed");
+        //TODO ?
     }
     vTaskSetThreadLocalStoragePointer(handle, LOCAL_THIS, this);
 }

@@ -51,7 +51,7 @@ public:
 
         if (fpath != 0) {
             Reader *fr;
-            int ret = S->openFile(fpath, fr);
+            int ret = sys->openFile(fpath, fr);
             Properties *pts2 = new Properties();
             pts2->load(*fr);
             pts->mergeFrom(pts2, false);

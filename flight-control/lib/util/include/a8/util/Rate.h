@@ -107,7 +107,7 @@ public:
     }
 
     //
-    friend String &operator<<(String &str, Rate &rate) {
+    friend String &operator<<(String &str, const Rate &rate) {
         return str << rate.hz;
     }
 };

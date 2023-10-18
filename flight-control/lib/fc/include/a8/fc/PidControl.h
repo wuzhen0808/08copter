@@ -13,25 +13,26 @@ class PidControl {
 private:
     unsigned long lastUpdateTimeInMs = 0;
     float lastError;
+    System *sys;
 
 public:
     float kp;
     float ki;
     float kd;
 
-    PidControl(float kp, float ki, float kd) {
+    PidControl(System *sys, float kp, float ki, float kd) {
         (*this).kp = kp;
         (*this).ki = ki;
         (*this).kd = kd;
+        this->sys = sys;
     }
     ~PidControl() {
-
     }
 
     float update(float desirePosition, float actualPosition) {
 
         float error = desirePosition - actualPosition;
-        long now = S->getSteadyTime();
+        long now = sys->getSteadyTime();
         if (lastUpdateTimeInMs == 0) {
             lastUpdateTimeInMs = now;
         }
@@ -53,8 +54,13 @@ public:
         this->kd = kd;
     }
 
-    String toString() {
-        return String::format("(pk:%e,pi:%e,pd:%e)", kp, ki, kd);
+    friend String &operator<<(String &str, const PidControl *pid) {
+        return operator<<(str, *pid);
+    }
+
+    friend String &operator<<(String &str, const PidControl &pid) {
+
+        return str << "(kp:" << pid.kp << ",ki:" << pid.ki << ",kd:" << pid.kd << ")";
     }
 };
 } // namespace a8::fc

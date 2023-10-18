@@ -26,8 +26,12 @@ public:
     GroundStation(int argc, char **argv, Links *links) : Component("gs") {
         this->argc = argc;
         this->argv = argv;
-        this->rates.append(Rate::RUN) // one run for foreground thread.
-            ->append(Rate::RUN);      // another run for background thread.
+        this->schedule<GroundStation>([](TickingContext *tc, GroundStation *this_) {
+            this_->runBg(tc);
+        });
+        this->schedule<GroundStation>([](TickingContext *tc, GroundStation *this_) {
+            this_->runFg(tc);
+        });
         this->links = links;
         this->fg = 0;
     }
@@ -62,28 +66,25 @@ public:
         // });
     }
 
-    void run(TickingContext *ticking) override {
-
-        if (ticking->getGroup() == 0) {
-            int ret = bg->run(ticking);
-            delete bg;
-            bg = 0;
-        } else if (ticking->getGroup() == 1 && this->enableFg) {
-
-            Result rst;
-            int ret = fg->run(rst);
-            delete fg;
-            fg = 0;
-            log("after fg delete");
-            ticking->getStaging()->scheduler->endSchedule(); //
-            log("after scheduler end.");
-            exit(0);
-        } else {
-            log("unknow group of ticking.");
-        }
+    void runBg(TickingContext *ticking) {
+        int ret = bg->run(ticking);
+        delete bg;
+        bg = 0;
     }
 
-    void postStart(StagingContext *context) {
+    void runFg(TickingContext *ticking) {
+        if (!this->enableFg) {
+            return;
+        }
+
+        Result rst;
+        int ret = fg->run(rst);
+        delete fg;
+        fg = 0;
+        log("after fg delete");
+        ticking->getStaging()->scheduler->endSchedule(); //
+        log("after scheduler end.");
+        exit(0);
     }
 };
 

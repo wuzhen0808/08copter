@@ -206,11 +206,11 @@ public:
 
     //
     void set(const String name, float value) {
-        set(name, "float", String::format("%e", value));
+        set(name, "float", String(value));
     }
 
     void set(const String name, int value) {
-        set(name, "int", String::format("%i", value));
+        set(name, "int", String(value));
     }
 
     void set(const String &name, const char *str) {

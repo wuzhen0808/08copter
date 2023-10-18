@@ -24,10 +24,6 @@ namespace a8::fc {
 class AttitudeControl : public Component {
 
 private:
-    static void tick_(TickingContext *ticking, AttitudeControl *this_) {
-        this_->tick(ticking);
-    }
-    
     PidControl *altitudePid;
     PidControl *rollPid;
     PidControl *pitchPid;
@@ -47,16 +43,19 @@ private:
 
 public:
     AttitudeControl(ServosControl *servosControl,
-                    AttitudeSensor *attitudeSensor) : Component("atc") {
+                    AttitudeSensor *attitudeSensor, System *sys) : Component("atc") {
 
-        altitudePid = new PidControl(.0f, .0f, .0f);
-        rollPid = new PidControl(.0f, 0.0f, 0.0f);
-        pitchPid = new PidControl(.0f, .0f, .0f);
-        yawPid = new PidControl(.0f, .0f, .0f);
+        altitudePid = new PidControl(sys, .0f, .0f, .0f);
+        rollPid = new PidControl(sys, .0f, 0.0f, 0.0f);
+        pitchPid = new PidControl(sys, .0f, .0f, .0f);
+        yawPid = new PidControl(sys, .0f, .0f, .0f);
         this->attitudeSensor = attitudeSensor;
         this->servosControl = servosControl;
         this->dataLog = 0;
-        this->schedule(1.0f, tick_); // hz
+
+        this->scheduleHz1<AttitudeControl>([](TickingContext *ticking, AttitudeControl *this_) {
+            this_->tick(ticking);
+        }); // hz
     }
     ~AttitudeControl() {
         delete altitudePid;
@@ -81,12 +80,13 @@ public:
         setPidKs(pitchPid, pPid3);
         setPidKs(yawPid, yPid3);
 
-        log(String::format("ar:%i,fl:%i,al:%i,fr:%i,", idxAR, idxFL, idxAL, idxFR));
+        log(String() << "ar:" << idxAR << "fl:" << idxFL << ",al:" << idxAL << ",fr:" << idxFR);
+
         log(String("pid-Ks:")
-            << "altitude:" << altitudePid->toString() << "," //
-            << "roll:" << rollPid->toString() << ","         //
-            << "pitch:" << pitchPid->toString() << ","       //
-            << "yaw:" << yawPid->toString() << ","           //
+            << "altitude:" << altitudePid << "," //
+            << "roll:" << rollPid << ","         //
+            << "pitch:" << pitchPid << ","       //
+            << "yaw:" << yawPid << ","           //
         );
     }
 
@@ -154,8 +154,13 @@ public:
         trim(fl);
         trim(ar);
 
-        log(String::format("\tagl:%e=>%e", altitude1, altitude2)                                                          //
-            + String::format(",cmdThrottles:%i:%.2f,%i:%.2f,%i:%.2f,%i:%.2f", idxFL, fl, idxFR, fr, idxAR, ar, idxAL, al) //
+        log(String() << "\tagl:" << altitude1 << "=>" << altitude2 //
+                     << ",cmdThrottles:"
+                     << idxFL << ":" << fl << ","
+                     << idxFR << ":" << fr << ","
+                     << idxAR << ":" << ar << ","
+                     << idxAL << ":" << al
+
         );
         servosControl->setThrottleNorm(idxFL, fl, idxFR, fr, idxAR, ar, idxAL, al);
     }

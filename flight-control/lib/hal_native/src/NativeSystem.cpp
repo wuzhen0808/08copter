@@ -17,10 +17,6 @@ NativeSystem::NativeSystem() {
     out = new NativeOutput();
 }
 
-void NativeSystem::sleep(long ms) {
-    Sleep(ms);
-}
-
 long long NativeSystem::getSteadyTime() {
     time_point<steady_clock> now = steady_clock::now();
     return duration_cast<milliseconds>(now.time_since_epoch()).count();
@@ -39,7 +35,10 @@ void NativeSystem::formatTime(long long ms, String *str) {
     char buf[50];
     int len = std::strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S", &tm);
     str->append(buf, len);
-    str->appendFormat(".%.03d", millis);
+    //char buf[6];
+    //std::sprintf(buf, ".%.03d", millis);
+    //str->append(buf);
+    //str->append(Format::formatAsInt<int>(millis));
     len = std::strftime(buf, sizeof(buf), "%z", &tm);
     str->append(buf, len);
 }

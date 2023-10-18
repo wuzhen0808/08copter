@@ -1,6 +1,8 @@
 #pragma once
 #include "a8/util/Writer.h"
 #include "a8/util/Logger.h"
+#include "a8/util/System.h"
+
 
 using namespace a8::util;
 
@@ -30,8 +32,7 @@ public:
         String formatTime;
         sys->formatTime(stime, &formatTime);
         String msg2;
-        msg2 << "[" << formatTime << "] [" << level << "] " << msg;
-        sys->out->println(msg2);
+        msg2 << "[" << formatTime << "] [" << level << "] " << msg;        
         writer->write(msg2.text(), msg2.length());
         writer->write("\n", 1);
     };

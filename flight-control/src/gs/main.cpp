@@ -43,17 +43,3 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-
-// void timerRun(void *context) {
-//     Logger *log = Lang::cast<Logger>(context);
-//     log->info(String() << "timer called." << configTICK_RATE_HZ << "::" << portTICK_PERIOD_MS);
-// }
-
-// int xmain(int argc, char **argv) {
-//     Scheduler *sch = new FreeRtosScheduler();
-//     LoggerFactory *logFac = new NativeLoggerFactory();
-//     Logger *log = logFac->getLogger("timer");
-//     sch->scheduleTimer(1.0f, log, timerRun);
-//     sch->startSchedule();
-//     return 0;
-// }

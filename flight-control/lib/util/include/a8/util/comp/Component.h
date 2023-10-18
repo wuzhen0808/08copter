@@ -9,7 +9,7 @@ using namespace a8::util::thread;
 namespace a8::util::comp {
 
 /**
- * 
+ *
  * Component is the middle-size building block.
  *
  * It is a object managed by the parent and the root component.
@@ -68,12 +68,13 @@ class Component {
 public:
     struct TickEntry {
         Rate rate;
-        void * component;
-        void * handle;
-        void (*tickHandle)(TickingContext * tc, void * component, void * handle);
+        void *component;
+        void *handle;
+        void (*tickHandle)(TickingContext *tc, void *component, void *handle);
     };
+
 private:
-    Buffer<TickEntry*> ticks; // in mHz = 0.001Hz
+    Buffer<TickEntry *> ticks; // in mHz = 0.001Hz
 protected:
     Logger *logger;
     LoggerFactory *loggerFactory;
@@ -81,7 +82,7 @@ protected:
     Stage stage;
     String path; //
     String name;
-    
+
     void print(Writer *writer, bool recursive, int indent) {
         for (int i = 0; i < indent; i++) {
             *writer << ' ';
@@ -108,64 +109,70 @@ public:
 
     virtual ~Component() {
         //
-        String this_;
-        this_ << this;
-
-        log(String() << ">>~Component(),this is:(" << this_ << ").");
         Buffer<Component *> tmp;
         tmp.append(this->children);
 
         for (int i = tmp.length() - 1; i >= 0; i--) {
             Component *com = tmp.get(i);
-            String com_;
-            com_ << com;
-            log(String() << ">>before deleteChild(),child is:(" << com_ << ").");
             deleteChild(com);
-            log(String() << "<<after deleteChild(),child is:(" << com_ << ").");
         }
         delete this->children;
-        log(String() << "<<~Component(),this is(" << this_ << ").");
     }
-    
-    template<typename T>
-    void schedule(Rate rate, void (*handleF)(TickingContext * tc, T* this_)){
-        using handleT = void (*)(TickingContext * tc, T* this_);
-        TickEntry * entry = new TickEntry();
+
+    template <typename T>
+    void schedule(void (*handleF)(TickingContext *tc, T *this_)) {
+        this->schedule(Rate::RUN, handleF);
+    }
+    template <typename T>
+    void scheduleHz1(void (*handleF)(TickingContext *tc, T *this_)) {
+        this->schedule(1.0f, handleF);
+    }
+
+    template <typename T>
+    void scheduleHz100(void (*handleF)(TickingContext *tc, T *this_)) {
+        this->schedule(100.0f, handleF);
+    }
+
+    template <typename T>
+    void scheduleHz10(void (*handleF)(TickingContext *tc, T *this_)) {
+        this->schedule(10.0f, handleF);
+    }
+
+    template <typename T>
+    void scheduleHz20(void (*handleF)(TickingContext *tc, T *this_)) {
+        this->schedule(20.0f, handleF);
+    }
+
+    template <typename T>
+    void schedule(Rate rate, void (*handleF)(TickingContext *tc, T *this_)) {
+        using handleT = void (*)(TickingContext *tc, T *this_);
+        TickEntry *entry = new TickEntry();
         entry->rate = rate;
         entry->component = this;
         entry->handle = reinterpret_cast<void *>(handleF);
-        entry->tickHandle = [](TickingContext* tc, void * this_, void * handleF2){
+        entry->tickHandle = [](TickingContext *tc, void *this_, void *handleF2) {
             handleT handleF3 = reinterpret_cast<handleT>(handleF2);
-            handleF3(tc, Lang::cast<T*>(this_));
+            handleF3(tc, Lang::cast<T *>(this_));
         };
         this->ticks.append(entry);
     }
 
     void deleteChild(Component *child) {
-        String child_;
-        child_ << child;
-        log(String() << ">>deleteChild()(" << child_ << ") from parent(" << this << ").");
         int ret = this->removeChild(child);
-        log(String() << ">>deleteChild()>>removeChild()");
         if (ret < 0) {
-            String msg;
-            msg << "no such child:" << child << " of parent:" << this;
-            log(msg);
-            Assert::illegalArgument(msg);
+            Assert::illegalArgument("what's wrong?");
         }
-        log(String() << ">>deleteChild()>>delete child");
         delete child;
-        log(String() << "<<deleteChild()(" << child_ << ") from parent(" << this << ").");
     }
 
     void init(const String &name) {
         this->children = new Buffer<Component *>();
         this->logger = 0;
         this->stage = Zero;
-        this->name = name;        
+        this->name = name;
     }
 
-    Buffer<TickEntry*> getTicks() {
+    Buffer<TickEntry *> getTicks() {
         return ticks;
     }
 
@@ -214,7 +221,7 @@ public:
         }
         return buffer;
     }
-    
+
     void log(const Result rst) {
         log(rst.errorMessage);
     }

@@ -17,12 +17,13 @@ class LogView : public Output, public View {
     Output *sysOutput;
     bool removeLn = true;
     BufferLineReader *lReader;
-
+    System* sys;
     void afterBridgeCreate(Bridge<GsSkeleton> *eventData) {
     }
 
 public:
-    LogView(Cdk *cdk, EventCenter *eventCenter, LoggerFactory *logFac) : View(cdk, eventCenter, logFac) {
+    LogView(Cdk *cdk, EventCenter *eventCenter, LoggerFactory *logFac, System* sys) : View(cdk, eventCenter, logFac) {
+        this->sys = sys;
         this->scrollWindow = 0;
         this->lReader = new BufferLineReader();
     }
@@ -30,13 +31,13 @@ public:
     void draw() override {
         if (this->scrollWindow == 0) {
             this->scrollWindow = cdk->newScrollWindow(CENTER, CENTER, 30, -2, "Log View", 200, true, true);
-            this->sysOutput = S->out;
-            S->out = this;
+            this->sysOutput = sys->out;
+            sys->out = this;
         }
         this->scrollWindow->draw();
     }
     ~LogView() {
-        S->out = sysOutput;
+        sys->out = sysOutput;
         delete scrollWindow;
     }
 
