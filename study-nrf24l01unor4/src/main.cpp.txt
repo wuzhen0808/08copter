@@ -1,0 +1,74 @@
+#include <RF24.h>
+#include <SPI.h>
+#include <nRF24L01.h>
+bool sending = true;
+RF24 *radio;
+
+char buf[] = "Hello World!";
+
+const byte address[][6] = {"00001", "00002"};
+void setupx() {
+
+    Serial.begin(9600);
+}
+
+void setup() {
+    // put your setup code here, to run once:
+
+    Serial.begin(9600);
+    do {
+        int drop = Serial.read();
+    } while (Serial.available() > 0);
+
+    int ce = 9;
+    int csn = 10;
+    
+    radio = new RF24(ce, csn);
+    radio->begin();
+    radio->openWritingPipe(address[0]);
+    radio->openReadingPipe(1, address[1]);
+    radio->setPALevel(RF24_PA_MAX);
+    radio->setDataRate(RF24_250KBPS);
+    if (!sending) {
+        radio->startListening();
+    }
+}
+
+void sendData() {
+
+    Serial.println("Send:");
+    Serial.println(buf);
+    bool txan = radio->write(buf, sizeof(buf));
+    if (txan) {
+        Serial.println("Send Success");
+    } else {
+        Serial.println("Send Failed");
+    }
+}
+
+void getData() {
+    // put your main code here, to run repeatedly:
+    if (radio->available()) {
+        char buf2[sizeof(buf)];
+        radio->read(buf2, sizeof(buf2));
+        Serial.print("buf2:'");
+        Serial.print(buf2);
+        Serial.println("'");
+    }
+}
+void loop() {
+
+    // send(radio1);
+    Serial.println("loop");
+
+    int delay_ = 1000;
+    if (sending) {
+        sendData();
+        delay_ = delay_ * 2;
+    } else {
+        getData();
+    }
+    delay(delay_);
+
+    //
+}

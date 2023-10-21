@@ -1,0 +1,24 @@
+
+Ref:
+
+https://forum.arduino.cc/t/simple-nrf24l01-2-4ghz-transceiver-demo/405123/25
+
+https://blog.csdn.net/qq_37266917/article/details/127287422
+
+https://registry.platformio.org/libraries/nrf24/RF24
+
+
+*** ESP 32 S3 :
+
+FSPI Bus Signal SPI3 Bus Signal Function
+FSPICLK SPI3_CLK Input and output clock in master/slave mode
+FSPICS0 SPI3_CS0 Input and output CS signal in master/slave mode
+FSPICS1 ~ 5 SPI3_CS1 ~ 2 Output CS signal in master mode
+FSPID SPI3_D MOSI/SIO0 (serial data input and output, bit0)
+FSPIQ SPI3_Q MISO/SIO1 (serial data input and output, bit1)
+FSPIWP SPI3_WP SIO2 (serial data input and output, bit2)
+FSPIHD SPI3_HD SIO3 (serial data input and output, bit3)
+FSPIIO4 ~ 7 — SIO4 ~ 7 (serial data input and output, bit4 ~ 7)
+FSPIDQS — Output data mask signal in master mode
+
+*** 
