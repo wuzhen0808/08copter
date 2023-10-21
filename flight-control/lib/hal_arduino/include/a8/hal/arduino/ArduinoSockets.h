@@ -1,6 +1,6 @@
 #pragma once
 #include "a8/util/net.h"
-namespace a8::hal::arduino {
+namespace a8::hal::arduino_ {
 class ArduinoSockets : public Sockets {
 public:
     ArduinoSockets();
@@ -29,4 +29,4 @@ public:
     int select(SOCK &sock) override;
     int select(Buffer<SOCK> &buffer1, Buffer<SOCK> &buffer2, Buffer<SOCK> &buffer3) override;
 };
-} // namespace a8::hal::arduino
+} // namespace a8::hal::arduino_

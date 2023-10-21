@@ -2,7 +2,7 @@
 #include "a8/hal/arduino/ArduinoOutput.h"
 #include <Arduino.h>
 
-namespace a8::hal::arduino {
+namespace a8::hal::arduino_ {
 using namespace a8::util;
 ArduinoSystem::ArduinoSystem() {
     out = new ArduinoOutput();
@@ -28,4 +28,4 @@ int ArduinoSystem::openFile(String fpath, Reader *&fReaderCb) {
 String ArduinoSystem::getEnv(String name) {
     return "";
 }
-} // namespace a8::hal::arduino
+} // namespace a8::hal::arduino_

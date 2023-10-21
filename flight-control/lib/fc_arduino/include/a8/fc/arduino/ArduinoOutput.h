@@ -4,7 +4,7 @@
 
 using namespace a8::util;
 
-namespace a8::fc::arduino {
+namespace a8::fc::arduino_ {
 
 class ArduinoOutput : public Output {
     void print(a8::util::String msg) {

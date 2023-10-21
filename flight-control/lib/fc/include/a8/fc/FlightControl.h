@@ -49,13 +49,15 @@ protected: // functions
         this->argv = argv;
         this->bridgeKeeperTs = new BridgeKeeper<FcSkeleton, TsStub>(this->links->gsAddress());
         this->bridgeKeeperGs = new BridgeKeeper<FcSkeleton, GsStub>(this->links->tsAddress());
-
-        this->schedule<FlightControl>(1.0f, [](TickingContext *ticking, FlightControl *this_) {
-            this_->processGsCommands(ticking);
-        }); //
-        this->schedule<FlightControl>(1.0f, [](TickingContext *ticking, FlightControl *this_) {
-            this_->processTsCommands(ticking);
-        }); //
+        /**
+         *
+            this->schedule<FlightControl>(1.0f, [](TickingContext *ticking, FlightControl *this_) {
+                //this_->processGsCommands(ticking);
+            }); //
+            this->schedule<FlightControl>(1.0f, [](TickingContext *ticking, FlightControl *this_) {
+                //this_->processTsCommands(ticking);
+            }); //
+        */
     }
 
 public:

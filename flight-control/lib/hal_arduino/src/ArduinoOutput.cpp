@@ -1,7 +1,7 @@
 #include "a8/hal/arduino/ArduinoOutput.h"
 #include <Arduino.h>
 
-namespace a8::hal::arduino {
+namespace a8::hal::arduino_ {
 using a8::util::Output;
 using a8::util::String;
 

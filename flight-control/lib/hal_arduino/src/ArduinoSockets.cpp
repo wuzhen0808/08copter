@@ -1,5 +1,5 @@
 #include "a8/hal/arduino/ArduinoSockets.h"
-namespace a8::hal::arduino {
+namespace a8::hal::arduino_ {
 
 ArduinoSockets::ArduinoSockets() {
 }
@@ -64,4 +64,4 @@ int ArduinoSockets::select(SOCK &sock) {
 int ArduinoSockets::select(Buffer<SOCK> &buffer1, Buffer<SOCK> &buffer2, Buffer<SOCK> &buffer3) {
     return -1;
 }
-} // namespace a8::hal::arduino
+} // namespace a8::hal::arduino_

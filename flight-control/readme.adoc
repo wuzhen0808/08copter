@@ -644,7 +644,7 @@ No locals.
 |{counter:hList} | Flight controller(Arduino UNO-R4 Minima) | 158.0 |1  |158 | This board should be replaced with a cheaper one.
 |{counter:hList} | IMU(MPU9250)                             |  38.6 |1  | 38 | 
 |{counter:hList} | Level Transmitter(TXB0108)               |   5.0 |1  |  5 | https://www.ti.com.cn/product/cn/TXB0108, https://item.taobao.com/item.htm?spm=a1z0d.7625083.1998302264.5.5c5f4e69IneNKu&id=521042148013
-|{counter:hList} | Radio transceiver(nRF024l01)             |  17.8 |1  | 17 | 
+|{counter:hList} | Radio transceiver(nRF024l01)             |  17.8 |1  | 17 | Model:AS01-ML01DP5,vendor:ashing.com.cn, Docs downloadable from the vendor web site.
 |{counter:hList} | Antenna                                  |   3.5 |1  | 17 |
 |{counter:hList} | Battery(2200mAh)                         | 109.0 |1  |109 |
 |{counter:hList} | Charger                                  |  29.0 |1  | 29 |
@@ -657,10 +657,10 @@ No locals.
 |===
 |                | Name                         |Price  |Qty.| SubTotal | Memo
 |{counter:hList} | ESP 32 S3 DevKit-C1          | 31    | 1  | 31   |
-|{counter:hList} | Radio transceiver(nRF024l01) | 17.8  | 1  | 17.8 |
+|{counter:hList} | Radio transceiver(nRF024l01) | 17.8  | 1  | 17.8 | Vendor:ashing.com.cn, Model:AS01-ML01DP5
 |{counter:hList} | Joystick                     |  3.5  | 2  | 7.0 |
-|{counter:hList} | Antenna                      |  3.5  | 1  | 17.8 |
-|{counter:hList} | Screen(oled,128*64)          | 20.3  | 1  | 20.3 |
+|{counter:hList} | Antenna                      |  3.5  | 1  | 17.8 | 
+|{counter:hList} | Screen(Oled,128*64)          | 20.3  | 1  | 20.3 | U8GLib driver. 
 |{counter:hList} | Battery()                    |    | 6  |  |
 |{counter:hList} | Battery case                 |    |   |  |
 

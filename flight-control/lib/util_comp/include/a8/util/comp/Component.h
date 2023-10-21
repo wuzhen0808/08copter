@@ -151,8 +151,10 @@ public:
         entry->component = this;
         entry->handle = reinterpret_cast<void *>(handleF);
         entry->tickHandle = [](TickingContext *tc, void *this_, void *handleF2) {
+            
             handleT handleF3 = reinterpret_cast<handleT>(handleF2);
             handleF3(tc, Lang::cast<T *>(this_));
+            
         };
         this->ticks.append(entry);
     }
@@ -226,7 +228,7 @@ public:
         log(rst.errorMessage);
     }
 
-    void log(const String msg) {
+    void log(const String &msg) {
         getLogger()->info(msg);
     }
 

@@ -2,7 +2,7 @@
 #include "a8/fc.h"
 
 using namespace a8::fc;
-namespace a8::fc::arduino {
+namespace a8::fc::arduino_ {
 
 class ArduinoServosControl : public ServosControl {
 
@@ -13,4 +13,4 @@ public:
     void setThrottleNorm(int servoId, float velocity) override;
 };
 
-} // namespace a8::fc::arduino
+} // namespace a8::fc::arduino_

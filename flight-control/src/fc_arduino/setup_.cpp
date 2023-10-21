@@ -6,20 +6,23 @@
 #include "a8/util.h"
 #include "a8/util/comp.h"
 #include "a8/util/net.h"
+
 #include <stdio.h>
 
 using namespace a8::hal::freertos;
-using namespace a8::hal::arduino;
-using namespace a8::fc::arduino;
+using namespace a8::hal::arduino_;
+using namespace a8::fc::arduino_;
+
+class TwoWire;
 
 System *setupSystem() {
     ArduinoSystem *as = new ArduinoSystem();
     return as;
 }
-FlightControl *setupFc(Scheduler *sch, LoggerFactory *logFac) {
+FlightControl *setupFc(Hal * hal, Scheduler *sch, LoggerFactory *logFac) {
     Sockets *sockets = new ArduinoSockets();
     Links *links = new Links(sockets, sch, logFac);
-    FlightControl *fc = new ArduinoFlightControl(links);
+    FlightControl *fc = new ArduinoFlightControl(hal, links);
     return fc;
 }
 
@@ -30,7 +33,7 @@ void setup__(void *ctx, void (*func)(void *)) {
     sch->startSchedule();
 }
 
-void setup_() {
+void setup_(Hal * hal) {
 
     System *sys = setupSystem();
 
@@ -45,7 +48,7 @@ void setup_() {
 
     Scheduler *sch = new FreeRtosScheduler();
     StagingContext *context = new StagingContext(sch, logFac, sys);
-    FlightControl *fc = setupFc(scheduler, logFac);
+    FlightControl *fc = setupFc(hal, scheduler, logFac);
     Application::start("appFc", context, fc);
     if (context->isStop()) {
         log->error(context->getMessage());

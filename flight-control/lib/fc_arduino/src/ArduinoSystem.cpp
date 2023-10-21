@@ -2,7 +2,7 @@
 #include "a8/fc/arduino/ArduinoOutput.h"
 #include <Arduino.h>
 
-namespace a8::fc::arduino {
+namespace a8::fc::arduino_ {
 
 ArduinoSystem::ArduinoSystem() {
     out = new ArduinoOutput();

@@ -3,7 +3,7 @@
 
 using namespace a8::util;
 
-namespace a8::hal::arduino {
+namespace a8::hal::arduino_ {
 class ArduinoLoggerFactory : public LoggerFactory {
     Logger *defaultLogger;
     System *sys;
@@ -21,4 +21,4 @@ public:
         return defaultLogger;
     }
 };
-} // namespace a8::hal::arduino
+} // namespace a8::hal::arduino_
