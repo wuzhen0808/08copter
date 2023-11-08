@@ -1,17 +1,17 @@
 #pragma once
-#include "a8/util/defines.h"
 #include "a8/util/Assert.h"
 #include "a8/util/Callback3.h"
 #include "a8/util/ForEach.h"
 #include "a8/util/Lang.h"
 #include "a8/util/Math.h"
+#include "a8/util/defines.h"
 #include "debug.h"
-
 
 namespace a8::util {
 
 template <typename T>
 class Buffer {
+    using equals = bool (*)(T, T);
 
 private:
     int capacity_;
@@ -90,12 +90,24 @@ public:
         return removed;
     }
 
-    int removeEle(T element) {
-        int idx = this->indexOf(element);
-        if (idx < 0) {
-            return -1;
-        }
+    bool removeEle(T element) {
+        return removeEle(
+            element, [](T e1, T e2) { return e1 == e2; });
+    }
 
+    bool removeEle(T element, equals equals_) {
+        int idx = this->indexOf(element, equals_);
+        if (idx < 0) {
+            return idx;
+        }
+        remove(idx);
+        return idx;
+    }
+
+    bool remove(int idx) {
+        if (idx < 0 || idx > this->length_) {
+            return false;
+        }
         T *buf2 = 0;
         int len2 = 0;
         int cap2 = 0;
@@ -106,7 +118,8 @@ public:
         Lang::append(buf2, len2, cap2, DELTA_BUF_CAP, 0, this->buffer_, 0, leftLen);
         Lang::append(buf2, len2, cap2, DELTA_BUF_CAP, 0, this->buffer_, idx + 1, rightLen);
         this->reset(buf2, len2, cap2);
-        return 1;
+
+        return true;
     }
 
     void reset(T *buf, int len, int cap) {
@@ -121,13 +134,17 @@ public:
         return this->length_ == 0;
     }
 
-    int indexOf(T ele) {
+    int indexOf(T ele, bool (*equals)(T, T)) {
         for (int i = 0; i < length_; i++) {
-            if (ele == buffer_[i]) {
+            if (equals(ele, buffer_[i])) {
                 return i;
             }
         }
         return -1;
+    }
+
+    int indexOf(T ele) {
+        return indexOf(ele, [](T ele1, T ele2) { return ele1 == ele2; });
     }
 
     int read(int from1, T *buf, int len) {
@@ -153,7 +170,9 @@ public:
     }
 
     Buffer<T> *append(const T &element) {
-        return append(&element, 0, 1);
+        T buf[1];
+        buf[0] = element;
+        return append(buf, 0, 1);
     }
 
     Buffer<T> *append(const T *elements, int length_) {

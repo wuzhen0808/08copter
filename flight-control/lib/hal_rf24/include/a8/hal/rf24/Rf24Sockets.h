@@ -1,10 +1,23 @@
 #pragma once
 #include "a8/util/net.h"
-namespace a8::hal::arduino_ {
-class ArduinoSockets : public Sockets {
+#include "a8/hal/rf24/Rf24Socket.h"
+#include <RF24.h>
+#include <RF24Network.h>
+#include <RF24Mesh.h>
+#include <RF24Ethernet.h>
+namespace a8::hal::nrf24 {
+
+class Rf24Sockets : public Sockets {
+private:
+    Buffer<Rf24Socket *> *sockets;
+    RF24* radio;
+    RF24Network * network;
+    RF24Mesh * mesh;
+    RF24EthernetClass * ethernet;
+
 public:
-    ArduinoSockets();
-    ~ArduinoSockets();
+    Rf24Sockets();
+    ~Rf24Sockets();
     bool isReady();
     void close(SOCK &sock) override;
 
@@ -27,4 +40,4 @@ public:
     int select(SOCK &sock) override;
     int select(Buffer<SOCK> &buffer1, Buffer<SOCK> &buffer2, Buffer<SOCK> &buffer3) override;
 };
-} // namespace a8::hal::arduino_
+} // namespace a8::hal::nrf24

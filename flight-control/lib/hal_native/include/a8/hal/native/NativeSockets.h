@@ -32,8 +32,6 @@ public:
 
     int socket(SOCK &sock) override;
 
-    int socket(SOCK &sock, Result &res) override;
-
     int select(SOCK &sock) override;
     int select(Buffer<SOCK> &buffer1, Buffer<SOCK> &buffer2, Buffer<SOCK> &buffer3) override;
 };

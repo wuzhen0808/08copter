@@ -221,7 +221,8 @@ public:
     static void copy(const T *source, int from1, int len1, T *dest, int from2) {
 
         for (int i = 0; i < len1; i++) {
-            dest[from2 + i] = source[from1 + i];
+            T ele = source[from1 + i];
+            dest[from2 + i] = ele;
         }
     }
 

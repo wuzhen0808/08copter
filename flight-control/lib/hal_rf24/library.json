@@ -1,5 +1,5 @@
 {
-  "name": "hal_freertos",
+  "name": "hal_rf24",
   "version": "1.0",
   "description": "test",
   "keywords": "no",
@@ -12,8 +12,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "FreeRTOS-Kernel": "^1.0",
-    "util_schedule": "^1.0"
+    "util_net": "^1.0",
+    "nrf24/RF24Ethernet": "^1.6.13"
   },
   "frameworks": "*",
   "platforms": "*"

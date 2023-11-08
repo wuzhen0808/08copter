@@ -9,8 +9,6 @@ class Sockets {
 public:
     virtual int socket(SOCK &sock) = 0;
 
-    virtual int socket(SOCK &sock, Result &rst) = 0; // TODO remove.
-
     virtual bool send(SOCK sock, const char *buf, int len) = 0;
 
     virtual int receive(SOCK sock, char *buf, int bufLen) = 0;

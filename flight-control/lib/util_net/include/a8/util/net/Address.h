@@ -59,7 +59,7 @@ public:
         }
 
         SOCK sock;
-        int rst = this->sockets->socket(sock, errorMessage);
+        int rst = this->sockets->socket(sock);
         if (rst < 0) {
             return rst;
         }
@@ -109,7 +109,7 @@ public:
             return -1;
         }
         SOCK sock;
-        int ret = this->sockets->socket(sock, res);
+        int ret = this->sockets->socket(sock);
         if (ret < 0) {
             this->sockets->close(sock);
             return ret;

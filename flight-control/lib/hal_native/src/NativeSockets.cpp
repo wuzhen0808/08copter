@@ -145,23 +145,6 @@ int NativeSockets::socket(SOCK &sock) {
     return ret;
 }
 
-int NativeSockets::socket(SOCK &sock, Result &res) {
-    if (!this->isReady()) {
-        res.errorMessage << "Socket factory not ready.";
-        return -1;
-    }
-
-    int ret = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (!IS_VALID_SOCKET(ret)) {
-        int socketError = GET_SOCKET_ERRNO();
-        // S->out->println(String::format("Failed to create socket:%i, error:%i", ret, socketError));
-        res.errorMessage << "Invalid socket:" << ret << ",error:" << socketError;
-        return -1;
-    }
-    sock = ret;
-    return ret;
-}
-
 int NativeSockets::select(SOCK &sock) {
     Buffer<SOCK> buffer1;
     Buffer<SOCK> buffer2;
