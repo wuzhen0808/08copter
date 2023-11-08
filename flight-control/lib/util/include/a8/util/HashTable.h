@@ -20,9 +20,7 @@ class HashTable {
     hashCode hashCode_;
     equals equals_;
 
-    int remove(K key, V *&removedBuffer) {
-        bool appendBuffer = removedBuffer != 0;
-
+    int remove(K key, void (*consumer)(V)) {
         int code = hashCode_(key);
 
         LinkedList<Entry<K, V>> *list = table.get(code, 0);
@@ -30,31 +28,28 @@ class HashTable {
             return false;
         }
 
-        struct Context {
+        struct Params {
             equals equals_;
             K key;
+            void (*consumer)(V);
         };
 
-        Context context;
-        context.equals_ = this->equals_;
-        context.key = key;
-        Entry<K, V> *entryBuffer = appendBuffer ? new Entry<K, V>[0] : 0;
+        Params p;
+        p.equals_ = this->equals_;
+        p.key = key;
+        p.consumer = consumer;
 
-        int len = list->template remove<Context *>(
-            &context, [](Context *context, Entry<K, V> e1) {
-                return context->equals_(e1.k, context->key);
+        int len = list->template remove<Params *>(
+            &p, //
+            [](Params *p, Entry<K, V> e1) {
+                return p->equals_(e1.k, p->key);
             },
-            entryBuffer);
-
-        if (entryBuffer != 0) {
-            int len2 = 0;
-            int cap2 = 0;
-            for (int i = 0; i < len; i++) {
-                Entry<K, V> entry = entryBuffer[i];
-                Lang::append<V>(removedBuffer, len2, cap2, 16, 0, &entry.v, 0, 1);
+            [](Params *p, Entry<K, V> e1) {
+                p->consumer(e1.v);
             }
-            delete[] entryBuffer;
-        }
+
+        );
+
         return len;
     }
 
@@ -155,19 +150,7 @@ public:
         }
     }
     int remove(K key) {
-        V *buffer = 0;
-        int len = this->remove(key, buffer);
-        return len;
-    }
-
-    int remove(K key, void (*afterRemove)(V)) {
-        V *buffer = new V[0];
-        int len = this->remove(key, buffer);
-        for (int i = 0; i < len; i++) {
-            afterRemove(buffer[i]);
-        }
-        delete[] buffer;
-        return len;
+        return this->remove(key, [](V v) {});
     }
 };
 } // namespace  a8::util
