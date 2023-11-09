@@ -23,7 +23,7 @@ public:
 
     virtual int accept(SOCK sock, SOCK &sockIn) = 0;
 
-    virtual void close(SOCK &sock) = 0;
+    virtual int close(SOCK sock) = 0;
 
     virtual int select(Buffer<SOCK> &readSockets, Buffer<SOCK> &writeSockets, Buffer<SOCK> &exceptionSockets) = 0;
 

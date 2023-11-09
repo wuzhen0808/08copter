@@ -20,40 +20,17 @@ class HashTable {
     hashCode hashCode_;
     equals equals_;
 
-    int remove(K key, void (*consumer)(V)) {
-        int code = hashCode_(key);
-
-        LinkedList<Entry<K, V>> *list = table.get(code, 0);
-        if (list == 0) {
-            return false;
-        }
-
-        struct Params {
-            equals equals_;
-            K key;
-            void (*consumer)(V);
-        };
-
-        Params p;
-        p.equals_ = this->equals_;
-        p.key = key;
-        p.consumer = consumer;
-
-        int len = list->template remove<Params *>(
-            &p, //
-            [](Params *p, Entry<K, V> e1) {
-                return p->equals_(e1.k, p->key);
-            },
-            [](Params *p, Entry<K, V> e1) {
-                p->consumer(e1.v);
-            }
-
-        );
-
-        return len;
+public:
+    HashTable() {
+        this->hashCode_ = [](K k) { return k % 128; };
+        this->equals_ = [](K k1, K k2) { return k1 == k2; };
+    }
+    
+    HashTable(hashCode hashCodeF) {
+        this->hashCode_ = hashCodeF;
+        this->equals_ = [](K k1, K k2) { return k1 == k2; };
     }
 
-public:
     HashTable(hashCode hashCodeF, equals equalsF) {
         this->hashCode_ = hashCodeF;
         this->equals_ = equalsF;
@@ -89,6 +66,11 @@ public:
         list->template replaceOrAdd<Params *>(&p, entry, [](Params *p, Entry<K, V> entry2) {
             return p->equals_(p->key_, entry2.k);
         });
+    }
+
+    bool contains(K key) {
+        int len = get<int>(key, 0, [](int c, V value) {});
+        return len > 0;
     }
 
     V get(K key, V def) {
@@ -141,16 +123,68 @@ public:
     }
 
     void clear() {
+        clear<int>(0, [](int, K k, V v) {});
+    }
+
+    template <typename C>
+    void clear(C context, void (*free)(C, K, V)) {
+        struct Params {
+            void (*free_)(C, K, V);
+            C context_;
+        };
+        Params p;
+        p.free_ = free;
+        p.context_ = context;
+
         for (int i = 0; i < table.len(); i++) {
             LinkedList<Entry<K, V>> *list = table.get(i);
             if (list == 0) {
                 continue;
             }
+
+            list->clear<Params *>(&p, [](Params *pp, Entry<K, V> entry) {
+                pp->free_(p->context_, entry->k, entry->v);
+            });
             delete list;
         }
     }
     int remove(K key) {
-        return this->remove(key, [](V v) {});
+        return this->remove<int>(0, key, [](int, K, V) {});
+    }
+    template <typename C>
+    int remove(C c, K key, void (*consumer)(C, K, V)) {
+        int code = hashCode_(key);
+
+        LinkedList<Entry<K, V>> *list = table.get(code, 0);
+        if (list == 0) {
+            return false;
+        }
+
+        struct Params {
+            equals equals_;
+            K key;
+            C c;
+            void (*consumer)(C, K, V);
+        };
+
+        Params p;
+        p.c = c;
+        p.equals_ = this->equals_;
+        p.key = key;
+        p.consumer = consumer;
+
+        int len = list->template remove<Params *>(
+            &p, //
+            [](Params *p, Entry<K, V> e1) {
+                return p->equals_(e1.k, p->key);
+            },
+            [](Params *p, Entry<K, V> e1) {
+                p->consumer(p->c, e1.k, e1.v);
+            }
+
+        );
+
+        return len;
     }
 };
 } // namespace  a8::util

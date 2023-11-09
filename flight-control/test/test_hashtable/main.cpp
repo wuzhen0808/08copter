@@ -19,8 +19,42 @@ int hashCode(int ele) {
     return ele % 10;
 }
 
+int hashCode2(int ele) {
+    return ele % 2;
+}
+
 bool equals(int e1, int e2) {
     return e1 == e2;
+}
+
+TEST(TestHashTable, testHashTableConflict) {
+
+    HashTable<int, String> ht(hashCode2, equals);
+
+    // set
+
+    for (int i = 0; i < 20; i++) {
+        String vi = String("V") << i;
+        ht.set(i, vi);
+    }
+    // get
+    for (int i = 0; i < 20; i++) {
+        String vi = String("V") << i;
+        String vii = ht.get(i, "-1");
+        EXPECT_EQ(vii, vi);
+    }
+    // remove some of them
+    for (int i = 0; i < 10; i++) {
+        //
+        int len = ht.remove(i);
+        EXPECT_EQ(1, len);
+    }
+    // get remain elements.
+    for (int i = 10; i < 20; i++) {
+        String vi = String("V") << i;
+        String vii = ht.get(i, "-1");
+        EXPECT_EQ(vii, vi);
+    }
 }
 
 TEST(TestHashTable, testHashTable) {
@@ -29,7 +63,7 @@ TEST(TestHashTable, testHashTable) {
 
     // set
     String v1 = "V1";
-    String v2 = "V1";
+    String v2 = "V2";
     ht.set(1, v1);
     ht.set(2, v2);
 
@@ -48,12 +82,18 @@ TEST(TestHashTable, testHashTable) {
     // remove  elements.
     int len1 = ht.remove(1);
     EXPECT_EQ(1, len1);
+    String v111 = ht.get(1, def);
+    EXPECT_EQ(v111, def);
+
     bool len2 = ht.remove(2);
     EXPECT_EQ(1, len2);
+    String v222 = ht.get(2, def);
+    EXPECT_EQ(v222, def);
 
     // remove not exists elements.
     int len3 = ht.remove(3);
     EXPECT_EQ(0, len3);
+    //
 }
 
 int main(int argc, char **argv) {

@@ -7,6 +7,7 @@
 #include "a8/util/String.h"
 #include "a8/util/StringReader.h"
 #include "a8/util/StringUtil.h"
+#include "a8/util/BufferReader.h"
 
 #define LR_MAX_LEN_ (1024) // 1k
 
@@ -15,37 +16,6 @@ namespace a8::util {
 /**
  */
 class BufferLineReader {
-
-    class BufferReader : public Reader {
-
-        Buffer<char> buf_;
-        int from = 0;
-
-    public:
-        int read(char *buf, int bufLen) override {
-            int ret = 0;
-            if (from < this->buf_.len()) {
-                ret = this->buf_.read(from, buf, bufLen);
-            }
-            if (ret <= 0) {
-                return ret;
-            }
-            from += ret;
-            if (from > LR_MAX_LEN_) {
-                this->buf_ = this->buf_.subBuffer(from);
-                this->from = 0;
-            }
-            return ret;
-        }
-
-        bool hasMore() {
-            return this->from < buf_.len() - 1;
-        }
-
-        void append(String msg) {
-            buf_.append(msg.text(), 0, msg.len());
-        }
-    };
 
     BufferReader *input;
 
@@ -64,7 +34,7 @@ public:
     }
 
     int append(String msg) {
-        input->append(msg);
+        input->append(msg.text(), msg.len());
         return msg.len();
     }
 

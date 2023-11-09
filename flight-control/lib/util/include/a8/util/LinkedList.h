@@ -79,9 +79,15 @@ public:
     }
 
     void clear() {
+        return clear<int>(0, [](int ctx, T ele) {});
+    }
+
+    template <typename C>
+    void clear(C context, void (*free)(C, T)) {
         Node<T> *node = this->head->next;
         while (node != this->head) {
             Node<T> *node2 = node->next;
+            free(context, node->ele);
             delete node;
             node = node2;
         }

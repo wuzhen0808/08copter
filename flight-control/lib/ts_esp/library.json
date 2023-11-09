@@ -1,5 +1,5 @@
 {
-  "name": "hal_rf24",
+  "name": "ts_esp",
   "version": "1.0",
   "description": "test",
   "keywords": "no",
@@ -12,9 +12,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "util_net": "^1.0",
-    "nrf24/RF24": "^1.4.8",
-    "nrf24/RF24Network": "^2.0.0"
+    "ts": "^1.0"
   },
   "frameworks": "*",
   "platforms": "*"

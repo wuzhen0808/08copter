@@ -1,25 +1,38 @@
 #pragma once
+#include "a8/hal/rf24/Rf24Hosts.h"
+#include "a8/hal/rf24/Rf24Node.h"
+#include "a8/hal/rf24/Rf24NetworkWrapper.h"
+#include "a8/hal/rf24/Rf24Ports.h"
+#include "a8/hal/rf24/Rf24Socks.h"
+
 #include "a8/util/net.h"
-#include "a8/hal/rf24/Rf24Socket.h"
-#include <RF24.h>
-#include <RF24Network.h>
-#include <RF24Mesh.h>
-#include <RF24Ethernet.h>
+
+class RF24;
+template class ESBNetwork<class T>;
+
 namespace a8::hal::nrf24 {
+using namespace a8::util;
+/**
+ * https://nrf24.github.io/RF24/
+ * https://nrf24.github.io/RF24Network/
+ *
+ */
 
 class Rf24Sockets : public Sockets {
 private:
-    Buffer<Rf24Socket *> *sockets;
-    RF24* radio;
-    RF24Network * network;
-    RF24Mesh * mesh;
-    RF24EthernetClass * ethernet;
+    // dynamic
+    RF24 *radio;
+    Rf24Node *node;
+    Rf24NetworkWrapper *network;
+    Rf24Ports *ports;
+    Rf24Socks *socks;
+    Rf24Hosts *hosts;
 
 public:
-    Rf24Sockets();
+    Rf24Sockets(Rf24Hosts *hosts, String host, int chipEnablePin, int chipSelectPin);
     ~Rf24Sockets();
     bool isReady();
-    void close(SOCK &sock) override;
+    int close(SOCK sock) override;
 
     int connect(SOCK sock, const String host, int port, Result &res) override;
 

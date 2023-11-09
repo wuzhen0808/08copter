@@ -168,7 +168,9 @@ public:
     void clear() {
         this->length_ = 0;
     }
-
+    Buffer<T> *append(Buffer<T> *buf, int from, int len) {
+        this->append(buf->buffer_, from, len);
+    }
     Buffer<T> *append(const T &element) {
         T buf[1];
         buf[0] = element;
@@ -242,6 +244,15 @@ public:
 
     void operator=(T *array) {
     }
+
+    Buffer<T> subBuffer(int from, int to) {
+        Buffer<T> ret;
+        if (from < to && to <= this->len_) {
+            ret.append(this->buffer_, from, to - from);
+        }
+        return ret;
+    }
+
     Buffer<T> subBuffer(int from) {
         Buffer<T> ret;
         int len2 = this->length_ - from;

@@ -1,64 +1,55 @@
 #include "a8/hal/rf24/Rf24Sockets.h"
-#include "a8/hal/rf24/Rf24Socket.h"
+#include "a8/hal/rf24/Rf24Sock.h"
+
+#include <RF24.h>
+#include <RF24Network.h>
 
 namespace a8::hal::nrf24 {
 
-Rf24Sockets::Rf24Sockets() {
-    this->sockets = new Buffer<Rf24Socket *>();
+Rf24Sockets::Rf24Sockets(Rf24Hosts *hosts, String host, int chipEnablePin, int chipSelectPin) {
+    int nodeId = hosts->resoveNodeId(host, 0);
+    this->node = new Rf24Node(nodeId);
+    this->socks = new Rf24Socks();
+    this->radio = new RF24(chipEnablePin, chipSelectPin);
+    this->network = new Rf24NetworkWrapper(new ESBNetwork<RF24>(*this->radio));
     
+    this->ports = new Rf24Ports();
+    this->hosts = hosts;
 }
+
 Rf24Sockets::~Rf24Sockets() {
-    for (int i = 0; i < sockets->len(); i++) {
-        Lang::free<Rf24Socket>(sockets->get(i));
-    }
-    delete this->sockets;
+    delete this->socks;
+    delete this->network;
+    delete this->radio;
+    delete this->ports;
 }
 
 int Rf24Sockets::socket(SOCK &sock) {
-
-    if (this->sockets->len() < 16) {
-
-        Rf24Socket *s = new Rf24Socket();
-        sockets->append(s);
-        sock = sockets->len() - 1;
-        return 1;
-    }
-    for (int i = 0; i < sockets->len(); i++) {
-        Rf24Socket *s = sockets->get(i);
-
-        if (s->status == Free) {
-            s->status = Running;
-            sock = i;
-            return i;
-        }
-    }
-
-    return -1;//failed to create new socket.
+    int id = this->socks->create(this->node);
+    sock = id;
+    return 1;
 }
 
-void Rf24Sockets::close(SOCK &sock) {
-    if (sock >= 0 && sock < this->sockets->len()) {
-        Rf24Socket *s = sockets->get(sock);
-        s->close();
-    }
+int Rf24Sockets::close(SOCK sock) {
+    return this->socks->close(sock);
 }
 
-int Rf24Sockets::connect(SOCK sock, const String host, int port, Result &res) {
-    Rf24Socket  * s = sockets->get(sock);
-    s->connect();
-    return true;
+int Rf24Sockets::connect(SOCK sock, const String host2, int port2, Result &res) {    
+    return socks->connect(sock, host2, port2);
 }
 
-int Rf24Sockets::bind(SOCK sock, const String address, int port, Result &res) {
-    return -1;
+int Rf24Sockets::bind(SOCK sock, const String host, int port, Result &res) {
+    return socks->bind(sock, host, port, this->hosts);
 }
 
 int Rf24Sockets::listen(SOCK sock, Result &rst) {
-    return -1;
+    return socks->listen(sock);
 }
 
 int Rf24Sockets::accept(SOCK sock, SOCK &sockIn) {
-    return -1;
+    //receive a connect message from underlayer protocol.
+    //create a worker socket.
+    return socks->accept(sock, sockIn);
 }
 
 bool Rf24Sockets::send(SOCK sock, const char *buf, int len) {
