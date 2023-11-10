@@ -1,8 +1,7 @@
 #pragma once
-#include "a8/hal/rf24/Rf24NetworkWrapper.h"
-#include "a8/util/net.h"
+#include "a8/util.h"
 
-namespace a8::hal::nrf24 {
+namespace a8::util {
 
 template <typename T>
 class Queue {
@@ -11,7 +10,7 @@ class Queue {
     int head;
     int tail;
     void neat() {
-        if (head > this->len() * 10 >) {
+        if (head > this->len() * 10) {
             Buffer<T> *buf = this->buffer;
             this->buffer = new Buffer<T>();
             this->buffer->append(buf, head, tail - head);
@@ -50,4 +49,4 @@ public:
     }
 };
 
-} // namespace a8::hal::nrf24
+} // namespace a8::util

@@ -3,10 +3,10 @@
 #include "a8/link/defines.h"
 #include "a8/util/net.h"
 
+namespace a8::link {
 using namespace a8::util;
 using namespace a8::util::net;
 
-namespace a8::link {
 
 // Bridge to transmitter interface.
 class TsBridge {

@@ -1,9 +1,9 @@
 #pragma once
 #include "a8/link.h"
 #include "a8/gs/defines.h"
+namespace a8::gs {
 using namespace a8::link;
 
-namespace a8::gs {
 
 class GsSkeleton : public GsApi {
     LoggerFactory *loggerFactory;

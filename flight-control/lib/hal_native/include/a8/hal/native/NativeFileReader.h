@@ -1,9 +1,9 @@
 #pragma once
 #include "a8/util/Reader.h"
 
+namespace a8::hal::native {
 using namespace a8::util;
 
-namespace a8::hal::native {
 class NativeFileReader : public Reader {
 private:
     String fpath;

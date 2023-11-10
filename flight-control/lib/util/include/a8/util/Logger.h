@@ -3,9 +3,9 @@
 #include "a8/util/Shared.h"
 #include "a8/util/String.h"
 
+namespace a8::util {
 using namespace a8::util;
 
-namespace a8::util {
 
 class Logger {
 private:

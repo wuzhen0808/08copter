@@ -1,8 +1,8 @@
 #include "a8/hal/native/NativeOutput.h"
 #include <iostream>
+namespace a8::hal::native {
 using namespace std;
 
-namespace a8::hal::native {
 using a8::util::Output;
 using a8::util::String;
 

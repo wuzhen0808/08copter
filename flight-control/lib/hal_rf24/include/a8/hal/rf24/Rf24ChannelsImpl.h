@@ -7,7 +7,7 @@
 
 #include "a8/util/net.h"
 
-namespace a8::hal::nrf24 {
+namespace a8::hal::rf24 {
 
 class Rf24ChannelsImpl : public Rf24ChannelsApi {
 

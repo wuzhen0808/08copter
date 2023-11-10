@@ -3,10 +3,10 @@
 #include "a8/link.h"
 #include "a8/util/comp.h"
 
-using namespace a8::link;
-using namespace a8::util::comp;
 
 namespace a8::fc {
+using namespace a8::link;
+using namespace a8::util::comp;
 class FcSkeleton : public FcApi, public FlyWeight {
 
 public:

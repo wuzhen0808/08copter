@@ -64,6 +64,10 @@ public:
     String(const char ch) {
         append(&ch, 0, 1);
     }
+    String(const char *str) {
+        int len = Lang::strLength(str);
+        append(str, 0, len);
+    }
 
     char get(int i) {
         return charAt(i);

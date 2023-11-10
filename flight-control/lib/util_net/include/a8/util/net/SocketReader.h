@@ -5,8 +5,8 @@
 #include "a8/util/net/Sockets.h"
 #include "a8/util/String.h"
 
-using namespace a8::util;
 namespace a8::util::net {
+using namespace a8::util;
 
 class SocketReader : public Reader {
 private:

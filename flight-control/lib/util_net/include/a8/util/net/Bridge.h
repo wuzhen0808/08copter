@@ -1,5 +1,5 @@
 #pragma once
-#include "a8/util/comp.h"
+#include "a8/util.h"
 #include "a8/util/net/Channel.h"
 #include "a8/util/net/Codec.h"
 #include "a8/util/net/SocketReader.h"
@@ -7,8 +7,8 @@
 #include "a8/util/net/Sockets.h"
 #include "a8/util/net/defines.h"
 
-using namespace a8::util::comp;
 namespace a8::util::net {
+using namespace a8::util;
 
 template <typename T>
 class Bridge : public FlyWeight {

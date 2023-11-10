@@ -1,7 +1,6 @@
 #include "a8/hal/rf24/Rf24Socks.h"
-#include "a8/hal/rf24/Rf24Payload.h"
 
-namespace a8::hal::nrf24 {
+namespace a8::hal::rf24 {
 
 void closeAndDelete(Rf24Sock *sock) {
     sock->close();
@@ -91,13 +90,13 @@ int Rf24Socks::listen(int sId) {
     return s->listen();
 }
 
-int Rf24Socks::accept(int sId, int &sId2){
+int Rf24Socks::accept(int sId, int &sId2) {
     Rf24Sock *s = this->get(sId);
     if (s == 0) {
         return -1; //
     }
-    
-    s->receive();
+    // TODO
+    return -1;
 }
 
-} // namespace a8::hal::nrf24
+} // namespace a8::hal::rf24

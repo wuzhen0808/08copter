@@ -3,9 +3,9 @@
 #include "a8/link/defines.h"
 #include "a8/util.h"
 
+namespace a8::link {
 using namespace a8::util;
 
-namespace a8::link {
 
 // Stub to ground station interface.
 class FcBridge {

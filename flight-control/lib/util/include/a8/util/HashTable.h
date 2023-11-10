@@ -25,7 +25,7 @@ public:
         this->hashCode_ = [](K k) { return k % 128; };
         this->equals_ = [](K k1, K k2) { return k1 == k2; };
     }
-    
+
     HashTable(hashCode hashCodeF) {
         this->hashCode_ = hashCodeF;
         this->equals_ = [](K k1, K k2) { return k1 == k2; };
@@ -142,8 +142,8 @@ public:
                 continue;
             }
 
-            list->clear<Params *>(&p, [](Params *pp, Entry<K, V> entry) {
-                pp->free_(p->context_, entry->k, entry->v);
+            list->template clear<Params *>(&p, [](Params *pp, Entry<K, V> entry) {
+                pp->free_(pp->context_, entry.k, entry.v);
             });
             delete list;
         }

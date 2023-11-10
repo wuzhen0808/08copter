@@ -15,6 +15,8 @@
 #include "a8/util/comp.h"
 #include "a8/util/net.h"
 
+namespace a8::fc::native {
+
 using namespace a8::fc;
 using namespace a8::hal::native;
 using namespace a8::link;
@@ -22,8 +24,6 @@ using namespace a8::util;
 using namespace a8::util::net;
 using namespace a8::util::comp;
 using namespace std;
-
-namespace a8::fc::native {
 
 class NativeFlightControl : public FlightControl {
 private:

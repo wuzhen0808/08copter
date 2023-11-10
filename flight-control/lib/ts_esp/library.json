@@ -12,8 +12,10 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "ts": "^1.0"
+    "ts": "^1.0",
+    "hal_esp": "^1.0",
+    "hal_rf24": "^1.0"
   },
-  "frameworks": "*",
-  "platforms": "*"
+  "frameworks": "arduino",
+  "platforms": "espressif32"
 }

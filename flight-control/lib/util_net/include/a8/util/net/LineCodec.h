@@ -2,11 +2,10 @@
 #include "a8/util.h"
 #include "a8/util/net/Codec.h"
 
-using namespace a8::util;
-using namespace a8::util::net;
 #define SIMPLE_CODEC_ (0)
 
 namespace a8::util::net {
+using namespace a8::util;
 
 class LineCodec : public Codec {
     char separator;

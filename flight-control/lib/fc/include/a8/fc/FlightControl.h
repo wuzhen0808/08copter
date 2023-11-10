@@ -10,12 +10,12 @@
 #include "a8/util/net.h"
 #include "a8/util/schedule.h"
 
+
+namespace a8::fc {
 using namespace a8::util;
 using namespace a8::util::schedule;
 using namespace a8::util::comp;
 using namespace a8::common;
-
-namespace a8::fc {
 class FlightControl : public Component {
     static const int TICKING_KEY_BRIDGE = 0;
 

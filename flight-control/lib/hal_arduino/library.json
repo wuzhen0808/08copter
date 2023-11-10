@@ -14,13 +14,9 @@
   "dependencies": {
     "util": "^1.0",
     "hal": "^1.0",
-    "hal_freertos": "^1.0",
-    "framework-arduinorenesas-uno": "^1.0.2",
-    "FreeRTOS-Kernel-ArUNO": "^1.0",
     "arduino-libraries/Servo":"^1.2.1",
     "Wire":"^0.0",
-    "hideakitai/MPU9250": "^0.4.8",
-    "hal_rf24":"^1.0"
+    "hideakitai/MPU9250": "^0.4.8"
   },
   "frameworks": "*",
   "platforms": "*"

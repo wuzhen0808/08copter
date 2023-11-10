@@ -5,7 +5,7 @@ class RF24;
 template <class>
 class ESBNetwork;
 
-namespace a8::hal::nrf24 {
+namespace a8::hal::rf24 {
 
 class Rf24NetworkWrapper {
     int id;
@@ -16,8 +16,7 @@ public:
         this->network = network;
     }
 
-    ~Rf24NetworkWrapper() {
-        delete this->network;
+    ~Rf24NetworkWrapper() {        
     }
     bool available();
     int peekSize();

@@ -1,10 +1,10 @@
 #pragma once
 #include "a8/link.h"
+namespace a8::fc::native {
 using namespace a8::link;
 /**
  * Write out the instructions to the channel of the simulator engine.
  */
-namespace a8::fc::native {
 class SimOutStub {
     Channel *channel;
 

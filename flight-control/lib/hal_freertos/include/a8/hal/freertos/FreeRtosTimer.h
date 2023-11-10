@@ -4,10 +4,10 @@
 #include <FreeRTOS.h>
 #include <timers.h>
 
+namespace a8::hal::freertos {
 using namespace a8::util;
 using namespace a8::util::schedule;
 
-namespace a8::hal::freertos {
 class FreeRtosTimer : public Timer {
 private:
     static void timerCallbackFunction(TimerHandle_t handle) {

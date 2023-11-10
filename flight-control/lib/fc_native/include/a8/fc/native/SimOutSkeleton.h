@@ -3,10 +3,10 @@
 #include "a8/util.h"
 #include "a8/util/comp.h"
 #include <string>
+namespace a8::fc::native {
 using namespace a8::link;
 using namespace a8::util::comp;
 
-namespace a8::fc::native {
 /**
  * Accept the simulator's response when sending instructions to simulator.
  * Just logging the response and do nothing else.

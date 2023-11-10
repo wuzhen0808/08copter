@@ -5,10 +5,10 @@
 #include "a8/hal/freertos/FreeRtosTimer.h"
 #include "a8/util/schedule.h"
 
+namespace a8::hal::freertos {
 using namespace a8::util;
 using namespace a8::util::schedule;
 
-namespace a8::hal::freertos {
 
 class FreeRtosScheduler : public Scheduler {
 public:

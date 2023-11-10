@@ -1,0 +1,21 @@
+{
+  "name": "hal_esp",
+  "version": "1.0",
+  "description": "test",
+  "keywords": "no",
+  "authors": [
+    {
+      "name": "Wu Zhen",
+      "email": "wuzhen0808@163.com",
+      "maintainer": true
+    }
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "hal_arduino": "^1.0",
+    "framework-arduinoespressif32": "^2.0.11",
+    "util_schedule": "^1.0"
+  },
+  "frameworks": "*",
+  "platforms": "*"
+}

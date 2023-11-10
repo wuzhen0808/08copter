@@ -4,9 +4,9 @@
 #include "a8/util/comp/TickingContext.h"
 #include "a8/util/comp/defines.h"
 #include "a8/util/schedule.h"
+namespace a8::util::comp {
 using namespace a8::util;
 using namespace a8::util::schedule;
-namespace a8::util::comp {
 
 /**
  *

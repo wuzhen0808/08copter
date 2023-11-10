@@ -17,9 +17,9 @@
  *    /  \
  * (M4) (M3)
  */
+namespace a8::fc {
 using namespace a8::util;
 using namespace a8::util::comp;
-namespace a8::fc {
 
 class AttitudeControl : public Component {
 

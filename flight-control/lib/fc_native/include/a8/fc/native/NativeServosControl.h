@@ -4,10 +4,10 @@
 #include "a8/fc/ServosControl.h"
 #include "a8/fc/native/SimOutStub.h"
 
+namespace a8::fc::native {
 using namespace a8::fc;
 using namespace a8::util;
 
-namespace a8::fc::native {
 
 class NativeServosControl : public ServosControl {
     SimOutStub *stub;

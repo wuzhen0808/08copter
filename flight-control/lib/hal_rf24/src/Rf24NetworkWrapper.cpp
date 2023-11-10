@@ -1,7 +1,7 @@
 #include "a8/hal/rf24/Rf24NetworkWrapper.h"
 #include <RF24Network.h>
 
-namespace a8::hal::nrf24 {
+namespace a8::hal::rf24 {
 
 bool Rf24NetworkWrapper::available() {
     return network->available();

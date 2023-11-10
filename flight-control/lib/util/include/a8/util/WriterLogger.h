@@ -4,9 +4,9 @@
 #include "a8/util/System.h"
 
 
+namespace a8::util {
 using namespace a8::util;
 
-namespace a8::util {
 
 class WriterLogger : public Logger {
 protected:

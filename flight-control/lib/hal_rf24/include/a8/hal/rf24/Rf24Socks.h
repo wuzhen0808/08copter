@@ -4,7 +4,7 @@
 #include "a8/hal/rf24/Rf24Sock.h"
 #include "a8/util/net.h"
 
-namespace a8::hal::nrf24 {
+namespace a8::hal::rf24 {
 
 class Rf24Socks {
     int nextId;
@@ -31,4 +31,4 @@ public:
     int accept(int sId, int &sid2);
 };
 
-} // namespace a8::hal::nrf24
+} // namespace a8::hal::rf24

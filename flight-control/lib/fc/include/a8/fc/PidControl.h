@@ -4,10 +4,10 @@
 // Reference:
 // https://github.com/bitcraze/crazyflie-firmware.git
 // https://www.youtube.com/watch?v=NVLXCwc8HzM
-using namespace a8::hal;
-using namespace a8::util;
 
 namespace a8::fc {
+using namespace a8::hal;
+using namespace a8::util;
 class PidControl {
 
 private:

@@ -1,9 +1,9 @@
 #include "a8/hal/native/NativeFileReader.h"
 #include <fstream>
 
+namespace a8::hal::native {
 using namespace a8::util;
 
-namespace a8::hal::native {
 NativeFileReader::NativeFileReader(String fpath) {
     this->fpath = fpath;
     std::ifstream *is = new std::ifstream();

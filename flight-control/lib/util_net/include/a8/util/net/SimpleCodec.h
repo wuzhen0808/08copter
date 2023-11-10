@@ -5,11 +5,10 @@
 #include "a8/util/net/FunctionalCodec.h"
 #include "a8/util/net/FunctionalCodec2.h"
 
-using namespace a8::util;
-using namespace a8::util::net;
 #define SIMPLE_CODEC_ (0)
 
 namespace a8::util::net {
+using namespace a8::util;
 /**
  * -  First byte as the header which as the type indicator.
  * -  Body of message is encoded/decoded by a sub codec.

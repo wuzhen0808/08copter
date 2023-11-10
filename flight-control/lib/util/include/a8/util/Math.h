@@ -1,7 +1,7 @@
 #pragma once
 #define M_PI_ (3.14159265358979323846)
 #define FEET_TO_METERS (0.3048)
-#define RAD_TO_DEG (180.0f / M_PI_)
+#define M_RAD_TO_DEG (180.0f / M_PI_)
 #define ZERO_NEAR (0.000001)
 namespace a8::util {
 
@@ -59,7 +59,7 @@ public:
 
     template <typename T>
     static T &radian2Degree(T &radian) {
-        return radian * RAD_TO_DEG;
+        return radian * M_RAD_TO_DEG;
     }
 
     template <typename T>
@@ -76,8 +76,6 @@ public:
         }
         return rt;
     }
-
-    static float maxFloat();
 
     template <typename F>
     static F frexp(F m, int *e) {

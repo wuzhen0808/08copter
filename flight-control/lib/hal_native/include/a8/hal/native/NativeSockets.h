@@ -1,10 +1,10 @@
 
 #include "a8/util/net.h"
 
+namespace a8::hal::native {
 using namespace a8::util;
 using namespace a8::util::net;
 
-namespace a8::hal::native {
 
 class NativeSockets : public Sockets {
 

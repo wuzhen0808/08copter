@@ -3,10 +3,8 @@
 #include "a8/util/net/Codec.h"
 #include "a8/util/net/defines.h"
 
-using namespace a8::util;
-using namespace a8::util::net;
-
 namespace a8::util::net {
+using namespace a8::util;
 
 class EmptyCodec : public Codec {
     int type;

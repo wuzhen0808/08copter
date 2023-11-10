@@ -1,10 +1,10 @@
 #pragma once
 #include "a8/hal.h"
 #include "a8/util/Logger.h"
-using namespace a8::util;
 
-using namespace a8::hal;
 namespace a8::common {
+using namespace a8::util;
+using namespace a8::hal;
 
 class SimpleLogger : public Logger {
 

@@ -5,12 +5,12 @@
 #include "a8/util.h"
 #include "a8/util/curses.h"
 
+namespace a8::gs {
 using namespace a8::util::curses;
 
 using namespace a8::util;
 using namespace a8::util::comp;
 using namespace a8::hal;
-namespace a8::gs {
 
 class LogView : public Output, public View {
     ScrollWindow *scrollWindow;

@@ -1,10 +1,10 @@
 #pragma once
 #include "a8/util/comp/Component.h"
 
+namespace a8::util::comp {
 using namespace a8::util;
 using namespace a8::util::schedule;
 
-namespace a8::util::comp {
 template <class T>
 class WrapperComponent : public Component {
 public:

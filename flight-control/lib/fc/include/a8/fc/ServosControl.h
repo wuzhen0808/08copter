@@ -2,10 +2,10 @@
 #include "a8/util/Result.h"
 #include "a8/util/comp.h"
 
-using namespace a8::util;
-using namespace a8::util::comp;
 
 namespace a8::fc {
+using namespace a8::util;
+using namespace a8::util::comp;
 
 class ServosControl : public FlyWeight {
 protected:

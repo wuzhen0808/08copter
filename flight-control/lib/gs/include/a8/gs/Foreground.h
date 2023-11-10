@@ -7,11 +7,11 @@
 #include "a8/util.h"
 #include "a8/util/comp.h"
 
+namespace a8::gs {
 using namespace a8::util;
 using namespace a8::util::comp;
 using namespace a8::hal;
 
-namespace a8::gs {
 
 class Foreground : public FlyWeight {
     LineReader *lr = 0;

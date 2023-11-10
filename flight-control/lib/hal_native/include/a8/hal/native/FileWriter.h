@@ -2,9 +2,9 @@
 #include "a8/util/String.h"
 #include "a8/util/Writer.h"
 
+namespace a8::hal::native {
 using namespace a8::util;
 
-namespace a8::hal::native {
 class FileWriter : public Writer {
 private:
     String file;

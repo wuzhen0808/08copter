@@ -7,7 +7,6 @@
 #include "a8/util/String.h"
 #include "a8/util/Writer.h"
 
-using namespace a8::util;
 namespace a8::util {
 
 class ReadWriteRunner : public Runnable {

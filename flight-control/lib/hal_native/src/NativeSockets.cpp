@@ -12,11 +12,11 @@
 #error "not supported."
 #endif // end of _WIND32
 
+namespace a8::hal::native {
 using namespace a8::util;
 using namespace a8::util::net;
 // https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-ioctlsocket
 
-namespace a8::hal::native {
 
 static void toSet(Buffer<SOCK> &socks, fd_set &set) {
     for (int i = 0; i < socks.length(); i++) {

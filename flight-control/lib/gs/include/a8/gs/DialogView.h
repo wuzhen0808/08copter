@@ -2,9 +2,9 @@
 #include "a8/gs/View.h"
 #include "a8/util/curses.h"
 
+namespace a8::gs {
 using namespace a8::util::curses;
 
-namespace a8::gs {
 
 class DialogView : public View {
 

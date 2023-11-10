@@ -4,17 +4,14 @@
 #include <RF24.h>
 #include <RF24Network.h>
 
-namespace a8::hal::nrf24 {
+namespace a8::hal::rf24 {
 
-Rf24Sockets::Rf24Sockets(Rf24Hosts *hosts, String host, int chipEnablePin, int chipSelectPin) {
-    int nodeId = hosts->resoveNodeId(host, 0);
-    this->node = new Rf24Node(nodeId);
-    this->socks = new Rf24Socks();
-    this->radio = new RF24(chipEnablePin, chipSelectPin);
-    this->network = new Rf24NetworkWrapper(new ESBNetwork<RF24>(*this->radio));
-    
-    this->ports = new Rf24Ports();
+Rf24Sockets::Rf24Sockets(Rf24Hosts *hosts, String host, int chipEnablePin, int chipSelectPin) {    
     this->hosts = hosts;
+    this->host = host;
+    this->radio = new RF24(chipEnablePin, chipSelectPin);
+    this->network = new Rf24NetworkWrapper(new ESBNetwork<RF24>(*this->radio));    
+    this->ports = new Rf24Ports();
 }
 
 Rf24Sockets::~Rf24Sockets() {
@@ -25,7 +22,7 @@ Rf24Sockets::~Rf24Sockets() {
 }
 
 int Rf24Sockets::socket(SOCK &sock) {
-    int id = this->socks->create(this->node);
+    int id = this->socks->create();
     sock = id;
     return 1;
 }

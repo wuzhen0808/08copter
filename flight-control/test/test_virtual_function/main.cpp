@@ -13,6 +13,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
+namespace a8::fc {
 using namespace a8::util;
 using namespace a8::hal;
 using namespace std;
@@ -20,7 +21,6 @@ using a8::fc::Timer;
 using a8::fc::Thread;
 using a8::fc::Callback;
 using a8::fc::Runnable;
-namespace a8::fc {
 
 class Animal {
 public:

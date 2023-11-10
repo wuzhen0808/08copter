@@ -5,10 +5,10 @@
 #include "a8/hal/native/NativeOutput.h"
 #include "a8/util.h"
 
+namespace a8::hal::native {
 using namespace std;
 using namespace a8::util;
 using namespace a8::hal;
-namespace a8::hal::native {
 
 class NativeSystem : public System {
 private:

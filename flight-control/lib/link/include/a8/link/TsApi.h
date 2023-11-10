@@ -1,9 +1,9 @@
 #pragma once
 
 #include "a8/util.h"
+namespace a8::link {
 using namespace a8::util;
 
-namespace a8::link {
 
 class TsApi {
 public:

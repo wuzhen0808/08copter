@@ -4,9 +4,9 @@
 #include "a8/util/comp/StagingContext.h"
 #include "a8/util/comp/TickRunner.h"
 #include "a8/util/schedule.h"
+namespace a8::util::comp {
 using namespace a8::util;
 using namespace a8::util::schedule;
-namespace a8::util::comp {
 
 /**
  * Application is the typical implementation of a root component.

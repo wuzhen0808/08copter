@@ -3,9 +3,9 @@
 #include "a8/util/LoggerFactory.h"
 #include "a8/util/WriterLogger.h"
 
+namespace a8::hal::native {
 using namespace a8::util;
 
-namespace a8::hal::native {
 class NativeLoggerFactory : public LoggerFactory {
     Logger *defaultLogger;
     System *sys;

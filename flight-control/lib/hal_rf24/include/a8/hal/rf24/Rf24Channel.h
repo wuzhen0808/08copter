@@ -2,7 +2,7 @@
 #include "a8/hal/rf24/Rf24NetworkWrapper.h"
 #include "a8/util/net.h"
 
-namespace a8::hal::nrf24 {
+namespace a8::hal::rf24 {
 
 class Rf24Channel {
     int port1;

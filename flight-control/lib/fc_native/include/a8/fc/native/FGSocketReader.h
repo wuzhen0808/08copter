@@ -6,13 +6,13 @@
 #include "a8/util/net.h"
 #include "a8/util/comp.h"
 
+
+namespace a8::fc::native {
 using namespace a8::util;
 using namespace a8::util::net;
 using namespace a8::util::comp;
 using namespace a8::hal;
 using namespace a8::hal::native;
-
-namespace a8::fc::native {
 class SocketData {
 public:
     double altitude;

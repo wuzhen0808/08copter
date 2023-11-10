@@ -13,8 +13,8 @@
   "license": "MIT",
   "dependencies": {
     "common": "^1.0",
-    "util_curses": "^1.0",
-    "util_net":"^1.0"
+    "util_net": "^1.0",
+    "util_comp": "^1.0"
   },
   "frameworks": "*",
   "platforms": "*"

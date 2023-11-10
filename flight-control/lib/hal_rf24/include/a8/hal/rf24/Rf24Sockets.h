@@ -1,17 +1,19 @@
 #pragma once
 #include "a8/hal/rf24/Rf24Hosts.h"
-#include "a8/hal/rf24/Rf24Node.h"
 #include "a8/hal/rf24/Rf24NetworkWrapper.h"
+#include "a8/hal/rf24/Rf24Node.h"
 #include "a8/hal/rf24/Rf24Ports.h"
 #include "a8/hal/rf24/Rf24Socks.h"
 
 #include "a8/util/net.h"
 
 class RF24;
-template class ESBNetwork<class T>;
+template <class>
+class ESBNetwork;
 
-namespace a8::hal::nrf24 {
+namespace a8::hal::rf24 {
 using namespace a8::util;
+using namespace a8::util::net;
 /**
  * https://nrf24.github.io/RF24/
  * https://nrf24.github.io/RF24Network/
@@ -27,6 +29,7 @@ private:
     Rf24Ports *ports;
     Rf24Socks *socks;
     Rf24Hosts *hosts;
+    String host;
 
 public:
     Rf24Sockets(Rf24Hosts *hosts, String host, int chipEnablePin, int chipSelectPin);
@@ -53,4 +56,4 @@ public:
     int select(SOCK &sock) override;
     int select(Buffer<SOCK> &buffer1, Buffer<SOCK> &buffer2, Buffer<SOCK> &buffer3) override;
 };
-} // namespace a8::hal::nrf24
+} // namespace a8::hal::rf24

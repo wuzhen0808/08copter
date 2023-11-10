@@ -72,7 +72,7 @@ public:
 
     T get(int idx) const {
         if (idx < 0 || idx > this->length_ - 1) {
-            Assert::illegalArgument("idx out of range.");
+            Assert::illegalArgument(String() << "idx out of range.");
         }
         return this->buffer_[idx];
     }
@@ -158,7 +158,7 @@ public:
 
     int toArray(T *buf, int len) {
         if (len != this->length_) {
-            Assert::illegalArgument("buf length wrong.");
+            Assert::illegalArgument(String() << "buf length wrong.");
         }
         for (int i = 0; i < this->length_; i++) {
             buf[i] = this->buffer_[i];
@@ -237,7 +237,7 @@ public:
 
     T operator[](int idx) {
         if (idx < 0 || idx > this->length_ - 1) {
-            Assert::illegalArgument("idx out of bound.");
+            Assert::illegalArgument(String() << "idx out of bound.");
         }
         return this->buffer_[idx];
     }

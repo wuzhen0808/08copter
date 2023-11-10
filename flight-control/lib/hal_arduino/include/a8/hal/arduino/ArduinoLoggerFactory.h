@@ -1,9 +1,9 @@
 #pragma once
 #include "a8/util.h"
 
+namespace a8::hal::arduino_ {
 using namespace a8::util;
 
-namespace a8::hal::arduino_ {
 class ArduinoLoggerFactory : public LoggerFactory {
     Logger *defaultLogger;
     System *sys;

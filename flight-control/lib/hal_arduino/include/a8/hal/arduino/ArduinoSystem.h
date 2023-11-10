@@ -2,8 +2,9 @@
 #include "a8/util.h"
 
 namespace a8::hal::arduino_ {
+using namespace a8::util;
 class ArduinoSystem : public System {
-public:    
+public:
     ArduinoSystem();
     long long getSysTime() override;
     long long getSteadyTime() override;

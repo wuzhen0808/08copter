@@ -5,9 +5,9 @@
 #include <iostream>
 #include <math.h>
 
+namespace a8::hal::native {
 using namespace a8::util;
 using namespace a8::hal;
-namespace a8::hal::native {
 using namespace std::chrono;
 /**
  * https://cplusplus.com/reference/ctime/strftime/

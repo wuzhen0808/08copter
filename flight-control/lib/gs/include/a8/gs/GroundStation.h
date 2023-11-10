@@ -6,11 +6,11 @@
 #include "a8/util/comp.h"
 #include "a8/util/net.h"
 
+namespace a8::gs {
 using namespace a8::util;
 using namespace a8::util::net;
 using namespace a8::util::comp;
 using namespace a8::common;
-namespace a8::gs {
 
 class GroundStation : public Component {
 

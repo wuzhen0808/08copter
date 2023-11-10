@@ -2,10 +2,10 @@
 #include "a8/util.h"
 #include "a8/util/schedule.h"
 
+namespace a8::hal::freertos {
 using namespace a8::util;
 using namespace a8::util::schedule;
 
-namespace a8::hal::freertos {
 
 #define DEFAULT_THREAD_NAME ("My Thread")
 

@@ -4,10 +4,10 @@
 #include "a8/fc/native/SimInSkeleton.h"
 #include "a8/util/Vector3f.h"
 
-using namespace a8::fc;
-using namespace a8::util;
 
 namespace a8::fc::native {
+using namespace a8::fc;
+using namespace a8::util;
 class NativeAttitudeSensor : public AttitudeSensor {
 private:
     SimInSkeleton *sis = 0;

@@ -7,11 +7,13 @@
 #include "a8/util/net/defines.h"
 #include "a8/util/schedule.h"
 
-using namespace a8::util::schedule;
-using stubCreate = void *(*)(Channel *);
+using stubCreate = void *(*)(a8::util::net::Channel *);
 using anyRelease = void (*)(void *);
 
 namespace a8::util::net {
+
+using namespace a8::util::schedule;
+
 enum Status {
     Idle,
     Bond,

@@ -6,7 +6,7 @@
 class RF24;
 template <class T>
 class ESBNetwork;
-namespace a8::hal::nrf24 {
+namespace a8::hal::rf24 {
 
 class Rf24ChannelReader : public Reader {
     Rf24ChannelsApi *channels;

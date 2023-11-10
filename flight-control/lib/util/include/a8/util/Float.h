@@ -2,9 +2,8 @@
 #include "a8/util/Math.h"
 #include "a8/util/String.h"
 #include "a8/util/StringUtil.h"
-namespace a8 {
-namespace util {
-using namespace a8::util;
+namespace a8::util {
+
 class Float {
 public:
     template <typename T>
@@ -50,6 +49,4 @@ public:
     }
 };
 
-} // namespace util
-
-} // namespace a8
+} // namespace a8::util

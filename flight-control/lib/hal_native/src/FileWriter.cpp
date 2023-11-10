@@ -4,9 +4,9 @@
 #include <fstream>
 #include <iostream>
 
+namespace a8::hal::native {
 using namespace a8::util;
 
-namespace a8::hal::native {
 
 FileWriter::FileWriter(String file) {
     this->file = file;
