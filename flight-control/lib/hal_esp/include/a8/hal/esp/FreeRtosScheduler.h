@@ -9,7 +9,6 @@ namespace a8::hal::esp {
 using namespace a8::util;
 using namespace a8::util::schedule;
 
-
 class FreeRtosScheduler : public Scheduler {
 public:
     FreeRtosScheduler() : Scheduler() {
@@ -18,11 +17,13 @@ public:
     ~FreeRtosScheduler() {
     }
 
+    // ESP32 already has a freeRtos running.
     void startSchedule() override {
-        vTaskStartScheduler();
+        // vTaskStartScheduler();
     }
+    // ESP32 already has a freeRtos running.
     void endSchedule() override {
-        vTaskEndScheduler();
+        // vTaskEndScheduler();
     }
 
     Thread *schedule(void *context, schedule::run run) override {
@@ -40,4 +41,4 @@ public:
     }
 };
 
-} // namespace a8::hal::freertos
+} // namespace a8::hal::esp

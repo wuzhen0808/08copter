@@ -564,7 +564,7 @@ $ ./fg.sh
 === {chapter}.{counter:tune}. Tuning real world.
 This part describe how to test the code with a real board. Please note there are dangerous if this is the first time to upload the firmware into a board with the motors connected. Do not install the propellers at the first evaluation and tuning the arguments step by step.
 
-==== {chapter}.{tune}.{counter:real}. Connect all the components but not propellers.
+==== {chapter}.{tune}.{counter:real}. Connect components.
 
 *** Setup frame.
 *** Fix the board with frame.
@@ -596,6 +596,20 @@ $ pio test -e native -f test_cpp
 === {chapter}.{counter:debug}. Debug arduino_uno_minima
 
 <TODO>
+=== {chapter}.{counter:debug}. Debug esp32s3-dev-kit-c1
+==== {chapter}.{debug}.{counter:esp32} Configure USB Drivers(for Windows 10)
+See:
+https://docs.espressif.com/projects/esp-idf/en/v5.0/esp32c3/api-guides/jtag-debugging/configure-builtin-jtag.html#configure-usb-drivers
+[source,shell]
+----
+TODO
+----
+==== {chapter}.{debug}.{counter:esp32} Configure platformio.ini
+[source,json]
+----
+TODO
+----
+See:
 
 === {chapter}.{counter:debug}. Debug the native program
 

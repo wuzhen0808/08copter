@@ -25,9 +25,10 @@ public:
     int create();
     int close(int id);
     Rf24Sock *get(int id);
-    int connect(int sId, String host2, int port2);
-    int bind(int sId, String host, int port, Rf24Hosts *hosts);
-    int listen(int sId);
+    Rf24Sock *get(int id, Result &res);
+    int connect(int sId, String host2, int port2, Result &res);
+    int bind(int sId, String host, int port, Rf24Hosts *hosts, Result &res);
+    int listen(int sId, Result &res);
     int accept(int sId, int &sid2);
 };
 

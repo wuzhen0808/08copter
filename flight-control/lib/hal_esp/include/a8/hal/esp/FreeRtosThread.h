@@ -7,7 +7,7 @@ using namespace a8::util;
 using namespace a8::util::schedule;
 
 
-#define DEFAULT_THREAD_NAME ("My Thread")
+#define A8_DEFAULT_THREAD_NAME ("My Thread")
 
 class FreeRtosThread : public Thread {
     using run = void (*)(void *);

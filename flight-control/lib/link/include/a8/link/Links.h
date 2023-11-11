@@ -1,8 +1,8 @@
 #pragma once
 #include "a8/link/FcBridge.h"
 #include "a8/link/GsBridge.h"
-#include "a8/link/TsBridge.h"
 #include "a8/link/LineBridge.h"
+#include "a8/link/TsBridge.h"
 #include "a8/link/defines.h"
 #include "a8/util.h"
 #include "a8/util/net.h"
@@ -16,12 +16,18 @@ using namespace a8::util::net;
  *
  */
 class Links : public Network {
-    //
-    String host = "127.0.0.1";
-    int tsPort = 8001;
-    int gsPort = 8002;
-    int fcPort = 8003;
 
+    //
+    String tsHost = "127.0.0.1";
+    int tsPort = 8001;
+
+    String fcHost = "127.0.0.1";
+    int fcPort = 8002;
+
+    String gsHost = "127.0.0.1";
+    int gsPort = 8003;
+
+    String simHost = "127.0.0.1";
     int simOutPort = 5126;
     int simInPort = 5502;
 
@@ -34,7 +40,24 @@ class Links : public Network {
 
 public:
     Links(Sockets *sockets, Scheduler *scheduler, LoggerFactory *logFac) : Network(sockets, scheduler, logFac) {
+    }
+    Links *ts(String host, int port) {
+        this->tsHost = host;
+        this->tsPort = port;
+        return this;
+    }
+    Links *fc(String host, int port) {
+        this->fcHost = host;
+        this->fcPort = port;
+        return this;
+    }
+    Links *gs(String host, int port) {
+        this->gsHost = host;
+        this->gsPort = port;
+        return this;
+    }
 
+    Links *build() {
         SimpleCodec *codec = new SimpleCodec();
 
         // register codecs
@@ -45,16 +68,18 @@ public:
         codec->add<SensorsData>(CopterMessageType::SENSORS_DATA, SensorsData::write, SensorsData::read);
 
         // address
-        this->gsAddress_ = address(GsBridge::bridge, host, gsPort, codec);
-        this->fcAddress_ = address(FcBridge::bridge, host, fcPort, codec);
-        this->tsAddress_ = address(TsBridge::bridge, host, tsPort, codec);
+
+        this->tsAddress_ = this->address(TsBridge::bridge, tsHost, tsPort, codec);
+        this->fcAddress_ = this->address(FcBridge::bridge, fcHost, fcPort, codec);
+        this->gsAddress_ = this->address(GsBridge::bridge, gsHost, gsPort, codec);
 
         // address
         Codec *codec2 = new LineCodec(0, '\n');
-        this->simOutAddress_ = address(LineBridge::bridge, host, simOutPort, codec2);
-        this->simInAddress_ = address(LineBridge::bridge, host, simInPort, codec2);
-    }
+        this->simOutAddress_ = this->address(LineBridge::bridge, simHost, simOutPort, codec2);
+        this->simInAddress_ = this->address(LineBridge::bridge, simHost, simInPort, codec2);
 
+        return this;
+    }
     Address *tsAddress() {
         return this->tsAddress_;
     }

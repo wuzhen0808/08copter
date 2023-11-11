@@ -32,13 +32,15 @@ public:
         this->hostNodes->set(host, nodeId);
     }
 
-    int resolveNodeId(String host, int &nodeId) {
+    int resolveNodeId(String host, int &nodeId, Result &res) {
         int nId = this->hostNodes->get(host, -1);
-        if (nId >= 0) {
-            nodeId = nId;
+        if (nId == -1) {
+            res << "cannot resolve node id with host:" << host;
+            return -1;
         }
+        nodeId = nId;
         return 1;
     }
 };
 
-} // namespace a8::hal::nrf24
+} // namespace a8::hal::rf24

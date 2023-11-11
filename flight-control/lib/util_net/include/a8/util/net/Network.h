@@ -20,15 +20,16 @@ class Network {
     LoggerFactory *loggerFactory;
 
 public:
+    Address * address(bridge bridgeF, String host, int port, Codec *codec) {
+        return new Address(this->sockets, codec, bridgeF, host, port, this->scheduler, this->loggerFactory);
+    }
+
     Network(Sockets *sockets, Scheduler *scheduler, LoggerFactory *loggerFactory) {
         this->sockets = sockets;
         this->scheduler = scheduler;
         this->loggerFactory = loggerFactory;
     }
 
-    Address * address(bridge bridgeF, String host, int port, Codec *codec) {
-        return new Address(this->sockets, codec, bridgeF, host, port, this->scheduler, this->loggerFactory);
-    }
 };
 
 } // namespace a8::util::net

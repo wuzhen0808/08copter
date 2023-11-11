@@ -33,7 +33,7 @@ protected: // fields
     Links *links;
     BridgeKeeper<FcSkeleton, GsStub> *bridgeKeeperGs;
     BridgeKeeper<FcSkeleton, TsStub> *bridgeKeeperTs;
-
+    
 protected: // functions
     static FcSkeleton *createSkeleton(FlightControl *this_) {
         return new FcSkeleton(this_->loggerFactory);

@@ -4,12 +4,10 @@
 #include "a8/hal/rf24/Rf24Node.h"
 #include "a8/hal/rf24/Rf24Ports.h"
 #include "a8/hal/rf24/Rf24Socks.h"
-
 #include "a8/util/net.h"
-
-class RF24;
-template <class>
-class ESBNetwork;
+#include <RF24.h>
+#include <RF24Network.h>
+#include <SPI.h>
 
 namespace a8::hal::rf24 {
 using namespace a8::util;
@@ -17,22 +15,21 @@ using namespace a8::util::net;
 /**
  * https://nrf24.github.io/RF24/
  * https://nrf24.github.io/RF24Network/
+ * https://registry.platformio.org/libraries/nrf24/RF24Network/examples
  *
  */
 
 class Rf24Sockets : public Sockets {
 private:
     // dynamic
-    RF24 *radio;
     Rf24Node *node;
-    Rf24NetworkWrapper *network;
     Rf24Ports *ports;
     Rf24Socks *socks;
     Rf24Hosts *hosts;
     String host;
 
 public:
-    Rf24Sockets(Rf24Hosts *hosts, String host, int chipEnablePin, int chipSelectPin);
+    Rf24Sockets(int id, int chipEnablePin, int chipSelectPin, Rf24Hosts *hosts);
     ~Rf24Sockets();
     bool isReady();
     int close(SOCK sock) override;

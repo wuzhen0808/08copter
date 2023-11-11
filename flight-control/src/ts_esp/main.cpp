@@ -29,4 +29,6 @@ void setup() {
 }
 
 void loop() {
+    Serial.print("loop");
+    delay(1000);
 }

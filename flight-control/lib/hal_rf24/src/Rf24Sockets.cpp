@@ -6,18 +6,17 @@
 
 namespace a8::hal::rf24 {
 
-Rf24Sockets::Rf24Sockets(Rf24Hosts *hosts, String host, int chipEnablePin, int chipSelectPin) {    
+Rf24Sockets::Rf24Sockets(int id, int chipEnablePin, int chipSelectPin, Rf24Hosts *hosts) {    
     this->hosts = hosts;
-    this->host = host;
-    this->radio = new RF24(chipEnablePin, chipSelectPin);
-    this->network = new Rf24NetworkWrapper(new ESBNetwork<RF24>(*this->radio));    
+    this->host = host;    
     this->ports = new Rf24Ports();
+    this->node = new Rf24Node(hosts, id, chipEnablePin, chipSelectPin);
+    this->socks = new Rf24Socks(node, hosts, ports);
 }
 
-Rf24Sockets::~Rf24Sockets() {
+Rf24Sockets::~Rf24Sockets() {    
     delete this->socks;
-    delete this->network;
-    delete this->radio;
+    delete this->node;
     delete this->ports;
 }
 
@@ -32,15 +31,15 @@ int Rf24Sockets::close(SOCK sock) {
 }
 
 int Rf24Sockets::connect(SOCK sock, const String host2, int port2, Result &res) {    
-    return socks->connect(sock, host2, port2);
+    return socks->connect(sock, host2, port2, res);
 }
 
 int Rf24Sockets::bind(SOCK sock, const String host, int port, Result &res) {
-    return socks->bind(sock, host, port, this->hosts);
+    return socks->bind(sock, host, port, this->hosts, res);
 }
 
-int Rf24Sockets::listen(SOCK sock, Result &rst) {
-    return socks->listen(sock);
+int Rf24Sockets::listen(SOCK sock, Result &res) {
+    return socks->listen(sock, res);
 }
 
 int Rf24Sockets::accept(SOCK sock, SOCK &sockIn) {

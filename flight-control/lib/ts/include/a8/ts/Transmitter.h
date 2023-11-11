@@ -36,7 +36,10 @@ protected: // functions
         this->links = links;
         this->argc = argc;
         this->argv = argv;
-        this->bridgeKeeperFc = new BridgeKeeper<TsSkeleton, FcStub>(this->links->gsAddress());
+        this->bridgeKeeperFc = new BridgeKeeper<TsSkeleton, FcStub>(this->links->fcAddress());
+        this->schedule<Transmitter>(1.0f, [](TickingContext *ticking, Transmitter *this_) {
+            this_->processFcCommands(ticking);
+        }); //
     }
 
 public:
@@ -53,7 +56,19 @@ public:
         Component::boot(context);
     }
 
-    void processGsCommands(TickingContext *ticking) {
+    void processFcCommands(TickingContext *ticking) {
+        log(">>processFcCommands");
+        Bridge<TsSkeleton> *fcBridge = 0;
+        ticking->ret = this->bridgeKeeperFc->get(fcBridge, Transmitter::createSkeleton, FcStub::create, this, ticking->rst);
+        if (ticking->ret < 0) {
+            return;
+        }
+        // connected already.
+        FcApi *fcApi = fcBridge->stub<FcApi>();
+        ticking->ret = fcApi->ping("hello fc, this is ts.", ticking->rst);
+        if (ticking->ret < 0) {
+            return;
+        }
     }
 
     void populate(StagingContext *context) override {

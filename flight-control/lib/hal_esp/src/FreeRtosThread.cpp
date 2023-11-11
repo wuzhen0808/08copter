@@ -39,7 +39,7 @@ void FreeRtosThread::start() {
     TaskHandle_t handle = static_cast<TaskHandle_t>(handle_);
     BaseType_t result = xTaskCreate(
         taskFunction,
-        DEFAULT_THREAD_NAME,
+        A8_DEFAULT_THREAD_NAME,
         STACK_DEPTH,      /* usStackDepth in words */
         this,             /* pvParameters */
         DEFAULT_PRIORITY, /* uxPriority */

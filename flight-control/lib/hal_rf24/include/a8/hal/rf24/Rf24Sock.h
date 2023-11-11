@@ -31,6 +31,7 @@ class Rf24Sock {
 
 public:
     Rf24Sock(int id) {
+        this->role = Role::Unknown;
         this->id = id;
         this->node = 0;
         this->port = 0;
@@ -50,16 +51,19 @@ public:
             break;
         }
     }
-    int connect(int node2, int port2) {
+    int connect(int node2, int port2, Result &res) {
         if (this->role == Role::Unknown) {
             this->role = Role::Connector;
+            this->status = Status::Idle;
         }
 
         if (this->role != Role::Connector) {
+            res << "cannot connect, because role(" << this->role << ") is not expected:" << Role::Connector;
             return -1;
         }
 
         if (this->status != Status::Idle) {
+            res << "cannot connect, because status(" << this->status << ") is not expected:" << Status::Idle;
             return -2;
         }
         this->status = Status::Connecting;
@@ -70,8 +74,9 @@ public:
         return 1;
     }
 
-    int bind(Rf24Node *node, int port) {
+    int bind(Rf24Node *node, int port, Result &res) {
         if (this->node != 0) {
+            res << "cannot rebind, sock is already bind to node/port:" << node->getId() << "/" << port << "";
             return -1; // rebind not supported.
         }
         this->node = node;
@@ -82,8 +87,9 @@ public:
     int getPort() {
         return this->port;
     }
-    int listen() {
+    int listen(Result &res) {
         if (this->role != Role::Unknown) {
+            res << "cannot listener, because the role(" << role << ") is not expected" << Role::Unknown;
             return -1;
         }
         this->role = Role::Listener;

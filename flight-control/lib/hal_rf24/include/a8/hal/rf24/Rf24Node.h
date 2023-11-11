@@ -1,27 +1,34 @@
 #pragma once
-#include "a8/hal/rf24/Rf24ChannelData.h"
-#include "a8/util/net.h"
 
-class RF24;
-template <class T>
-class ESBNetwork;
+#include "a8/hal/rf24/Rf24ChannelData.h"
+#include "a8/hal/rf24/Rf24Hosts.h"
+#include "a8/util/net.h"
+#include <RF24.h>
+#include <RF24Network.h>
+#include <SPI.h>
 
 namespace a8::hal::rf24 {
 
 class Rf24Node {
     int id;
-    ESBNetwork<RF24> *network;
+    Rf24Hosts *hosts;
+    RF24 *radio;
+    RF24Network *network;
 
 public:
-    Rf24Node(int id, ESBNetwork<RF24> *network) {
+    Rf24Node(Rf24Hosts *hosts, int id, int cePin, int csPin) {
+        this->hosts = hosts;
         this->id = id;
-        this->network = network;
+        this->radio = new RF24(cePin, csPin);
+        this->network = new RF24Network(*radio);
     }
     ~Rf24Node() {
+        delete this->network;
+        delete this->radio;
     }
 
     int getId() {
-        return id;
+        return this->id;
     }
 };
 

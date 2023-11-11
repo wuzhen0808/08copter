@@ -1,7 +1,7 @@
 #include "a8/hal.h"
 #include "a8/hal/arduino.h"
-#include "a8/hal/rf24.h"
 #include "a8/hal/esp.h"
+#include "a8/hal/rf24.h"
 
 #include "a8/link.h"
 #include "a8/ts/esp.h"
@@ -24,9 +24,25 @@ System *setupSystem() {
     return as;
 }
 Transmitter *setupTs(ArduinoHal *hal, Scheduler *sch, LoggerFactory *logFac) {
-    Rf24Hosts *hosts = 0;
-    Sockets *sockets = new Rf24Sockets(hosts, "n00", 7, 8);
+    using a8::util::String;
+    String tsHost = "ts";
+    int tsNode = 00;
+    int tsPort = 1;
+
+    String fcHost = "fc";
+    int fcNode = 01;
+    int fcPort = 1;
+
+    Rf24Hosts *hosts = new Rf24Hosts();
+    hosts->set(tsHost, tsNode);
+    hosts->set(fcHost, fcNode);
+
+    Sockets *sockets = new Rf24Sockets(00, 7, 8, hosts);
     Links *links = new Links(sockets, sch, logFac);
+    links->ts(tsHost, tsPort);
+    links->fc(fcHost, fcPort);
+    links->build();
+
     Transmitter *ts = new EspTransmitter(hal, links);
     return ts;
 }
@@ -40,9 +56,9 @@ void setup_(ArduinoHal *hal) {
     Logger *log = logFac->getLogger();
     log->info("1.0");
 
-    log->info(String() << 1.0f);
+    log->info(a8::util::String() << 1.0f);
 
-    log->info(String() << 1.0f);
+    log->info(a8::util::String() << 1.0f);
 
     Scheduler *sch = new FreeRtosScheduler();
     StagingContext *context = new StagingContext(sch, logFac, sys);
@@ -53,6 +69,7 @@ void setup_(ArduinoHal *hal) {
         log->error("cannot start app.");
         return;
     }
-    log->info("startSchedule");
+    log->info(">>startSchedule");
     sch->startSchedule();
+    log->info("<<startSchedule");
 }
