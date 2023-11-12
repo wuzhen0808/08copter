@@ -7,7 +7,7 @@
 namespace a8::util::net {
 
 template <typename T, typename B>
-class BridgeKeeper {
+class BridgeKeeper : public FlyWeight {
 
     Bridge<T> *bridge_;
     Address *address;
@@ -17,7 +17,7 @@ class BridgeKeeper {
     int eventTypeOfBeforeBridgeFree_;
 
 public:
-    BridgeKeeper(Address *address) {
+    BridgeKeeper(Address *address, LoggerFactory *logFac) : FlyWeight(logFac) {
         this->address = address;
         this->bridge_ = 0;
         this->running = false;
@@ -63,13 +63,19 @@ public:
 
         int ret = 0;
         if (bridge_ == 0) { // connect and create a new bridge.
+            log(">>connect to address");
             ret = address->connect<T, C>(bridge_, context, skeletonCreate, rst);
+            log("<<connect to address");
             if (ret < 0) {
                 // fail to create the bridge.
                 return ret;
             }
             // create stub for this bridge.
-            bridge_->template createStub<B>(stubCreate, Lang::free<B>);
+
+            bridge_->template createStub<B>(stubCreate, [](void *stub) {
+                B *stuB = static_cast<B *>(stub);
+                Lang::free<B>(stuB);
+            });
 
             notifyEvent(eventTypeOfAfterBridgeCreate_, bridge_);
         }

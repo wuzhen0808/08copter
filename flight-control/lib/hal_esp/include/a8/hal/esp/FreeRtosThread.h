@@ -1,36 +1,37 @@
 #pragma once
 #include "a8/util.h"
 #include "a8/util/schedule.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 namespace a8::hal::esp {
 using namespace a8::util;
 using namespace a8::util::schedule;
 
-
-#define A8_DEFAULT_THREAD_NAME ("My Thread")
-
 class FreeRtosThread : public Thread {
-    using run = void (*)(void *);
-
 private:
-    static const int LOCAL_THIS = 0;
-    static const int STACK_DEPTH = 521 / 4;
-    static const int DEFAULT_PRIORITY = 1;
-    //TaskHandle_t handle;
-    void * handle_;
-
-    run run_;
+    schedule::run run_;
     void *context;
-    
-    static void taskFunction(void *pvParameters) ;
+    TaskHandle_t handle;
 
 public:
-    static Thread *start(run runF, void *context) ;
+    FreeRtosThread(schedule::run runF, void *contextF) {
+        this->run_ = runF;
+        this->context = contextF;
+    }
 
-    static Thread *getCurrentThread() ;
-    FreeRtosThread(run runF, void *context) ;
-    ~FreeRtosThread() ;
-    virtual void start() ;
+    ~FreeRtosThread() {
+    }
+
+    void run() {
+        this->run_(this->context);
+    }
+    TaskHandle_t getHandle() {
+        return this->handle;
+    }
+    void setHandle(TaskHandle_t handle) {
+        this->handle = handle;
+    }
 };
 
-} // namespace a8::hal::freertos
+} // namespace a8::hal::esp

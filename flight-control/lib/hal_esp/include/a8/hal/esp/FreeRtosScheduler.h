@@ -1,7 +1,6 @@
 #pragma once
 
 #include "a8/hal/esp/FreeRtosScheduler.h"
-#include "a8/hal/esp/FreeRtosThread.h"
 #include "a8/hal/esp/FreeRtosTimer.h"
 #include "a8/util/schedule.h"
 
@@ -26,19 +25,9 @@ public:
         // vTaskEndScheduler();
     }
 
-    Thread *schedule(void *context, schedule::run run) override {
-        return FreeRtosThread::start(run, context);
-    }
+    Thread *schedule(schedule::run run, void *context) override;
 
-    Thread *schedule(schedule::run run, void *context) override {
-        return FreeRtosThread::start(run, context);
-    }
-    Timer *scheduleTimer(const Rate &rate, void *context, schedule::run run) override {
-        return FreeRtosTimer::start(run, context, rate);
-    }
-    Timer *scheduleTimer(schedule::run run, void *context, const Rate &rate) override {
-        return FreeRtosTimer::start(run, context, rate);
-    }
+    Timer *scheduleTimer(schedule::run run, void *context, const Rate &rate) override ;
 };
 
 } // namespace a8::hal::esp

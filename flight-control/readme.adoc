@@ -597,19 +597,8 @@ $ pio test -e native -f test_cpp
 
 <TODO>
 === {chapter}.{counter:debug}. Debug esp32s3-dev-kit-c1
-==== {chapter}.{debug}.{counter:esp32} Configure USB Drivers(for Windows 10)
 See:
-https://docs.espressif.com/projects/esp-idf/en/v5.0/esp32c3/api-guides/jtag-debugging/configure-builtin-jtag.html#configure-usb-drivers
-[source,shell]
-----
-TODO
-----
-==== {chapter}.{debug}.{counter:esp32} Configure platformio.ini
-[source,json]
-----
-TODO
-----
-See:
+https://www.circuitstate.com/tutorials/debugging-esp32-arduino-esp-idf-projects-using-esp-prog-and-platformio/
 
 === {chapter}.{counter:debug}. Debug the native program
 

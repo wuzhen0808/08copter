@@ -7,7 +7,6 @@ public:
     }
     ~Thread() {
     }
-    virtual void start() = 0;
 };
 
 } // namespace a8::util::schedule

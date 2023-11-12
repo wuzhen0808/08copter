@@ -25,6 +25,8 @@ protected: // fields
 
 protected: // functions
     static TsSkeleton *createSkeleton(Transmitter *this_) {
+        this_->log("createSkeleton.");
+
         return new TsSkeleton(this_->loggerFactory);
     }
 
@@ -36,10 +38,6 @@ protected: // functions
         this->links = links;
         this->argc = argc;
         this->argv = argv;
-        this->bridgeKeeperFc = new BridgeKeeper<TsSkeleton, FcStub>(this->links->fcAddress());
-        this->schedule<Transmitter>(1.0f, [](TickingContext *ticking, Transmitter *this_) {
-            this_->processFcCommands(ticking);
-        }); //
     }
 
 public:
@@ -54,15 +52,23 @@ public:
 
         CommonUtil::resolveProperties(argc, argv, context->properties, context->getSys());
         Component::boot(context);
+        this->bridgeKeeperFc = new BridgeKeeper<TsSkeleton, FcStub>(this->links->fcAddress(), context->loggerFactory);
+        this->schedule<Transmitter>(1.0f, [](TickingContext *ticking, Transmitter *this_) {
+            this_->processFcCommands(ticking);
+        }); //
     }
 
     void processFcCommands(TickingContext *ticking) {
         log(">>processFcCommands");
         Bridge<TsSkeleton> *fcBridge = 0;
         ticking->ret = this->bridgeKeeperFc->get(fcBridge, Transmitter::createSkeleton, FcStub::create, this, ticking->rst);
+        //ticking->ret = -1;
+        //ticking->rst << "test-error.";
         if (ticking->ret < 0) {
+            log("ticking->ret<0,err:" << ticking->rst.errorMessage);
             return;
         }
+        log("getStub>>");
         // connected already.
         FcApi *fcApi = fcBridge->stub<FcApi>();
         ticking->ret = fcApi->ping("hello fc, this is ts.", ticking->rst);

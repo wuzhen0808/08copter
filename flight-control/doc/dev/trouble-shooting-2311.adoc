@@ -1,0 +1,68 @@
+
+date:2023-11-12
+board:Esp32-s3-devkitc-1,
+log-message:
+----
+[3467] [info] <<connect to address[3468] [info] Error while receiving data from channel,
+
+loop[3590] [info] getStub>>[3590] [info] Bridge exited.
+
+Guru Meditation Error: Core  1 panic'ed (IllegalInstruction). Exception was unhandled.
+Memory dump at 0x42029554: e012a802 f01d0008 0c004136
+Core  1 register dump:
+PC      : 0x4202955a  PS      : 0x00060930  A0      : 0x00000000  A1      : 0x3fc98af0  
+A2      : 0x3fcee8f4  A3      : 0x00000000  A4      : 0x00000000  A5      : 0x00000000  
+A6      : 0x00000000  A7      : 0x00000000  A8      : 0x8202955a  A9      : 0x3fc98ad0  
+A10     : 0x3fcee8ac  A11     : 0x00000000  A12     : 0x00000014  A13     : 0x00000004  
+A14     : 0x3fcee910  A15     : 0x80000001  SAR     : 0x00000011  EXCCAUSE: 0x00000000  
+EXCVADDR: 0x00000000  LBEG    : 0x400556d5  LEND    : 0x400556e5  LCOUNT  : 0xffffffff  
+
+
+Backtrace: 0x42029557:0x3fc98af0
+
+
+
+
+ELF file SHA256: cd63fe81ac54b0d9
+
+Rebooting...
+----
+
+root-cause:
+https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/fatal-errors.html#guru-meditation-errors
+solution:
+vTaskDelete();
+
+==
+
+log-message:
+----
+[3712] [info] <<TickRunner::tick()
+[4220] [info] >>TickRunner::tick(),rate:0.100e1
+[4220] [info] >>processFcCommands
+looplooplooplooploopE (18332) task_wdt: Task watchdog got triggered. The following tasks did not reset the watchdog in time:
+E (18332) task_wdt:  - IDLE (CPU 0)
+E (18332) task_wdt: Tasks currently running:
+E (18332) task_wdt: CPU 0: Tmr Svc
+E (18332) task_wdt: CPU 1: IDLE
+E (18332) task_wdt: Aborting.
+
+abort() was called at PC 0x4200f030 on core 0
+
+
+Backtrace: 0x4037706a:0x3fc92950 0x4037a229:0x3fc92970 0x4037fda5:0x3fc92990 0x4200f030:0x3fc92a10 0x40378019:0x3fc92a30 0x42029764:0x3fcf5970 0x420061e5:0x3fcf5990 0x4200621e:0x3fcf59b0 0x42006d09:0x3fcf59d0 0x420072df:0x3fcf59f0 0x4200741d:0x3fcf5a30 0x4202975f:0x3fcf5a50 0x42003c59:0x3fcf5a70 0x42003cc5:0x3fcf5aa0 0x42004e41:0x3fcf5ac0 0x4037cdf1:0x3fcf5ae0
+
+
+
+
+ELF file SHA256: 97905041937d9651
+
+Rebooting...
+----
+root-cause:
+Unknown the detail.
+If debug there is a SIGINT on Lang::free<FcStub>(void *);
+
+solution:
+1)remove function Lang::free<T>(void *) 
+2)replace the function pointer reference to Lang::free<> with LMD expression:[](){}

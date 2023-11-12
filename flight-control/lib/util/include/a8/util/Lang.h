@@ -68,14 +68,10 @@ public:
         }
         delete[] ptr;
     }
-    template <typename T>
-    static void free(void *ptr) {
-        free<T>(Lang::cast<T *>(ptr));
-    }
-
+    
     template <typename T>
     static void free(T *&ptr) {
-        free(ptr, false);
+        free<T>(ptr, false);
     }
 
     template <typename T>

@@ -20,7 +20,7 @@ enum Status {
     Listening
 };
 
-class Address {
+class Address : public FlyWeight {
 private:
     Sockets *sockets;
     Codec *codec;
@@ -40,7 +40,7 @@ public:
      *
      */
 
-    Address(Sockets *sockets, Codec *codec, bridge bridge, String host, int port, Scheduler *scheduler, LoggerFactory *loggerFactory) {
+    Address(Sockets *sockets, Codec *codec, bridge bridge, String host, int port, Scheduler *scheduler, LoggerFactory *loggerFactory) : FlyWeight(loggerFactory) {
         this->sockets = sockets;
         this->codec = codec;
         this->host = host;
@@ -108,6 +108,7 @@ public:
     template <typename T, typename C>
     int connect(Bridge<T> *&bridge, C context, T *(*skeletonCreate)(C), Result &res) {
         if (this->status != Idle) {
+            res << "illegal status:" << this->status << ",expected:" << Idle;
             return -1;
         }
         SOCK sock;
@@ -116,10 +117,13 @@ public:
             this->sockets->close(sock);
             return ret;
         }
-
+        log(">>...connect");
         int rst = this->sockets->connect(sock, this->host, this->port, res);
+        log("<<connect...");
         if (rst < 0) {
+            log(">>close socket");
             this->sockets->close(sock);
+            log("<<close socket");
             res.errorMessage << "Cannot connect to address:" << this->host << ":" << this->port << "\n";
             return rst;
         }
@@ -133,15 +137,20 @@ public:
     }
 
     template <typename T, typename C>
-    Bridge<T> *createBridge(C context, T *(*skeletonCreate)(C ), Channel *channel) {
+    Bridge<T> *createBridge(C context, T *(*skeletonCreate)(C), Channel *channel) {
+        log(">>createBridge");
         T *skeleton = skeletonCreate(context);
-        Bridge<T> *bridge = new Bridge<T>(bridge_, skeleton, channel, loggerFactory);
+        Bridge<T> *bridge = new Bridge<T>(bridge_, skeleton, channel, loggerFactory);        
+        void (*tickF)(void *) = [](void *bridge) {
+            static_cast<Bridge<T> *>(bridge)->run();
+        };
+        log("createBridge.1");
+        log("createBridge.3");
         scheduler->schedule(
-            [](void *bridge) {
-                static_cast<Bridge<T> *>(bridge)->run();
-            },     //
+            tickF, //
             bridge //
         );
+        log("<<createBridge");
         return bridge;
     }
 
@@ -160,7 +169,7 @@ public:
     }
 
     template <typename T, typename C>
-    int accept(Bridge<T> *&bridge, C context, T *(*skeletonCreate)(C ), Result &rst) {
+    int accept(Bridge<T> *&bridge, C context, T *(*skeletonCreate)(C), Result &rst) {
 
         if (this->status != Listening) {
             rst.errorMessage << "Could not accept connection on address" << this << ",not listening yet.";
