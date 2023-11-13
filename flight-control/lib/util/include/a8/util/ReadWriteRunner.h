@@ -26,7 +26,8 @@ public:
     virtual void run() {
         while (running) {
             char buf[100];
-            int len = reader->read(buf, 100);
+            Result res;
+            int len = reader->read(buf, 100, res);
             if (len <= 0) {
                 if (len < 0) { // error
                     state.errorMessage << "Failed to read, stop receiving.";

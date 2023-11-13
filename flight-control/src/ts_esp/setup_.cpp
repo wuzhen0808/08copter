@@ -23,7 +23,8 @@ System *setupSystem() {
     ArduinoSystem *as = new ArduinoSystem();
     return as;
 }
-Transmitter *setupTs(ArduinoHal *hal, Scheduler *sch, LoggerFactory *logFac) {
+
+Transmitter *setupTs(Scheduler *sch, LoggerFactory *logFac, System *sys, Result &res) {
     using a8::util::String;
     String tsHost = "ts";
     int tsNode = 00;
@@ -37,13 +38,20 @@ Transmitter *setupTs(ArduinoHal *hal, Scheduler *sch, LoggerFactory *logFac) {
     hosts->set(tsHost, tsNode);
     hosts->set(fcHost, fcNode);
 
-    Sockets *sockets = new Rf24Sockets(00, 7, 8, hosts);
+    Rf24Sockets *sockets = new Rf24Sockets(00, hosts, sys, logFac);
+
+    int ret = 1;//sockets->setup(7, 8, 90, res);
+    if (ret < 0) {
+        delete hosts;
+        delete sockets;
+        return 0;
+    }
     Links *links = new Links(sockets, sch, logFac);
     links->ts(tsHost, tsPort);
     links->fc(fcHost, fcPort);
     links->build();
 
-    Transmitter *ts = new EspTransmitter(hal, links);
+    Transmitter *ts = new EspTransmitter(links);
     return ts;
 }
 
@@ -62,7 +70,12 @@ void setup_(ArduinoHal *hal) {
 
     Scheduler *sch = new FreeRtosScheduler();
     StagingContext *context = new StagingContext(sch, logFac, sys);
-    Transmitter *ts = setupTs(hal, scheduler, logFac);
+    Result res;
+    Transmitter *ts = setupTs(scheduler, logFac, sys, res);
+    if (ts == 0) {
+        log->error(res.errorMessage);
+        return;
+    }
     Application::start("appTs", context, ts);
     if (context->isStop()) {
         log->error(context->getMessage());

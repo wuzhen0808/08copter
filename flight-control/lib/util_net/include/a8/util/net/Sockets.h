@@ -9,15 +9,15 @@ class Sockets {
 public:
     virtual int socket(SOCK &sock) = 0;
 
-    virtual bool send(SOCK sock, const char *buf, int len) = 0;
+    virtual bool send(SOCK sock, const char *buf, int len, Result &res) = 0;
 
-    virtual int receive(SOCK sock, char *buf, int bufLen) = 0;
+    virtual int receive(SOCK sock, char *buf, int bufLen, Result &res) = 0;
 
     virtual int getLastError() = 0;
 
-    virtual int connect(SOCK sock, const String host, int port, Result& rst) = 0;
+    virtual int connect(SOCK sock, const String host, int port, Result &rst) = 0;
 
-    virtual int bind(SOCK sock, const String address, int port, Result& res) = 0;
+    virtual int bind(SOCK sock, const String address, int port, Result &res) = 0;
 
     virtual int listen(SOCK sock, Result &rst) = 0;
 

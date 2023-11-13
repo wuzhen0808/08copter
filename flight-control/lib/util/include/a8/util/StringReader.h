@@ -2,6 +2,7 @@
 #include "a8/util/Buffer.h"
 #include "a8/util/Reader.h"
 #include "a8/util/String.h"
+#include "a8/util/Result.h"
 
 namespace a8::util {
 
@@ -28,7 +29,7 @@ public:
         buffer.append(msg.text(), msg.length());
     }
 
-    virtual int read(char *buf, int bufLen) override {
+    int read(char *buf, int bufLen, Result &res) override {
         if (from == buffer.len()) {
             return 0; // end of reading.
         }

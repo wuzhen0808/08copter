@@ -46,6 +46,7 @@ public:
         }
         ele = this->buffer->get(head);
         head++;
+        return 1;
     }
 };
 

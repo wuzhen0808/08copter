@@ -1,6 +1,5 @@
 #pragma once
 #include "a8/hal/rf24/Rf24Hosts.h"
-#include "a8/hal/rf24/Rf24NetworkWrapper.h"
 #include "a8/hal/rf24/Rf24Node.h"
 #include "a8/hal/rf24/Rf24Ports.h"
 #include "a8/hal/rf24/Rf24Socks.h"
@@ -19,7 +18,7 @@ using namespace a8::util::net;
  *
  */
 
-class Rf24Sockets : public Sockets {
+class Rf24Sockets : public Sockets, public FlyWeight {
 private:
     // dynamic
     Rf24Node *node;
@@ -27,11 +26,15 @@ private:
     Rf24Socks *socks;
     Rf24Hosts *hosts;
     String host;
+    System *sys;
 
 public:
-    Rf24Sockets(int id, int chipEnablePin, int chipSelectPin, Rf24Hosts *hosts);
+    Rf24Sockets(int id, Rf24Hosts *hosts, System *sys, LoggerFactory *logFac);
+
     ~Rf24Sockets();
-    bool isReady();
+
+    int setup(int chipEnablePin, int chipSelectPin, int channel, Result &res);
+
     int close(SOCK sock) override;
 
     int connect(SOCK sock, const String host, int port, Result &res) override;
@@ -42,9 +45,9 @@ public:
 
     int accept(SOCK sock, SOCK &sockIn) override;
 
-    bool send(SOCK sock, const char *buf, int len) override;
+    bool send(SOCK sock, const char *buf, int len, Result &res) override;
 
-    int receive(SOCK sock, char *buf, int bufLen) override;
+    int receive(SOCK sock, char *buf, int bufLen, Result &res) override;
 
     int getLastError() override;
 

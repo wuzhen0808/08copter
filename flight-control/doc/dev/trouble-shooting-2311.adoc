@@ -61,7 +61,19 @@ Rebooting...
 ----
 root-cause:
 Unknown the detail.
-If debug there is a SIGINT on Lang::free<FcStub>(void *);
+If debug with PIO debug configuration, got following log in DEBUG CONSOLE:
+
+[source,shell]
+----
+[New Thread 1070513616]
+
+Thread 
+4 "Tmr Svc" received signal SIGINT, Interrupt.
+[Switching to Thread 1070554224]
+0x42029767 in a8::util::Lang::free<a8::link::FcStub> (ptr=0x3fceea78) at lib/util/include/a8/util/Lang.h:72
+72	    static void free(void *ptr) {
+Note: automatically using hardware breakpoints for read-only addresses.
+----
 
 solution:
 1)remove function Lang::free<T>(void *) 

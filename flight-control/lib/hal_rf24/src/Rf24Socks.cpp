@@ -15,9 +15,9 @@ Rf24Socks::~Rf24Socks() {
     delete this->table;
 }
 
-int Rf24Socks::create() {
+int Rf24Socks::create(System *sys) {
     int sId = this->nextId++;
-    Rf24Sock *s = new Rf24Sock(sId);
+    Rf24Sock *s = new Rf24Sock(sId, sys, this->loggerFactory);
     this->table->set(sId, s);
     return sId;
 }
@@ -105,6 +105,101 @@ int Rf24Socks::accept(int sId, int &sId2) {
     }
     // TODO
     return -1;
+}
+int Rf24Socks::send(int sId, const char *buf, int len, Result &res) {
+    Rf24Sock *s = this->get(sId, res);
+    if (s == 0) {
+        return -1; //
+    }
+    return s->send(buf, len, res);
+}
+
+int Rf24Socks::receive(int sId, char *buf, int len, Result &res) {
+    Rf24Sock *s = this->get(sId, res);
+    if (s == 0) {
+        return -1; //
+    }
+    while (!s->available()) {
+        // todo timeout.
+        int ret = this->update(sId, res);
+        if (ret < 0) {
+            return ret;
+        }
+    }
+    return s->receive(buf, len, res);
+}
+/**
+ * Dispatch data received.
+ */
+void Rf24Socks::handleData(Rf24NodeData *data) {
+    switch (data->type) {
+    case Rf24NodeData::TYPE_Rf24ConnectRequest:
+        handleConnectRequest(data->connectionRequest);
+        break;
+    case Rf24NodeData::TYPE_Rf24UserData:
+        handleUserData(data->userData);
+        break;
+    default:
+        break;
+        // ignore?
+    }
+}
+void Rf24Socks::handleConnectRequest(Rf24ConnectRequest *req) {
+}
+void Rf24Socks::handleUserData(Rf24UserData *userData) {
+    Rf24Sock *s = this->get(userData->sockId);
+    if (s == 0) {
+        // ignore?
+        return;
+    }
+    s->handleData(userData->buffer->buffer(), userData->buffer->len());
+}
+
+int Rf24Socks::update(int sId, Result &res) {
+    int len;
+    while (true) {
+
+        Rf24NodeData data;
+        struct Params {
+            // input
+            int sId_;
+            Rf24Socks *this_;
+            void onData(Rf24NodeData *data) {
+                this_->handleData(data);
+                this->dataType_ = data->type;
+                if (data->type == Rf24NodeData::TYPE_Rf24UserData) {
+                    this->sIdInData_ = data->userData->sockId;
+                }
+            }
+            // output
+            int dataType_ = 0;
+            int sIdInData_ = 0;
+            bool isExpectedUserData() {
+                return dataType_ == Rf24NodeData::TYPE_Rf24UserData && sIdInData_ == sId_;
+            }
+        };
+        Params p;
+        p.sId_ = sId;
+        p.this_ = this;
+
+        int ret = this->node->receive<Params *>( //
+            [](Params *pp, Rf24NodeData *data) {
+                pp->onData(data);
+                return true;
+            },
+            &p,   //
+            3000, //
+            res   //
+        );
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+        if (p.isExpectedUserData()) {
+            break;
+        }
+    }
+    return len;
 }
 
 } // namespace a8::hal::rf24

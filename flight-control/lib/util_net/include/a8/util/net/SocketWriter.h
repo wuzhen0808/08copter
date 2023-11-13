@@ -22,8 +22,8 @@ public:
     ~SocketWriter() {
     }
 
-    int write(const char *buf, int bufLen) override {
-        sockets->send(sock, buf, bufLen);
+    int write(const char *buf, int bufLen, Result & res) override {
+        sockets->send(sock, buf, bufLen, res);
         return bufLen;
     };
 };

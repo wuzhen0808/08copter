@@ -10,10 +10,8 @@ using namespace a8::hal::arduino_;
 
 class EspTransmitter : public Transmitter {
 private:
-    ArduinoHal *arduino;
-
 public:
-    EspTransmitter(ArduinoHal *arduino, Links *links);
+    EspTransmitter(Links *links);
     ~EspTransmitter();
     void populate(StagingContext *context) override;
     void start(StagingContext *context) override;

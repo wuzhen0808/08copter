@@ -25,7 +25,7 @@ public:
     BufferReader(char *buf, int len) {
         this->append(buf, len);
     }
-    int read(char *buf, int bufLen) override {
+    int read(char *buf, int bufLen, Result &res) override {
         int ret = 0;
         if (from < this->buf_.len()) {
             ret = this->buf_.read(from, buf, bufLen);

@@ -1,6 +1,5 @@
 
-//RF24 need this include 
-#include <Arduino.h>
+// RF24 need this include
 #include "a8/ts/esp/EspTransmitter.h"
 
 namespace a8::ts::esp {
@@ -10,8 +9,7 @@ using namespace a8::util;
 using namespace a8::util::schedule;
 using namespace a8::hal::arduino_;
 
-EspTransmitter::EspTransmitter(ArduinoHal *arduino, Links *links) : Transmitter("ts", 0, 0, links) {
-    this->arduino = arduino;
+EspTransmitter::EspTransmitter(Links *links) : Transmitter("ts", 0, 0, links) {
 }
 
 EspTransmitter::~EspTransmitter() {

@@ -17,7 +17,7 @@ private:
     int localResult;
     int globalResult;
 
-    void syncLocalIfNeeded() {
+    void syncLocalIfNeeded(Result& res) {
         if (this->localPointer != -1) { // Read global at least once.
             if (localResult > 0) {      // has local content waiting to be processed.
                 return;
@@ -35,7 +35,7 @@ private:
             // locally buffer is empty.
         }
         //
-        localResult = globalResult = reader->read(buf, BUF_LEN);
+        localResult = globalResult = reader->read(buf, BUF_LEN, res);
         localPointer = 0;
     }
 
@@ -90,7 +90,7 @@ public:
         int thisResult = 0;
         bool found = false;
         while (true) {
-            syncLocalIfNeeded();
+            syncLocalIfNeeded(rst);
             if (localResult <= 0) {
                 // align and sync this result with local
                 if (thisResult == 0) {

@@ -7,7 +7,7 @@ class OutputWriter : public Writer {
 
     Output *out;
 
-    int write(const char *buf, int bufLen) override {
+    int write(const char *buf, int bufLen, Result &res) override {
         out->print(buf, bufLen);
         return bufLen;
     }

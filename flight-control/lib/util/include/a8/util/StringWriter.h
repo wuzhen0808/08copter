@@ -21,7 +21,7 @@ public:
     /**
      * The length of the string may not expected as the buf may contains the end of string character '\0'.
      */
-    virtual int write(const char *buf, int bufLen) override {
+    virtual int write(const char *buf, int bufLen, Result &res) override {
         str.append(buf, bufLen);
         return bufLen;
     };

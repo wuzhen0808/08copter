@@ -1,4 +1,6 @@
 #pragma once
+#include "a8/util/Result.h"
+
 namespace a8::util {
 /**
  */
@@ -29,7 +31,12 @@ public:
         return write(str.text(), str.length());
     }
 
-    virtual int write(const char *buf, int bufLen) = 0;
+    int write(const char *buf, int bufLen) {
+        Result res;
+        return write(buf, bufLen, res);
+    }
+
+    virtual int write(const char *buf, int bufLen, Result &res) = 0;
 
     Writer &operator<<(const char ch) {
         write(ch);

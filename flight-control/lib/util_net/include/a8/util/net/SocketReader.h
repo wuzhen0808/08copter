@@ -22,8 +22,8 @@ public:
     ~SocketReader() {
     }
 
-    virtual int read(char *buf, int bufLen) {
-        return sockets->receive(socket, buf, bufLen);
+    int read(char *buf, int bufLen, Result& res) override{
+        return sockets->receive(socket, buf, bufLen, res);        
     }
 };
 } // namespace a8::util
