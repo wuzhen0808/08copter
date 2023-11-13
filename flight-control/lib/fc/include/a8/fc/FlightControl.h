@@ -10,7 +10,6 @@
 #include "a8/util/net.h"
 #include "a8/util/schedule.h"
 
-
 namespace a8::fc {
 using namespace a8::util;
 using namespace a8::util::schedule;
@@ -33,7 +32,7 @@ protected: // fields
     Links *links;
     BridgeKeeper<FcSkeleton, GsStub> *bridgeKeeperGs;
     BridgeKeeper<FcSkeleton, TsStub> *bridgeKeeperTs;
-    
+
 protected: // functions
     static FcSkeleton *createSkeleton(FlightControl *this_) {
         return new FcSkeleton(this_->loggerFactory);
@@ -47,17 +46,6 @@ protected: // functions
         this->links = links;
         this->argc = argc;
         this->argv = argv;
-        this->bridgeKeeperTs = new BridgeKeeper<FcSkeleton, TsStub>(this->links->gsAddress());
-        this->bridgeKeeperGs = new BridgeKeeper<FcSkeleton, GsStub>(this->links->tsAddress());
-        /**
-         *
-            this->schedule<FlightControl>(1.0f, [](TickingContext *ticking, FlightControl *this_) {
-                //this_->processGsCommands(ticking);
-            }); //
-            this->schedule<FlightControl>(1.0f, [](TickingContext *ticking, FlightControl *this_) {
-                //this_->processTsCommands(ticking);
-            }); //
-        */
     }
 
 public:
@@ -77,6 +65,17 @@ public:
 
         CommonUtil::resolveProperties(argc, argv, context->properties, context->getSys());
         Component::boot(context);
+        this->bridgeKeeperTs = new BridgeKeeper<FcSkeleton, TsStub>(this->links->gsAddress(), context->loggerFactory);
+        this->bridgeKeeperGs = new BridgeKeeper<FcSkeleton, GsStub>(this->links->tsAddress(), context->loggerFactory);
+        /**
+         *
+            this->schedule<FlightControl>(1.0f, [](TickingContext *ticking, FlightControl *this_) {
+                //this_->processGsCommands(ticking);
+            }); //
+            this->schedule<FlightControl>(1.0f, [](TickingContext *ticking, FlightControl *this_) {
+                //this_->processTsCommands(ticking);
+            }); //
+        */
     }
 
     void processGsCommands(TickingContext *ticking) {

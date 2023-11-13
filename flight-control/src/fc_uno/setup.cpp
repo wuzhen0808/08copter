@@ -1,41 +1,30 @@
-#include "a8/fc/arduino.h"
-#include "a8/hal.h"
+
+#include "a8/fc/uno.h"
 #include "a8/hal/arduino.h"
 #include "a8/hal/freertos.h"
+#include "a8/hal/rf24.h"
 #include "a8/link.h"
 #include "a8/util.h"
 #include "a8/util/comp.h"
 #include "a8/util/net.h"
 
+#include "ConfigUtil.h"
 #include <stdio.h>
 
-using namespace a8::hal::freertos;
+using namespace a8::util;
+using namespace a8::util::net;
+using namespace a8::link;
 using namespace a8::hal::arduino_;
-using namespace a8::fc::arduino_;
-
+using namespace a8::fc;
+using namespace a8::fc::uno;
+using namespace a8::hal::rf24;
+using namespace a8;
+using namespace a8::hal::freertos;
 class TwoWire;
 
-System *setupSystem() {
-    ArduinoSystem *as = new ArduinoSystem();
-    return as;
-}
-FlightControl *setupFc(Hal * hal, Scheduler *sch, LoggerFactory *logFac) {
-    Sockets *sockets = new ArduinoSockets();
-    Links *links = new Links(sockets, sch, logFac);
-    FlightControl *fc = new ArduinoFlightControl(hal, links);
-    return fc;
-}
-
-void setup__(void *ctx, void (*func)(void *)) {
-    Scheduler *sch = new FreeRtosScheduler();
-    Rate hz(1.0f);
-    sch->scheduleTimer(hz, ctx, func);
-    sch->startSchedule();
-}
-
-void setup_(Hal * hal) {
-
-    System *sys = setupSystem();
+int setup(Result &res) {
+    using a8::util::String;
+    System *sys = new ArduinoSystem();
 
     Scheduler *scheduler = new FreeRtosScheduler();
     LoggerFactory *logFac = new ArduinoLoggerFactory(sys);
@@ -48,13 +37,15 @@ void setup_(Hal * hal) {
 
     Scheduler *sch = new FreeRtosScheduler();
     StagingContext *context = new StagingContext(sch, logFac, sys);
-    FlightControl *fc = setupFc(hal, scheduler, logFac);
+    Links *links = SetupUtil::setupLinks(sys, sch, logFac, res);
+    FlightControl *fc = new UnoFlightControl(links);
     Application::start("appFc", context, fc);
     if (context->isStop()) {
         log->error(context->getMessage());
         log->error("cannot start app.");
-        return;
+        return -1;
     }
     log->info("startSchedule");
     sch->startSchedule();
+    return 1;
 }

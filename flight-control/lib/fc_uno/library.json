@@ -14,7 +14,7 @@
   "dependencies": {
     "util": "^1.0",
     "fc": "^1.0",
-    "hal_arduino_uno": "^1.0"
+    "hal_uno": "^1.0"
     
   },
   "frameworks": "*",

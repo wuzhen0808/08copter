@@ -1,7 +1,7 @@
 #pragma once
 #include "a8/fc.h"
 
-namespace a8::fc::arduino_ {
+namespace a8::fc::uno {
 using namespace a8::fc;
 
 class UnoServosControl : public ServosControl {

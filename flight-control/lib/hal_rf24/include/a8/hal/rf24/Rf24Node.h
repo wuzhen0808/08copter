@@ -21,14 +21,17 @@ public:
         this->hosts = hosts;
         this->id = id;
         this->sys = sys;
+        this->radio = 0;
+        this->network = 0;
     }
     ~Rf24Node() {
-        delete this->network;
-        delete this->radio;
+        Lang::free<RF24Network>(this->network);
+        Lang::free<RF24>(this->radio);
     }
 
     int setup(int chipEnablePin, int chipSelectPin, int channel, Result &res) {
         if (this->radio != 0) {
+            res << "cannot setup twice.";
             return -1;
         }
         this->radio = new RF24(chipEnablePin, chipSelectPin);

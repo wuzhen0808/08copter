@@ -6,14 +6,13 @@
 namespace a8::util {
 using namespace a8::util;
 
-
 class LoggerFactory {
 protected:
 public:
     LoggerFactory() {}
     ~LoggerFactory() {}
     Logger *getLogger() {
-        return getLogger("default");
+        return getLogger(String() << "default");
     }
 
     virtual Logger *getLogger(const String &name) = 0;

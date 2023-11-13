@@ -1,15 +1,15 @@
-#include "a8/fc/arduino/ArduinoServosControl.h"
+#include "a8/fc/uno/UnoServosControl.h"
 
-namespace a8::fc::arduino_ {
+namespace a8::fc::uno {
 
-ArduinoServosControl::ArduinoServosControl(int totalServos, LoggerFactory *logFac) : ServosControl(totalServos, logFac) {
+UnoServosControl::UnoServosControl(int totalServos, LoggerFactory *logFac) : ServosControl(totalServos, logFac) {
 }
 
-void ArduinoServosControl::setThrottleNorm(int servoId, float velocity) {
+void UnoServosControl::setThrottleNorm(int servoId, float velocity) {
     logger->info("ArduinoServosControl::setThrottleNorm");
 }
 
-ArduinoServosControl::~ArduinoServosControl() {
+UnoServosControl::~UnoServosControl() {
 }
 
 } // namespace a8::fc::arduino_

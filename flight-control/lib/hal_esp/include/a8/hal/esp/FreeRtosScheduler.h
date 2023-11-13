@@ -1,6 +1,4 @@
 #pragma once
-
-#include "a8/hal/esp/FreeRtosScheduler.h"
 #include "a8/hal/esp/FreeRtosTimer.h"
 #include "a8/util/schedule.h"
 

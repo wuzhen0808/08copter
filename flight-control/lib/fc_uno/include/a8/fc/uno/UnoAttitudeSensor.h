@@ -1,32 +1,34 @@
 #pragma once
 #include "a8/fc/AttitudeSensor.h"
-#include "a8/hal/arduino/Hal.h"
 #include "a8/util.h"
+#include <MPU9250.h>
 
-namespace a8::fc::arduino_ {
+namespace a8::fc::uno {
 using namespace a8::fc;
 using namespace a8::util;
 
-
 class UnoAttitudeSensor : public AttitudeSensor, public FlyWeight {
 private:
-    Hal *hal;
+    MPU9250 *mpu;
 
 public:
-    UnoAttitudeSensor(Hal *hal, LoggerFactory *logFac) : AttitudeSensor(), FlyWeight(logFac) {
+    UnoAttitudeSensor(LoggerFactory *logFac) : AttitudeSensor(), FlyWeight(logFac) {
+        mpu = new MPU9250();
+        mpu->setup(0x68);
     }
     ~UnoAttitudeSensor() {
+        delete mpu;
     }
 
     int isReady(Result &rst) override {
         return 1;
     }
     int getAngVel(Vector3f &angVel, Result &rst) override {
-        hal->mpu9250->update();
+        mpu->update();
         Vector3f v;
-        v.x = hal->mpu9250->getRoll();
-        v.y = hal->mpu9250->getPitch();
-        v.z = hal->mpu9250->getYaw();
+        v.x = mpu->getRoll();
+        v.y = mpu->getPitch();
+        v.z = mpu->getYaw();
         angVel = v;
         return 1;
     }
@@ -41,4 +43,4 @@ public:
         return 1;
     }
 };
-} // namespace a8::fc::arduino_
+} // namespace a8::fc::uno
