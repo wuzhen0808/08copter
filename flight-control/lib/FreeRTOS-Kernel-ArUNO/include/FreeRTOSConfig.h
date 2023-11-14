@@ -30,13 +30,13 @@ FSP_HEADER
 #define configUSE_IDLE_HOOK (1)
 #endif
 #ifndef configUSE_MALLOC_FAILED_HOOK
-#define configUSE_MALLOC_FAILED_HOOK (0)
+#define configUSE_MALLOC_FAILED_HOOK (1)
 #endif
 #ifndef configUSE_DAEMON_TASK_STARTUP_HOOK
-#define configUSE_DAEMON_TASK_STARTUP_HOOK (0)
+#define configUSE_DAEMON_TASK_STARTUP_HOOK (1)
 #endif
 #ifndef configUSE_TICK_HOOK
-#define configUSE_TICK_HOOK (0)
+#define configUSE_TICK_HOOK (1)
 #endif
 #ifndef configCPU_CLOCK_HZ
 #define configCPU_CLOCK_HZ (SystemCoreClock)
@@ -84,7 +84,7 @@ FSP_HEADER
 #define configUSE_ALTERNATIVE_API (0U)
 #endif
 #ifndef configCHECK_FOR_STACK_OVERFLOW
-#define configCHECK_FOR_STACK_OVERFLOW (0)
+#define configCHECK_FOR_STACK_OVERFLOW (1)
 #endif
 #ifndef configQUEUE_REGISTRY_SIZE
 #define configQUEUE_REGISTRY_SIZE (10)

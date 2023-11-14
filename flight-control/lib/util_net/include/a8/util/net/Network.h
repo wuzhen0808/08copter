@@ -5,9 +5,9 @@
 #include "a8/util/net/SimpleCodec.h"
 #include "a8/util/schedule.h"
 
-using namespace a8::util::schedule;
 
 namespace a8::util::net {
+using namespace a8::util::schedule;
 
 /**
  *  Network is a utility wrapper on top of socket.

@@ -103,61 +103,61 @@ public:
         }
         pid->setup(kp, ki, kd);
     }
-    virtual void setup(StagingContext *context) override {
+    void setup(StagingContext *context) override {
         Component::setup(context);
         /*
          */
-        this->scheduleHz1<AttitudeControl>([](TickingContext *ticking, AttitudeControl *this_) {
+        this->scheduleHz100<AttitudeControl>([](TickingContext *ticking, AttitudeControl *this_) {
             this_->tick(ticking);
             // TODO
         }); // hz
     }
 
     void tick(TickingContext *ticking) {
-        log("tick1");
+        //log("tick1");
         ticking->ret = attitudeSensor->isReady(ticking->rst);
         if (ticking->ret < 0) {
             return;
         }
-        log("tick2");
+        //log("tick2");
         double altitude1;
         ticking->ret = attitudeSensor->getAltitude(altitude1, ticking->rst);
         if (ticking->ret < 0) {
             return;
         }
-        log("tick3");
+        //log("tick3");
         Vector3f aVel1;
         ticking->ret = attitudeSensor->getAngVel(aVel1, ticking->rst);
         if (ticking->ret < 0) {
             return;
         }
-        log("tick4");
+        //log("tick4");
         //
         double altitude2 = 200; // Meter
         float cmdThrottle = altitudePid->update(altitude2, altitude1);
-        /*
-        log("tick5");
-        Vector3f aVel2 = Vector3f(0.0, 0.0, 0.0);
+        //log("tick5");
+        Vector3f aVel2(0.0f, 0.0f, 0.0f);
         float cmdRoll = rollPid->update(aVel2.x, aVel1.x);
         float cmdPitch = pitchPid->update(aVel2.y, aVel1.y);
         float cmdYaw = yawPid->update(aVel2.z, aVel1.z);
-        log("tick6");
+        //log("tick6");
         float yawSign = this->reverseYaw ? -1.0f : 1.0f;
 
         float fr = cmdThrottle - cmdRoll + cmdPitch - yawSign * cmdYaw; // FR: Front right
         float al = cmdThrottle + cmdRoll - cmdPitch - yawSign * cmdYaw; // AL: After left
         float fl = cmdThrottle + cmdRoll + cmdPitch + yawSign * cmdYaw; // FL: Front left
         float ar = cmdThrottle - cmdRoll - cmdPitch + yawSign * cmdYaw; // AR: After right
-        */
         /*
-        log("tick7");
+        */
+        //log("tick7");
         // fr = al = fl = ar = 0.6;
         // fr = al = 0.6f + yawSign * 0.00005f;
         fr = trim(fr);
         al = trim(al);
         fl = trim(fl);
         ar = trim(ar);
-        log("tick8");
+        //log("tick8");
+        /*
         log(String() << "\tagl:" << altitude1 << "=>" << altitude2 //
                      << ",cmdThrottles:"
                      << idxFL << ":" << fl << ","
@@ -166,9 +166,11 @@ public:
                      << idxAL << ":" << al
 
         );
-        log("tick9");
+        */
+        //log("tick9");
         servosControl->setThrottleNorm(idxFL, fl, idxFR, fr, idxAR, ar, idxAL, al);
-        log("tick10");
+        //log("tick10");
+        /*
         */
     }
 

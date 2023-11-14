@@ -69,13 +69,13 @@ public:
         this->bridgeKeeperGs = new BridgeKeeper<FcSkeleton, GsStub>(this->links->tsAddress(), context->loggerFactory);
         /**
          *
-            this->schedule<FlightControl>(1.0f, [](TickingContext *ticking, FlightControl *this_) {
-                //this_->processGsCommands(ticking);
-            }); //
-            this->schedule<FlightControl>(1.0f, [](TickingContext *ticking, FlightControl *this_) {
-                //this_->processTsCommands(ticking);
-            }); //
-        */
+        this->schedule<FlightControl>(1.0f, [](TickingContext *ticking, FlightControl *this_) {
+            // this_->processGsCommands(ticking);
+        }); //
+         */
+        this->schedule<FlightControl>(1.0f, [](TickingContext *ticking, FlightControl *this_) {
+            this_->processTsCommands(ticking);
+        }); //
     }
 
     void processGsCommands(TickingContext *ticking) {
@@ -107,8 +107,13 @@ public:
             }
         }
     }
-
     void processTsCommands(TickingContext *ticking) {
+        log(">>processTsCommands");
+        
+        log(">>processTsCommands");
+    }
+
+    void doProcessTsCommands(TickingContext *ticking) {
         Bridge<FcSkeleton> *tsBridge = 0;
         int ret = bridgeKeeperTs->get(tsBridge, FlightControl::createSkeleton, TsStub::create, this, ticking->rst);
         if (ret < 0) {

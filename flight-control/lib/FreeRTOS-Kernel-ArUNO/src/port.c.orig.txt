@@ -27,8 +27,8 @@
  * Implementation of functions defined in portable.h for RA MCUs
  *----------------------------------------------------------*/
 
-// #if defined( ARDUINO_MINIMA ) || \
-//     defined( ARDUINO_UNOWIFIR4 )
+#if defined( ARDUINO_MINIMA ) || \
+    defined( ARDUINO_UNOWIFIR4 )
 
 /* Scheduler includes. */
 #include "bsp_api.h"
@@ -1674,5 +1674,7 @@ void vResetPrivilege (void)            /* __attribute__ (( naked )) */
 /*-----------------------------------------------------------*/
 
  #endif
+
+#endif
 
 #endif

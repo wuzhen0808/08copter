@@ -17,6 +17,9 @@ class TickRunner : public FlyWeight {
     Thread *thread;
     Buffer<Component::TickEntry *> *entries;
     TickingContext *ticking;
+    long lastLogTime = 0;
+    long lastLogTicks = 0;
+    long ticks = 0;
 
 public:
     TickRunner(StagingContext *staging, Rate rate, int group) : FlyWeight(staging->loggerFactory) {
@@ -31,8 +34,15 @@ public:
     }
 
     void tick() {
+        ticks++;
+        long now = this->ticking->getStaging()->getSys()->getSteadyTime();
+        bool doLog = now - lastLogTime > 10 * 1000;
+        if (doLog) {
 
-        logger->info(String() << ">>TickRunner::tick(),rate:" << this->ticking->getRate().Hz());
+            logger->info(String() << ">>TickRunner::tick(),rate:" << this->ticking->getRate().Hz() << ",ticksFromLastLog:" << (ticks - lastLogTicks) << ",ticks:" << ticks);
+            lastLogTime = now;
+            lastLogTicks = ticks;
+        }
 
         this->ticking->beforTick();
 
@@ -46,7 +56,9 @@ public:
         }
 
         this->ticking->afterTick();
-        logger->info("<<TickRunner::tick()");
+        if (doLog) {
+            logger->info("<<TickRunner::tick()");
+        }
     }
 
     void start(StagingContext *context) {

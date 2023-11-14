@@ -1,7 +1,7 @@
 {
-  "name": "FreeRTOS-Kernel-ArUNO",
+  "name": "fc_esp",
   "version": "1.0",
-  "description": "FreeRTOS-Kernel port for Arduino Renesas uno",
+  "description": "test",
   "keywords": "no",
   "authors": [
     {
@@ -11,9 +11,10 @@
     }
   ],
   "license": "MIT",
-  "dependencies": {
-    "FreeRTOS-Kernel": "^1.0",
-    "framework-arduinorenesas-uno": "^1.0.2"
+  "dependencies": {    
+    "fc": "^1.0",
+    "hal_esp": "^1.0",
+    "hal_rf24": "^1.0"    
   },
   "frameworks": "*",
   "platforms": "*"

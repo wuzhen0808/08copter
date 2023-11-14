@@ -18,15 +18,12 @@ void setup() {
     delay(1000);
     Serial.println(">>setup");
 
-    // setup_(0, [](void *ctx) {
-    //     Serial.println("...");
-    // });
     Result res;
     int ret = setup(res);
-    Serial.println("<<setup");
-    // Serial.begin(9600);
-    // delay(1000);
-    // Serial.println("hello");
+    if (ret < 0) {
+        Serial.println(res.errorMessage.text());
+    }
+    Serial.println("<<setup");   
 }
 
 void loop() {
