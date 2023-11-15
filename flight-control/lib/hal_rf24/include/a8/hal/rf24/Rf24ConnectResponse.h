@@ -4,10 +4,10 @@
 namespace a8::hal::rf24 {
 using namespace a8::util;
 
-class Rf24ConnectRequest {
+class Rf24ConnectResponse {
 
 public:
-    static int read(Reader *reader, Rf24ConnectRequest &data) {
+    static int read(Reader *reader, Rf24ConnectResponse &data) {
         int len = 0;
         int ret = CodecUtil::readInt<int>(reader, data.node1);
         if (ret < 0) {
@@ -35,7 +35,7 @@ public:
 
         return len;
     }
-    static int write(Writer *writer, Rf24ConnectRequest &data) {
+    static int write(Writer *writer, Rf24ConnectResponse &data) {
         int len = 0;
         int ret = CodecUtil::writeInt<int>(writer, data.node1);
         if (ret < 0) {
@@ -68,9 +68,9 @@ public:
     int port1; // client port.
     int node2; // target node id;
     int port2; // target port
-    Rf24ConnectRequest() {
+    Rf24ConnectResponse() {
     }
-    ~Rf24ConnectRequest() {
+    ~Rf24ConnectResponse() {
     }
 };
 

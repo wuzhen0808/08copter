@@ -749,6 +749,9 @@ $ pacman -S mingw-w64-ucrt-x86_64-ghostscript
 ----
 
 == Appendix {counter:apx}. More References
+=== PID control
+
+http://electronoobs.com/eng_robotica_tut6_1_code1.php
 
 === AirSim
 https://github.com/microsoft/AirSim

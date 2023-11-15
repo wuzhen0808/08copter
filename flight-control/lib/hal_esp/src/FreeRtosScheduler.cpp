@@ -1,5 +1,8 @@
 #include "a8/hal/esp/FreeRtosScheduler.h"
+#include "a8/hal/esp/FreeRtosSemaphore.h"
+#include "a8/hal/esp/FreeRtosSyncQueue.h"
 #include "a8/hal/esp/FreeRtosThread.h"
+
 #include <esp32-hal.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -77,4 +80,14 @@ Timer *FreeRtosScheduler::scheduleTimer(schedule::run run, void *context, const 
     }
     return timer;
 }
+Semaphore *FreeRtosScheduler::createSemaphore(int cap, int initial) {
+    SemaphoreHandle_t handle = xSemaphoreCreateCounting(cap, initial);
+    return new FreeRtosSemaphore(handle);
+}
+
+SyncQueue* FreeRtosScheduler::createSyncQueue(int cap){
+    QueueHandle_t handle = xQueueCreate(cap, sizeof(void*));
+    return new FreeRtosSyncQueue(handle);
+}
+
 } // namespace a8::hal::esp

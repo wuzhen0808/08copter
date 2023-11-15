@@ -27,9 +27,16 @@ private:
     Rf24Hosts *hosts;
     String host;
     System *sys;
+    Scheduler *sch;
+    void run();
+    void onData(Rf24NodeData *data);
+    void handleConnectRequest(Rf24ConnectRequest *req);
+    void handleConnectResponse(Rf24ConnectResponse *resp);
+
+    void handleUserData(Rf24UserData *uData);
 
 public:
-    Rf24Sockets(int id, Rf24Hosts *hosts, System *sys, LoggerFactory *logFac);
+    Rf24Sockets(int id, Rf24Hosts *hosts, System *sys, Scheduler *sch, LoggerFactory *logFac);
 
     ~Rf24Sockets();
 

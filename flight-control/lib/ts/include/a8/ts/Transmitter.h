@@ -48,7 +48,7 @@ public:
     ~Transmitter() {
     }
 
-    virtual void boot(StagingContext *context) override {
+    void boot(StagingContext *context) override {
 
         CommonUtil::resolveProperties(argc, argv, context->properties, context->getSys());
         Component::boot(context);
@@ -82,10 +82,10 @@ public:
         //
     }
 
-    virtual void setup(StagingContext *context) override {
+    void setup(StagingContext *context) override {
         Component::setup(context);
     }
-    virtual void start(StagingContext *context) override {
+    void start(StagingContext *context) override {
         Component::start(context);
     }
 

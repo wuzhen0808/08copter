@@ -1,12 +1,15 @@
 #pragma once
+
 #include "a8/hal/rf24/Rf24ConnectRequest.h"
 #include "a8/hal/rf24/Rf24Node.h"
 #include "a8/util.h"
+#include "a8/util/schedule.h"
 
 #include "a8/util/net.h"
 
 namespace a8::hal::rf24 {
 using namespace a8::util;
+using namespace a8::util::schedule;
 enum Role {
     Unknown,
     Connector,
@@ -31,20 +34,55 @@ class Rf24Sock : FlyWeight {
     int node2; // remote node
     int port2; // remote port
     //
-    Queue<char> *queue;
     System *sys;
 
+    // TODO queue of connection requests.
+    // TODO use a lock to sync op on connectionRequest.
+    Scheduler *sch;
+    SyncQueue *connectionRequestIncomeQueue;
+    SyncQueue *connectionResponseIncomeQueue;
+    SyncQueue *userDataIncomeQueue;
+    //
+    Buffer<char> buffer;
+
 public:
-    Rf24Sock(int id, System *sys, LoggerFactory *logFac) : FlyWeight(logFac) {
+    Rf24Sock(int id, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac) {
         this->role = Role::Unknown;
         this->sys = sys;
         this->id = id;
         this->node = 0;
         this->port = 0;
-        this->queue = new Queue<char>();
+        this->sch = sch;
+        this->connectionRequestIncomeQueue = 0;
+        this->connectionResponseIncomeQueue = 0;
+        this->userDataIncomeQueue = 0;
     }
+
     ~Rf24Sock() {
-        delete this->queue;
+        if (this->connectionRequestIncomeQueue != 0) {
+            delete this->connectionRequestIncomeQueue;
+        }
+        if (this->connectionResponseIncomeQueue != 0) {
+            delete this->connectionResponseIncomeQueue;
+        }
+        if (this->userDataIncomeQueue != 0) {
+            delete this->userDataIncomeQueue;
+        }
+    }
+    int getId() {
+        return this->id;
+    }
+
+    SyncQueue *getConnectionRequestQueue() {
+        return this->connectionRequestIncomeQueue;
+    }
+
+    SyncQueue *getConnectionResponseQueue() {
+        return this->connectionResponseIncomeQueue;
+    }
+
+    SyncQueue *getUserDataQueue() {
+        return this->userDataIncomeQueue;
     }
 
     /**
@@ -52,7 +90,7 @@ public:
      * 1) before connect as a client.
      * 2) before listen as a listener.
      */
-    int bind(Rf24Node *node, int port, Result &res) {
+    int doBind(Rf24Node *node, int port, Result &res) {
         if (this->node != 0) {
             res << "cannot rebind, sock is already bind to node/port:" << node->getId() << "/" << port << "";
             return -1; // rebind not supported.
@@ -89,7 +127,9 @@ public:
         this->status = Status::Connecting;
         this->port2 = port2;
 
-        // TODO send message to remote node and port
+        // for response
+        this->connectionResponseIncomeQueue = this->sch->createSyncQueue(1);
+        // send message to remote node and port
         Rf24ConnectRequest req;
         req.node1 = this->node->getId();
         req.port1 = this->port;
@@ -104,36 +144,18 @@ public:
             this->status = Idle;
             return ret;
         }
-        ret = 0;
-        long timeout = 3000;
-        long startTime = sys->getSteadyTime();
 
-        for (int i = 0;; i++) {
-            // TODO timeout.
-            if (i > 0) {
-
-                long now = sys->getSteadyTime();
-                if (now - startTime > timeout) {
-                    res << "timeout to wait the connection response.";
-                    ret = -2;
-                    break;
-                }
-            }
-            ret = this->node->receive<Rf24Sock *>(        //
-                [](Rf24Sock *this_, Rf24NodeData *data) { //
-                    return true;
-                },       //
-                this,    //
-                timeout, //
-                res      //
-            );
+        // wait response, timeout in 5 sec.
+        Rf24ConnectResponse *resp = this->connectionResponseIncomeQueue->take<Rf24ConnectResponse>(5000);
+        if (resp == 0) {
+            this->status = Status::Idle; // allow reconnect .
+            log("failed connect, time out to receive the response from server side.");
+        } else {
+            this->userDataIncomeQueue = sch->createSyncQueue(128);
+            this->status = Status::Connected;
+            log("connect success.");
         }
 
-        if (ret < 0) {
-            return ret;
-        }
-
-        this->status = Status::Connected;
         return 1;
     }
 
@@ -145,8 +167,10 @@ public:
             res << "cannot listener, because the role(" << role << ") is not expected" << Role::Unknown;
             return -1;
         }
+        this->connectionRequestIncomeQueue = sch->createSyncQueue(1);
         this->role = Role::Listener;
         this->status = Status::Listening;
+
         return 1;
     }
     void close() {
@@ -163,7 +187,9 @@ public:
             break;
         }
     }
-
+    /**
+     * send user data
+     */
     int send(const char *buf, int len, Result &res) {
         Rf24NodeData data;
         data.type = Rf24NodeData::TYPE_Rf24UserData;
@@ -172,28 +198,23 @@ public:
         data.userData->buffer->append(buf, len);
         return this->node->send(this->node2, &data, res);
     }
-    void handleData(char *buf, int len) {
-        queue->append(buf, len);
-    }
-    bool available() {
-        return queue->len() > 0;
-    }
-
+    /**
+     * receive user data.
+     */
     int receive(char *buf, int bufLen, Result &res) {
 
-        int len = this->queue->len();
-        if (len == 0) {
-            res << "queue is empty, please update on socks and check available before read.";
-            return -1; // bug.
+        while (this->buffer.len() == 0) {
+            Rf24UserData *uData = this->userDataIncomeQueue->take<Rf24UserData>(5000);
+            if (uData == 0) {
+                log("continue to wait the user data from network.");
+                continue;
+                //
+            }
+            this->buffer.append(uData->buffer);
+            break;
         }
-        if (len > bufLen) {
-            len = bufLen;
-        }
-        for (int i = 0; i < len; i++) {
-            char ch;
-            queue->take(ch);
-            buf[i] = ch;
-        }
+        int len = Math::min(bufLen, this->buffer.len());
+        Lang::copy<char>(this->buffer.buffer(), 0, len, buf, 0);
         return len;
     }
 };

@@ -38,7 +38,8 @@ public:
         this->network = new RF24Network(*radio);
 
         if (!radio->begin()) {
-            res << "Radio hardware not responding!";
+            res << "Cannot begin radio,"
+                << "cePin:" << chipEnablePin << ",csPin:" << chipSelectPin;
             return -1;
         }
         radio->setChannel(channel);
@@ -67,59 +68,48 @@ public:
         RF24NetworkHeader header(node2);
         bool ok = this->network->write(header, wrb.buffer(), wrb.len());
         if (!ok) {
-            res << "failed write to network.";
+            res << "failed write to network, len:" << wrb.len();
             return -1;
         }
         return 1;
     }
 
     template <typename C>
-    int receive(bool (*consumer)(C c, Rf24NodeData *data), C c, long timeout, Result &res) {
+    int receive(C c, void (*consumer)(C c, Rf24NodeData *data), long timeout, Result &res) {
         this->network->update();
-        int len = 0;
         long startTime = sys->getSteadyTime();
+        int len = -1;
         for (int i = 0;; i++) {
             if (i > 0) {
                 long now = sys->getSteadyTime();
                 if (now - startTime > timeout) {
-                    res << "timeout to receive any data from newtork.";
-                    return -1;
+                    res << (String() << "timeout(" << timeout << ") to receive any data from network.");
+                    return 0;
                 }
             }
             if (!this->network->available()) {
-                if (len == 0) {
-                    this->network->update();
-                    continue;
-                } else {
-                    break;
-                }
+                this->network->update();
+                continue;
             }
 
             RF24NetworkHeader header;
             int size = this->network->peek(header);
             if (size == 0) {
-                // how to save power
-                if (len == 0) {
-                    continue;
-                } else {
-                    break;
-                }
+                continue;
             }
             char buf[size];
             int size2 = this->network->read(header, buf, size);
             if (size2 != size) {
                 res << "size of data received is not the expected.";
-                return -2;
+                return -1;
             }
             Rf24NodeData data;
             WriterReaderBuffer wrb;
             (static_cast<Writer *>(&wrb))->write(buf, size);
             Rf24NodeData::read(&wrb, data);
-            bool brk = consumer(c, &data);
-            len += size;
-            if (brk) {
-                break;
-            }
+            consumer(c, &data);
+            len = size;
+            break;
         }
         return len;
     }

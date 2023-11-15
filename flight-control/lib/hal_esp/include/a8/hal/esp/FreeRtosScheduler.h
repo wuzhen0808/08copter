@@ -25,7 +25,11 @@ public:
 
     Thread *schedule(schedule::run run, void *context) override;
 
-    Timer *scheduleTimer(schedule::run run, void *context, const Rate &rate) override ;
+    Timer *scheduleTimer(schedule::run run, void *context, const Rate &rate) override;
+
+    SyncQueue *createSyncQueue(int cap) override;
+
+    Semaphore *createSemaphore(int cap, int initial) override;
 };
 
 } // namespace a8::hal::esp
