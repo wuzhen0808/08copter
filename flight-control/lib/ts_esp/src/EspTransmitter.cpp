@@ -6,7 +6,7 @@ namespace a8::ts::esp {
 
 using namespace a8::ts;
 using namespace a8::util;
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 
 EspTransmitter::EspTransmitter(Links *links) : Transmitter("ts", 0, 0, links) {
 }

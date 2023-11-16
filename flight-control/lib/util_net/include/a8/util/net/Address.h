@@ -5,14 +5,14 @@
 #include "a8/util/net/Codec.h"
 #include "a8/util/net/Sockets.h"
 #include "a8/util/net/defines.h"
-#include "a8/util/schedule.h"
+#include "a8/util/sched.h"
 
 using stubCreate = void *(*)(a8::util::net::Channel *);
 using anyRelease = void (*)(void *);
 
 namespace a8::util::net {
 
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 
 enum Status {
     Idle,
@@ -140,7 +140,7 @@ public:
     Bridge<T> *createBridge(C context, T *(*skeletonCreate)(C), Channel *channel) {
         log(">>createBridge");
         T *skeleton = skeletonCreate(context);
-        Bridge<T> *bridge = new Bridge<T>(bridge_, skeleton, channel, loggerFactory);        
+        Bridge<T> *bridge = new Bridge<T>(bridge_, skeleton, channel, loggerFactory);
         void (*tickF)(void *) = [](void *bridge) {
             static_cast<Bridge<T> *>(bridge)->run();
         };
@@ -177,7 +177,7 @@ public:
         }
 
         SOCK sock2;
-        int ret = sockets->accept(this->sock, sock2);
+        int ret = sockets->accept(this->sock, sock2, rst);
         if (ret < 0) {
             this->sockets->close(this->sock);
             this->sock = 0;

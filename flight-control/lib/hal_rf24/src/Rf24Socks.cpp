@@ -108,7 +108,6 @@ int Rf24Socks::listen(int sId, Result &res) {
     }
     return s->listen(res);
 }
-
 int Rf24Socks::send(int sId, const char *buf, int len, Result &res) {
     Rf24Sock *s = this->get(sId, res);
     if (s == 0) {

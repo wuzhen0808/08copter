@@ -8,11 +8,11 @@
 #include "a8/hal.h"
 #include "a8/util.h"
 #include "a8/util/net.h"
-#include "a8/util/schedule.h"
+#include "a8/util/sched.h"
 
 namespace a8::fc {
 using namespace a8::util;
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 using namespace a8::util::comp;
 using namespace a8::common;
 class FlightControl : public Component {

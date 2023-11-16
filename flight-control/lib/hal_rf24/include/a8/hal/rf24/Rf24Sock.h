@@ -3,13 +3,13 @@
 #include "a8/hal/rf24/Rf24ConnectRequest.h"
 #include "a8/hal/rf24/Rf24Node.h"
 #include "a8/util.h"
-#include "a8/util/schedule.h"
+#include "a8/util/sched.h"
 
 #include "a8/util/net.h"
 
 namespace a8::hal::rf24 {
 using namespace a8::util;
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 enum Role {
     Unknown,
     Connector,
@@ -39,9 +39,9 @@ class Rf24Sock : FlyWeight {
     // TODO queue of connection requests.
     // TODO use a lock to sync op on connectionRequest.
     Scheduler *sch;
-    SyncQueue *connectionRequestIncomeQueue;
-    SyncQueue *connectionResponseIncomeQueue;
-    SyncQueue *userDataIncomeQueue;
+    SyncQueue<Rf24ConnectRequest *> *connectionRequestIncomeQueue;
+    SyncQueue<Rf24ConnectResponse *> *connectionResponseIncomeQueue;
+    SyncQueue<Rf24UserData *> *userDataIncomeQueue;
     //
     Buffer<char> buffer;
 
@@ -73,15 +73,19 @@ public:
         return this->id;
     }
 
-    SyncQueue *getConnectionRequestQueue() {
+    Status getStatus() {
+        return this->status;
+    }
+
+    SyncQueue<Rf24ConnectRequest *> *getConnectionRequestQueue() {
         return this->connectionRequestIncomeQueue;
     }
 
-    SyncQueue *getConnectionResponseQueue() {
+    SyncQueue<Rf24ConnectResponse *> *getConnectionResponseQueue() {
         return this->connectionResponseIncomeQueue;
     }
 
-    SyncQueue *getUserDataQueue() {
+    SyncQueue<Rf24UserData *> *getUserDataQueue() {
         return this->userDataIncomeQueue;
     }
 
@@ -128,7 +132,7 @@ public:
         this->port2 = port2;
 
         // for response
-        this->connectionResponseIncomeQueue = this->sch->createSyncQueue(1);
+        this->connectionResponseIncomeQueue = this->sch->createSyncQueue<Rf24ConnectResponse *>(1);
         // send message to remote node and port
         Rf24ConnectRequest req;
         req.node1 = this->node->getId();
@@ -140,18 +144,18 @@ public:
         data.connectionRequest->node1 = this->node->getId();
         data.connectionRequest->port1 = this->port;
         int ret = this->node->send(node2, &data, res);
-        if (ret < 0) {
+        if (ret < 0) {           
             this->status = Idle;
             return ret;
         }
 
         // wait response, timeout in 5 sec.
-        Rf24ConnectResponse *resp = this->connectionResponseIncomeQueue->take<Rf24ConnectResponse>(5000);
+        Rf24ConnectResponse *resp = this->connectionResponseIncomeQueue->take(5000, 0);
         if (resp == 0) {
             this->status = Status::Idle; // allow reconnect .
             log("failed connect, time out to receive the response from server side.");
         } else {
-            this->userDataIncomeQueue = sch->createSyncQueue(128);
+            this->userDataIncomeQueue = sch->createSyncQueue<Rf24UserData *>(128);
             this->status = Status::Connected;
             log("connect success.");
         }
@@ -167,7 +171,7 @@ public:
             res << "cannot listener, because the role(" << role << ") is not expected" << Role::Unknown;
             return -1;
         }
-        this->connectionRequestIncomeQueue = sch->createSyncQueue(1);
+        this->connectionRequestIncomeQueue = sch->createSyncQueue<Rf24ConnectRequest *>(1);
         this->role = Role::Listener;
         this->status = Status::Listening;
 
@@ -204,7 +208,7 @@ public:
     int receive(char *buf, int bufLen, Result &res) {
 
         while (this->buffer.len() == 0) {
-            Rf24UserData *uData = this->userDataIncomeQueue->take<Rf24UserData>(5000);
+            Rf24UserData *uData = this->userDataIncomeQueue->take(5000, 0);
             if (uData == 0) {
                 log("continue to wait the user data from network.");
                 continue;

@@ -8,7 +8,10 @@
 void setup() {
     using a8::util::String;
     using namespace a8::util;
-    Serial.begin(9600);
+    Serial.begin(115200);
+    while(Serial.available()){
+        Serial.read();
+    }
     Wire.begin();
 
     delay(1000);

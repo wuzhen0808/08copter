@@ -4,7 +4,7 @@
 namespace a8::fc::esp {
 using namespace a8::fc;
 using namespace a8::util;
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 
 EspFlightControl::EspFlightControl(Links *links) : FlightControl("fcs", 0, 0, links, 4) {
     this->servoAttachPins = new int[4]{3, 5, 9, 11};

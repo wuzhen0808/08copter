@@ -1,6 +1,6 @@
 #pragma once
-#include "a8/util/schedule/Semaphore.h"
-namespace a8::util::schedule {
+#include "a8/util/sched/Semaphore.h"
+namespace a8::util::sched {
 class Lock {
     Semaphore *sem;
 
@@ -45,4 +45,4 @@ public:
         return 1;
     }
 };
-} // namespace a8::util::schedule
+} // namespace a8::util::sched

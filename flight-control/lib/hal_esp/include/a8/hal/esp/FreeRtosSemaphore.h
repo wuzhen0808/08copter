@@ -1,12 +1,12 @@
 #pragma once
 #include "a8/util.h"
-#include "a8/util/schedule.h"
+#include "a8/util/sched.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 
 namespace a8::hal::esp {
 using namespace a8::util;
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 
 class FreeRtosSemaphore : public Semaphore {
 private:

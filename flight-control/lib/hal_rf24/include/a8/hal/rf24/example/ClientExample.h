@@ -1,6 +1,8 @@
 
 #pragma once
 #include "a8/hal/rf24.h"
+#include "a8/hal/rf24/example/BaseExample.h"
+
 #include "a8/util.h"
 #include "a8/util/net.h"
 
@@ -12,8 +14,7 @@ using namespace a8::hal::rf24;
 using namespace a8;
 using a8::util::String;
 
-class TwoWire;
-class MyTimer {
+class ClientTimer {
 
 public:
     Sockets *sockets;
@@ -27,7 +28,7 @@ public:
     SOCK sock = 0;
     bool connected = false;
 
-    MyTimer(Sockets *sockets, String host, int port, Logger *logger, Scheduler *sch, String host2, int port2) {
+    ClientTimer(Sockets *sockets, String host, int port, Logger *logger, Scheduler *sch, String host2, int port2) {
         this->sockets = sockets;
         this->host = host;
         this->port = port;
@@ -44,7 +45,7 @@ public:
         Result res;
         int ret = tick(res);
         if (ret < 0) {
-            log(res.errorMessage);
+            log(String() << "tick failed; detail:" << res.errorMessage);
         }
     }
     int tick(Result &res) {
@@ -58,65 +59,41 @@ public:
             sock = s1;
         }
         if (!connected) {
+            log(String() << "connecting to host:" << host2 << ",port:" << port2);
             ret = this->sockets->connect(sock, host2, port2, res);
             if (ret < 0) {
+                res << ";failed connect, retry next tick;";
                 return ret;
             }
+            log(String() << "connected to host:" << host2 << ",port:" << port2);
         }
         char buf[1] = {'1'};
         ret = this->sockets->send(sock, buf, 1, res);
         if (ret < 0) {
+            res << "sending failed.";
             return ret;
         }
 
         return 1;
     }
 };
-class ClientExample {
-
-    System *sys;
-    LoggerFactory *logFac;
-    Scheduler *sch;
+class ClientExample : public BaseExample {
 
 public:
-    ClientExample(
-        System *sys,
-        LoggerFactory *logFac,
-        Scheduler *sch) {
-        this->sys = sys;
-        this->logFac = logFac;
-        this->sch = sch;
+    ClientExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample(sys, logFac, sch) {
     }
 
     int start(Result &res) {
         using a8::util::String;
-
-        Logger *logger = logFac->getLogger();
-
-        String tsHost = "ts";
-        int tsNode = 00;
-        int tsPort = 1;
-
-        String fcHost = "fc";
-        int fcNode = 01;
-        int fcPort = 1;
-
-        Rf24Hosts *hosts = new Rf24Hosts();
-        hosts->set(tsHost, tsNode);
-        hosts->set(fcHost, fcNode);
-
-        Rf24Sockets *sockets = new Rf24Sockets(00, hosts, sys, sch, logFac);
-
-        int ret = sockets->setup(9, 10, 90, res);
+        int ret = BaseExample::setup(this->clientNode, res);
         if (ret < 0) {
-            delete sockets;
-            return -1;
+            return ret;
         }
-        MyTimer *rc = new MyTimer(sockets, tsHost, tsPort, logger, sch, fcHost, fcPort);
 
-        sch->scheduleTimer(1.0f, rc, [](void *c) {
-            MyTimer *mt = static_cast<MyTimer *>(c);
-            mt->tick();
+        ClientTimer *rc = new ClientTimer(sockets, client, clientPort, logger, sch, server, serverPort);
+
+        sch->createTimer<ClientTimer *>(1.0f, rc, [](ClientTimer *ct) {
+            ct->tick();
         });
 
         logger->info("startSchedule");

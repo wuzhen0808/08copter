@@ -1,21 +1,21 @@
 #pragma once
 #include "a8/util.h"
-#include "a8/util/schedule.h"
+#include "a8/util/sched.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
 namespace a8::hal::freertos {
 using namespace a8::util;
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 
 class FreeRtosThread : public Thread {
 private:
-    schedule::run run_;
+    sched::run run_;
     void *context;
     TaskHandle_t handle;
 
 public:
-    FreeRtosThread(schedule::run runF, void *contextF) {
+    FreeRtosThread(sched::run runF, void *contextF) {
         this->run_ = runF;
         this->context = contextF;
     }

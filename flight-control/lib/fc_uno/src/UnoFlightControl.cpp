@@ -5,7 +5,7 @@
 namespace a8::fc::uno {
 using namespace a8::fc;
 using namespace a8::util;
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 
 UnoFlightControl::UnoFlightControl(Links *links) : FlightControl("fcs", 0, 0, links, 4) {
     this->servoAttachPins = new int[4]{3, 5, 9, 11};

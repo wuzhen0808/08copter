@@ -26,7 +26,7 @@ void timerCallback(TimerHandle_t handle) {
  * After changed the creation method to xTaskCreatePinnedToCore(or xTaskCreateUniversal which is declared by header esp32-hal.h) the error disappeared.
  *
  */
-Thread *FreeRtosScheduler::schedule(schedule::run run, void *context) {
+Thread *FreeRtosScheduler::schedule(void *context, sched::run run) {
     FreeRtosThread *thread = new FreeRtosThread(run, context);
     TaskHandle_t handle = 0;
 
@@ -34,7 +34,7 @@ Thread *FreeRtosScheduler::schedule(schedule::run run, void *context) {
         xTaskCreate(
             taskCallback,
             "MyTask",
-            521 / 4, // usStackDepth in words
+            1024, // usStackDepth in words
             thread,  // pvParameters
             1,       // uxPriority
             &handle  // pxCreatedTask
@@ -48,7 +48,7 @@ Thread *FreeRtosScheduler::schedule(schedule::run run, void *context) {
     return thread;
 }
 
-Timer *FreeRtosScheduler::scheduleTimer(schedule::run run, void *context, const Rate &rate) {
+Timer *FreeRtosScheduler::scheduleTimer(sched::run run, void *context, const Rate &rate) {
     FreeRtosTimer *timer = new FreeRtosTimer(run, context, rate);
     TimerHandle_t handle = 0;
     long ticks = configTICK_RATE_HZ / rate.Hz();
@@ -70,8 +70,8 @@ Semaphore *FreeRtosScheduler::createSemaphore(int cap, int initial) {
     return new FreeRtosSemaphore(handle);
 }
 
-SyncQueue *FreeRtosScheduler::createSyncQueue(int cap) {
-    QueueHandle_t handle = xQueueCreate(cap, sizeof(void *));
+SyncQueue<void*> *FreeRtosScheduler::doCreateSyncQueue(int cap, int itemSize) {
+    QueueHandle_t handle = xQueueCreate(cap, itemSize);
     return new FreeRtosSyncQueue(handle);
 }
 

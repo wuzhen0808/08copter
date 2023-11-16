@@ -11,7 +11,7 @@ Rf24Sockets::Rf24Sockets(int id, Rf24Hosts *hosts, System *sys, Scheduler *sch, 
     this->hosts = hosts;
     this->host = host;
     this->ports = new Rf24Ports();
-    this->node = new Rf24Node(hosts, id, sys, logFac);
+    this->node = new Rf24Node(hosts, id, sys, sch, logFac);
     this->socks = new Rf24Socks(node, hosts, ports, logFac);
     this->sys = sys;
     this->sch = sch;
@@ -25,9 +25,11 @@ Rf24Sockets::~Rf24Sockets() {
 
 int Rf24Sockets::setup(int chipEnablePin, int chipSelectPin, int channel, Result &res) {
     int ret = this->node->setup(chipEnablePin, chipSelectPin, channel, res);
-    this->sch->schedule(this, [](void *this_) {
-        Rf24Sockets *this__ = static_cast<Rf24Sockets *>(this_);
-        this__->run();
+    if (ret < 0) {
+        return ret;
+    }
+    this->sch->createTask<Rf24Sockets *>(this, [](Rf24Sockets *this_) {
+        this_->run();
     });
     return ret;
 }
@@ -44,12 +46,9 @@ void Rf24Sockets::run() {
             },
             1000, res);
 
-        if (ret == 0) { // timeout
-            continue;
-        }
         if (ret < 0) {
-            log("failed to receive data from network.");
-            break;
+            // timeout?
+            continue;
         }
     }
     log("RF24 sockets work thread exited!");
@@ -72,10 +71,10 @@ void Rf24Sockets::onData(Rf24NodeData *data) {
 }
 
 void Rf24Sockets::handleConnectRequest(Rf24ConnectRequest *req) {
-    log(String() << "handleConnectRequest," << req->node1 + ":" << req->port1);
+    log(String() << "handleConnectRequest,node1:" << req->node1 << ",port1:" << req->port1 << ",node2:" << req->node2 << ",port2:" << req->port2);
     if (req->node2 != this->node->getId()) {
         // ignore
-        log("ignore the connection request for target node id is not match.");
+        log(String() << "ignore the connection request for node2(" << req->node2 << ") is not match local node(" << this->node->getId() << ").");
         return;
     }
     Rf24Sock *s = this->socks->findByPort(req->port2);
@@ -86,7 +85,7 @@ void Rf24Sockets::handleConnectRequest(Rf24ConnectRequest *req) {
         return;
     }
 
-    SyncQueue *queue = s->getConnectionRequestQueue();
+    SyncQueue<Rf24ConnectRequest *> *queue = s->getConnectionRequestQueue();
 
     int ret = queue->offer(req, 1000);
     if (ret < 0) {
@@ -109,7 +108,7 @@ void Rf24Sockets::handleConnectResponse(Rf24ConnectResponse *resp) {
         return;
     }
 
-    SyncQueue *queue = s->getConnectionResponseQueue();
+    SyncQueue<Rf24ConnectResponse *> *queue = s->getConnectionResponseQueue();
 
     int ret = queue->offer(resp, 1000);
     if (ret < 0) {
@@ -146,21 +145,29 @@ int Rf24Sockets::listen(SOCK sock, Result &res) {
 /**
  * Accept one good incoming connection, ignore the bad connections if necessary.
  */
-int Rf24Sockets::accept(SOCK sock, SOCK &sockIn) {
+int Rf24Sockets::accept(SOCK sock, SOCK &sockIn, Result &res) {
     log(String() << "accepting... sock:" << sock);
     Rf24Sock *s = this->socks->get(sock);
     if (s == 0) {
         // no such sock.
-        log(String() << "fail to accept, no such sock:" << sock);
+        res << "fail to accept, no such sock:" << sock;
         return -1; //
     }
+    Status status = s->getStatus();
+    if (status != Status::Listening) {
+        res << "sock status" << status << " is not Listening, please call listen before accept.";
+        return -1;
+    }
 
-    
-    SyncQueue *queue = s->getConnectionRequestQueue();
+    SyncQueue<Rf24ConnectRequest *> *queue = s->getConnectionRequestQueue();
+    if (queue == 0) {
+        res << "queue is 0.";
+        return -1;
+    }
+    int loops = 0;
     while (true) {
-        log("taking request from queue.");
-        Rf24ConnectRequest *req = queue->take<Rf24ConnectRequest>(1000);
-        log("taken request from queue.");
+        log(String() << "taking request from queue,loop:" << loops++);
+        Rf24ConnectRequest *req = queue->take(1000, 0);
         if (req == 0) {
             log("timeout and continue to wait a connect request.");
             continue;

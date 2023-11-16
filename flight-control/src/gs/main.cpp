@@ -16,7 +16,7 @@ using namespace a8::hal;
 using namespace a8::hal::native;
 using namespace a8::gs;
 using namespace a8::hal::freertos;
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 
 System *a8::hal::S = new NativeSystem();
 

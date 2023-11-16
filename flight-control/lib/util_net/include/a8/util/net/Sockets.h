@@ -21,7 +21,7 @@ public:
 
     virtual int listen(SOCK sock, Result &rst) = 0;
 
-    virtual int accept(SOCK sock, SOCK &sockIn) = 0;
+    virtual int accept(SOCK sock, SOCK &sockIn, Result &res) = 0;
 
     virtual int close(SOCK sock) = 0;
 

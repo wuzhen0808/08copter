@@ -3,7 +3,7 @@
 
 namespace a8::util::comp {
 using namespace a8::util;
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 
 template <class T>
 class WrapperComponent : public Component {

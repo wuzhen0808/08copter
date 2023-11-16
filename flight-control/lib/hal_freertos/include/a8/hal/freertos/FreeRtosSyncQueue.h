@@ -1,14 +1,14 @@
 #pragma once
 #include "FreeRTOS.h"
 #include "a8/util.h"
-#include "a8/util/schedule.h"
+#include "a8/util/sched.h"
 #include "queue.h"
 
 namespace a8::hal::freertos {
 using namespace a8::util;
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 
-class FreeRtosSyncQueue : public SyncQueue {
+class FreeRtosSyncQueue : public SyncQueue<void *> {
 private:
     QueueHandle_t handle;
 
@@ -20,26 +20,31 @@ public:
     ~FreeRtosSyncQueue() {
     }
 
-    int offer(void *ele, long timeout) {
+    int offer(void *eleP, long timeout) {
         long ticks = timeout / portTICK_PERIOD_MS;
-        BaseType_t ret = xQueueSend(handle, ele, ticks);
+        BaseType_t ret = xQueueSend(handle, eleP, ticks);
         if (ret != pdTRUE) {
             return -1;
         }
         return 1;
     }
 
-    int take(void *&ele, long timeout) {
-        void *pEle;
-        long ticks = timeout / portTICK_PERIOD_MS;
-        if (ticks == 0) {
-            ticks = 1; // at lest 1 tick.
-        }
-        BaseType_t ret = xQueueReceive(handle, pEle, ticks);
+    int take(void *&eleP, long timeout) {
+        long ticks = timeout / portTICK_PERIOD_MS;        
+        BaseType_t ret = xQueueReceive(handle, eleP, ticks);
         if (ret != pdTRUE) {
             return -1;
         }
-        ele = pEle;
+        return 1;
+    }
+
+    
+    int peek(void *&eleP, long timeout) {
+        long ticks = timeout / portTICK_PERIOD_MS;        
+        BaseType_t ret = xQueuePeek(handle, eleP, ticks);
+        if (ret != pdTRUE) {
+            return -1;
+        }
         return 1;
     }
 };

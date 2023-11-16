@@ -23,7 +23,7 @@ public:
         hosts->set(tsHost, tsNode);
         hosts->set(fcHost, fcNode);
 
-        Rf24Sockets *sockets = new Rf24Sockets(00, hosts, sys, logFac);
+        Rf24Sockets *sockets = new Rf24Sockets(00, hosts, sys, sch, logFac);
 
         int ret = sockets->setup(9, 10, 90, res);
         if (ret < 0) {
@@ -35,6 +35,5 @@ public:
         links->build();
         return links;
     }
-
 };
 } // namespace a8

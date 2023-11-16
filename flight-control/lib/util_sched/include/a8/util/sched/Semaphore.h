@@ -1,7 +1,7 @@
 #pragma once
 #include "a8/util.h"
 
-namespace a8::util::schedule {
+namespace a8::util::sched {
 using namespace a8::util;
 class Semaphore {
 public:
@@ -11,4 +11,4 @@ public:
     virtual int give(Result &res) = 0;    
 };
 
-} // namespace a8::util::schedule
+} // namespace a8::util::sched

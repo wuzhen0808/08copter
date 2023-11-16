@@ -1,12 +1,15 @@
 #pragma once
 #include "a8/hal/esp/FreeRtosTimer.h"
-#include "a8/util/schedule.h"
+#include "a8/util/sched.h"
 
 namespace a8::hal::esp {
 using namespace a8::util;
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 
 class FreeRtosScheduler : public Scheduler {
+protected:
+    SyncQueue<void *> *doCreateSyncQueue(int cap, int itemSize) override;
+
 public:
     FreeRtosScheduler() : Scheduler() {
     }
@@ -23,11 +26,9 @@ public:
         // vTaskEndScheduler();
     }
 
-    Thread *schedule(schedule::run run, void *context) override;
+    Thread *schedule(void *context, sched::run run) override;
 
-    Timer *scheduleTimer(schedule::run run, void *context, const Rate &rate) override;
-
-    SyncQueue *createSyncQueue(int cap) override;
+    Timer *scheduleTimer(sched::run run, void *context, const Rate &rate) override;
 
     Semaphore *createSemaphore(int cap, int initial) override;
 };

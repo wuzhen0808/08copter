@@ -3,10 +3,10 @@
 #include "a8/util/comp/Component.h"
 #include "a8/util/comp/StagingContext.h"
 #include "a8/util/comp/TickRunner.h"
-#include "a8/util/schedule.h"
+#include "a8/util/sched.h"
 namespace a8::util::comp {
 using namespace a8::util;
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 
 /**
  * Application is the typical implementation of a root component.

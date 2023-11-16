@@ -1,6 +1,6 @@
 #pragma once
 
-namespace a8::util::schedule {
+namespace a8::util::sched {
 class Thread {
 public:
     Thread() {
@@ -9,4 +9,4 @@ public:
     }
 };
 
-} // namespace a8::util::schedule
+} // namespace a8::util::sched

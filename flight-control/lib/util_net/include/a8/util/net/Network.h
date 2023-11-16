@@ -3,11 +3,11 @@
 #include "a8/util/net/Channel.h"
 #include "a8/util/net/Bridge.h"
 #include "a8/util/net/SimpleCodec.h"
-#include "a8/util/schedule.h"
+#include "a8/util/sched.h"
 
 
 namespace a8::util::net {
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 
 /**
  *  Network is a utility wrapper on top of socket.

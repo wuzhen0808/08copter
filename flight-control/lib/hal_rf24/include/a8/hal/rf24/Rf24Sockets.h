@@ -50,7 +50,7 @@ public:
 
     int listen(SOCK sock, Result &rst) override;
 
-    int accept(SOCK sock, SOCK &sockIn) override;
+    int accept(SOCK sock, SOCK &sockIn, Result& res) override;
 
     bool send(SOCK sock, const char *buf, int len, Result &res) override;
 

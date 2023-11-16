@@ -4,11 +4,11 @@
 #include "a8/util/comp/Component.h"
 #include "a8/util/comp/StagingContext.h"
 #include "a8/util/comp/TickingContext.h"
-#include "a8/util/schedule.h"
+#include "a8/util/sched.h"
 
 namespace a8::util::comp {
 using namespace a8::util;
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 
 class TickRunner : public FlyWeight {
     using tickHandle = void (*)(TickingContext *, void *, void *); // ticking, component, handle

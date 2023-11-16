@@ -1,19 +1,17 @@
 #pragma once
 #include "a8/hal/rf24.h"
+#include "a8/hal/rf24/example/BaseExample.h"
 #include "a8/util.h"
-#include "a8/util/comp.h"
 #include "a8/util/net.h"
-
 namespace a8::hal::rf24::example {
 
 using namespace a8::util;
 using namespace a8::util::net;
-using namespace a8::util::schedule;
+using namespace a8::util::sched;
 using namespace a8::hal::rf24;
 using namespace a8;
 using a8::util::String;
 
-class TwoWire;
 class YourTask {
 public:
     SOCK sock;
@@ -44,7 +42,7 @@ public:
         return 1;
     }
 };
-class MyTask {
+class ServerTask {
 
 public:
     Sockets *sockets;
@@ -52,7 +50,7 @@ public:
     int port;
     Logger *logger;
     Scheduler *sch;
-    MyTask(Sockets *sockets, String host, int port, Logger *logger, Scheduler *sch) {
+    ServerTask(Sockets *sockets, String host, int port, Logger *logger, Scheduler *sch) {
         this->sockets = sockets;
         this->host = host;
         this->port = port;
@@ -65,14 +63,14 @@ public:
     void run() {
         log("MyTask::run()");
         Result res;
-        int ret = run(res);
+        int ret = doRun(res);
         if (ret < 0) {
             log(res.errorMessage);
         }
         log("done of my task.");
     }
 
-    int run(Result &res) {
+    int doRun(Result &res) {
 
         SOCK s1 = 0;
         int ret = sockets->socket(s1);
@@ -86,11 +84,17 @@ public:
             res << ";failed bind to " << host << ":" << port;
             return ret;
         }
+        ret = sockets->listen(s1, res);
+        if (ret < 0) {
+            res << ";failed listen";
+            return ret;
+        }
+
         log(String() << "bind to host:" << host << ":" << port);
         while (true) {
 
             SOCK s2 = 0;
-            ret = sockets->accept(s1, s2);
+            ret = sockets->accept(s1, s2, res);
             if (ret < 0) {
                 res << ";failed to accept connect.";
                 return ret;
@@ -105,48 +109,22 @@ public:
         return 1;
     }
 };
-class ServerExample {
-public:
-    System *sys;
-    LoggerFactory *logFac;
-    Scheduler *sch;
 
-    ServerExample(System *sys,
-                  LoggerFactory *logFac,
-                  Scheduler *sch) {
-        this->sys = sys;
-        this->logFac = logFac;
-        this->sch = sch;
+class ServerExample : public BaseExample {
+public:
+    ServerExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample(sys, logFac, sch) {
     }
     int start(Result &res) {
         using a8::util::String;
-
-        Logger *logger = logFac->getLogger();
-
-        String tsHost = "ts";
-        int tsNode = 00;
-        int tsPort = 1;
-
-        String fcHost = "fc";
-        int fcNode = 01;
-        int fcPort = 1;
-
-        Rf24Hosts *hosts = new Rf24Hosts();
-        hosts->set(tsHost, tsNode);
-        hosts->set(fcHost, fcNode);
-
-        Rf24Sockets *sockets = new Rf24Sockets(01, hosts, sys, sch, logFac);
-
-        int ret = sockets->setup(9, 10, 90, res);
+        int ret = BaseExample::setup(this->serverNode, res);
         if (ret < 0) {
-            res << ";failed to setup sockets on RF24 radio network.";
-            delete sockets;
-            return -1;
+            return ret;
         }
-        MyTask *rc = new MyTask(sockets, fcHost, fcPort, logger, sch);
+
+        ServerTask *rc = new ServerTask(sockets, server, serverPort, logger, sch);
         rc->sockets = sockets;
         sch->schedule(rc, [](void *c) {
-            MyTask *mt = static_cast<MyTask *>(c);
+            ServerTask *mt = static_cast<ServerTask *>(c);
             mt->run();
         });
 
