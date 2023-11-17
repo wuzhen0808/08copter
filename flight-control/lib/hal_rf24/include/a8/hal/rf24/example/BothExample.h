@@ -16,7 +16,7 @@ using a8::util::String;
 
 class BothExample : public BaseExample {
 public:
-    BothExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample(sys, logFac, sch) {
+    BothExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample("BothExample", sys, logFac, sch) {
     }
     int start(Result &res) {
         using a8::util::String;
@@ -27,14 +27,14 @@ public:
         if (ret < 0) {
             return ret;
         }
-
-        ServerTask *st = new ServerTask(sockets, server, serverPort, logger, sch);
+        Logger *log1 = logFac->getLogger("ServerTask");
+        ServerTask *st = new ServerTask(sockets, server, serverPort, log1, sch);
 
         sch->createTask<ServerTask *>(st, [](ServerTask *st) {
             st->run();
         });
-
-        ClientTimer *ct = new ClientTimer(sockets, client, clientPort, logger, sch, server, serverPort);
+        Logger *log2 = logFac->getLogger("ClientTimer");
+        ClientTimer *ct = new ClientTimer(sockets, client, clientPort, log2, sch, server, serverPort);
 
         sch->createTimer<ClientTimer *>(1.0f, ct, [](ClientTimer *ct) {
             ct->tick();

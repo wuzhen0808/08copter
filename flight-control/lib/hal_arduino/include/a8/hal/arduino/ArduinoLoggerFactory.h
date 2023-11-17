@@ -11,13 +11,13 @@ class ArduinoLoggerFactory : public LoggerFactory {
 public:
     ArduinoLoggerFactory(System *sys) {
         this->sys = sys;
-        MultiWriter* mw = new MultiWriter();
+        MultiWriter *mw = new MultiWriter();
         OutputWriter *ow = new OutputWriter(sys->out);
         mw->add(ow);
 
         defaultLogger = new WriterLogger("default", mw, sys);
     }
-    virtual Logger *getLogger(const String &name) override {
+    Logger *getRootLogger() override {
         return defaultLogger;
     }
 };

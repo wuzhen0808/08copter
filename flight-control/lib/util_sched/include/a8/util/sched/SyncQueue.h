@@ -5,9 +5,14 @@ namespace a8::util::sched {
 using namespace a8::util;
 template <typename T>
 class SyncQueue {
+    
 public:
-    SyncQueue() {}
-    ~SyncQueue() {}
+    SyncQueue() {
+
+    }
+    ~SyncQueue() {
+
+    }
 
     T take(long timeout, T def) {
         T rt;

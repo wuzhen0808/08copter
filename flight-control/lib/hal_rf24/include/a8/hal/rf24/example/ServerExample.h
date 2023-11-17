@@ -61,13 +61,13 @@ public:
         logger->info(msg);
     }
     void run() {
-        log("MyTask::run()");
+        log("ServerExample - run()");
         Result res;
         int ret = doRun(res);
         if (ret < 0) {
             log(res.errorMessage);
         }
-        log("done of my task.");
+        log("ServerExample - done of my task.");
     }
 
     int doRun(Result &res) {
@@ -112,7 +112,7 @@ public:
 
 class ServerExample : public BaseExample {
 public:
-    ServerExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample(sys, logFac, sch) {
+    ServerExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample("ServerExample", sys, logFac, sch) {
     }
     int start(Result &res) {
         using a8::util::String;

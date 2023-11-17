@@ -28,13 +28,9 @@ private:
     String host;
     System *sys;
     Scheduler *sch;
-    void run();
-    void onData(Rf24NodeData *data);
-    void handleConnectRequest(Rf24ConnectRequest *req);
-    void handleConnectResponse(Rf24ConnectResponse *resp);
 
-    void handleUserData(Rf24UserData *uData);
-
+    void onNetData(Rf24NetData *data);
+    
 public:
     Rf24Sockets(int id, Rf24Hosts *hosts, System *sys, Scheduler *sch, LoggerFactory *logFac);
 
@@ -50,7 +46,7 @@ public:
 
     int listen(SOCK sock, Result &rst) override;
 
-    int accept(SOCK sock, SOCK &sockIn, Result& res) override;
+    int accept(SOCK sock, SOCK &sockIn, Result &res) override;
 
     bool send(SOCK sock, const char *buf, int len, Result &res) override;
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "a8/hal/rf24/Rf24NodeData.h"
+#include "a8/hal/rf24/Rf24NetData.h"
 #include "a8/util.h"
 #include "a8/util/sched.h"
 
@@ -10,11 +10,11 @@ using namespace a8::util::sched;
 using namespace a8::util;
 
 struct SendingTask {
-    Rf24NodeData *data;
+    Rf24NetData *data;
     int node2;
     SyncQueue<int> *ret;
     Result rst;
-    SendingTask(int node2, Rf24NodeData *data, SyncQueue<int> *ret) {
+    SendingTask(int node2, Rf24NetData *data, SyncQueue<int> *ret) {
         this->data = data;
         this->node2 = node2;
         this->ret = ret;
@@ -24,11 +24,13 @@ struct SendingTask {
 };
 
 class Rf24Net : public FlyWeight {
+    using nodeDataHandler = void (*)(void *, Rf24NetData *);
     RF24 *radio;
     RF24Network *network;
     int nodeId;
     Scheduler *sch;
-    SyncQueue<Rf24NodeData *> *receivingQueue;
+    void *nodeDataHandlerContext;
+    nodeDataHandler nodeDataHandler_;
     SyncQueue<SendingTask *> *sendingQueue;
 
 public:
@@ -36,7 +38,6 @@ public:
         this->radio = radio;
         this->network = new RF24Network(*radio);
         this->sch = sch;
-        this->receivingQueue = 0;
         this->sendingQueue = 0;
     }
 
@@ -44,21 +45,10 @@ public:
         delete this->network;
     }
 
-    template <typename C>
-    int receive(C c, void (*consumer)(C c, Rf24NodeData *data), long timeout, Result &res) {
-        Rf24NodeData *data = this->receivingQueue->take(timeout, 0);
-        if (data == 0) {
-            res << "timeout to take data from receiving queue.";
-            return -1;
-        }
-        consumer(c, data);
-        delete data;
-        return 1;
-    }
-
-    void begin(int nodeId) {
+    void begin(int nodeId, void *context, nodeDataHandler handler) {
         this->nodeId = nodeId;
-        this->receivingQueue = sch->createSyncQueue<Rf24NodeData *>(128);
+        this->nodeDataHandlerContext = context;
+        this->nodeDataHandler_ = handler;
         this->sendingQueue = sch->createSyncQueue<SendingTask *>(128);
 
         this->network->begin(nodeId);
@@ -76,7 +66,7 @@ public:
                 if (st == 0) {
                     break;
                 }
-                handle(st);
+                handleSendingTask(st);
             }
             // receive in
             while (this->network->available()) {
@@ -90,23 +80,17 @@ public:
                 if (size2 != size) {
                     log(String() << "size of data received is not the expected.");
                 }
-                Rf24NodeData *data = new Rf24NodeData();
+                Rf24NetData *data = new Rf24NetData();
                 WriterReaderBuffer wrb;
                 (static_cast<Writer *>(&wrb))->write(buf, size);
-                Rf24NodeData::read(&wrb, *data);
-                while (true) {
-                    int ret = this->receivingQueue->offer(data, 1000 * 10);
-                    if (ret < 0) {
-                        log("timeout to offer data to queue, retrying.");
-                        continue;
-                    }
-                    break;
-                }
+                Rf24NetData::read(&wrb, *data);
+                this->handleNetData(data);
+                delete data;
             }
         }
     }
 
-    int send(int node2, Rf24NodeData *data, Result &res) {
+    int send(int node2, Rf24NetData *data, Result &res) {
 
         SyncQueue<int> *resultQueue = sch->createSyncQueue<int>(1);
         SendingTask *st = new SendingTask(node2, data, resultQueue);
@@ -131,9 +115,8 @@ public:
                 log("timeout to take the sending result, retrying.");
                 continue;
             }
-            log(String() << "got the sending result,ret:" << ret);
             if (ret < 0) {
-                res << st->rst.errorMessage;
+                res << "failed to send, detail:" << st->rst.errorMessage;
             }
 
             break;
@@ -141,35 +124,39 @@ public:
 
         return ret;
     }
-    void handle(SendingTask *st) {
-        int ret = handle(st, st->rst);
+    void handleSendingTask(SendingTask *st) {
+        int ret = handleSendingTask(st, st->rst);
         int ret2 = st->ret->offer(ret, 1000 * 10);
         if (ret2 < 0) {
             log("fatal error, failed to offer the sending result to caller.");
         }
     }
 
-    int handle(SendingTask *st, Result &res) {
-        if (st->node2 == this->nodeId) {
-            int ret = this->receivingQueue->offer(st->data, 1000 * 10);
-            if (ret < 0) {
-                res << "failed to sending data to local receiving queue.";
-                return -1;
-            }
-            return 1;
-        }
+    void handleNetData(Rf24NetData *data) {
+        this->nodeDataHandler_(this->nodeDataHandlerContext, data);
+    }
 
+    int handleSendingTask(SendingTask *st, Result &res) {
         WriterReaderBuffer wrb;
-        int ret = Rf24NodeData::write(&wrb, *st->data);
+        int ret = Rf24NetData::write(&wrb, *st->data);
 
         if (ret < 0) {
             res << "failed to encode data to send out.";
             return ret;
         }
+        if (st->node2 == this->nodeId) {
+            Rf24NetData data2;
+            ret = Rf24NetData::read(&wrb, data2);
+            if (ret < 0) {
+                res << "failed to decode data for local node data.";
+                return ret;
+            }
+            handleNetData(&data2);
+            return 1;
+        }
         RF24NetworkHeader header(st->node2);
         bool ok = this->network->write(header, wrb.buffer(), wrb.len());
         if (!ok) {
-            log("failed write to network");
             res << "failed write to network, len:" << wrb.len();
             return -1;
         }

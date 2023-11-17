@@ -33,9 +33,11 @@ public:
     Logger *logger;
     Rf24Hosts *hosts;
     Rf24Sockets *sockets;
-    BaseExample(System *sys,
+    String name;
+    BaseExample(String name, System *sys,
                 LoggerFactory *logFac,
                 Scheduler *sch) {
+        this->name = name;
         this->sys = sys;
         this->logFac = logFac;
         this->sch = sch;
@@ -51,7 +53,7 @@ public:
 
     int setup(int nodeId, Result &res) {
         using a8::util::String;
-        logger = logFac->getLogger();
+        logger = logFac->getLogger(this->name);
         hosts = buildHosts();
 
         sockets = new Rf24Sockets(nodeId, hosts, sys, sch, logFac);

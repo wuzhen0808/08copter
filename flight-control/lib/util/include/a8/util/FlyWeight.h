@@ -11,7 +11,12 @@ protected:
 public:
     FlyWeight(LoggerFactory *logFac) {
         this->loggerFactory = logFac;
-        this->logger = logFac->getLogger("default");
+        this->logger = logFac->getLogger("Unknown");
+    }
+
+    FlyWeight(LoggerFactory *logFac, String name) {
+        this->loggerFactory = logFac;
+        this->logger = logFac->getLogger(name);
     }
 
     virtual ~FlyWeight() {

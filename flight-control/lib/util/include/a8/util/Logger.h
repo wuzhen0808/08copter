@@ -27,8 +27,7 @@ public:
     ~Logger() {
     }
 
-    virtual void log(Level level, const String &msg) {
-    }
+    virtual void log(Level level, const String &msg) = 0;
 
     void error(const String &msg) {
         log(Error, msg);

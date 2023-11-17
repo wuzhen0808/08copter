@@ -2,7 +2,7 @@
 
 #include "a8/hal/rf24/Rf24Hosts.h"
 #include "a8/hal/rf24/Rf24Net.h"
-#include "a8/hal/rf24/Rf24NodeData.h"
+#include "a8/hal/rf24/Rf24NetData.h"
 #include "a8/util/net.h"
 #include <RF24.h>
 #include <SPI.h>
@@ -18,7 +18,7 @@ class Rf24Node : public FlyWeight {
     Scheduler *sch;
 
 public:
-    Rf24Node(Rf24Hosts *hosts, int id, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac) {
+    Rf24Node(Rf24Hosts *hosts, int id, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Rf24Node") {
         this->hosts = hosts;
         this->id = id;
         this->sys = sys;
@@ -31,7 +31,7 @@ public:
         Lang::free<RF24>(this->radio);
     }
 
-    int setup(int chipEnablePin, int chipSelectPin, int channel, Result &res) {
+    int setup(int chipEnablePin, int chipSelectPin, int channel, void *c, void (*nodeDataHandler)(void *, Rf24NetData *), Result &res) {
         if (this->radio != 0) {
             res << "cannot setup twice.";
             return -1;
@@ -45,23 +45,18 @@ public:
             return -1;
         }
         radio->setChannel(channel);
-        net->begin(this->id);
+        net->begin(this->id, c, nodeDataHandler);
         return 1;
     }
 
     int getId() {
         return this->id;
     }
-    int send(int node2, Rf24NodeData *data, Result &res) {
+    int send(int node2, Rf24NetData *data, Result &res) {
         log("Rf24Node::send>>");
         int ret = this->net->send(node2, data, res);
         log("<<Rf24Node::send");
         return ret;
-    }
-
-    template <typename C>
-    int receive(C c, void (*consumer)(C c, Rf24NodeData *data), long timeout, Result &res) {
-        return net->receive<C>(c, consumer, timeout, res);
     }
 };
 

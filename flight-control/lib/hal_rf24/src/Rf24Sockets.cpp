@@ -1,5 +1,5 @@
 #include "a8/hal/rf24/Rf24Sockets.h"
-#include "a8/hal/rf24/Rf24ConnectResponse.h"
+#include "a8/hal/rf24/Rf24NetData.h"
 #include "a8/hal/rf24/Rf24Sock.h"
 
 #include <RF24.h>
@@ -7,12 +7,12 @@
 
 namespace a8::hal::rf24 {
 
-Rf24Sockets::Rf24Sockets(int id, Rf24Hosts *hosts, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac) {
+Rf24Sockets::Rf24Sockets(int id, Rf24Hosts *hosts, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Rf24Sockets") {
     this->hosts = hosts;
     this->host = host;
     this->ports = new Rf24Ports();
     this->node = new Rf24Node(hosts, id, sys, sch, logFac);
-    this->socks = new Rf24Socks(node, hosts, ports, logFac);
+    this->socks = new Rf24Socks(node, hosts, ports, sys, sch, logFac);
     this->sys = sys;
     this->sch = sch;
 }
@@ -24,110 +24,45 @@ Rf24Sockets::~Rf24Sockets() {
 }
 
 int Rf24Sockets::setup(int chipEnablePin, int chipSelectPin, int channel, Result &res) {
-    int ret = this->node->setup(chipEnablePin, chipSelectPin, channel, res);
+    int ret = this->node->setup(
+        chipEnablePin, chipSelectPin, channel, this, [](void *this_, Rf24NetData *data) {
+            Rf24Sockets *this__ = static_cast<Rf24Sockets *>(this_);
+            this__->onNetData(data);
+        },
+        res);
     if (ret < 0) {
         return ret;
     }
-    this->sch->createTask<Rf24Sockets *>(this, [](Rf24Sockets *this_) {
-        this_->run();
-    });
+
     return ret;
 }
-/**
- * Receiving data from network.
- */
-void Rf24Sockets::run() {
 
-    while (true) {
-        Result res;
-        int ret = this->node->receive<Rf24Sockets *>(
-            this, [](Rf24Sockets *this_, Rf24NodeData *data) {
-                this_->onData(data);
-            },
-            1000, res);
+void Rf24Sockets::onNetData(Rf24NetData *data) {
 
-        if (ret < 0) {
-            // timeout?
-            continue;
-        }
-    }
-    log("RF24 sockets work thread exited!");
-}
-
-void Rf24Sockets::onData(Rf24NodeData *data) {
-    switch (data->type) {
-    case Rf24NodeData::TYPE_Rf24ConnectRequest:
-        handleConnectRequest(data->connectionRequest);
-        break;
-    case Rf24NodeData::TYPE_Rf24ConnectResponse:
-        handleConnectResponse(data->connectionResponse);
-        break;
-    case Rf24NodeData::TYPE_Rf24UserData:
-        handleUserData(data->userData);
-        break;
-    default:
-        log(String() << "unknown data type:" << data->type);
-    }
-}
-
-void Rf24Sockets::handleConnectRequest(Rf24ConnectRequest *req) {
-    log(String() << "handleConnectRequest,node1:" << req->node1 << ",port1:" << req->port1 << ",node2:" << req->node2 << ",port2:" << req->port2);
-    if (req->node2 != this->node->getId()) {
+    if (data->node2 != this->node->getId()) {
         // ignore
-        log(String() << "ignore the connection request for node2(" << req->node2 << ") is not match local node(" << this->node->getId() << ").");
+        log(String() << "no node2 found, ignore the net data:" << data);
         return;
     }
-    Rf24Sock *s = this->socks->findByPort(req->port2);
+
+    Rf24Sock *s = this->socks->findByPort(data->port2);
     if (s == 0) {
         // ignore?
         // todo send a response.
-        log("ignore the connection request for port not yet bond.");
+        log(String() << "no port2 found, ignore the net data:" << data);
         return;
     }
-
-    SyncQueue<Rf24ConnectRequest *> *queue = s->getConnectionRequestQueue();
-
-    int ret = queue->offer(req, 1000);
-    if (ret < 0) {
-        log("cannot receive more connect request.");
-        // todo send a response.
-        return;
-    }
-}
-void Rf24Sockets::handleConnectResponse(Rf24ConnectResponse *resp) {
-    log(String() << "handleConnectResponse," << resp->node1 + ":" << resp->port1);
-    if (resp->node2 != this->node->getId()) {
-        // ignore
-        log("ignore the connection response for target node id is not match.");
-        return;
-    }
-    Rf24Sock *s = this->socks->findByPort(resp->port2);
-    if (s == 0) {
-        // ignore
-        log("ignore the connection response for port not yet bond.");
-        return;
-    }
-
-    SyncQueue<Rf24ConnectResponse *> *queue = s->getConnectionResponseQueue();
-
-    int ret = queue->offer(resp, 1000);
-    if (ret < 0) {
-        log("failed offer connect response to the queue of sock.");
-        // todo send a response.
-        return;
-    }
-}
-
-void Rf24Sockets::handleUserData(Rf24UserData *userData) {
+    s->onData(data);
 }
 
 int Rf24Sockets::socket(SOCK &sock) {
-    int id = this->socks->create(this->sys, this->sch);
-    sock = id;
+    Rf24Sock *s = this->socks->create();
+    sock = s->getId();
     return 1;
 }
 
 int Rf24Sockets::close(SOCK sock) {
+
     return this->socks->close(sock);
 }
 
@@ -146,69 +81,12 @@ int Rf24Sockets::listen(SOCK sock, Result &res) {
  * Accept one good incoming connection, ignore the bad connections if necessary.
  */
 int Rf24Sockets::accept(SOCK sock, SOCK &sockIn, Result &res) {
-    log(String() << "accepting... sock:" << sock);
-    Rf24Sock *s = this->socks->get(sock);
-    if (s == 0) {
-        // no such sock.
-        res << "fail to accept, no such sock:" << sock;
-        return -1; //
-    }
-    Status status = s->getStatus();
-    if (status != Status::Listening) {
-        res << "sock status" << status << " is not Listening, please call listen before accept.";
-        return -1;
-    }
-
-    SyncQueue<Rf24ConnectRequest *> *queue = s->getConnectionRequestQueue();
-    if (queue == 0) {
-        res << "queue is 0.";
-        return -1;
-    }
-    int loops = 0;
-    while (true) {
-        log(String() << "taking request from queue,loop:" << loops++);
-        Rf24ConnectRequest *req = queue->take(1000, 0);
-        if (req == 0) {
-            log("timeout and continue to wait a connect request.");
-            continue;
-        }
-        log("handle connection req.");
-        SOCK sId2 = 0;
-        int ret = this->socket(sId2);
-        if (ret < 0) {
-            // ignore?
-            log("failed to accept a connection request, because cannot create new sock, ignore and continue.");
-            continue;
-        }
-
-        Rf24Sock *s2 = this->socks->get(sId2);
-        if (s2 == 0) {
-            log("bug");
-        }
-        int port22 = this->ports->randomPort();
-
-        Result res;
-        ret = socks->doBind(s2, port22, res);
-        if (ret < 0) {
-            log(res.errorMessage);
-            log("failed to accept connection request, cannot bind.");
-            continue;
-        }
-        log("accept a connection request and sending response to client.");
-        // send response to client.
-        Rf24ConnectResponse *resp = new Rf24ConnectResponse();
-        resp->node1 = this->node->getId();
-        resp->port1 = port22;
-        resp->node2 = req->node1;
-        resp->port2 = req->port1;
-        Rf24NodeData data;
-        data.type = Rf24NodeData::TYPE_Rf24ConnectResponse;
-        data.connectionResponse = resp;
-        this->node->send(req->node1, &data, res);
+    int sId2;
+    int ret = socks->accept(sock, sId2, res);
+    if (ret > 0) {
         sockIn = sId2;
-        break;
     }
-    return 1;
+    return ret;
 }
 
 bool Rf24Sockets::send(SOCK sock, const char *buf, int len, Result &res) {

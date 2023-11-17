@@ -39,7 +39,7 @@ public:
         this->port2 = port2;
     }
     void log(String msg) {
-        logger->info(msg);
+        logger->info(String() << "ClientExample - " << msg);
     }
     void tick() {
         Result res;
@@ -66,6 +66,7 @@ public:
                 return ret;
             }
             log(String() << "connected to host:" << host2 << ",port:" << port2);
+            this->connected = true;
         }
         char buf[1] = {'1'};
         ret = this->sockets->send(sock, buf, 1, res);
@@ -80,7 +81,7 @@ public:
 class ClientExample : public BaseExample {
 
 public:
-    ClientExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample(sys, logFac, sch) {
+    ClientExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample("ClientExample", sys, logFac, sch) {
     }
 
     int start(Result &res) {

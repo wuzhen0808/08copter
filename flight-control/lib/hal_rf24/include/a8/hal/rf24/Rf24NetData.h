@@ -1,0 +1,128 @@
+#pragma once
+#include "a8/util/net.h"
+
+namespace a8::hal::rf24 {
+using namespace a8::util;
+
+class Rf24NetData {
+
+public:
+    static const int TYPE_EMPTY = 0;
+    static const int TYPE_CONNECT_REQUEST = 1;
+    static const int TYPE_CONNECT_RESPONSE = 2;
+    static const int TYPE_USER_DATA = 3;
+
+    static int read(Reader *reader, Rf24NetData &data) {
+        int len = 0;
+        int ret = CodecUtil::readInt<int>(reader, data.node1);
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+
+        ret = CodecUtil::readInt<int>(reader, data.port1);
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+
+        ret = CodecUtil::readInt<int>(reader, data.node2);
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+
+        ret = CodecUtil::readInt<int>(reader, data.port2);
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+
+        int size = 0;
+        ret = CodecUtil::readInt<int>(reader, size);
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+
+        char buf[size];
+        ret = reader->read(buf, size);
+        data.buffer->append(buf, size);
+
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+
+        return len;
+    }
+    static int write(Writer *writer, Rf24NetData &data) {
+        int len = 0;
+        int ret = CodecUtil::writeInt<int>(writer, data.node1);
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+
+        ret = CodecUtil::writeInt<int>(writer, data.port1);
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+
+        ret = CodecUtil::writeInt<int>(writer, data.node2);
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+
+        ret = CodecUtil::writeInt<int>(writer, data.port2);
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+
+        ret = CodecUtil::writeInt<int>(writer, data.buffer->len());
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+
+        ret = writer->write(data.buffer->buffer(), data.buffer->len());
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+
+        return len;
+    }
+    static Rf24NetData *copy(Rf24NetData *uData, Rf24NetData &uData2) {
+        WriterReaderBuffer buf;
+        Rf24NetData::write(&buf, *uData);
+        Rf24NetData::read(&buf, uData2);
+        return &uData2;
+    }
+
+    friend String &operator<<(String &str, const Rf24NetData *data) {
+        return operator<<(str, *data);
+    }
+
+    friend String &operator<<(String &str, const Rf24NetData &data) {
+        return str << "Rf24NetData(" << data.node1 << "/" << data.port1 << "-" << data.node2 << "/" << data.port2 << ")";
+    }
+
+    int type;
+    int node1;
+    int port1;
+    int node2;
+    int port2;
+    Buffer<char> *buffer; // payload.
+    Rf24NetData() {
+        this->buffer = new Buffer<char>();
+    }
+    ~Rf24NetData() {
+        delete this->buffer;
+    }
+};
+
+} // namespace a8::hal::rf24

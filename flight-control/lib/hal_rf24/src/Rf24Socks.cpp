@@ -15,24 +15,26 @@ Rf24Socks::~Rf24Socks() {
     delete this->table;
 }
 
-int Rf24Socks::create(System *sys, Scheduler* sch ) {
-    int sId = this->nextId++;
-    Rf24Sock *s = new Rf24Sock(sId, sys, sch, this->loggerFactory);
-    this->table->set(sId, s);
-    return sId;
-}
-
 int Rf24Socks::close(int id) {
-
     int len = table->remove<Rf24Socks *>(this, id, [](Rf24Socks *this_, int k, Rf24Sock *v) {
-        closeAndDelete(v);
+        this_->destroy(v);
     });
-
-    if (len == 0) {
-        return 0;
-    }
-    return len;
+    return 1;
 }
+
+void Rf24Socks::destroy(Rf24Sock *s) {
+    int port = s->getPort();
+
+    if (port > 0) {
+        s->unBind();
+        this->ports->release(port);
+    }
+
+    s->close();
+
+    delete s;
+}
+
 Rf24Sock *Rf24Socks::get(int id, Result &res) {
     Rf24Sock *sock = this->get(id);
     if (sock == 0) {
@@ -87,20 +89,6 @@ int Rf24Socks::bind(int sId, String host, int port, Rf24Hosts *hosts, Result &re
     return this->doBind(s, port, res);
 }
 
-int Rf24Socks::doBind(Rf24Sock* s, int port, Result& res){
-
-    Rf24Sock *s2 = this->binds->get(port, 0);
-    if (s2 != 0) {
-        res << "cannot bind to port:" << port << ",port is already bond by sock:" << s2->getId();
-        return -4;
-    }
-    if (s->doBind(node, port, res) < 0) {        
-        return -5;
-    }
-    this->binds->set(port, s);
-    return 1;
-}
-
 int Rf24Socks::listen(int sId, Result &res) {
     Rf24Sock *s = this->get(sId, res);
     if (s == 0) {
@@ -108,6 +96,23 @@ int Rf24Socks::listen(int sId, Result &res) {
     }
     return s->listen(res);
 }
+
+int Rf24Socks::accept(int sock, int &sockIn, Result &res) {
+    Rf24Sock *s = this->get(sock, res);
+    if (s == 0) {
+        return -1; //
+    }
+    Rf24NetData *req = s->takeByType(Rf24NetData::TYPE_CONNECT_REQUEST);
+    Rf24Sock *s2 = 0;
+    int ret = this->doAccept(req, s2, res);
+    delete req;
+    if (ret < 0) {
+        return ret;
+    }
+    sockIn = s2->getId();
+    return ret;
+}
+
 int Rf24Socks::send(int sId, const char *buf, int len, Result &res) {
     Rf24Sock *s = this->get(sId, res);
     if (s == 0) {
@@ -121,7 +126,7 @@ int Rf24Socks::receive(int sId, char *buf, int len, Result &res) {
     if (s == 0) {
         return -1; //
     }
-    
+
     return s->receive(buf, len, res);
 }
 
