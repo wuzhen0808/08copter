@@ -164,15 +164,22 @@ public:
 
         // wait response, timeout in 5 sec.
         Rf24NetData *resp = this->takeByType(Rf24NetData::TYPE_CONNECT_RESPONSE);
-        log(String() << "got connect response:" << resp);
-
-        this->node2 = resp->node1;
-        this->port2 = resp->port1;
-        this->status = Status::Connected;
+        onResponse(resp);
         delete resp;
         return 1;
     }
-
+    void onResponse(Rf24NetData *resp) {
+        log(String() << "got connect response:" << resp);
+        if (resp->port1 == 0) {
+            log("connect failure.");
+            this->status = Idle;
+            return;
+        }
+        this->node2 = resp->node1;
+        this->port2 = resp->port1;
+        this->status = Status::Connected;
+        log("connect success.");
+    }
     int connectIn(int node2, int port2, Result &res) {
         if (this->role == Role::Unknown) {
             this->role = Role::Worker;

@@ -40,16 +40,16 @@ int Rf24Sockets::setup(int chipEnablePin, int chipSelectPin, int channel, Result
 void Rf24Sockets::onNetData(Rf24NetData *data) {
 
     if (data->node2 != this->node->getId()) {
-        // ignore
-        log(String() << "no node2 found, ignore the net data:" << data);
+        
+        log(String() << "no node2 found with connect request:" << data);
+        this->sendResponse(data->node1, data->port1);
         return;
     }
 
     Rf24Sock *s = this->socks->findByPort(data->port2);
     if (s == 0) {
-        // ignore?
-        // todo send a response.
-        log(String() << "no port2 found, ignore the net data:" << data);
+        log(String() << "no port2 found with connect request:" << data);
+        this->sendResponse(data->node1, data->port1);
         return;
     }
     s->onData(data);

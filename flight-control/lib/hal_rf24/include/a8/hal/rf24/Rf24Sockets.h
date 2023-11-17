@@ -30,7 +30,22 @@ private:
     Scheduler *sch;
 
     void onNetData(Rf24NetData *data);
-    
+
+    void sendResponse(int node2, int port2) {
+        Rf24NetData resp;
+        resp.type = Rf24NetData::TYPE_CONNECT_RESPONSE;
+        resp.node1 = this->node->getId();
+        resp.port1 = 0; // no such port found.
+        resp.node2 = node2;
+        resp.port2 = port2;
+        // TODO add error code.
+        Result res;
+        int ret = this->node->send(resp.node2, &resp, res);
+        if (ret < 0) {
+            log(String() << "Failed to send response:" << resp);
+        }
+    }
+
 public:
     Rf24Sockets(int id, Rf24Hosts *hosts, System *sys, Scheduler *sch, LoggerFactory *logFac);
 
