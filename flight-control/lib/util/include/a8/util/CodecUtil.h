@@ -14,23 +14,19 @@ class CodecUtil {
 
 public:
     template <typename T>
-    static int getBit(T value, int idx) {
-        return (value >> (sizeof(T) * 8 - idx - 1)) & 0x1;
-    }
-
-    template <typename T>
     static int readInt(Reader *reader, T &intV) {
         int size = sizeof(T);
+        char buf[size];        
+        int ret = reader->fullRead(buf, size);
+        if (ret != size) {
+            return -1;
+        }
+
         T tmpInt = 0x0;
         for (int i = 0; i < size; i++) {
-            char ch;
-            int ret = reader->read(ch);
-            if (ret != 1) {
-                return -1;
-            }
-            //ch first convert to unsigned char and then convert to the target type.
-            //other wise, the ch may convert to int which is not unsigned.
-            tmpInt = tmpInt | ((T)(unsigned char)ch << 8 * (size - i - 1));
+            // ch first convert to unsigned char and then convert to the target type.
+            // other wise, the ch may convert to int which is not unsigned.
+            tmpInt = tmpInt | ((T)(unsigned char)buf[i] << 8 * (size - i - 1));
         }
         intV = tmpInt;
         return size;
@@ -139,7 +135,7 @@ public:
 
     static int readFloat64(Reader *reader, float64 &fValue) {
         return readFloat<float64, int64>( //
-            reader, fValue                        //
+            reader, fValue                //
         );
     }
 

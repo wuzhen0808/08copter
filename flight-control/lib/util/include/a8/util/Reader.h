@@ -17,8 +17,29 @@ public:
     }
 
     ~Reader() {
-    }
     
+    }
+
+    int fullRead(char *buf, int bufLen) {
+        Result res;
+        return fullRead(buf, bufLen, res);
+    }
+
+    int fullRead(char *buf, int bufLen, Result &res) {
+        int len = 0;
+        while (len < bufLen) {
+            int len2 = bufLen - len;
+            int ret = read(buf + len, len2, res);
+            if (ret < 0) {
+                return ret;
+            }
+            if (ret == 0) {
+                break;
+            }
+            len += ret;
+        }
+        return len;
+    }
     int read(char *buf, int bufLen) {
         Result res;
         return read(buf, bufLen, res);

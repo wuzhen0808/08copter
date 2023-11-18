@@ -143,12 +143,11 @@ public:
         Bridge<T> *bridge = new Bridge<T>(bridge_, skeleton, channel, loggerFactory);
         void (*tickF)(void *) = [](void *bridge) {
             static_cast<Bridge<T> *>(bridge)->run();
-        };
-        log("createBridge.1");
-        log("createBridge.3");
-        scheduler->schedule(
-            tickF, //
-            bridge //
+        };        
+        scheduler->createTask(
+            "Bridge",
+            bridge, //
+            tickF   //
         );
         log("<<createBridge");
         return bridge;

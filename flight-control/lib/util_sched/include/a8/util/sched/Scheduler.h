@@ -63,7 +63,7 @@ public:
     virtual void endSchedule() = 0;
 
     template <typename T>
-    Thread *createTask(T context, void (*run)(T)) {
+    Thread *createTask(String name, T context, void (*run)(T)) {
         struct Params {
             T context_;
             void (*run_)(T);
@@ -71,18 +71,18 @@ public:
         Params *p = new Params();
         p->context_ = context;
         p->run_ = run;
-        return schedule(p, [](void *vp) {
+        return createTask(name, p, [](void *vp) {
             Params *pp = static_cast<Params *>(vp);
             pp->run_(pp->context_);
             delete pp;
         });
     }
 
-    virtual Thread *schedule(void *context, sched::run run) = 0;
+    virtual Thread *createTask(const String name, void *context, sched::run run) = 0;
+    virtual Timer *createTimer(const String name, const Rate &rate, void *context, sched::run run) ;
 
-    virtual Timer *scheduleTimer(sched::run run, void *context, const Rate &rate) = 0;
     template <typename T>
-    Timer *createTimer(const Rate &rate, T c, void (*run)(T c)) {
+    Timer *createTimer(const String name, const Rate &rate, T c, void (*run)(T c)) {
         struct Params {
             T context_;
             void (*run_)(T);
@@ -90,15 +90,12 @@ public:
         Params *p = new Params();
         p->context_ = c;
         p->run_ = run;
-        return scheduleTimer(rate, p, [](void *pv) {
+        return createTimer(name, rate, p, [](void *pv) {
             Params *pp = static_cast<Params *>(pv);
             pp->run_(pp->context_);
         });
     }
     
-    Timer *scheduleTimer(const Rate &rate, void *context, sched::run run) {
-        return scheduleTimer(run, context, rate);
-    }
     template <typename T>
     SyncQueue<T> *createSyncQueue(int cap) {
         SyncQueue<void *> *wrap = this->doCreateSyncQueue(cap, sizeof(T));
@@ -109,8 +106,8 @@ public:
     virtual Semaphore *createSemaphore(int cap, int initial) = 0;
 
     Lock *createLock() {
-        Semaphore *sem = this->createSemaphore(1, 1);
-        return new Lock(sem);
+        SyncQueue<int> *queue = this->createSyncQueue<int>(1);
+        return new Lock(queue);
     }
 };
 } // namespace a8::util::sched

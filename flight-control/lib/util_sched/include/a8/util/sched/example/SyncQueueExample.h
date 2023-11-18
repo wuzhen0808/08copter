@@ -45,7 +45,7 @@ public:
     }
     int start(Result &res) {
         queue = this->sch->createSyncQueue<int>(10);
-        this->sch->createTask<SyncQueueExample *>(this, [](SyncQueueExample *this_) {
+        this->sch->createTask<SyncQueueExample *>("SyncQueueExample", this, [](SyncQueueExample *this_) {
             this_->runSender();
         });
 

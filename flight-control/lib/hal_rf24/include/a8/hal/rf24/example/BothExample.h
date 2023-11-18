@@ -27,16 +27,14 @@ public:
         if (ret < 0) {
             return ret;
         }
-        Logger *log1 = logFac->getLogger("ServerTask");
-        ServerTask *st = new ServerTask(sockets, server, serverPort, log1, sch);
+        ServerTask *st = new ServerTask(sockets, server, serverPort, sch, loggerFactory);
 
-        sch->createTask<ServerTask *>(st, [](ServerTask *st) {
+        sch->createTask<ServerTask *>("ServerTask", st, [](ServerTask *st) {
             st->run();
         });
-        Logger *log2 = logFac->getLogger("ClientTimer");
-        ClientTimer *ct = new ClientTimer(sockets, client, clientPort, log2, sch, server, serverPort);
+        ClientTimer *ct = new ClientTimer(sockets, client, clientPort, sch, server, serverPort, loggerFactory);
 
-        sch->createTimer<ClientTimer *>(1.0f, ct, [](ClientTimer *ct) {
+        sch->createTimer<ClientTimer *>("ClientTimer", 1.0f, ct, [](ClientTimer *ct) {
             ct->tick();
         });
 

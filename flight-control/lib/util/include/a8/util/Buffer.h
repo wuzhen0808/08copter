@@ -29,10 +29,17 @@ public:
     Buffer() {
         this->init();
     }
+
     Buffer(const Buffer<T> &buf) { // copy constructor
         this->init();
         this->append(buf.buffer_, 0, buf.length_);
     }
+
+    Buffer(const T *buf, int len) { // copy constructor
+        this->init();
+        this->append(buf, len);
+    }
+
     void operator=(const Buffer<T> &buf) { // assign operator
         this->clear();
         this->append(buf.buffer_, 0, buf.length_);
@@ -146,10 +153,12 @@ public:
     int indexOf(T ele) {
         return indexOf(ele, [](T ele1, T ele2) { return ele1 == ele2; });
     }
-
+    /**
+     * return len or 0 if no data to read.
+    */
     int read(int from1, T *buf, int len) {
         if (from1 >= this->length_) {
-            return -1;
+            return 0;
         }
         int len2 = Math::min(len, this->length_ - from1);
         Lang::copy<T>(this->buffer_, from1, len2, buf);
@@ -168,9 +177,11 @@ public:
     void clear() {
         this->length_ = 0;
     }
+    
     Buffer<T> *append(Buffer<T> *buf, int from, int len) {
-        this->append(buf->buffer_, from, len);
+        return this->append(buf->buffer_, from, len);
     }
+
     Buffer<T> *append(const T &element) {
         T buf[1];
         buf[0] = element;
@@ -241,7 +252,7 @@ public:
         }
         return this->buffer_[idx];
     }
-
+    
     void operator=(T *array) {
     }
 

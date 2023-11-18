@@ -62,7 +62,32 @@ public:
         return str;
     }
 
-    friend String &operator<<(String &str, Buffer<char> buf) {
+    static String toHexString(const char* buf, int len) {
+        Buffer<char> buf2(buf, len);
+        return toHexString(buf2);
+    }
+    
+    static String toHexString(const Buffer<char> &buf) {
+        String buf2;
+        for (int i = 0; i < buf.len(); i++) {
+            char ch = buf.get(i);
+            buf2.append(Lang::high4Hex(ch));
+            buf2.append(Lang::low4Hex(ch));
+        }
+        return buf2;
+    }
+
+    static Buffer<char> toHexBuffer(const Buffer<char> &buf) {
+        Buffer<char> buf2;
+        for (int i = 0; i < buf.len(); i++) {
+            char ch = buf.get(i);
+            buf2.append(Lang::high4Hex(ch));
+            buf2.append(Lang::low4Hex(ch));
+        }
+        return buf2;
+    }
+
+    friend String &operator<<(String &str, const Buffer<char> &buf) {
         str.append(buf.buffer(), buf.len());
         return str;
     }

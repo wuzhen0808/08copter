@@ -26,9 +26,9 @@ public:
         // vTaskEndScheduler();
     }
 
-    Thread *schedule(void *context, sched::run run) override;
+    Thread *createTask(const String name, void *context, sched::run run) override;
 
-    Timer *scheduleTimer(sched::run run, void *context, const Rate &rate) override;
+    Timer *createTimer(const String name, const Rate &rate, void *context, sched::run run) override;
 
     Semaphore *createSemaphore(int cap, int initial) override;
 };

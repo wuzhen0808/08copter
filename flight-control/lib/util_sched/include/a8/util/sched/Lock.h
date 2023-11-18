@@ -1,48 +1,32 @@
 #pragma once
-#include "a8/util/sched/Semaphore.h"
+#include "a8/util/sched/SyncQueue.h"
 namespace a8::util::sched {
 class Lock {
-    Semaphore *sem;
+    SyncQueue<int> *queue;
 
 public:
-    Lock(Semaphore *sem) {
-        this->sem;
+    Lock(SyncQueue<int> *queue) {
+        this->queue = queue;
+        this->unLock();
     }
+
     ~Lock() {
-        delete this->sem;
+        delete this->queue;
     }
 
     template <typename C>
-    int lockAndRun(C c, void (*run)(C c), long timeout, Result &res) {
-        int ret = lock(timeout, res);
-        if (ret == 0) {
-            return 0;
-        }
-        if (ret < 0) {
-            res << ";failed to lock.";
-            return -1;
-        }
+    void runInLock(C c, void (*run)(C c)) {
+        lock();
         run(c);
-        ret = unLock(res);
-        if (ret < 0) {
-            res << ";failed to unlock after locked and ran the function.";
-            return -2;
-        }
-
-        return 1;
+        unLock();
     }
 
-    int unLock(Result &res) {
-        return sem->give(res);
+    void unLock() {
+        this->queue->offer(1);
     }
 
-    int lock(long timeout, Result &res) {
-        int ret = this->sem->take(timeout, res);        
-        if (ret < 0) {
-            res << ";failed to lock the resource.";
-            return ret;
-        }
-        return 1;
+    void lock() {
+        this->queue->take();
     }
 };
 } // namespace a8::util::sched

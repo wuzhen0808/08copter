@@ -7,6 +7,7 @@ public:
     }
     ~Thread() {
     }
+    // TODO ThreadLocal.
 };
 
 } // namespace a8::util::sched

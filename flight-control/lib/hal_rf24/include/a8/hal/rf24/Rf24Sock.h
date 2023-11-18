@@ -41,7 +41,7 @@ class Rf24Sock : FlyWeight {
     Scheduler *sch;
     SyncQueue<Rf24NetData *> *dataQueue;
     //
-    Buffer<char> buffer;
+    Queue<char> buffer;
 
     template <typename T>
     static void destroyQueue(SyncQueue<T *> *&queue) {
@@ -60,7 +60,7 @@ class Rf24Sock : FlyWeight {
     }
 
 public:
-    Rf24Sock(int id, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Rf24Sock") {
+    Rf24Sock(int id, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, String() << "Rf24Sock(" << id << ")") {
         this->role = Role::Unknown;
         this->status = Status::Idle;
         this->sys = sys;
@@ -130,7 +130,7 @@ public:
      * Sending a message to remote node/port.
      */
     int connect(int node2, int port2, Result &res) {
-        log(">>Rf24Sock::connect");
+        log(String() << ">>connecting to:" << node2 << "/" << port2);
         if (this->role == Role::Unknown) {
             this->role = Role::Connector;
             this->status = Status::Idle;
@@ -161,8 +161,7 @@ public:
             this->status = Idle;
             return ret;
         }
-
-        // wait response, timeout in 5 sec.
+        // todo timeout of response.
         Rf24NetData *resp = this->takeByType(Rf24NetData::TYPE_CONNECT_RESPONSE);
         onResponse(resp);
         delete resp;
@@ -171,14 +170,14 @@ public:
     void onResponse(Rf24NetData *resp) {
         log(String() << "got connect response:" << resp);
         if (resp->port1 == 0) {
-            log("connect failure.");
+            log(String() << "connect failure with the resp:" << resp);
             this->status = Idle;
             return;
         }
         this->node2 = resp->node1;
         this->port2 = resp->port1;
         this->status = Status::Connected;
-        log("connect success.");
+        log(String() << "connect success with the resp:" << resp);
     }
     int connectIn(int node2, int port2, Result &res) {
         if (this->role == Role::Unknown) {
@@ -232,6 +231,11 @@ public:
             res << "cannot send data, connection is not established or broken.";
             return -1;
         }
+        if (len < 1) {
+            //
+            res << "cannot send empty buf. ";
+            return -1;
+        }
 
         Rf24NetData data;
         data.type = Rf24NetData::TYPE_USER_DATA;
@@ -247,28 +251,41 @@ public:
      */
     int receive(char *buf, int bufLen, Result &res) {
 
-        while (this->buffer.len() == 0) {
-            if (this->status != Status::Connected) {
-                res << "connection not established or already broken.";
-                return -1;
-            }
+        if (this->status != Status::Connected) {
+            res << "connection not established or already broken.";
+            return -1;
+        }
+
+        if (this->buffer.isEmpty()) {
 
             Rf24NetData *uData = this->takeByType(Rf24NetData::TYPE_USER_DATA);
             if (uData == 0) {
-                log("continue to wait the user data from network.");
-                continue;
-                //
+                // bug?
+                return -1; //
             }
-            this->buffer.append(uData->buffer);
+            if (uData->buffer->isEmpty()) {
+                // bug?
+                return -1;
+            }
+
+            this->buffer.append(*uData->buffer); // todo use move constructor.
+
             delete uData;
-            break;
         }
 
-        int len = Math::min(bufLen, this->buffer.len());
-        Lang::copy<char>(this->buffer.buffer(), 0, len, buf, 0);
-
+        int len = this->buffer.take(buf, bufLen);
+        if (len < 0) {
+            // bug?
+            return -1;
+        }
+        if (len == 0) {
+            // bug?
+            return -1;
+        }
+        log(String() << "received data:" << StringUtil::toHexString(buf, len));
         return len;
     }
+
     template <typename C>
     void consumeByType(int type, C c, void (*consume)(C c, Rf24NetData *)) {
         Rf24NetData *data = takeByType(type);
@@ -280,6 +297,9 @@ public:
         Rf24NetData *data = 0;
         while (data == 0) {
             data = this->dataQueue->take(1000 * 10, 0);
+            if (data == 0) {
+                continue;
+            }
             if (data->type != type) {
                 delete data;
                 data = 0;

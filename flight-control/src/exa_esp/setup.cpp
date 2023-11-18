@@ -15,8 +15,8 @@ int setup(a8::util::Result &res) {
     using namespace a8::util::sched;
 
     System *sys = new ArduinoSystem();
-    LoggerFactory *logFac = new ArduinoLoggerFactory(sys);
     Scheduler *sch = new FreeRtosScheduler();
+    LoggerFactory *logFac = new ArduinoLoggerFactory(sys, sch);
     // ClientExample *example = new ClientExample(sys, logFac, sch);
     //  ServerExample *example = new ServerExample(sys, logFac, sch);
     BothExample *example = new BothExample(sys, logFac, sch);

@@ -18,7 +18,7 @@ class Rf24Node : public FlyWeight {
     Scheduler *sch;
 
 public:
-    Rf24Node(Rf24Hosts *hosts, int id, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Rf24Node") {
+    Rf24Node(Rf24Hosts *hosts, int id, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, String() << "Rf24Node(" << id << ")") {
         this->hosts = hosts;
         this->id = id;
         this->sys = sys;
@@ -53,9 +53,9 @@ public:
         return this->id;
     }
     int send(int node2, Rf24NetData *data, Result &res) {
-        log("Rf24Node::send>>");
+        log(String() << "send data:" << data);
         int ret = this->net->send(node2, data, res);
-        log("<<Rf24Node::send");
+        log(String() << "sent data:" << data);
         return ret;
     }
 };

@@ -17,7 +17,7 @@ const int defaultClientPort = 1;
 const int defaultServerNode = 01;
 const int defaultServerPort = 1;
 
-class BaseExample {
+class BaseExample : public FlyWeight {
 public:
 public:
     String client = "client";
@@ -28,18 +28,15 @@ public:
     int serverPort = defaultServerPort;
 
     System *sys;
-    LoggerFactory *logFac;
     Scheduler *sch;
-    Logger *logger;
     Rf24Hosts *hosts;
     Rf24Sockets *sockets;
     String name;
     BaseExample(String name, System *sys,
                 LoggerFactory *logFac,
-                Scheduler *sch) {
+                Scheduler *sch) : FlyWeight(logFac, name) {
         this->name = name;
         this->sys = sys;
-        this->logFac = logFac;
         this->sch = sch;
     }
 
@@ -52,11 +49,10 @@ public:
     }
 
     int setup(int nodeId, Result &res) {
-        using a8::util::String;
-        logger = logFac->getLogger(this->name);
+        using a8::util::String;        
         hosts = buildHosts();
 
-        sockets = new Rf24Sockets(nodeId, hosts, sys, sch, logFac);
+        sockets = new Rf24Sockets(nodeId, hosts, sys, sch, loggerFactory);
 
         int ret = sockets->setup(9, 10, 90, res);
         if (ret < 0) {

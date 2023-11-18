@@ -26,7 +26,9 @@ public:
 
     ~Logger() {
     }
-
+    String getName(){
+        return this->name;
+    }
     virtual void log(Level level, const String &msg) = 0;
 
     void error(const String &msg) {

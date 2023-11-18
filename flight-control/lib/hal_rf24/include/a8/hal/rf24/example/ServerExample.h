@@ -10,64 +10,73 @@ using namespace a8::util::net;
 using namespace a8::util::sched;
 using namespace a8::hal::rf24;
 using namespace a8;
+using namespace a8::util::net;
 using a8::util::String;
 
-class YourTask {
+class WorkerTask : public FlyWeight {
+
 public:
     SOCK sock;
     Sockets *sockets;
-    Logger *logger;
-    YourTask(SOCK sock, Sockets *sockets, Logger *logger) {
+    int port;
+    WorkerTask(SOCK sock, Sockets *sockets, int port2, LoggerFactory *logFac)
+        : FlyWeight(logFac, String() << "WorkerTask-" << sock << "@" << port2) {
         this->sock = sock;
+        this->port = port2;
         this->sockets = sockets;
-        this->logger = logger;
     }
+
     void run() {
         Result res;
         int ret = run(res);
         if (ret < 0) {
-            logger->info(res.errorMessage);
+            log(res.errorMessage);
         }
-        logger->info(String() << "done of your task, sock:" << sock);
+        log(String() << "done of worker task, sock:" << sock << "@" << port);
     }
     int run(Result &res) {
-        while (true) {
-            char buf[1];
-            int ret = sockets->receive(sock, buf, 1, res);
+        int cap = 128;
+        char buf[cap];
+        int len = 0;
+        SocketReader sr(sockets, sock);
+
+        for (int i = 0;; i++) {
+            int16 counter = -1;
+            int ret = CodecUtil::readInt16(&sr, counter);
             if (ret < 0) {
+                log(res.errorMessage);
                 return ret;
             }
-            logger->info(String() << buf[0]);
+            if (counter != i) {
+                log(String() << "missing:" << i);
+            }
+            log(String() << counter);
         }
         return 1;
     }
 };
-class ServerTask {
+class ServerTask : public FlyWeight {
 
 public:
     Sockets *sockets;
     String host;
     int port;
-    Logger *logger;
     Scheduler *sch;
-    ServerTask(Sockets *sockets, String host, int port, Logger *logger, Scheduler *sch) {
+    ServerTask(Sockets *sockets, String host, int port, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "ServerTask") {
         this->sockets = sockets;
         this->host = host;
         this->port = port;
-        this->logger = logger;
         this->sch = sch;
     }
-    void log(String msg) {
-        logger->info(msg);
-    }
+
     void run() {
-        log("ServerExample - run()");
+        log("run()");
         Result res;
         int ret = doRun(res);
         if (ret < 0) {
             log(res.errorMessage);
         }
-        log("ServerExample - done of my task.");
+        log("done of task.");
     }
 
     int doRun(Result &res) {
@@ -99,10 +108,11 @@ public:
                 res << ";failed to accept connect.";
                 return ret;
             }
-            log(String() << "accept a new connection with sock:" << s2);
-            YourTask *yt = new YourTask(s2, sockets, logger);
-            sch->schedule(yt, [](void *c) {
-                YourTask *yt = static_cast<YourTask *>(c);
+            log(String() << "accepted a new connection with sock:" << s2);
+
+            WorkerTask *yt = new WorkerTask(s2, sockets, port, loggerFactory);
+            sch->createTask("WokerTask", yt, [](void *c) {
+                WorkerTask *yt = static_cast<WorkerTask *>(c);
                 yt->run();
             });
         }
@@ -121,9 +131,9 @@ public:
             return ret;
         }
 
-        ServerTask *rc = new ServerTask(sockets, server, serverPort, logger, sch);
+        ServerTask *rc = new ServerTask(sockets, server, serverPort, sch, loggerFactory);
         rc->sockets = sockets;
-        sch->schedule(rc, [](void *c) {
+        sch->createTask("ServerTask", rc, [](void *c) {
             ServerTask *mt = static_cast<ServerTask *>(c);
             mt->run();
         });

@@ -14,32 +14,31 @@ using namespace a8::hal::rf24;
 using namespace a8;
 using a8::util::String;
 
-class ClientTimer {
+class ClientTimer : public FlyWeight {
 
 public:
     Sockets *sockets;
     String host;
     int port;
-    Logger *logger;
     Scheduler *sch;
     //
     String host2;
     int port2;
     SOCK sock = 0;
     bool connected = false;
-
-    ClientTimer(Sockets *sockets, String host, int port, Logger *logger, Scheduler *sch, String host2, int port2) {
+    //
+    int counter = 0;
+    ClientTimer(Sockets *sockets, String host, int port, Scheduler *sch, String host2, int port2, LoggerFactory *logFac) : FlyWeight(logFac, "ClientTimer") {
         this->sockets = sockets;
         this->host = host;
         this->port = port;
-        this->logger = logger;
         this->sch = sch;
         //
         this->host2 = host2;
         this->port2 = port2;
     }
     void log(String msg) {
-        logger->info(String() << "ClientExample - " << msg);
+        logger->info(String() << "" << msg);
     }
     void tick() {
         Result res;
@@ -68,13 +67,16 @@ public:
             log(String() << "connected to host:" << host2 << ",port:" << port2);
             this->connected = true;
         }
-        char buf[1] = {'1'};
-        ret = this->sockets->send(sock, buf, 1, res);
+        // encode the int value .
+        WriterReaderBuffer buf;
+        CodecUtil::writeInt16(&buf, counter);
+        ret = this->sockets->send(sock, buf.buffer(), buf.len(), res);
         if (ret < 0) {
             res << "sending failed.";
             return ret;
         }
-
+        log(String() << "send out:" << counter);
+        counter++;
         return 1;
     }
 };
@@ -91,9 +93,9 @@ public:
             return ret;
         }
 
-        ClientTimer *rc = new ClientTimer(sockets, client, clientPort, logger, sch, server, serverPort);
+        ClientTimer *rc = new ClientTimer(sockets, client, clientPort, sch, server, serverPort, loggerFactory);
 
-        sch->createTimer<ClientTimer *>(1.0f, rc, [](ClientTimer *ct) {
+        sch->createTimer<ClientTimer *>("ClientTimer", 1.0f, rc, [](ClientTimer *ct) {
             ct->tick();
         });
 

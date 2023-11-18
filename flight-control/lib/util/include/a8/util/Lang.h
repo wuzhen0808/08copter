@@ -22,6 +22,34 @@ public:
     static const char END_OF_STR = '\0';
 
     template <typename T>
+    static int getBit(T value, int idx) {
+        return (value >> (sizeof(T) * 8 - idx - 1)) & 0x1;
+    }
+
+    static int low4(char ch) {
+        return ch & 0x0F;
+    }
+
+    static char hex(int iHex) {
+        if (iHex < 10) {
+            return iHex + '0';
+        }
+        return iHex - 10 + 'A';
+    }
+
+    static int high4(char ch) {
+        return (ch >> 4) & 0x0F;
+    }
+
+    static char high4Hex(char ch) {
+        return hex(high4(ch));
+    }
+
+    static char low4Hex(char ch) {
+        return hex(low4(ch));
+    }
+
+    template <typename T>
     static T cast(void *ptr) {
         return static_cast<T>(ptr);
     }
@@ -68,7 +96,7 @@ public:
         }
         delete[] ptr;
     }
-    
+
     template <typename T>
     static void free(T *&ptr) {
         free<T>(ptr, false);
@@ -285,32 +313,6 @@ public:
     template <typename T>
     static T noneConvert(const T &value) {
         return value;
-    }
-
-    template <typename T>
-    static int toIntBinaries(const T *value, int len1, char *str2, int len2) {
-        int len11 = len1 * sizeof(T) * 8;
-        int ret = -1;
-        if (len2 < len11) {
-            return ret; // no space enough to storage the result.
-        }
-
-        for (int i = 0; i < len1; i++) {
-            ret = toIntBinary(*value[i], str2, i * sizeof(T) * 8, sizeof(T));
-        }
-        return len11;
-    }
-
-    template <typename T>
-    static int parseIntBinaries(T *intVs, int len1, const char *str, int from, int len2) {
-
-        if (len2 != sizeof(T) * 8 * len1) {
-            return -1;
-        }
-        for (int i = 0; i < len1; i++) {
-
-            intVs[i] = parseIntBinary(&intVs[i], str, from + sizeof(T) * 8 * i, sizeof(T) * 8);
-        }
     }
 };
 

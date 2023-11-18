@@ -7,5 +7,6 @@
 #include "a8/util/sched/Semaphore.h"
 #include "a8/util/sched/Lock.h"
 #include "a8/util/sched/SyncQueue.h"
+#include "a8/util/sched/SyncLogger.h"
 
 

@@ -14,7 +14,13 @@ public:
 
     static int read(Reader *reader, Rf24NetData &data) {
         int len = 0;
-        int ret = CodecUtil::readInt<int>(reader, data.node1);
+        int ret = CodecUtil::readInt<int>(reader, data.type);
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+
+        ret = CodecUtil::readInt<int>(reader, data.node1);
         if (ret < 0) {
             return ret;
         }
@@ -45,9 +51,22 @@ public:
         }
         len += ret;
 
-        char buf[size];
-        ret = reader->read(buf, size);
-        data.buffer->append(buf, size);
+        if (size < 0) {
+            return -1; // error of data.
+        }
+
+        if (size > 0) {
+            char buf[size];
+            Result res;
+            ret = reader->fullRead(buf, size, res);
+            if (ret < 0) {
+                return -1; // error of read.
+            }
+            if (ret < size) {
+                return -2; // error of data.
+            }
+            data.buffer->append(buf, size);
+        }
 
         if (ret < 0) {
             return ret;
@@ -58,41 +77,55 @@ public:
     }
     static int write(Writer *writer, Rf24NetData &data) {
         int len = 0;
-        int ret = CodecUtil::writeInt<int>(writer, data.node1);
+        int ret = CodecUtil::writeInt<int>(writer, data.type);
         if (ret < 0) {
             return ret;
         }
         len += ret;
 
+        ret = CodecUtil::writeInt<int>(writer, data.node1);
+        if (ret < 0) {
+            return ret;
+        }
+        len += ret;
+
+        //
         ret = CodecUtil::writeInt<int>(writer, data.port1);
         if (ret < 0) {
             return ret;
         }
         len += ret;
-
+        //node2
         ret = CodecUtil::writeInt<int>(writer, data.node2);
         if (ret < 0) {
             return ret;
         }
         len += ret;
-
+        //port2
         ret = CodecUtil::writeInt<int>(writer, data.port2);
         if (ret < 0) {
             return ret;
         }
         len += ret;
 
-        ret = CodecUtil::writeInt<int>(writer, data.buffer->len());
+        //write size of payload.
+        int size = data.buffer->len();
+        ret = CodecUtil::writeInt<int>(writer, size);
         if (ret < 0) {
             return ret;
-        }
+        }        
         len += ret;
-
-        ret = writer->write(data.buffer->buffer(), data.buffer->len());
-        if (ret < 0) {
-            return ret;
+        //write payload
+        if (size > 0) {
+            ret = writer->write(data.buffer->buffer(), data.buffer->len());
+            if (ret < 0) {
+                return ret;
+            }
+            len += ret;
         }
-        len += ret;
+        if (size == 0) {
+            // no data payload.
+        }
 
         return len;
     }
@@ -108,7 +141,8 @@ public:
     }
 
     friend String &operator<<(String &str, const Rf24NetData &data) {
-        return str << "Rf24NetData(" << data.node1 << "/" << data.port1 << "-" << data.node2 << "/" << data.port2 << ")";
+
+        return str << "Rf24NetData(" << data.type << "," << data.node1 << "/" << data.port1 << "-" << data.node2 << "/" << data.port2 << "," << StringUtil::toHexString(*data.buffer) << ")";
     }
 
     int type;

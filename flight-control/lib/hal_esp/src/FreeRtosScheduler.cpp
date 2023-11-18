@@ -28,14 +28,14 @@ void timerCallback(TimerHandle_t handle) {
  * After changed the creation method to xTaskCreatePinnedToCore(or xTaskCreateUniversal which is declared by header esp32-hal.h) the error disappeared.
  *
  */
-Thread *FreeRtosScheduler::schedule(void *context, sched::run run) {
+Thread *FreeRtosScheduler::createTask(const String name, void *context, sched::run run) {
     FreeRtosThread *thread = new FreeRtosThread(run, context);
     TaskHandle_t handle = 0;
 
     BaseType_t result =
         xTaskCreatePinnedToCore(
             taskCallback,
-            "MyTask",
+            name.text(),
             8192,
             thread,
             1,
@@ -63,12 +63,12 @@ Thread *FreeRtosScheduler::schedule(void *context, sched::run run) {
     return thread;
 }
 
-Timer *FreeRtosScheduler::scheduleTimer(sched::run run, void *context, const Rate &rate) {
+Timer *FreeRtosScheduler::createTimer(const String name, const Rate &rate, void *context, sched::run run) {
     FreeRtosTimer *timer = new FreeRtosTimer(run, context, rate);
     TimerHandle_t handle = 0;
     long ticks = configTICK_RATE_HZ / rate.Hz();
     handle = xTimerCreate(
-        static_cast<const char *>("MyTimer"), // name
+        name.text(), // name
         ticks,                                /*  */
         true,                                 /*  */
         timer,                                // timer id
