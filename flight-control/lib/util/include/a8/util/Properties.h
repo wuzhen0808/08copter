@@ -276,6 +276,16 @@ public:
         }
         return entry->getLine();
     }
+
+    Buffer<String> getAllLines() {
+        Buffer<String> buf;
+        Buffer<String> names = this->getNames();
+        for (int i = 0; i < names.len(); i++) {
+            String name = names.get(i);
+            buf.append(this->getLine(name));
+        }
+        return buf;
+    }
 };
 
 } // namespace  a8::util

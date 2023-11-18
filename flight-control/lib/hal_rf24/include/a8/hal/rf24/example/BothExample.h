@@ -33,8 +33,9 @@ public:
             st->run();
         });
         ClientTimer *ct = new ClientTimer(sockets, client, clientPort, sch, server, serverPort, loggerFactory);
-
-        sch->createTimer<ClientTimer *>("ClientTimer", 1.0f, ct, [](ClientTimer *ct) {
+        //
+        Rate rate = 100.0f;
+        sch->createTimer<ClientTimer *>("ClientTimer", rate, ct, [](ClientTimer *ct) {
             ct->tick();
         });
 

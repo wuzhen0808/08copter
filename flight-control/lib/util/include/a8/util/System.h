@@ -22,6 +22,11 @@ public:
     virtual int openFile(String fpath, Reader *&fReaderCb) = 0;
 
     virtual String getEnv(String name) = 0;
+
+    virtual Properties &getProperties(Properties &pts) {
+        return pts;
+    }
+
     System &operator<<(const char *str) {
         out->print(String() << str);
         return *this;
@@ -29,6 +34,16 @@ public:
     System &operator<<(String &str) {
         out->print(str);
         return *this;
+    }
+
+    friend String &operator<<(String &str, System *sys) {
+        Properties pts;
+        sys->getProperties(pts);
+        Buffer<String> lines = pts.getAllLines();
+        for (int i = 0; i < lines.len(); i++) {
+            str << lines.get(i) << "\n";
+        }
+        return str;
     }
 };
 
