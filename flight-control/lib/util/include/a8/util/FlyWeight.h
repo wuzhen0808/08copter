@@ -22,7 +22,7 @@ public:
     virtual ~FlyWeight() {
     }
 
-    void log(String msg) {
+    void log(const String& msg) {
         logger->info(msg);
     }
 };

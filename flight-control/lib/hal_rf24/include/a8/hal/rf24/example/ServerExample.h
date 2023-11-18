@@ -42,7 +42,9 @@ public:
 
         for (int i = 0;; i++) {
             int16 counter = -1;
+            log(String() << ">>receive data,i:" << i);
             int ret = CodecUtil::readInt16(&sr, counter);
+            log(String() << "<<receive data,i:" << i << ",counter:" << counter);
             if (ret < 0) {
                 log(res.errorMessage);
                 return ret;
@@ -103,7 +105,9 @@ public:
         while (true) {
 
             SOCK s2 = 0;
+            log(String() << ">>accept, ?@" << s1);
             ret = sockets->accept(s1, s2, res);
+            log(String() << "<<accept," << s2 << "@" << s1);
             if (ret < 0) {
                 res << ";failed to accept connect.";
                 return ret;

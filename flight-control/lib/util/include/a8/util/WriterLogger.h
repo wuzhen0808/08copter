@@ -27,7 +27,7 @@ public:
     void writeTime() {
     }
 
-    virtual void log(Logger::Level level, const String &msg) override {
+    void log(Logger::Level level, const String &msg) override {
         long long stime = sys->getSysTime();
         String formatTime;
         sys->formatTime(stime, &formatTime);

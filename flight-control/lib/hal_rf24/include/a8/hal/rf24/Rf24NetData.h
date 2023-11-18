@@ -95,27 +95,27 @@ public:
             return ret;
         }
         len += ret;
-        //node2
+        // node2
         ret = CodecUtil::writeInt<int>(writer, data.node2);
         if (ret < 0) {
             return ret;
         }
         len += ret;
-        //port2
+        // port2
         ret = CodecUtil::writeInt<int>(writer, data.port2);
         if (ret < 0) {
             return ret;
         }
         len += ret;
 
-        //write size of payload.
+        // write size of payload.
         int size = data.buffer->len();
         ret = CodecUtil::writeInt<int>(writer, size);
         if (ret < 0) {
             return ret;
-        }        
+        }
         len += ret;
-        //write payload
+        // write payload
         if (size > 0) {
             ret = writer->write(data.buffer->buffer(), data.buffer->len());
             if (ret < 0) {
@@ -137,6 +137,9 @@ public:
     }
 
     friend String &operator<<(String &str, const Rf24NetData *data) {
+        if (data == 0) {
+            return str << "0";
+        }
         return operator<<(str, *data);
     }
 

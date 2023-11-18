@@ -250,7 +250,7 @@ public:
      * receive user data.
      */
     int receive(char *buf, int bufLen, Result &res) {
-
+        log(String() << ">>receive");
         if (this->status != Status::Connected) {
             res << "connection not established or already broken.";
             return -1;
@@ -294,9 +294,13 @@ public:
     }
 
     Rf24NetData *takeByType(int type) {
+        log(String() << ">>takeByType:" << type);
+
         Rf24NetData *data = 0;
         while (data == 0) {
+            log(String() << ">>take, type:" << type);
             data = this->dataQueue->take(1000 * 10, 0);
+            log(String() << "<<take:" << data);
             if (data == 0) {
                 continue;
             }
@@ -305,7 +309,7 @@ public:
                 data = 0;
             }
         }
-
+        log(String() << "<<takeByType:" << type << ",data:" << data);
         return data;
     }
 };

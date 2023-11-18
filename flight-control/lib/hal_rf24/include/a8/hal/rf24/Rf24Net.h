@@ -74,22 +74,39 @@ public:
     }
 
     void runReceivingTask() {
-
+        long loops = 0;
+        int preLen = 0;
+        long timeout = 0;
         while (true) {
-            Rf24NetData *data = this->localDataQueue->take(0, 0);
-            if (data == 0) {
-                this->netLock->lock();
-                data = this->doReceiveRadioNet();
-                this->netLock->unLock();
+            //log(String() << ">>loops:" << loops);
+
+            int len = doReceiving(loops, timeout);
+            if (len == 0) {
+                timeout = 100;
+            } else {
+                timeout = 0;
             }
 
-            if (data == 0) {
-                continue;
-            }
-
-            this->netDataHandler_(this->netDataHandlerContext, data);
-            delete data;
+            loops++;
+            //log(String() << "<<loops:" << loops);
         }
+    }
+
+    int doReceiving(long loops, long timeout) {
+        Rf24NetData *data = this->localDataQueue->take(timeout, 0);
+        if (data == 0) {
+            this->netLock->lock();
+            data = this->doReceiveRadioNet();
+            this->netLock->unLock();
+        }
+
+        if (data == 0) {
+            return 0;
+        }
+
+        this->netDataHandler_(this->netDataHandlerContext, data);
+        delete data;
+        return 1;
     }
 
     int send(int node2, Rf24NetData *data, Result &res) {
