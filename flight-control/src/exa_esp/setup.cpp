@@ -21,10 +21,33 @@ int setup(a8::util::Result &res) {
     String str;
     str << sys << "------------\n";
     logFac->getLogger()->info(str);
-    
+    BaseExample *example;
+
+    int type = 0;
+    while (type < 1 || type > 2) {
+        Serial.println("Please select example type, 1:Server, 2:Client, 3:Both.");
+        while (!Serial.available()) {
+            delay(10);
+        }
+        char ch = Serial.read();
+        type = ch - '0';
+        Serial.println("type read:" + type);
+    }
+
+    Serial.println("selected type:" + type);
     // ClientExample *example = new ClientExample(sys, logFac, sch);
     //  ServerExample *example = new ServerExample(sys, logFac, sch);
-    BothExample *example = new BothExample(sys, logFac, sch);
+    if (type == 1) {
+        example = new ServerExample(sys, logFac, sch);
+    } else if (type = 2) {
+        example = new ClientExample(sys, logFac, sch);
+    } else if (type = 3) {
+        example = new BothExample(sys, logFac, sch);
+    } else {
+        res << "no such type:" << type;
+        return -1;
+    }
+
     // SyncQueueExample *example = new SyncQueueExample(sys, sch, logFac);
 
     return example->start(res);

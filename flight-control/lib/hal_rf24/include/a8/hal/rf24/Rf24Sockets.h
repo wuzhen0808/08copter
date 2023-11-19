@@ -29,8 +29,6 @@ private:
     System *sys;
     Scheduler *sch;
 
-    void onNetData(Rf24NetData *data);
-
     void sendResponse(int node2, int port2) {
         Rf24NetData resp;
         resp.type = Rf24NetData::TYPE_CONNECT_RESPONSE;
@@ -47,31 +45,105 @@ private:
     }
 
 public:
-    Rf24Sockets(int id, Rf24Hosts *hosts, System *sys, Scheduler *sch, LoggerFactory *logFac);
+    Rf24Sockets(int id, Rf24Hosts *hosts, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Rf24Sockets") {
+        this->hosts = hosts;
+        this->host = host;
+        this->ports = new Rf24Ports();
+        this->node = new Rf24Node(hosts, id, sys, sch, logFac);
+        this->socks = new Rf24Socks(node, hosts, ports, sys, sch, logFac);
+        this->sys = sys;
+        this->sch = sch;
+    }
 
-    ~Rf24Sockets();
+    ~Rf24Sockets() {
+        delete this->socks;
+        delete this->node;
+        delete this->ports;
+    }
 
-    int setup(int chipEnablePin, int chipSelectPin, int channel, Result &res);
+    int setup(int chipEnablePin, int chipSelectPin, int channel, Result &res) {
+        int ret = this->node->setup(
+            chipEnablePin, chipSelectPin, channel, this, [](void *this_, Rf24NetData *data) {
+                Rf24Sockets *this__ = static_cast<Rf24Sockets *>(this_);
+                this__->onNetData(data);
+            },
+            res);
+        if (ret < 0) {
+            return ret;
+        }
 
-    int close(SOCK sock) override;
+        return ret;
+    }
 
-    int connect(SOCK sock, const String host, int port, Result &res) override;
+    void onNetData(Rf24NetData *data) {
 
-    int bind(SOCK sock, const String address, int port, Result &res) override;
+        if (data->node2 != this->node->getId()) {
 
-    int listen(SOCK sock, Result &rst) override;
+            log(String() << "no node2 found with connect request:" << data);
+            this->sendResponse(data->node1, data->port1);
+            return;
+        }
 
-    int accept(SOCK sock, SOCK &sockIn, Result &res) override;
+        Rf24Sock *s = this->socks->findByPort(data->port2);
+        if (s == 0) {
+            log(String() << "no port2 found with connect request:" << data);
+            this->sendResponse(data->node1, data->port1);
+            return;
+        }
+        s->onData(data);
+    }
 
-    bool send(SOCK sock, const char *buf, int len, Result &res) override;
+    int socket(SOCK &sock) {
+        Rf24Sock *s = this->socks->create();
+        sock = s->getId();
+        return 1;
+    }
 
-    int receive(SOCK sock, char *buf, int bufLen, Result &res) override;
+    int close(SOCK sock) {
 
-    int getLastError() override;
+        return this->socks->close(sock);
+    }
 
-    int socket(SOCK &sock) override;
+    int connect(SOCK sock, const String host2, int port2, Result &res) {
+        return socks->connect(sock, host2, port2, res);
+    }
 
-    int select(SOCK &sock) override;
-    int select(Buffer<SOCK> &buffer1, Buffer<SOCK> &buffer2, Buffer<SOCK> &buffer3) override;
+    int bind(SOCK sock, const String host, int port, Result &res) {
+        return socks->bind(sock, host, port, this->hosts, res);
+    }
+
+    int listen(SOCK sock, Result &res) {
+        return socks->listen(sock, res);
+    }
+    /**
+     * Accept one good incoming connection, ignore the bad connections if necessary.
+     */
+    int accept(SOCK sock, SOCK &sockIn, Result &res) {
+        int sId2;
+        int ret = socks->accept(sock, sId2, res);
+        if (ret > 0) {
+            sockIn = sId2;
+        }
+        return ret;
+    }
+
+    bool send(SOCK sock, const char *buf, int len, Result &res) {
+        return socks->send(sock, buf, len, res);
+    }
+
+    int receive(SOCK sock, char *buf, int bufLen, Result &res) {
+        return socks->receive(sock, buf, bufLen, res);
+    }
+
+    int getLastError() {
+        return -1;
+    }
+
+    int select(SOCK &sock) {
+        return -1;
+    }
+    int select(Buffer<SOCK> &buffer1, Buffer<SOCK> &buffer2, Buffer<SOCK> &buffer3) {
+        return -1;
+    }
 };
 } // namespace a8::hal::rf24

@@ -49,7 +49,7 @@ public:
     }
 
     int setup(int nodeId, Result &res) {
-        using a8::util::String;        
+        using a8::util::String;
         hosts = buildHosts();
 
         sockets = new Rf24Sockets(nodeId, hosts, sys, sch, loggerFactory);
@@ -62,6 +62,7 @@ public:
         }
         return 1;
     }
+    virtual int start(Result &res) = 0;
 };
 
 } // namespace a8::hal::rf24::example

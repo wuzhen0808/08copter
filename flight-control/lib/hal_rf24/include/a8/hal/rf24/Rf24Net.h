@@ -21,7 +21,7 @@ class Rf24Net : public FlyWeight {
     SyncQueue<Rf24NetData *> *localDataQueue;
 
 public:
-    Rf24Net(RF24 *radio, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac) {
+    Rf24Net(RF24 *radio, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Rf24Net") {
         this->radio = radio;
         this->network = new RF24Network(*radio);
         this->sch = sch;
@@ -44,13 +44,35 @@ public:
         });
     }
 
-    void update() {
-        this->netLock->runInLock<Rf24Net *>(this, [](Rf24Net *this_) {
-            this_->network->update();
+    template <typename C, typename R>
+    R syncNetOp(C c, R (*runner)(C)) {
+        return this->netLock->callInLock<C, R>(this, runner);
+    }
+
+    template <typename C, typename C1, typename C2, typename C3, typename R>
+    R syncNetOp5(C c, C1 c1, C2 c2, C3 c3, R (*runner)(C, C1, C2, C3)) {
+        struct Params {
+            R (*runner)
+            (C, C1, C2, C3);
+            C c;
+            C1 c1;
+            C2 c2;
+            C3 c3;
+        } p;
+        p.runner = runner;
+        p.c = c;
+        p.c1 = c1;
+        p.c2 = c2;
+        p.c3 = c3;
+
+        return this->netLock->callInLock<Params *, R>(&p, [](Params *pp) {
+            return pp->runner(pp->c, pp->c1, pp->c2, pp->c3);
         });
     }
 
     Rf24NetData *doReceiveRadioNet() {
+
+        this->network->update();
         if (!this->network->available()) {
             return 0;
         }
@@ -78,7 +100,7 @@ public:
         int preLen = 0;
         long timeout = 0;
         while (true) {
-            //log(String() << ">>loops:" << loops);
+            // log(String() << ">>loops:" << loops);
 
             int len = doReceiving(loops, timeout);
             if (len == 0) {
@@ -88,16 +110,16 @@ public:
             }
 
             loops++;
-            //log(String() << "<<loops:" << loops);
+            // log(String() << "<<loops:" << loops);
         }
     }
 
     int doReceiving(long loops, long timeout) {
         Rf24NetData *data = this->localDataQueue->take(timeout, 0);
         if (data == 0) {
-            this->netLock->lock();
-            data = this->doReceiveRadioNet();
-            this->netLock->unLock();
+            data = this->syncNetOp<Rf24Net *, Rf24NetData *>(this, [](Rf24Net *this_) {
+                return this_->doReceiveRadioNet();
+            });
         }
 
         if (data == 0) {
@@ -120,6 +142,7 @@ public:
         }
         if (node2 == this->nodeId) {
             // send to local queue.
+            log(String() << "send to local node:" << this->nodeId);
             Rf24NetData *data2 = new Rf24NetData();
             ret = Rf24NetData::read(&wrb, *data2);
             if (ret < 0) {
@@ -130,11 +153,29 @@ public:
             localDataQueue->offer(data2);
             return 1;
         }
-        // send to radio net.
+
+        log(String() << "send to radio node:" << node2);
         RF24NetworkHeader header(node2);
-        bool ok = this->network->write(header, wrb.buffer(), wrb.len());
-        if (!ok) {
+
+        ret = this->syncNetOp5<Rf24Net *, RF24NetworkHeader *, char *, int, int>(
+            this, &header, wrb.buffer(), wrb.len(),
+            [](Rf24Net *this_, RF24NetworkHeader *header, char *buf, int len) {
+                return this_->doSendToRadioNet(header, buf, len);
+            } //
+        );
+
+        if (ret < 0) {
             res << "failed write to network, len:" << wrb.len();
+            return -1;
+        }
+
+        return wrb.len();
+    }
+    int doSendToRadioNet(RF24NetworkHeader *header, char *buf, int len) {
+        // send to radio net.
+        this->network->update();
+        bool ok = this->network->write(*header, buf, len);
+        if (!ok) {
             return -1;
         }
         return 1;

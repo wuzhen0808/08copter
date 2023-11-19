@@ -128,7 +128,7 @@ class ServerExample : public BaseExample {
 public:
     ServerExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample("ServerExample", sys, logFac, sch) {
     }
-    int start(Result &res) {
+    int start(Result &res) override {
         using a8::util::String;
         int ret = BaseExample::setup(this->serverNode, res);
         if (ret < 0) {

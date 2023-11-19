@@ -18,7 +18,8 @@ class BothExample : public BaseExample {
 public:
     BothExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample("BothExample", sys, logFac, sch) {
     }
-    int start(Result &res) {
+
+    int start(Result &res) override {
         using a8::util::String;
         int nodeId = this->clientNode;
         this->serverNode = this->clientNode;
