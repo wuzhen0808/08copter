@@ -73,7 +73,7 @@ public:
         }
         return len;
     }
-
+    
     template <typename T>
     int read(T &i) {
         Result res;

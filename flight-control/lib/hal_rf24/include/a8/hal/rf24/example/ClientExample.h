@@ -81,9 +81,13 @@ public:
     }
 };
 class ClientExample : public BaseExample {
-
+    Rate rate = 1.0f;
 public:
     ClientExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample("ClientExample", sys, logFac, sch) {
+    }
+
+    void setRate(Rate rate){
+        this->rate = rate;        
     }
 
     int start(Result &res) override {
@@ -95,7 +99,7 @@ public:
 
         ClientTimer *rc = new ClientTimer(sockets, client, clientPort, sch, server, serverPort, loggerFactory);
 
-        sch->createTimer<ClientTimer *>("ClientTimer", 1.0f, rc, [](ClientTimer *ct) {
+        sch->createTimer<ClientTimer *>("ClientTimer", this->rate, rc, [](ClientTimer *ct) {
             ct->tick();
         });
 

@@ -9,6 +9,7 @@ protected:
 
 public:
     Output *out;
+    Reader *input;
 
     System() {
     }
@@ -22,6 +23,10 @@ public:
     virtual int openFile(String fpath, Reader *&fReaderCb) = 0;
 
     virtual String getEnv(String name) = 0;
+
+    Reader *getInput() {
+        return this->input;
+    }
 
     virtual Properties &getProperties(Properties &pts) {
         return pts;

@@ -1,12 +1,13 @@
 #include "a8/hal/arduino/ArduinoSystem.h"
 #include "a8/hal/arduino/ArduinoOutput.h"
+#include "a8/hal/arduino/ArduinoInput.h"
 #include <Arduino.h>
 
 namespace a8::hal::arduino_ {
 using namespace a8::util;
 ArduinoSystem::ArduinoSystem() {
     out = new ArduinoOutput();
-    
+    input = new ArduinoInput();
 }
 
 long long ArduinoSystem::getSteadyTime() {

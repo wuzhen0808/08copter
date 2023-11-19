@@ -32,6 +32,7 @@ public:
     Rf24Hosts *hosts;
     Rf24Sockets *sockets;
     String name;
+    
     BaseExample(String name, System *sys,
                 LoggerFactory *logFac,
                 Scheduler *sch) : FlyWeight(logFac, name) {
