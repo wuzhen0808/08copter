@@ -7,13 +7,13 @@
 #include "a8/util/net.h"
 
 namespace a8::hal::rf24::example {
-class ExampleRunner {
+class Runner {
     System *sys;
     Scheduler *sch;
     LoggerFactory *logFac;
 
 public:
-    ExampleRunner(System *sys, Scheduler *sch, LoggerFactory *logFac) {
+    Runner(System *sys, Scheduler *sch, LoggerFactory *logFac) {
         this->sys = sys;
         this->sch = sch;
         this->logFac = logFac;
@@ -59,32 +59,60 @@ public:
         return ret;
     }
 
+    int readConfig(int &clientNode, int &serverNode, Rate &rate) {
+        int type = this->readOption(1, 4, "Please select a config:\n 1: Server,node(0);\n 2: Client,node(1),1Hz;\n 3: Both;\n 4:Other.");
+        rate = 1.0f;
+        clientNode = 0;
+        serverNode = 1;
+
+        switch (type) {
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        default:
+            type = readType();
+            if (type == 2 || type == 3) {
+                rate = readRate();
+            }
+        }
+        if (type == 3) {
+            clientNode = 0;
+            serverNode = 0;
+        }
+        return type;
+    }
+
     int start(Result &res) {
 
         Output &output = *sys->out;
         String str;
         str << sys << "------------\n";
         logFac->getLogger()->info(str);
+
         BaseExample *example;
-        int type = this->readType();
+        Rate rate;
+        int clientNode;
+        int serverNode;
+        int type = this->readConfig(clientNode, serverNode, rate);
         // ClientExample *example = new ClientExample(sys, logFac, sch);
         //  ServerExample *example = new ServerExample(sys, logFac, sch);
         if (type == 1) {
             example = new ServerExample(sys, logFac, sch);
         } else if (type == 2) {
             example = new ClientExample(sys, logFac, sch);
-            Rate rate = this->readRate();
             static_cast<ClientExample *>(example)->setRate(rate);
         } else if (type == 3) {
             example = new BothExample(sys, logFac, sch);
-            Rate rate = this->readRate();
             static_cast<BothExample *>(example)->setRate(rate);
         } else {
             res << "no such type:" << type;
             return -1;
         }
-        example->clientNode = readClientNode();
-        example->serverNode = readServerNode();
+        example->clientNode = clientNode;
+        example->serverNode = serverNode;
 
         return example->start(res);
     }

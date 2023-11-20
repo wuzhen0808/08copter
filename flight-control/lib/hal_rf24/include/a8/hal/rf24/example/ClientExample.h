@@ -27,6 +27,7 @@ public:
     SOCK sock = 0;
     bool connected = false;
     //
+    bool autoReConnect = true;
     int counter = 0;
     ClientTimer(Sockets *sockets, String host, int port, Scheduler *sch, String host2, int port2, LoggerFactory *logFac) : FlyWeight(logFac, "ClientTimer") {
         this->sockets = sockets;
@@ -73,6 +74,12 @@ public:
         ret = this->sockets->send(sock, buf.buffer(), buf.len(), res);
         if (ret < 0) {
             res << "sending failed.";
+            if (autoReConnect) {
+                this->sockets->close(sock);
+                sock = 0;
+                connected = false;
+                res << "allow reconnect.";
+            }
             return ret;
         }
         log(String() << "send out:" << counter);
@@ -82,12 +89,13 @@ public:
 };
 class ClientExample : public BaseExample {
     Rate rate = 1.0f;
+
 public:
     ClientExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample("ClientExample", sys, logFac, sch) {
     }
 
-    void setRate(Rate rate){
-        this->rate = rate;        
+    void setRate(Rate rate) {
+        this->rate = rate;
     }
 
     int start(Result &res) override {

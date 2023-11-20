@@ -9,7 +9,7 @@ class Sockets {
 public:
     virtual int socket(SOCK &sock) = 0;
 
-    virtual bool send(SOCK sock, const char *buf, int len, Result &res) = 0;
+    virtual int send(SOCK sock, const char *buf, int len, Result &res) = 0;
 
     virtual int receive(SOCK sock, char *buf, int bufLen, Result &res) = 0;
 

@@ -121,7 +121,7 @@ public:
         return ret;
     }
 
-    bool send(SOCK sock, const char *buf, int len, Result &res) {
+    int send(SOCK sock, const char *buf, int len, Result &res) {
         return socks->send(sock, buf, len, res);
     }
 
