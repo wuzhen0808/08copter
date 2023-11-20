@@ -60,6 +60,11 @@ public:
         this->head->pre = this->head;
     }
 
+    ~LinkedList() {
+        this->clear();
+        delete this->head;
+    }
+
     void add(T ele) {
         insert(this->tailNode(), ele);
     }
@@ -79,18 +84,14 @@ public:
     }
 
     void clear() {
-        return clear<int>(0, [](int ctx, T ele) {});
-    }
-
-    template <typename C>
-    void clear(C context, void (*free)(C, T)) {
         Node<T> *node = this->head->next;
         while (node != this->head) {
             Node<T> *node2 = node->next;
-            free(context, node->ele);
             delete node;
             node = node2;
         }
+        this->head->next = this->head;
+        this->head->pre = this->head;
     }
 
     bool isEmpty() {
@@ -204,6 +205,14 @@ public:
             delete[] p.toBeRemoved;
         }
         return len;
+    }
+    template <typename C>
+    void forEach(C c, void (*consumer)(C, T)) {
+        Node<T> *node = this->head->next;
+        while (node != this->head) {
+            consumer(c, node->ele);
+            node = node->next;
+        }
     }
 };
 } // namespace  a8::util

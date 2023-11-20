@@ -44,7 +44,7 @@ public:
         Result res;
         return read(buf, bufLen, res);
     }
-
+    
     /**
      * Return :
      * >0: the length read into buf parameter provided.

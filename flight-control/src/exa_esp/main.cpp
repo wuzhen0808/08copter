@@ -9,7 +9,7 @@ void setup() {
     using a8::util::String;
     using namespace a8::util;
     Serial.begin(115200);
-    while(Serial.available()){
+    while (Serial.available()) {
         Serial.read();
     }
     Wire.begin();
@@ -22,8 +22,9 @@ void setup() {
     if (ret < 0) {
         Serial.println(res.errorMessage.text());
     }
-    Serial.println("<<setup");   
+    Serial.println("<<setup");
 }
 
 void loop() {
+    delay(1000 * 10);
 }

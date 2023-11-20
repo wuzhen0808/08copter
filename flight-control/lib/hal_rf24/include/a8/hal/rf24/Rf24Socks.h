@@ -1,7 +1,9 @@
 #pragma once
 #include "a8/hal/rf24/Rf24Hosts.h"
+#include "a8/hal/rf24/Rf24NetRequest.h"
 #include "a8/hal/rf24/Rf24Ports.h"
 #include "a8/hal/rf24/Rf24Sock.h"
+
 #include "a8/util/net.h"
 
 namespace a8::hal::rf24 {
@@ -15,10 +17,6 @@ class Rf24Socks : public FlyWeight {
     Rf24Ports *ports;
     System *sys;
     Scheduler *sch;
-    static void closeAndDelete(Rf24Sock *sock) {
-        sock->close();
-        delete sock;
-    }
 
 public:
     Rf24Socks(Rf24Node *node, Rf24Hosts *hosts, Rf24Ports *ports, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Rf24Socks") {
@@ -30,6 +28,14 @@ public:
         this->sch = sch;
         this->table = new HashTable<int, Rf24Sock *>([](int k) { return k % 32; });
         this->binds = new HashTable<int, Rf24Sock *>([](int k) { return k % 16; });
+    }
+
+    ~Rf24Socks() {
+        this->table->forEach<int>(0, [](int c, int k, Rf24Sock *v) {
+            delete v;
+        });
+        delete this->table;
+        delete this->binds;
     }
 
     Rf24Sock *create() {
@@ -51,44 +57,6 @@ public:
         }
         this->binds->set(port, s);
         return 1;
-    }
-
-    int doAccept(Rf24NetData *req, Rf24Sock *&sockIn, Result &res) {
-        Rf24Sock *s2 = this->create();
-        int port22 = this->ports->randomPort();
-        int ret = this->doBind(s2, port22, res); // bond to the new random port.
-        if (ret < 0) {
-            this->close(s2->getId());
-            res << ("failed to accept connection request, cannot bind, detail:" << res.errorMessage);
-            return -1;
-        }
-
-        ret = s2->connectIn(req->node1, req->port1, res);
-        if (ret < 0) {
-            // connect failed.
-            return -1;
-        }
-
-        log(String() << "handle the connection request:" << req);
-        // send response to client.
-        Rf24NetData *resp = new Rf24NetData();
-        resp->type = Rf24NetData::TYPE_CONNECT_RESPONSE;
-        resp->node1 = this->node->getId();
-        resp->port1 = port22;
-        resp->node2 = req->node1;
-        resp->port2 = req->port1;
-        this->node->send(resp->node2, resp, res);
-        delete resp;
-        sockIn = s2;
-        return 1;
-    }
-
-    ~Rf24Socks() {
-
-        table->clear<Rf24Socks *>(this, [](Rf24Socks *this_, int k, Rf24Sock *v) {
-            closeAndDelete(v);
-        });
-        delete this->table;
     }
 
     int close(int id) {
@@ -178,15 +146,63 @@ public:
         if (s == 0) {
             return -1; //
         }
-        Rf24NetData *req = s->takeByType(Rf24NetData::TYPE_CONNECT_REQUEST);
         Rf24Sock *s2 = 0;
-        int ret = this->doAccept(req, s2, res);
-        delete req;
+        int ret = s->consumeByType<Rf24Socks *, Rf24Sock *&, Result &, int>(
+            Rf24NetData::TYPE_CONNECT_REQUEST, //
+            this, s2, res,
+            [](Rf24Socks *this_, Rf24Sock *&s2, Result &res, Rf24NetRequest *req) {
+                int ret = this_->doAccept(req, s2, res);
+                int port1 = req->data->port2; //
+                if (ret > 0) {
+                    port1 = s2->getPort(); // the new port ready for client to communicate.
+                }
+
+                this_->sendResponseIfNecessary(req, port1);
+                return ret;
+            });
+
         if (ret < 0) {
             return ret;
         }
         sockIn = s2->getId();
         return ret;
+    }
+
+    int doAccept(Rf24NetRequest *req, Rf24Sock *&sockIn, Result &res) {
+        Rf24Sock *s2 = this->create();
+        int port22 = this->ports->randomPort();
+        int ret = this->doBind(s2, port22, res); // bond new sock to the new random port.
+        if (ret < 0) {
+            this->close(s2->getId());
+            res << ("failed to accept connection request, cannot bind, detail:" << res.errorMessage);
+            req->responseCode = -1;
+            return -1;
+        }
+
+        ret = s2->connectIn(req->data->node1, req->data->port1, res);
+        if (ret < 0) {
+            // connect failed.
+            req->responseCode = -2;
+            return -2;
+        }
+        req->responseCode = 1;
+        sockIn = s2;
+        return 1;
+    }
+
+    void sendResponseIfNecessary(Rf24NetRequest *nReq, int port1) {
+
+        if (nReq->responseType == 0) {
+            // no response type.
+            log(String() << "no need to send response(" << nReq->responseCode << "), no response type for net data:" << nReq->data);
+            return;
+        }
+
+        Result res2;
+        int ret2 = this->node->send(nReq->responseType, port1, nReq->data->node1, nReq->data->port1, nReq->responseCode, 0, 0, res2);
+        if (ret2 < 0) {
+            log(String() << "failed to send response(" << nReq->responseCode << ") for data:" << nReq->data);
+        }
     }
 
     int send(int sId, const char *buf, int len, Result &res) {
@@ -203,7 +219,14 @@ public:
             return -1; //
         }
 
-        return s->receive(buf, len, res);
+        int ret = s->receive<Rf24Socks *>(
+            buf, len, this, //
+            [](Rf24Socks *this_, Rf24NetRequest *nReq) {
+                this_->sendResponseIfNecessary(nReq, nReq->port);
+            },
+            res);
+
+        return ret;
     }
 
     Rf24Sock *findByPort(int port) {

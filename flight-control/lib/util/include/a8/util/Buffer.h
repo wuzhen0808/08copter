@@ -155,7 +155,7 @@ public:
     }
     /**
      * return len or 0 if no data to read.
-    */
+     */
     int read(int from1, T *buf, int len) {
         if (from1 >= this->length_) {
             return 0;
@@ -174,10 +174,11 @@ public:
         }
         return this->length_;
     }
+    
     void clear() {
         this->length_ = 0;
     }
-    
+
     Buffer<T> *append(Buffer<T> *buf, int from, int len) {
         return this->append(buf->buffer_, from, len);
     }
@@ -252,7 +253,7 @@ public:
         }
         return this->buffer_[idx];
     }
-    
+
     void operator=(T *array) {
     }
 
@@ -271,6 +272,14 @@ public:
             ret.append(this->buffer_, from, len2);
         }
         return ret;
+    }
+    
+    template <typename C>
+    void forEach(C c, void (*consumer)(C, T)){
+        for (int i = 0; i < this->length_; i++) {
+            T ele = this->buffer_[i];
+            consumer(c, ele);
+        }
     }
 };
 

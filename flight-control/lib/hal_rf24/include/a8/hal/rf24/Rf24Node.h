@@ -31,7 +31,7 @@ public:
         Lang::free<RF24>(this->radio);
     }
 
-    int setup(int chipEnablePin, int chipSelectPin, int channel, void *c, void (*nodeDataHandler)(void *, Rf24NetData *), Result &res) {
+    int setup(int chipEnablePin, int chipSelectPin, int channel, void *c, void (*nodeDataHandler)(void *, Rf24NetData *&), Result &res) {
         if (this->radio != 0) {
             res << "cannot setup twice.";
             return -1;
@@ -52,12 +52,19 @@ public:
     int getId() {
         return this->id;
     }
-    int send(int node2, Rf24NetData *data, Result &res) {
+
+    int send(const int type, const int port1, const int node2, const int port2, const int responseCode, const char *buf, const int len, Result &res) {
+        Rf24NetData data(type, this->id, port1, node2, port2, responseCode, buf, len);
+        return send(&data, res);
+    }
+
+    int send(Rf24NetData *data, Result &res) {
         log(String() << "send data:" << data);
-        int ret = this->net->send(node2, data, res);
+        int ret = this->net->send(data, res);
         log(String() << "sent data:" << data);
         return ret;
     }
+
 };
 
 } // namespace a8::hal::rf24

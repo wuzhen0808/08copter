@@ -1,5 +1,6 @@
 #pragma once
 #include "a8/hal/rf24/Rf24Hosts.h"
+#include "a8/hal/rf24/Rf24NetRequest.h"
 #include "a8/hal/rf24/Rf24Node.h"
 #include "a8/hal/rf24/Rf24Ports.h"
 #include "a8/hal/rf24/Rf24Socks.h"
@@ -29,21 +30,6 @@ private:
     System *sys;
     Scheduler *sch;
 
-    void sendResponse(int node2, int port2) {
-        Rf24NetData resp;
-        resp.type = Rf24NetData::TYPE_CONNECT_RESPONSE;
-        resp.node1 = this->node->getId();
-        resp.port1 = 0; // no such port found.
-        resp.node2 = node2;
-        resp.port2 = port2;
-        // TODO add error code.
-        Result res;
-        int ret = this->node->send(resp.node2, &resp, res);
-        if (ret < 0) {
-            log(String() << "Failed to send response:" << resp);
-        }
-    }
-
 public:
     Rf24Sockets(int id, Rf24Hosts *hosts, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Rf24Sockets") {
         this->hosts = hosts;
@@ -63,7 +49,7 @@ public:
 
     int setup(int chipEnablePin, int chipSelectPin, int channel, Result &res) {
         int ret = this->node->setup(
-            chipEnablePin, chipSelectPin, channel, this, [](void *this_, Rf24NetData *data) {
+            chipEnablePin, chipSelectPin, channel, this, [](void *this_, Rf24NetData *&data) {
                 Rf24Sockets *this__ = static_cast<Rf24Sockets *>(this_);
                 this__->onNetData(data);
             },
@@ -74,23 +60,31 @@ public:
 
         return ret;
     }
-
-    void onNetData(Rf24NetData *data) {
-
-        if (data->node2 != this->node->getId()) {
-
-            log(String() << "no node2 found with connect request:" << data);
-            this->sendResponse(data->node1, data->port1);
+    void onNetData(Rf24NetData *&data) {
+        Rf24NetRequest *nReq = new Rf24NetRequest(data);
+        handleNetRequest(nReq);
+        if (!nReq->consumeLater) {
+            delete nReq; // consume it
+        }
+    }
+    void handleNetRequest(Rf24NetRequest *nReq) {
+        if (nReq->data->node2 != this->node->getId()) {
+            log(String() << "no such node id(" << nReq->data->node2 << ") to handle the net data:" << nReq->data);
+            nReq->responseCode = -1;
+            this->socks->sendResponseIfNecessary(nReq, 0); // not such node.
             return;
         }
 
-        Rf24Sock *s = this->socks->findByPort(data->port2);
-        if (s == 0) {
-            log(String() << "no port2 found with connect request:" << data);
-            this->sendResponse(data->node1, data->port1);
+        Rf24Sock *s2 = this->socks->findByPort(nReq->data->port2);
+        if (s2 == 0) {
+            log(String() << "no such port(" << nReq->data->port2 << "@" << nReq->data->node2 << ") to handle net data:" << nReq->data);
+            nReq->responseCode = -2;
+            this->socks->sendResponseIfNecessary(nReq, 0); // no such port.
             return;
         }
-        s->onData(data);
+        s2->enqueueNetRequest(nReq);
+
+        // response later.
     }
 
     int socket(SOCK &sock) {

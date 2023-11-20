@@ -39,7 +39,7 @@ class Rf24Sock : FlyWeight {
     // TODO queue of connection requests.
     // TODO use a lock to sync op on connectionRequest.
     Scheduler *sch;
-    SyncQueue<Rf24NetData *> *dataQueue;
+    SyncQueue<Rf24NetRequest *> *reqQueue;
     //
     Queue<char> buffer;
 
@@ -68,11 +68,12 @@ public:
         this->node = 0;
         this->port = 0;
         this->sch = sch;
-        this->dataQueue = sch->createSyncQueue<Rf24NetData *>(128);
+        this->reqQueue = sch->createSyncQueue<Rf24NetRequest *>(128);
     }
 
     ~Rf24Sock() {
-        destroyQueue<Rf24NetData>(this->dataQueue);
+        this->close();
+        destroyQueue<Rf24NetRequest>(this->reqQueue);
     }
 
     int getId() {
@@ -83,17 +84,18 @@ public:
         return this->status;
     }
 
-    void onData(Rf24NetData *data) {
-        data = Rf24NetData::copy(data, *new Rf24NetData());
-        log(String() << ">>onData:" << data);
+    void enqueueNetRequest(Rf24NetRequest *nReq) {
+
+        log(String() << ">>enqueue net req:" << nReq);
         while (true) {
-            int ret = this->dataQueue->offer(data, 1000 * 10);
+            int ret = this->reqQueue->offer(nReq, 1000 * 10);
             if (ret < 0) {
                 continue;
             }
+            nReq->consumeLater = true;
             break;
         }
-        log(String() << "<<onData:" << data);
+        log(String() << "<<enqueue net req:" << nReq);
         return;
     }
 
@@ -150,35 +152,35 @@ public:
 
         // send message to remote node and port
 
-        Rf24NetData data;
-        data.type = Rf24NetData::TYPE_CONNECT_REQUEST;
-        data.node1 = this->node->getId();
-        data.port1 = this->port;
-        data.node2 = node2;
-        data.port2 = port2;
-        int ret = this->node->send(node2, &data, res);
+        Rf24NetData data(Rf24NetData::TYPE_CONNECT_REQUEST,
+                         this->node->getId(), // node1
+                         this->port,          // port1
+                         node2,               // node2
+                         port2                // port2
+        );
+        int ret = this->node->send(&data, res);
         if (ret < 0) {
             this->status = Idle;
             return ret;
         }
         // todo timeout of response.
-        Rf24NetData *resp = this->takeByType(Rf24NetData::TYPE_CONNECT_RESPONSE);
-        onResponse(resp);
-        delete resp;
+        return this->consumeByType<Rf24Sock *, Rf24NetData *, int>(Rf24NetData::TYPE_CONNECT_RESPONSE, this, &data, [](Rf24Sock *this_, Rf24NetData *data, Rf24NetRequest *resp) {
+            return this_->handleConnectResponse(data, resp);
+        });
+    }
+
+    int handleConnectResponse(Rf24NetData *data, Rf24NetRequest *resp) {
+        if (resp->data->responseCode < 0) {
+            this->status = Status::Idle;
+            log(String() << "failed connect to node by data:" << data << ",responseCode:" << resp->data->responseCode);
+            return -3;
+        }
+        this->node2 = resp->data->node1;
+        this->port2 = resp->data->port1;
+        this->status = Status::Connected;
         return 1;
     }
-    void onResponse(Rf24NetData *resp) {
-        log(String() << "got connect response:" << resp);
-        if (resp->port1 == 0) {
-            log(String() << "connect failure with the resp:" << resp);
-            this->status = Idle;
-            return;
-        }
-        this->node2 = resp->node1;
-        this->port2 = resp->port1;
-        this->status = Status::Connected;
-        log(String() << "connect success with the resp:" << resp);
-    }
+
     int connectIn(int node2, int port2, Result &res) {
         if (this->role == Role::Unknown) {
             this->role = Role::Worker;
@@ -237,19 +239,52 @@ public:
             return -1;
         }
 
-        Rf24NetData data;
-        data.type = Rf24NetData::TYPE_USER_DATA;
-        data.node1 = this->node->getId();
-        data.port1 = this->port;
-        data.node2 = this->node2;
-        data.port2 = this->port2;
-        data.buffer->append(buf, len);
-        return this->node->send(this->node2, &data, res);
+        int ret = this->node->send(Rf24NetData::TYPE_USER_DATA,
+                                   this->port,
+                                   this->node2,
+                                   this->port2,
+                                   0,   //
+                                   buf, //
+                                   len, //
+                                   res);
+        if (ret < 0) {
+            return ret;
+        }
+        Rf24NetRequest *resp = this->takeByType(Rf24NetData::TYPE_USER_DATA_RESPONSE);
+        ret = handleUserDataResponse(resp, res);
+        delete resp;
+        return ret;
+    }
+
+    int handleUserDataResponse(Rf24NetRequest *resp, Result &res) {
+        int ret = resp->data->responseCode;
+        if (ret < 0) {
+            res << "failed send data because remote error code:" << ret;
+            return -2;
+        }
+        log(String() << "successfully send out data for the response code is " << resp->data->responseCode);
+        return 1;
+    }
+    int doReceive(Rf24NetRequest *nReq) {
+        if (nReq == 0) {
+            // bug?
+            nReq->responseCode = -1;
+            return -1; //
+        }
+        if (nReq->data->buffer->isEmpty()) {
+            // bug?
+            nReq->responseCode = -2;
+            return -2;
+        }
+        this->buffer.append(*nReq->data->buffer); // todo use move constructor.
+        nReq->responseCode = 1;
+        return 1;
     }
     /**
      * receive user data.
      */
-    int receive(char *buf, int bufLen, Result &res) {
+    template <typename C>
+    int receive(char *buf, int bufLen, C c, void (*response)(C, Rf24NetRequest *), Result &res) {
         log(String() << ">>receive");
         if (this->status != Status::Connected) {
             res << "connection not established or already broken.";
@@ -258,19 +293,13 @@ public:
 
         if (this->buffer.isEmpty()) {
 
-            Rf24NetData *uData = this->takeByType(Rf24NetData::TYPE_USER_DATA);
-            if (uData == 0) {
-                // bug?
-                return -1; //
+            Rf24NetRequest *nReq = this->takeByType(Rf24NetData::TYPE_USER_DATA);
+            int ret = doReceive(nReq);
+            response(c, nReq);
+            delete nReq; // consume it.
+            if (ret < 0) {
+                return ret;
             }
-            if (uData->buffer->isEmpty()) {
-                // bug?
-                return -1;
-            }
-
-            this->buffer.append(*uData->buffer); // todo use move constructor.
-
-            delete uData;
         }
 
         int len = this->buffer.take(buf, bufLen);
@@ -286,31 +315,91 @@ public:
         return len;
     }
 
-    template <typename C>
-    void consumeByType(int type, C c, void (*consume)(C c, Rf24NetData *)) {
-        Rf24NetData *data = takeByType(type);
-        consume(c, data);
-        delete data;
+    template <typename C, typename C2, typename C3, typename C4, typename R>
+    R consumeByType(int type, C c, C2 c2, C3 c3, C4 c4, R (*consume)(C c, C2 c2, C3 c3, C4 c4, Rf24NetRequest *)) {
+        struct Params {
+            C c;
+            C2 c2;
+            C3 c3;
+            C4 c4;
+            R(*consume_)
+            (C, C2, C3, C4, Rf24NetRequest *);
+
+            R ret;
+            Params(C c, C2 c2, C3 c3, C4 c4) : c(c), c2(c2), c3(c3), c4(c4) {
+            }
+        } p(c, c2, c3, c4);
+        p.consume_ = consume;
+        this->consumeByType<Params *>(type, &p, [](Params *pp, Rf24NetRequest *req) {
+            pp->ret = pp->consume_(pp->c, pp->c2, pp->c3, pp->c4, req);
+        });
+        return p.ret;
     }
 
-    Rf24NetData *takeByType(int type) {
+    template <typename C, typename C2, typename C3, typename R>
+    R consumeByType(int type, C c, C2 c2, C3 c3, R (*consume)(C c, C2 c2, C3 c3, Rf24NetRequest *)) {
+        struct Params {
+            C c;
+            C2 c2;
+            C3 c3;
+            R(*consume_)
+            (C, C2, C3, Rf24NetRequest *);
+
+            R ret;
+            Params(C c, C2 c2, C3 c3) : c(c), c2(c2), c3(c3) {
+            }
+        } p(c, c2, c3);
+        p.consume_ = consume;
+        this->consumeByType<Params *>(type, &p, [](Params *pp, Rf24NetRequest *req) {
+            pp->ret = pp->consume_(pp->c, pp->c2, pp->c3, req);
+        });
+        return p.ret;
+    }
+
+    template <typename C, typename C2, typename R>
+    R consumeByType(int type, C c, C2 c2, R (*consume)(C c, C2 c2, Rf24NetRequest *)) {
+        struct Params {
+            C c;
+            C2 c2;
+            R(*consume_)
+            (C, C2, Rf24NetRequest *);
+
+            R ret;
+            Params(C c, C2 c2) : c(c), c2(c2) {
+            }
+        } p(c, c2);
+        p.consume_ = consume;
+        this->consumeByType<Params *>(type, &p, [](Params *pp, Rf24NetRequest *req) {
+            pp->ret = pp->consume_(pp->c, pp->c2, req);
+        });
+        return p.ret;
+    }
+
+    template <typename C>
+    void consumeByType(int type, C c, void (*consume)(C c, Rf24NetRequest *)) {
+        Rf24NetRequest *req = takeByType(type);
+        consume(c, req);
+        delete req;
+    }
+
+    Rf24NetRequest *takeByType(int type) {
         log(String() << ">>takeByType:" << type);
 
-        Rf24NetData *data = 0;
-        while (data == 0) {
+        Rf24NetRequest *req = 0;
+        while (req == 0) {
             log(String() << ">>take, type:" << type);
-            data = this->dataQueue->take(1000 * 10, 0);
-            log(String() << "<<take:" << data);
-            if (data == 0) {
+            req = this->reqQueue->take(1000 * 10, 0);
+            log(String() << "<<take:" << req);
+            if (req == 0) {
                 continue;
             }
-            if (data->type != type) {
-                delete data;
-                data = 0;
+            if (req->data->type != type) {
+                delete req; // consume here.
+                req = 0;
             }
         }
-        log(String() << "<<takeByType:" << type << ",data:" << data);
-        return data;
+        log(String() << "<<takeByType:" << type << ",data:" << req);
+        return req;
     }
 };
 

@@ -10,7 +10,7 @@ using namespace a8::util::sched;
 using namespace a8::util;
 
 class Rf24Net : public FlyWeight {
-    using netDataHandler = void (*)(void *, Rf24NetData *);
+    using netDataHandler = void (*)(void *, Rf24NetData *&);
     RF24 *radio;
     RF24Network *network;
     int nodeId;
@@ -52,7 +52,7 @@ public:
     template <typename C, typename C1, typename C2, typename C3, typename R>
     R syncNetOp5(C c, C1 c1, C2 c2, C3 c3, R (*runner)(C, C1, C2, C3)) {
         struct Params {
-            R (*runner)
+            R(*runner)
             (C, C1, C2, C3);
             C c;
             C1 c1;
@@ -87,10 +87,11 @@ public:
         if (size2 != size) {
             log(String() << "size of data received is not the expected.");
         }
-        Rf24NetData *data = new Rf24NetData();
-        WriterReaderBuffer wrb;
-        (static_cast<Writer *>(&wrb))->write(buf, size);
-        Rf24NetData::read(&wrb, *data);
+        Rf24NetData *data = 0;
+        int ret = Rf24NetData::read(buf, size, data);
+        if (ret < 0) {
+            return 0;
+        }
 
         return data;
     }
@@ -104,7 +105,7 @@ public:
 
             int len = doReceiving(loops, timeout);
             if (len == 0) {
-                timeout = 100;
+                timeout = 10;
             } else {
                 timeout = 0;
             }
@@ -126,12 +127,11 @@ public:
             return 0;
         }
 
-        this->netDataHandler_(this->netDataHandlerContext, data);
-        delete data;
+        this->netDataHandler_(this->netDataHandlerContext, data);        
         return 1;
     }
 
-    int send(int node2, Rf24NetData *data, Result &res) {
+    int send(Rf24NetData *data, Result &res) {
 
         WriterReaderBuffer wrb;
         int ret = Rf24NetData::write(&wrb, *data);
@@ -140,22 +140,22 @@ public:
             res << "failed to encode data to send out.";
             return ret;
         }
-        if (node2 == this->nodeId) {
+        if (data->node2 == this->nodeId) {
             // send to local queue.
             log(String() << "send to local node:" << this->nodeId);
-            Rf24NetData *data2 = new Rf24NetData();
-            ret = Rf24NetData::read(&wrb, *data2);
+            Rf24NetData *data2 = 0;
+            ret = Rf24NetData::read(&wrb, data2);
             if (ret < 0) {
                 res << "failed to decode data for local node data.";
-                delete data2;
                 return ret;
             }
+
             localDataQueue->offer(data2);
             return 1;
         }
 
-        log(String() << "send to radio node:" << node2);
-        RF24NetworkHeader header(node2);
+        log(String() << "sending data(" << data << ") to radio net");
+        RF24NetworkHeader header(data->node2);
 
         ret = this->syncNetOp5<Rf24Net *, RF24NetworkHeader *, char *, int, int>(
             this, &header, wrb.buffer(), wrb.len(),

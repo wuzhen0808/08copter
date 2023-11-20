@@ -15,27 +15,41 @@ using namespace a8;
 using a8::util::String;
 
 class BothExample : public BaseExample {
+    Rate rate = 1.0f;
+
 public:
     BothExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample("BothExample", sys, logFac, sch) {
     }
 
-    int start(Result &res) override {
-        using a8::util::String;
-        int nodeId = this->clientNode;
-        this->serverNode = this->clientNode;
+    void setRate(Rate rate) {
+        this->rate;
+    }
 
-        int ret = BaseExample::setup(nodeId, res);
+    int start(Result &res) override {
+        log(">>start");
+        using a8::util::String;
+        if (this->clientNode != this->serverNode) {
+            res << "clientNode(" << clientNode << ") must equals to the Server node(" << serverNode << ")";
+            return -1;
+        }
+
+        int ret = BaseExample::setup(clientNode, res);
+        log(">>start.2");
         if (ret < 0) {
             return ret;
         }
         ServerTask *st = new ServerTask(sockets, server, serverPort, sch, loggerFactory);
 
+        log(">>start.3");
         sch->createTask<ServerTask *>("ServerTask", st, [](ServerTask *st) {
             st->run();
         });
+        log("waiting for server ready to accept connection.");
+        st->waitForReady();
+        log("server is ready.");
         ClientTimer *ct = new ClientTimer(sockets, client, clientPort, sch, server, serverPort, loggerFactory);
         //
-        Rate rate = 100.0f;
+
         sch->createTimer<ClientTimer *>("ClientTimer", rate, ct, [](ClientTimer *ct) {
             ct->tick();
         });

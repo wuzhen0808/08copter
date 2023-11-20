@@ -41,6 +41,9 @@ public:
         nodeId = nId;
         return 1;
     }
+    friend String &operator<<(String &str, Rf24Hosts *hosts) {
+        return *hosts->hostNodes >> str;
+    }
 };
 
 } // namespace a8::hal::rf24

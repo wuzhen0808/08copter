@@ -19,21 +19,22 @@ class HashTable {
     Buffer<LinkedList<Entry<K, V>> *> table;
     hashCode hashCode_;
     equals equals_;
+    void init(hashCode hashCodeF, equals equalsF) {
+        this->hashCode_ = hashCodeF;
+        this->equals_ = equalsF;
+    }
 
 public:
     HashTable() {
-        this->hashCode_ = [](K k) { return k % 128; };
-        this->equals_ = [](K k1, K k2) { return k1 == k2; };
+        this->init([](K k) { return k % 128; }, [](K k1, K k2) { return k1 == k2; });
     }
 
     HashTable(hashCode hashCodeF) {
-        this->hashCode_ = hashCodeF;
-        this->equals_ = [](K k1, K k2) { return k1 == k2; };
+        this->init(hashCodeF, [](K k1, K k2) { return k1 == k2; });
     }
 
     HashTable(hashCode hashCodeF, equals equalsF) {
-        this->hashCode_ = hashCodeF;
-        this->equals_ = equalsF;
+        this->init(hashCodeF, equalsF);
     }
 
     ~HashTable() {
@@ -123,31 +124,36 @@ public:
     }
 
     void clear() {
-        clear<int>(0, [](int, K k, V v) {});
+        this->table.template forEach<int>(0, [](int c, LinkedList<Entry<K, V>> *list) {
+            if (list == 0) {
+                return;
+            }
+            delete list;
+        });
+        this->table.clear();
     }
 
     template <typename C>
-    void clear(C context, void (*free)(C, K, V)) {
+    void forEach(C c, void (*consumer)(C, K, V)) {
         struct Params {
-            void (*free_)(C, K, V);
-            C context_;
-        };
-        Params p;
-        p.free_ = free;
-        p.context_ = context;
+            void (*consumer_)(C, K, V);
+            C c;
+            Params(C c) : c(c) {
+            }
+        } p(c);
+        p.consumer_ = consumer;
 
         for (int i = 0; i < table.len(); i++) {
             LinkedList<Entry<K, V>> *list = table.get(i);
             if (list == 0) {
                 continue;
             }
-
-            list->template clear<Params *>(&p, [](Params *pp, Entry<K, V> entry) {
-                pp->free_(pp->context_, entry.k, entry.v);
+            list->template forEach<Params *>(&p, [](Params *pp, Entry<K, V> entry) {
+                pp->consumer_(pp->c, entry.k, entry.v);
             });
-            delete list;
         }
     }
+
     int remove(K key) {
         return this->remove<int>(0, key, [](int, K, V) {});
     }
@@ -185,6 +191,16 @@ public:
         );
 
         return len;
+    }
+
+    String &operator>>(String &str) {
+        str << "{";
+
+        this->template forEach<String &>(str, [](String &str, K k, V v) {
+            str << k << ":" << v << ",";
+        });
+
+        return str << "}";
     }
 };
 } // namespace  a8::util

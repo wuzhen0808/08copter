@@ -32,7 +32,7 @@ public:
     Rf24Hosts *hosts;
     Rf24Sockets *sockets;
     String name;
-    
+
     BaseExample(String name, System *sys,
                 LoggerFactory *logFac,
                 Scheduler *sch) : FlyWeight(logFac, name) {
@@ -52,7 +52,7 @@ public:
     int setup(int nodeId, Result &res) {
         using a8::util::String;
         hosts = buildHosts();
-
+        log(String() << "hosts:" << hosts);
         sockets = new Rf24Sockets(nodeId, hosts, sys, sch, loggerFactory);
 
         int ret = sockets->setup(9, 10, 90, res);

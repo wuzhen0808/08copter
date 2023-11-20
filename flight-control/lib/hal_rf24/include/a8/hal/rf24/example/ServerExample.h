@@ -64,11 +64,13 @@ public:
     String host;
     int port;
     Scheduler *sch;
+    SyncQueue<int> *ready;
     ServerTask(Sockets *sockets, String host, int port, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "ServerTask") {
         this->sockets = sockets;
         this->host = host;
         this->port = port;
         this->sch = sch;
+        this->ready = sch->createSyncQueue<int>(1);
     }
 
     void run() {
@@ -79,6 +81,10 @@ public:
             log(res.errorMessage);
         }
         log("done of task.");
+    }
+
+    void waitForReady() {
+        this->ready->take();
     }
 
     int doRun(Result &res) {
@@ -101,7 +107,10 @@ public:
             return ret;
         }
 
-        log(String() << "bind to host:" << host << ":" << port);
+        log(String() << "bond to port:" << host << ":" << port);
+        this->ready->offer(1);
+        log("read to accept connection in.");
+
         while (true) {
 
             SOCK s2 = 0;
