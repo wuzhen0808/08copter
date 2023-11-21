@@ -97,6 +97,7 @@ public:
         int clientNode;
         int serverNode;
         int type = this->readConfig(clientNode, serverNode, rate);
+        logFac->getLogger()->info(String() << "rate:" << rate);
         // ClientExample *example = new ClientExample(sys, logFac, sch);
         //  ServerExample *example = new ServerExample(sys, logFac, sch);
         if (type == 1) {

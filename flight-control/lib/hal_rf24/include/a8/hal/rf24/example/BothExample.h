@@ -22,7 +22,7 @@ public:
     }
 
     void setRate(Rate rate) {
-        this->rate;
+        this->rate = rate;
     }
 
     int start(Result &res) override {

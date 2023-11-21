@@ -16,6 +16,7 @@ class Rf24Transceiver : public Rf24Player {
 
 protected:
     Queue<char> buffer;
+    long sendingTimeout = -1; // 5 * 1000; //
 
 protected:
     int doReceive(Rf24NetRequest *nReq) {
@@ -65,13 +66,18 @@ public:
         if (ret < 0) {
             return ret;
         }
-        Rf24NetRequest *resp = this->takeByType(Rf24NetData::TYPE_USER_DATA_RESPONSE);
-        ret = handleUserDataResponse(resp, res);
-        delete resp;
-        return ret;
+        return this->consumeByType<Rf24Transceiver *, Result &, int>( //
+            Rf24NetData::TYPE_USER_DATA_RESPONSE, this, res, sendingTimeout,
+            [](Rf24Transceiver *this_, Result &res, Rf24NetRequest *resp) {
+                return this_->handleUserDataResponse(resp, res);
+            });
     }
 
     int handleUserDataResponse(Rf24NetRequest *resp, Result &res) {
+        if (resp == 0) {
+            res << "timeout to wait the response from remote.";
+            return -1;
+        }
         int ret = resp->data->responseCode;
         if (ret < 0) {
             res << "failed send data because remote error code:" << ret;

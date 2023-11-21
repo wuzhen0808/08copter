@@ -304,9 +304,10 @@ public:
         }
 
         Rf24Sock *s2 = 0;
+        long timeout = -1; // no timeout?
         ret = player->consumeByType<Rf24Sockets *, Rf24Sock *&, Result &, int>(
             Rf24NetData::TYPE_CONNECT_REQUEST, //
-            this, s2, res,
+            this, s2, res, timeout,
             [](Rf24Sockets *this_, Rf24Sock *&s2, Result &res, Rf24NetRequest *req) {
                 int ret = this_->doAccept(req, s2, res);
                 int port1 = req->data->port2; //

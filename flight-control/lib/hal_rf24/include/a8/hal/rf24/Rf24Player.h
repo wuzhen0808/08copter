@@ -20,8 +20,9 @@ enum Role {
 
 class Rf24Player : FlyWeight {
     Role role;
+    long defaultTimeout = -1; // no timeout
 
-protected:    
+protected:
     int id;          // sock id
     Rf24Node *&node; // local node
     int &port;       // local port
@@ -147,80 +148,127 @@ public:
     }
 
     template <typename C, typename C2, typename C3, typename C4, typename R>
-    R consumeByType(int type, C c, C2 c2, C3 c3, C4 c4, R (*consume)(C c, C2 c2, C3 c3, C4 c4, Rf24NetRequest *)) {
+    R consumeByType(int type, C c, C2 c2, C3 c3, C4 c4, long timeout, R (*callback)(C c, C2 c2, C3 c3, C4 c4, Rf24NetRequest *)) {
         struct Params {
             C c;
             C2 c2;
             C3 c3;
             C4 c4;
-            R(*consume_)
+            R(*callback)
             (C, C2, C3, C4, Rf24NetRequest *);
 
             R ret;
             Params(C c, C2 c2, C3 c3, C4 c4) : c(c), c2(c2), c3(c3), c4(c4) {
             }
         } p(c, c2, c3, c4);
-        p.consume_ = consume;
-        this->consumeByType<Params *>(type, &p, [](Params *pp, Rf24NetRequest *req) {
-            pp->ret = pp->consume_(pp->c, pp->c2, pp->c3, pp->c4, req);
+        p.callback = callback;
+        this->consumeByType<Params *>(type, &p, timeout, [](Params *pp, Rf24NetRequest *req) {
+            pp->ret = pp->callback(pp->c, pp->c2, pp->c3, pp->c4, req);
         });
         return p.ret;
     }
 
     template <typename C, typename C2, typename C3, typename R>
-    R consumeByType(int type, C c, C2 c2, C3 c3, R (*consume)(C c, C2 c2, C3 c3, Rf24NetRequest *)) {
+    R consumeByType(int type, C c, C2 c2, C3 c3, long timeout, R (*callback)(C c, C2 c2, C3 c3, Rf24NetRequest *)) {
         struct Params {
             C c;
             C2 c2;
             C3 c3;
-            R(*consume_)
+            R(*callback)
             (C, C2, C3, Rf24NetRequest *);
 
             R ret;
             Params(C c, C2 c2, C3 c3) : c(c), c2(c2), c3(c3) {
             }
         } p(c, c2, c3);
-        p.consume_ = consume;
-        this->consumeByType<Params *>(type, &p, [](Params *pp, Rf24NetRequest *req) {
-            pp->ret = pp->consume_(pp->c, pp->c2, pp->c3, req);
+        p.callback = callback;
+        this->consumeByType<Params *>(type, &p, timeout, [](Params *pp, Rf24NetRequest *req) {
+            pp->ret = pp->callback(pp->c, pp->c2, pp->c3, req);
         });
         return p.ret;
     }
 
     template <typename C, typename C2, typename R>
-    R consumeByType(int type, C c, C2 c2, R (*consume)(C c, C2 c2, Rf24NetRequest *)) {
+    R consumeByType(int type, C c, C2 c2, long timeout, R (*callback)(C c, C2 c2, Rf24NetRequest *)) {
         struct Params {
             C c;
             C2 c2;
-            R(*consume_)
+            R(*callback)
             (C, C2, Rf24NetRequest *);
 
             R ret;
             Params(C c, C2 c2) : c(c), c2(c2) {
             }
         } p(c, c2);
-        p.consume_ = consume;
-        this->consumeByType<Params *>(type, &p, [](Params *pp, Rf24NetRequest *req) {
-            pp->ret = pp->consume_(pp->c, pp->c2, req);
+        p.callback = callback;
+        this->consumeByType<Params *>(type, &p, timeout, [](Params *pp, Rf24NetRequest *req) {
+            pp->ret = pp->callback(pp->c, pp->c2, req);
         });
         return p.ret;
     }
 
     template <typename C>
-    void consumeByType(int type, C c, void (*consume)(C c, Rf24NetRequest *)) {
-        Rf24NetRequest *req = takeByType(type);
-        consume(c, req);
-        delete req;
+    void consumeByType(int type, C c, long timeout, void (*callback)(C c, Rf24NetRequest *)) {
+        Rf24NetRequest *req = takeByType(type, timeout);
+        callback(c, req);
+        if (req == 0) {
+            // timeout
+        } else {
+            delete req;
+        }
     }
 
     Rf24NetRequest *takeByType(int type) {
-        log(String() << ">>takeByType:" << type);
+        return takeByType(type, defaultTimeout);
+    }
 
+    Rf24NetRequest *takeByType(int type, long timeout) {
+
+        log(String() << ">>takeByType:" << type << ",timeout:" << timeout);
+        Rf24NetRequest *req = 0;
+        if (timeout < 0) {
+            req = this->takeByTypeNoTimeout(type);
+        } else {
+
+            long time1 = this->sys->getSteadyTime();
+            long timeout2 = timeout;
+            for (int i = 0;; i++) {
+                if (i > 0) {
+                    long now = this->sys->getSteadyTime();
+                    timeout2 = timeout - (now - time1);
+                }
+
+                if (timeout2 < 0) {
+                    timeout2 = 0;
+                }
+                req = this->reqQueue->take(timeout2, 0);
+
+                if (req != 0 && req->data->type != type) {
+                    delete req; // consume here.
+                    req = 0;
+                }
+                if (req != 0) {
+                    break;
+                }
+                if (timeout2 == 0) {
+                    break;
+                }
+            }
+        }
+        if (req == 0) {
+            // log(String() << "<<takeByType(" << type << ") timeout.");
+        } else {
+            // log(String() << "<<takeByType(" << type << ") success");
+        }
+        log("<<takeByType");
+        return req;
+    }
+
+    Rf24NetRequest *takeByTypeNoTimeout(int type) {
+        log(String() << ">>takeByTypeNoTimeout:" << type);
         Rf24NetRequest *req = 0;
         while (req == 0) {
-            log(String() << ">>take, type:" << type);
-            req = this->reqQueue->take(1000 * 10, 0);
-            log(String() << "<<take:" << req);
+            req = this->reqQueue->take(10000, 0);
             if (req == 0) {
                 continue;
             }
@@ -229,7 +277,7 @@ public:
                 req = 0;
             }
         }
-        log(String() << "<<takeByType:" << type << ",data:" << req);
+        //log(String() << "<<takeByTypeNoTimeout(1" << type << ") success, data:" << req << ".");
         return req;
     }
 };
