@@ -19,7 +19,7 @@ public:
         this->logFac = logFac;
     }
     int readType() {
-        return readOption(1, 3, "Please select example type:\n 1:Server;\n 2:Client;\n 3:Both.");
+        return readOption(1, 3, "Please select example type:\n 1: Server;\n 2: Client;\n 3: Both.");
     }
 
     int readClientNode() {
@@ -27,7 +27,7 @@ public:
     }
 
     int readServerNode() {
-        return readOption(0, 1, "Please select server node id:\n 0:\n 1:\n?");
+        return readOption(0, 1, "Please select server node id:\n 0:\n 1:\n");
     }
 
     int readOption(int min, int max, String prompt) {
@@ -60,7 +60,7 @@ public:
     }
 
     int readConfig(int &clientNode, int &serverNode, Rate &rate) {
-        int type = this->readOption(1, 4, "Please select a config:\n 1: Server,node(0);\n 2: Client,node(1),1Hz;\n 3: Both;\n 4:Other.");
+        int type = this->readOption(1, 4, "Please select a config:\n 1: Server,node(0);\n 2: Client,node(1),1Hz;\n 3: Both;\n 4: Other.");
         rate = 1.0f;
         clientNode = 0;
         serverNode = 1;

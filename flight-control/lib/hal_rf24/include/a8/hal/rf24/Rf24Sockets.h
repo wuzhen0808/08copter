@@ -40,7 +40,16 @@ private:
         this->table->set(sId, s);
         return s;
     }
-
+    int doBindRandom(Rf24Sock *s, int &port, Result &res) {
+        int port1 = ports->randomPort();
+        int ok = this->doBind(s, port1, res);
+        if (ok < 0) {
+            ports->release(port1);
+            return -2;
+        }
+        port = port1;
+        return 1;
+    }
     int doBind(Rf24Sock *s, int port, Result &res) {
 
         Rf24Sock *s2 = this->binds->get(port, 0);
@@ -48,8 +57,14 @@ private:
             res << "cannot bind to port:" << port << ",port is already bond by sock:" << s2->getId();
             return -4;
         }
-        if (s->doBind(node, port, res) < 0) {
+        Rf24Watcher *player;
+        int ret = s->getPlayer<Rf24Watcher>(Role::Watcher, player, res);
+        if (ret < 0) {
             return -5;
+        }
+        ret = player->doBind(node, port, res);
+        if (ret < 0) {
+            return -6;
         }
         this->binds->set(port, s);
         return 1;
@@ -79,7 +94,7 @@ private:
             this->sendResponseIfNecessary(nReq, 0); // no such port.
             return;
         }
-        s2->enqueueNetRequest(nReq);
+        s2->getPlayer()->enqueueNetRequest(nReq);
 
         // response later.
     }
@@ -107,19 +122,26 @@ private:
     Rf24Sock *get(int id) {
         return table->get(id, 0);
     }
-    
+
     int doAccept(Rf24NetRequest *req, Rf24Sock *&sockIn, Result &res) {
         Rf24Sock *s2 = this->create();
-        int port22 = this->ports->randomPort();
-        int ret = this->doBind(s2, port22, res); // bond new sock to the new random port.
+        // bind
+        int port22;
+        int ret = this->doBindRandom(s2, port22, res); // bond new sock to the new random port.
         if (ret < 0) {
             this->close(s2->getId());
             res << ("failed to accept connection request, cannot bind, detail:" << res.errorMessage);
             req->responseCode = -1;
             return -1;
         }
+        // change role
+        Rf24Worker *player2;
+        ret = s2->changeRole(Role::Worker, player2, res);
+        if (ret < 0) {
+            return ret;
+        }
 
-        ret = s2->connectIn(req->data->node1, req->data->port1, res);
+        player2->connectIn(req->data->node1, req->data->port1, res);
         if (ret < 0) {
             // connect failed.
             req->responseCode = -2;
@@ -144,6 +166,7 @@ private:
             log(String() << "failed to send response(" << nReq->responseCode << ") for data:" << nReq->data);
         }
     }
+
 public:
     Rf24Sockets(int id, Rf24Hosts *hosts, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Rf24Sockets") {
         this->hosts = hosts;
@@ -202,23 +225,28 @@ public:
         if (s == 0) {
             return -1;
         }
-
-        if (s->getPort() == 0) {
-            int port1 = ports->randomPort();
-            int ok = this->doBind(s, port1, res);
-            if (ok < 0) {
-                ports->release(port1);
+        // bind if needed.
+        if (!s->isBond()) {
+            int port1;
+            int ret = this->doBindRandom(s, port1, res);
+            if (ret < 0) {
                 return -2;
             }
         }
-
+        // role transform if needed.
+        Rf24Connector *player;
+        int ret = s->asRole(Role::Connector, player, res);
+        if (ret < 0) {
+            return ret;
+        }
+        // resolve remote node.
         int nodeId2 = -1;
-        int ret = hosts->resolveNodeId(host2, nodeId2, res);
+        ret = hosts->resolveNodeId(host2, nodeId2, res);
         if (ret < 0) {
             return -1;
         }
 
-        return s->connect(nodeId2, port2, res);
+        return player->connect(nodeId2, port2, res);
     }
 
     int bind(SOCK sock, const String host, int port, Result &res) override {
@@ -228,6 +256,7 @@ public:
         if (s == 0) {
             return -1; // no such sock
         }
+
         int nodeId = -1;
         int ret = hosts->resolveNodeId(host, nodeId, res);
         if (ret < 0) {
@@ -247,20 +276,35 @@ public:
         if (s == 0) {
             return -1; //
         }
-        return s->listen(res);
+        Rf24Listener *listener;
+        int ret = s->changeRole<Rf24Listener>(Role::Listener, listener, res);
+        if (ret < 0) {
+            return ret;
+        }
+        ret = listener->listen(res);
+        if (ret < 0) {
+            return ret;
+        }
+        return ret;
     }
     /**
      * Accept one good incoming connection, ignore the bad connections if necessary.
      */
     int accept(SOCK sock, SOCK &sockIn, Result &res) override {
-        
+
         int sId = sock;
         Rf24Sock *s = this->get(sId, res);
         if (s == 0) {
             return -1; //
         }
+        Rf24Listener *player;
+        int ret = s->getPlayer<Rf24Listener>(Role::Listener, player, res);
+        if (ret < 0) {
+            return ret;
+        }
+
         Rf24Sock *s2 = 0;
-        int ret = s->consumeByType<Rf24Sockets *, Rf24Sock *&, Result &, int>(
+        ret = player->consumeByType<Rf24Sockets *, Rf24Sock *&, Result &, int>(
             Rf24NetData::TYPE_CONNECT_REQUEST, //
             this, s2, res,
             [](Rf24Sockets *this_, Rf24Sock *&s2, Result &res, Rf24NetRequest *req) {
@@ -288,7 +332,8 @@ public:
         if (s == 0) {
             return -1; //
         }
-        return s->send(buf, len, res);
+
+        return s->getPlayer()->send(buf, len, res);
     }
 
     int receive(SOCK sock, char *buf, int len, Result &res) override {
@@ -299,7 +344,7 @@ public:
             return -1; //
         }
 
-        int ret = s->receive<Rf24Sockets *>(
+        int ret = s->getPlayer()->receive<Rf24Sockets *>(
             buf, len, this, //
             [](Rf24Sockets *this_, Rf24NetRequest *nReq) {
                 this_->sendResponseIfNecessary(nReq, nReq->port);
@@ -319,6 +364,5 @@ public:
     int select(Buffer<SOCK> &buffer1, Buffer<SOCK> &buffer2, Buffer<SOCK> &buffer3) override {
         return -1;
     }
-
 };
 } // namespace a8::hal::rf24
