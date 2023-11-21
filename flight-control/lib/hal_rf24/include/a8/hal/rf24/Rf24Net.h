@@ -105,7 +105,7 @@ public:
 
             int len = doReceiving(loops, timeout);
             if (len == 0) {
-                timeout = 10;
+                timeout = 1;
             } else {
                 timeout = 0;
             }

@@ -17,31 +17,36 @@ public:
         this->handle = handle;
     }
 
-    ~FreeRtosSyncQueue() {        
-        vQueueDelete(this->handle);        
+    ~FreeRtosSyncQueue() {
+        vQueueDelete(this->handle);
     }
 
     int offer(void *eleP, long timeout) override {
-        long ticks = timeout / portTICK_PERIOD_MS;
-        BaseType_t ret = xQueueSend(handle, eleP, ticks);
+        BaseType_t ret = xQueueSend(handle, eleP, ticks(timeout));
         if (ret != pdTRUE) {
             return -1;
         }
         return 1;
     }
 
-    int take(void *&eleP, long timeout) override {
+    TickType_t ticks(long timeout) {
+
         long ticks = timeout / portTICK_PERIOD_MS;
-        BaseType_t ret = xQueueReceive(handle, eleP, ticks);
+        if (ticks == 0 && timeout != 0) {
+            ticks = 1;
+        }
+        return ticks;
+    }
+    int take(void *&eleP, long timeout) override {
+        BaseType_t ret = xQueueReceive(handle, eleP, ticks(timeout));
         if (ret != pdTRUE) {
             return -1;
         }
         return 1;
     }
-    
-    int peek(void *&eleP,long timeout) override{        
-        long ticks = timeout / portTICK_PERIOD_MS;
-        BaseType_t ret = xQueuePeek(handle, eleP, ticks);
+
+    int peek(void *&eleP, long timeout) override {
+        BaseType_t ret = xQueuePeek(handle, eleP, ticks(timeout));
         if (ret != pdTRUE) {
             return -1;
         }
