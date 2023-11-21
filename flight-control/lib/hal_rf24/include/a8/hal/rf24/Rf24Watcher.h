@@ -1,7 +1,7 @@
 #pragma once
 
 #include "a8/hal/rf24/Rf24NetData.h"
-#include "a8/hal/rf24/Rf24Transceiver.h"
+#include "a8/hal/rf24/Rf24Player.h"
 
 #include "a8/util.h"
 #include "a8/util/sched.h"

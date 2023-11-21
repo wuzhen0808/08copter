@@ -19,6 +19,9 @@ public:
     SOCK sock;
     Sockets *sockets;
     int port;
+
+    Buffer<int> missingDataBuffer;
+
     WorkerTask(SOCK sock, Sockets *sockets, int port2, LoggerFactory *logFac)
         : FlyWeight(logFac, String() << "WorkerTask-" << sock << "@" << port2) {
         this->sock = sock;
@@ -39,20 +42,37 @@ public:
         char buf[cap];
         int len = 0;
         SocketReader sr(sockets, sock);
-
+        int expected = 0;
         for (int i = 0;; i++) {
-            int16 counter = -1;
-            log(String() << ">>receive data,i:" << i);
-            int ret = CodecUtil::readInt16(&sr, counter);
-            log(String() << "<<receive data,i:" << i << ",counter:" << counter);
+            int16 data = -1;
+            log(String() << ">>receiving data,expected:" << expected);
+            int ret = CodecUtil::readInt16(&sr, data);
             if (ret < 0) {
                 log(res.errorMessage);
                 return ret;
             }
-            if (counter != i) {
-                log(String() << "missing:" << i);
+            log(String() << "<<received data:" << data << ",expected:" << expected << ",i:" << i);
+            if (data != expected) {
+                if (expected > data) {
+                    missingDataBuffer.append(expected);
+                } else {
+                    for (int i = expected; i < data; i++) {
+                        missingDataBuffer.append(i);
+                    }
+                }
+
+                expected = data; // align data.
             }
-            log(String() << counter);
+
+            String msg("recently missing data:{");
+            missingDataBuffer.forEach<String &>(msg, [](String &msg, int missing) {
+                msg << missing << ",";
+            });
+            log(msg << "}");
+            if (missingDataBuffer.len() > 10) {
+                missingDataBuffer = missingDataBuffer.subBuffer(missingDataBuffer.len() - 10);
+            }
+            expected++;
         }
         return 1;
     }
@@ -65,6 +85,7 @@ public:
     int port;
     Scheduler *sch;
     SyncQueue<int> *ready;
+
     ServerTask(Sockets *sockets, String host, int port, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "ServerTask") {
         this->sockets = sockets;
         this->host = host;

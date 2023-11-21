@@ -78,6 +78,7 @@ public:
                 this->sockets->close(sock);
                 sock = 0;
                 connected = false;
+                counter = 0; // reset counter.
                 res << "allow reconnect.";
             }
             return ret;

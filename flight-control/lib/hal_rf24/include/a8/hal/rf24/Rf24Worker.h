@@ -1,7 +1,7 @@
 #pragma once
 
 #include "a8/hal/rf24/Rf24NetData.h"
-#include "a8/hal/rf24/Rf24Transceiver.h"
+#include "a8/hal/rf24/Rf24Player.h"
 
 #include "a8/util.h"
 #include "a8/util/sched.h"
@@ -11,7 +11,7 @@
 namespace a8::hal::rf24 {
 using namespace a8::util;
 using namespace a8::util::sched;
-class Rf24Worker : public Rf24Transceiver {
+class Rf24Worker : public Rf24Player {
     enum Status {
         Unknown,
         Connected
@@ -19,7 +19,7 @@ class Rf24Worker : public Rf24Transceiver {
     Status status = Unknown;
 
 public:
-    Rf24Worker(int id, Rf24Node *&node, int &port, System *sys, Scheduler *sch, LoggerFactory *logFac) : Rf24Transceiver(Role::Worker, id, node, port, sys, sch, logFac) {
+    Rf24Worker(int id, Rf24Node *&node, int &port, System *sys, Scheduler *sch, LoggerFactory *logFac) : Rf24Player(Role::Worker, id, node, port, sys, sch, logFac) {
     }
     ~Rf24Worker() {
     }

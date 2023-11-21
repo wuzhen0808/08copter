@@ -20,7 +20,12 @@ enum Role {
 
 class Rf24Player : FlyWeight {
     Role role;
-    long defaultTimeout = -1; // no timeout
+    long defaultTimeout = -1;              // no timeout
+    long defaultSendingTimeout = 5 * 1000; //
+    long defaultSendingRetries = 3;
+
+protected:
+    Queue<char> buffer;
 
 protected:
     int id;          // sock id
@@ -51,6 +56,22 @@ protected:
             }
             delete ele;
         }
+    }
+
+    int doReceive(Rf24NetRequest *nReq) {
+        if (nReq == 0) {
+            // bug?
+            nReq->responseCode = -1;
+            return -1; //
+        }
+        if (nReq->data->buffer->isEmpty()) {
+            // bug?
+            nReq->responseCode = -2;
+            return -2;
+        }
+        this->buffer.append(*nReq->data->buffer); // todo use move constructor.
+        nReq->responseCode = 1;
+        return 1;
     }
 
 public:
@@ -118,11 +139,6 @@ public:
         return this->port;
     }
 
-    virtual int send(const char *buf, int len, Result &res) {
-        res << "role(" << role << ") does not support this operation.";
-        return -1;
-    };
-
     template <typename C>
     int receive(char *buf, int bufLen, C c, void (*response)(C, Rf24NetRequest *), Result &res) {
         struct Params {
@@ -140,11 +156,6 @@ public:
                 ppp->response(ppp->c, nReq);
             },
             res);
-    }
-
-    virtual int doReceive(char *buf, int bufLen, void *c, void (*response)(void *, Rf24NetRequest *), Result &res) {
-        res << "role(" << role << ") does not support this operation.";
-        return -1;
     }
 
     template <typename C, typename C2, typename C3, typename C4, typename R>
@@ -277,8 +288,116 @@ public:
                 req = 0;
             }
         }
-        //log(String() << "<<takeByTypeNoTimeout(1" << type << ") success, data:" << req << ".");
+        // log(String() << "<<takeByTypeNoTimeout(1" << type << ") success, data:" << req << ".");
         return req;
+    }
+
+    int send(const char *buf, int len, Result &res) {
+        long timeout = this->defaultSendingTimeout;
+        int retries = this->defaultSendingRetries;
+        for (int i = 0;; i++) {
+            Result resI;
+            bool retryAble = false;
+            int ret = doSend(buf, len, timeout, retryAble, resI);
+            if (ret < 0 && retryAble && i < retries) {
+                log(String() << "retry(" << (i + 1) << ") sending.");
+                continue;
+            }
+            if (ret < 0) {
+                if (i > 0) {
+                    res << "sending failed after retries(" << (i) << ");";
+                }
+                res << resI.errorMessage;
+            }
+            return ret;
+        }
+        return -1;
+    }
+    /**
+     * send user data
+     */
+    int doSend(const char *buf, int len, long timeout, bool &retryAble, Result &res) {
+        if (!this->isConnected()) {
+            res << "cannot send data, connection is not established or broken.";
+            return -1;
+        }
+        if (len < 1) {
+            //
+            res << "cannot send empty buf. ";
+            return -1;
+        }
+
+        int ret = this->node->send(Rf24NetData::TYPE_USER_DATA,
+                                   this->port,
+                                   this->node2,
+                                   this->port2,
+                                   0,   //
+                                   buf, //
+                                   len, //
+                                   res);
+        if (ret < 0) {
+            retryAble = true;
+            return ret;
+        }
+        return this->consumeByType<Rf24Player *, bool &, Result &, int>( //
+            Rf24NetData::TYPE_USER_DATA_RESPONSE, this, retryAble, res, timeout,
+            [](Rf24Player *this_, bool &retryAble, Result &res, Rf24NetRequest *resp) {
+                return this_->handleUserDataResponse(resp, retryAble, res);
+            });
+    }
+
+    int handleUserDataResponse(Rf24NetRequest *resp, bool &retryAble, Result &res) {
+        if (resp == 0) {
+            res << "timeout to wait the response from remote.";
+            retryAble = true;
+            return -1;
+        }
+        int ret = resp->data->responseCode;
+        if (ret < 0) {
+            res << "failed send data because remote error code:" << ret;
+            retryAble = true;
+            return -2;
+        }
+        log(String() << "successfully send out data for the response code is " << resp->data->responseCode);
+        return 1;
+    }
+
+    virtual bool isConnected() {
+        return false;
+    }
+
+    /**
+     * receive user data.
+     */
+    int doReceive(char *buf, int bufLen, void *c, void (*response)(void *, Rf24NetRequest *), Result &res) {
+        log(String() << ">>receive");
+        if (!this->isConnected()) {
+            res << "connection not established or already broken.";
+            return -1;
+        }
+
+        if (this->buffer.isEmpty()) {
+
+            Rf24NetRequest *nReq = this->takeByType(Rf24NetData::TYPE_USER_DATA);
+            int ret = doReceive(nReq);
+            response(c, nReq);
+            delete nReq; // consume it.
+            if (ret < 0) {
+                return ret;
+            }
+        }
+
+        int len = this->buffer.take(buf, bufLen);
+        if (len < 0) {
+            // bug?
+            return -1;
+        }
+        if (len == 0) {
+            // bug?
+            return -1;
+        }
+        log(String() << "received data:" << StringUtil::toHexString(buf, len));
+        return len;
     }
 };
 

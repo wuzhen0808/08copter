@@ -2,7 +2,7 @@
 
 #include "a8/hal/rf24/Rf24NetData.h"
 #include "a8/hal/rf24/Rf24Node.h"
-#include "a8/hal/rf24/Rf24Transceiver.h"
+#include "a8/hal/rf24/Rf24Player.h"
 #include "a8/util.h"
 #include "a8/util/sched.h"
 
@@ -11,7 +11,7 @@
 namespace a8::hal::rf24 {
 using namespace a8::util;
 using namespace a8::util::sched;
-class Rf24Connector : public Rf24Transceiver {
+class Rf24Connector : public Rf24Player {
     enum Status {
         Unknown,
         Connecting,
@@ -23,7 +23,7 @@ class Rf24Connector : public Rf24Transceiver {
     long connectTimeout = 10 * 1000;
 
 public:
-    Rf24Connector(int id, Rf24Node *&node, int &port, System *sys, Scheduler *sch, LoggerFactory *logFac) : Rf24Transceiver(Role::Connector, id, node, port, sys, sch, logFac) {
+    Rf24Connector(int id, Rf24Node *&node, int &port, System *sys, Scheduler *sch, LoggerFactory *logFac) : Rf24Player(Role::Connector, id, node, port, sys, sch, logFac) {
         this->status = Status::Unknown;
     }
 
