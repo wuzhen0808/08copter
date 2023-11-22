@@ -1,0 +1,115 @@
+== Appendix {counter:apx}. Building JSBSim static lib
+
+You should get the lib file located here <some-path>/jsbsim/build/src/libJSBSim.a
+
+[source,shell]
+----
+$ https://github.com/JSBSim-Team/jsbsim.git
+$ 
+$ mkdir jsbsim/build
+$ cd jsbsim/build
+$ cmake -G "MinGW Makefiles" ..
+$ cd build
+$ mingw-32-make 
+----
+More reference:
+http://paul.chavent.free.fr/jsbsim.html
+
+== Appendix {counter:apx}. Related Guidance
+
+=== How to connect jsbsim with flight gear.
+
+*** Setting output for jsbsm for aircraft c172x as below.
+
+Edit file:<path-to-jsbsm>/airacraft/c172x/c172x.xml.
+[source,xml]
+----
+<!---->
+<output name="localhost" type="FLIGHTGEAR" port="5500" protocol="TCP" rate="30"/>
+----
+
+*** Open flight gear with fdm option to listening port on 5500.
+[source,shell]
+----
+$ fgfs --fg-root=/path-to/flight.gear/data \
+    --language=en \
+    --fdm=external \
+    --native-fdm=socket,in,30,localhost,5500,tcp \
+    --airport=PHBK \
+    --timeofday=noon 
+----
+
+*** Start jsbsim with scripts provide by official release.
+[source,shell]
+----
+$ jsbsim --script=scripts/c172_elevation_test --realtime
+----
+
+*** You will see the plane in flight gear screen start moving.
+
+== Appendix {counter:apx}. Lib/tool list
+
+=== FreeRTOS
+https://www.freertos.org/RTOS.html
+
+=== JSBSim
+https://github.com/JSBSim-Team/jsbsim.git
+
+https://discuss.ardupilot.org/t/simulate-arducopter-with-jsbsim/82235/12
+
+https://jsbsim-team.github.io/jsbsim/
+
+=== MSYS2
+
+=== Cmake
+In order to build JSBSim manually for the MingW env. The officially lib delivered is windows format JSBSim.lib which is not recognizable by the gcc compiler.
+
+[source,shell]
+----
+$ pacman -S mingw-w64-ucrt-x86_64-cmake
+----
+
+=== Ghost-Script ??
+
+mingw-w64-ucrt-x86_64-ghostscript
+[source,shell]
+----
+$ pacman -S mingw-w64-ucrt-x86_64-ghostscript
+----
+
+== Appendix {counter:apx}. More References
+=== PID control
+
+http://electronoobs.com/eng_robotica_tut6_1_code1.php
+
+=== AirSim
+https://github.com/microsoft/AirSim
+
+=== ArduPilot
+*** Data Flow using JSBSim + FlightGear
+
+https://ardupilot.org/dev/docs/sitl-with-jsbsim.html#sitl-with-jsbsim
+
+=== FlightGear
+https://www.flightgear.org/
+
+https://ardupilot.org/dev/docs/flightgear-hardware-in-the-loop-simulation.html
+
+https://wiki.flightgear.org/Menubar#How_to_Change_the_Default_Menubar_Font_Size
+
+https://flightgear.sourceforge.net/manual/2020.3/en/getstart-en.html
+
+
+=== Gym-JSBSim
+Gym-JSBSim provides reinforcement learning environments for the control of fixed-wing aircraft using the JSBSim flight dynamics model. Gym-JSBSim requires a Unix-like OS and Python 3.6.
+https://github.com/Gor-Ren/gym-jsbsim
+
+=== Simulators provider list
+https://ardupilot.org/dev/docs/simulation-2.html#simulation-2
+
+=== About gcc and make
+https://www3.ntu.edu.sg/home/ehchua/programming/cpp/gcc_make.html
+
+=== R/C protocols.
+
+https://www.dronetrest.com/t/rc-radio-control-protocols-explained-pwm-ppm-pcm-sbus-ibus-dsmx-dsm2/1357

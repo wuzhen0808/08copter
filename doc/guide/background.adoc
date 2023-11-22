@@ -1,0 +1,145 @@
+
+== {counter:chapter}. Background knowledge.
+This section introduce the glossary involved. 
+
+If you already know the background about how an copter is composed you can skip this section.
+
+=== {chapter}.{counter:cf}. Micro controller
+
+==== {chapter}.{cf}.{counter:mic}. Memory types.
+
+*** ESP32 memory model.
+
+[SRAM0(192k)][SRAM1(128k)][SRAM2(200k)][RTC fast ram(8k)][RTC slow ram(8k)]
+[IRAM       ][DRAM                    ][                                  ]
+
+- SRAM - Data ram storage static data in linkage time.
+- ROM -
+- PSRAM(SPIRAM) - QSPI bus.
+
+=== {chapter}.{counter:cf}. Communication 
+
+This section introduce the inter-device or controller communication protocols involved.
+
+==== {chapter}.{cf}.{counter:com}. UART
+
+==== {chapter}.{cf}.{counter:com}. SPI
+*** QSPI
+
+==== {chapter}.{cf}.{counter:com}. I2C(Inter-integrated Circuit)
+
+*** Abstract
+
+- Two wires:        SCL(Serial Clock) SDA(Serial Data)
+- Maximum speed:    100 kps/400kps/3.4Mps/5Mps.
+- Synchronous:  Y.
+- Serial:Y.
+- Max # of Masters: Unlimited.
+- Max # of Slaves:  1008.
+- Address protocol: 
+*** Message format.
+
+- Start condition:  The SDA line switches from a high voltage level to a low voltage level before the SCL line switches from high to low.
+- Address Frame: A 7 or 10 bit sequence unique to each slave that identifies the slave when the master wants to talk to it.
+- RW bit: A single bit specifying whether the master is sending data to the slave (low voltage level) or requesting data from it (high voltage level).
+- ACK/NACK bit : Each frame in a message is followed by an acknowledge/no-acknowledge bit. If an address frame or data frame was successfully received, an ACK bit is returned to the sender from the receiving device.
+- Data frame 1 : 8 bits.
+- ACK/NACK bit : 
+- Data frame & ACK/NACK : ...
+- Stop condition: The SDA line switches from a low voltage level to a high voltage level after the SCL line switches from low to high.
+
+=== {chapter}.{counter:cf}. Copter hardwares composition.
+
+Hardwares - a drone copter is composed with a `Frame`, several `Motors`, a `Micro Controller Board` , one or more `Sensors` , a `Battery`. 
+
+==== {chapter}.{cf}.{counter:hard}. Frame
+The frame may not so much worth to introduce, it is not a abstract component to build a copter.Basically we need a four arms to install the motors and have a center platform to fix the PCB boards.
+
+==== {chapter}.{cf}.{counter:hard}. Motors
+
+*** Brush less motor.
+*** ESC(electric speed controller)
+A brush less motor need an ESC to drive itself. A quad copter need 4 brush less motors and 4 ESCs. We don't know how to work with plain brush-having motors. 
+
+
+==== {chapter}.{cf}.{counter:hard}. MPU(running flight control system)
+
+The board during the development of this project is Arduino-UNO-R4-MINIMA. The MPU is Cortex-M4 architecture and the model is RA4M1 from Renesas.
+
+==== {chapter}.{cf}.{counter:hard}. Sensors
+
+*** Generally an `Inertial Measurement Unit` consisted of below sensors.
+
+- Accelerometer.
+- Gyro.
+- Magnetometer.
+
+==== {chapter}.{cf}.{counter:hard}. MPU(running the joystick)
+
+==== {chapter}.{cf}.{counter:hard}. Radio transceiver.
+
+*** Radio control, transmitting the control instruction from joystick.
+
+*** Telemeter data.
+
+==== {chapter}.{cf}.{counter:hard}. Other device.
+
+It the connector component between flight control system and the joystick.
+
+
+- nRF24l01 
+- TXB0108 level transmitter.
+
+=== {chapter}.{counter:cf}. Copter flight control system
+
+Flight control is main software for a drone copter. And attitude control is the core of the flight control system. 
+
+==== {chapter}.{cf}.{counter:flight}. PID controller
+An general approach to deal with auto-control problem. 
+
+*** P
+
+*** I
+
+*** D
+
+==== {chapter}.{cf}.{counter:flight}. Attitude control
+Attitude control is the most important part in a flight control system. A typical activity flow is as below.
+
+*** Attitude commands.
+    An aileron command actually a instruction of rolling the vehicle to a desired attitude or called position(in certain coming time).The command value being clip to a value between -1 to 1. For a quad copter, aileron command can finally lead to a moving left or right.
+
+*** Desired/reference angular velocity.
+    After ths the command value on one axis is normalized(clip to the scope from -1 to 1), we then consider time variable and convert the abstract command to a proper speed. For instance if the attitude roll command value is -0.5, what time interval do we need the controller to accomplish this instruction? 
+    
+    Actually the -0.5 firstly is map to a radian and then divide it with a period in seconds. What we got it here by multiply -0.5 with a constant(for instance 0.75) and got the rps(-0.375). Which means rotating the vehicle around the X axis with a speed of 0.375 revolution per second at the direction of clock-wise. 
+    
+    The 0.75 is come from JSBSim's F450 aircraft configuration, i don't know how it got.
+
+*** Error between the reference angular velocity and the actual ones.
+    We compare the actual velocity(by sensor of gyro) with the desire velocity(from command). For example if the current angular velocity on X axis is 0, then the error on X axis is -0.375 (-0.375 - 0 = -0.375) rps. 
+
+*** PID controllers - generate command to execute.
+    After the error of velocity is determined, can we directly use it as the immediate instruction for the controller to execute? The answer is negative, we need a forward-seeable value. That is the job of PID controller.
+    
+*** Mixing the speed for each servo.
+    We have the formulas to calculate the speed of the servo on different positions of the quad copter frame. Note that here we use NED(North-East-Down) frame in which the Z axis is downward and point to ground. And the positive rotation direction follows the law of right-hand.
+[source,c++]
+----
+    float fr = heave - cmdRoll + cmdPitch + cmdYaw; // FR: Front right
+    float al = heave + cmdRoll - cmdPitch + cmdYaw; // AL: After left
+    float fl = heave + cmdRoll + cmdPitch - cmdYaw; // FL: Front left
+    float ar = heave - cmdRoll - cmdPitch - cmdYaw; // AR: After right
+----
+
+    Rolling right command will decrease the speed of the right two propellers and increase the left two ones.
+    Pitch back command will decrease the speed of the after two propellers and increase the front two ones.
+    Yaw will decrease the two propellers with reverse rotation directions and increase the other two with same rotation direction.Here we assume the rotation direction of the front right and after-left propeller is clockwise in which a reaction force in the opposite direction will applied to the frame of the vehicle.
+
+*** ESC controllers.
+    According the output from above step, each ESC controller will update the servo with a speed required.
+
+=== {chapter}.{counter:cf}. Copter radio control system
+
+==== {chapter}.{cf}.{counter:rc}. Radio control protocols.
+

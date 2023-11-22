@@ -1,0 +1,55 @@
+
+== {counter:chapter}. Building
+
+Find the two envs configured in platformio.ini: `fc_uno_r4_minima` & `fc_native`.
+
+Env fc_uno_r4_minima is the target environment for the flight control system to be deployed on. 
+
+Env fc_native is for simulation purpose.
+
+At the moment the native environment only support building with MingW under Windows. 
+
+=== {chapter}.{counter:build}. Build FCS for native(MingW) environment
+Change directory to the project home folder and run command below.
+
+[source,shell]
+----
+$ pio run -e native
+----
+
+=== {chapter}.{counter:build}. Build FCS for Arduino UNO R4 Minima board
+
+Change directory to the project home folder and run command below.
+
+[source,shell]
+----
+$ pio run -e uno_r4_minima
+----
+
+=== {chapter}.{counter:build}. Build GS for native.
+
+Install the ncurses libs.
+
+Run build command.
+
+[source,shell]
+----
+$ pio run -e gs_native
+----
+
+// // // /////////////////////////////
+// // // /////////////////////////////
+
+== {counter:chapter}. Wiring 
+=== {chapter}.{counter:wiring}. Arduino-UNO-R4-Minima
+
+=== {chapter}.{counter:wiring}. MPU9250
+*** Pins.
+- VCC: 3/5v
+- GND: 
+- SCL:
+- SDA:
+*** Interface: I2C
+Reference:
+https://www.cnblogs.com/leptonation/p/5225889.html
+

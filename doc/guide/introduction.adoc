@@ -1,0 +1,18 @@
+
+== {counter:chapter}. Introduction
+
+=== {chapter}.{counter:bg}. What is A8
+
+The aim of this project is for whose who are learning how to build a quad copter from zero. 
+
+A8 stand for Arduino, Autumn and August. Arduino UNO R4 is initially adopted here as the board of the flight control system. This project is started from Autumn. It's the August of 2023. 
+
+
+=== {chapter}.{counter:bg}. Principal and Purpose.
+
+*** Dependencies minimizing.
+*** A layered and easy-reading code structure.
+*** A flyable Quad copter.
+
+// // // /////////////////////////////
+// // // /////////////////////////////

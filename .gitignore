@@ -2,7 +2,9 @@
 .waf*
 .lock-waf*
 .vscode
+.pio
 .gradle
+*.stackdump
 */build
 */bin
 flight-control/program.exe.stackdump

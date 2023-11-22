@@ -1,0 +1,68 @@
+
+== {counter:chapter}. Tuning
+
+=== {chapter}.{counter:tuning}. Tuning Simulation.
+
+=== {chapter}.{tuning}.{counter:sim}. Build FC program.
+[source,shell]
+----
+$ pio run -e fc_native
+----
+
+=== {chapter}.{tuning}.{counter:sim}. Start the program.
+
+Program will listen and wait on a port for the connection from JSBSim script program.
+
+[source,shell]
+----
+$ .pio/build/fc_native/program
+----
+
+=== {chapter}.{tuning}.{counter:sim}. Modify the airport location.
+It's hard to see the screen of FG in case the local time of the simulation is in night mode. To avoid modifying the time manually from the GUI of FG. You can modify the longitude and latitude to your location.Open the JSBSim initialing file `simulation/aircraft/qc2309/rest.xml`.
+
+[source,xml]
+----
+<?xml version="1.0"?>
+<initialize name="Start up location">
+    <latitude unit="DEG" type="geodetic"> 31.0 </latitude>
+    <longitude unit="DEG"> 121.0 </longitude>
+    ... ... 
+</initialize>
+----
+
+=== {chapter}.{tuning}.{counter:sim}. Start Flight Gear.
+
+Assuming the flight gear has been installed successfully.
+
+The information in this section is referenced from the Ardu-Copter project.
+See more detail please find the files under folder the sub folder Tools/autotest of ArduCopter project .
+Change work directory to the folder `simulation` and run script `./fg.sh`.
+You will see the view with a quad copter ready to listening on the port 5503.
+
+[source,shell]
+----
+$ export FG_HOME=/path/to/flight/gear
+$ cd simulation
+$ ./fg.sh
+----
+
+
+=== {chapter}.{tuning}.{counter:sim}. Start the FC program in simulation env.
+
+=== {chapter}.{counter:tune}. Tuning real world.
+This part describe how to test the code with a real board. Please note there are dangerous if this is the first time to upload the firmware into a board with the motors connected. Do not install the propellers at the first evaluation and tuning the arguments step by step.
+
+==== {chapter}.{tune}.{counter:real}. Connect components.
+
+*** Setup frame.
+*** Fix the board with frame.
+*** Install and setup the four motors.
+*** Fix and connect the four ESCs with motors
+*** Connect each ESC with the board. 
+*** Fix and connect the IMU.
+*** Fix and connect the battery.
+
+==== {chapter}.{tune}.{counter:real}. Upload firmware
+
+After you upload the firmware into the board.

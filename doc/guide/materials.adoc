@@ -1,0 +1,32 @@
+
+== Appendix {counter:apx}. Materials list
+=== Copter 
+[cols = "1,5,1,1,1,5"]
+|===
+|                | Name                                     |Price  |Qty| SubTotal | Memo
+|{counter:hList} | Frame                                    |  26.8 |1  | 26 |
+|{counter:hList} | ESC(SkyWalker/30A )                      |  47.6 |4  |190 |
+|{counter:hList} | Bush less motor(1406,3300KV)             |  10.0 |4  | 40 | 4 motors have different 2 directions of rotation.
+|{counter:hList} | Propeller                                |   3.0 |4  | 12 | Note the rotation direction as well.
+|{counter:hList} | Flight controller(ESP32-s3-DevKitC-1)    |  35.0 |1  |158 | 
+|{counter:hList} | IMU(MPU9250)                             |  38.6 |1  | 38 | 
+|{counter:hList} | Level Transmitter(TXB0108)               |   5.0 |1  |  5 | https://www.ti.com.cn/product/cn/TXB0108, https://item.taobao.com/item.htm?spm=a1z0d.7625083.1998302264.5.5c5f4e69IneNKu&id=521042148013
+|{counter:hList} | Radio transceiver(nRF024l01)             |  17.8 |1  | 17 | Model:AS01-ML01DP5,vendor:ashing.com.cn, Docs downloadable from the vendor web site.
+|{counter:hList} | Antenna                                  |   3.5 |1  | 17 |
+|{counter:hList} | Battery(2200mAh)                         | 109.0 |1  |109 |
+|{counter:hList} | Charger                                  |  29.0 |1  | 29 |
+|{counter:hList} | Voltage Sensor                           | 0.14  |1  |  0 |
+|Total:          |                                          |       |   |504 |
+|===
+
+=== Transmitter
+[cols = "1,5,1,1,1,5"]
+|===
+|                | Name                         |Price  |Qty.| SubTotal | Memo
+|{counter:hList} | ESP 32 S3 DevKit-C1          | 31    | 1  | 31   |
+|{counter:hList} | Radio transceiver(nRF024l01) | 17.8  | 1  | 17.8 | Vendor:ashing.com.cn, Model:AS01-ML01DP5
+|{counter:hList} | Joystick                     |  3.5  | 2  | 7.0 |
+|{counter:hList} | Antenna                      |  3.5  | 1  | 17.8 | 
+|{counter:hList} | Screen(Oled,128*64)          | 20.3  | 1  | 20.3 | U8GLib driver. 
+|{counter:hList} | Battery(18650*4)             |    | 4  |  |
+|{counter:hList} | Battery case                 |    |   |  |

@@ -1,0 +1,56 @@
+== {counter:chapter}. Modify code 
+
+=== {chapter}.{counter:modify}. About programming language
+We prefer to use C++ in this project and avoid using C language in this project. You will see some code actually is C source code which ended with a '.c' suffix. They all come from 3rd party and we normally do not touch them unless necessary. Don't forget add the the `extern C{}` instruction if you have a c header to be included by a cpp source file.
+
+=== {chapter}.{counter:test}. Running testing case
+
+The test case currently only runnable with the native environment.
+
+Example to run the test case test_cpp with in native environment.
+[source, shell]
+----
+$ pio test -e native -f test_cpp
+----
+
+=== {chapter}.{counter:debug}. Debug arduino_uno_minima
+
+<TODO>
+=== {chapter}.{counter:debug}. Debug esp32s3-dev-kit-c1
+See:
+https://www.circuitstate.com/tutorials/debugging-esp32-arduino-esp-idf-projects-using-esp-prog-and-platformio/
+
+=== {chapter}.{counter:debug}. Debug the native program
+
+[source, shell]
+----
+$ gdb -ex run .pio/build/native/program.exe
+----
+
+The -g option is enabled for native env. 
+[source]
+----
+build_flags = 		
+	-std=gnu++11
+	-lwinmm	
+	-g
+    ...
+----
+
+Following command is used to show the stack strace in case any exception encountered when running the program with gdb.
+
+[source,shell]
+----
+(gdb) bt full
+(gdb) bt full
+#0  0x00007ff9f8acf61e in ucrtbase!abort () from C:\WINDOWS\System32\ucrtbase.dll
+No symbol table info available.
+... ...
+#7  0x00007ff65e8eb5f6 in a8::fc::Copter::setup (this=0x718c50) at lib\core\src\Copter.cpp:25
+No locals.
+#8  0x00007ff65e8e1f46 in a8::native::NativeCopter::setup (this=0x718c50)
+    at lib\native\src\NativeCopter.cpp:14
+No locals.
+... ...
+#10 0x00007ff65e8e2201 in main () at lib\native\src\main.c:194
+----
