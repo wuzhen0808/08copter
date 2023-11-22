@@ -14,7 +14,7 @@
   "dependencies": {
     "ts": "^1.0",
     "hal_esp": "^1.0",
-    "hal_rf24": "^1.0"
+    "util_rf24": "^1.0"
   },
   "frameworks": "arduino",
   "platforms": "espressif32"

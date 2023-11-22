@@ -1,7 +1,7 @@
 #pragma once
 #include "a8/util/net.h"
 
-namespace a8::hal::rf24 {
+namespace a8::util::rf24 {
 using namespace a8::util;
 
 class Rf24NetData {
@@ -235,4 +235,4 @@ public:
     }
 };
 
-} // namespace a8::hal::rf24
+} // namespace a8::util::rf24

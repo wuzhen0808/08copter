@@ -1,24 +1,24 @@
 #pragma once
-
-#include "a8/hal/rf24/Rf24Hosts.h"
-#include "a8/hal/rf24/Rf24Net.h"
-#include "a8/hal/rf24/Rf24NetData.h"
+#include "a8/util/rf24/Rf24Hal.h"
+#include "a8/util/rf24/Rf24Hosts.h"
+#include "a8/util/rf24/Rf24Net.h"
+#include "a8/util/rf24/Rf24NetData.h"
 #include "a8/util/net.h"
-#include <RF24.h>
-#include <SPI.h>
 
-namespace a8::hal::rf24 {
+namespace a8::util::rf24 {
 
 class Rf24Node : public FlyWeight {
     int id;
     Rf24Hosts *hosts;
-    RF24 *radio;
+    Rf24Hal::Radio *radio;
     Rf24Net *net;
     System *sys;
     Scheduler *sch;
+    Rf24Hal * hal;
 
 public:
-    Rf24Node(Rf24Hosts *hosts, int id, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, String() << "Rf24Node(" << id << ")") {
+    Rf24Node(Rf24Hal * hal, Rf24Hosts *hosts, int id, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, String() << "Rf24Node(" << id << ")") {
+        this->hal = hal;
         this->hosts = hosts;
         this->id = id;
         this->sys = sys;
@@ -28,7 +28,7 @@ public:
     }
     ~Rf24Node() {
         Lang::free<Rf24Net>(this->net);
-        Lang::free<RF24>(this->radio);
+        Lang::free<Rf24Hal::Radio>(this->radio);
     }
 
     int setup(int chipEnablePin, int chipSelectPin, int channel, void *c, void (*nodeDataHandler)(void *, Rf24NetData *&), Result &res) {
@@ -36,8 +36,8 @@ public:
             res << "cannot setup twice.";
             return -1;
         }
-        this->radio = new RF24(chipEnablePin, chipSelectPin);
-        this->net = new Rf24Net(radio, this->sch, this->loggerFactory);
+        this->radio = hal->newRadio(chipEnablePin, chipSelectPin);
+        this->net = new Rf24Net(hal, radio, this->sch, this->loggerFactory);
 
         if (!radio->begin()) {
             res << "Cannot begin radio,"
@@ -67,4 +67,4 @@ public:
 
 };
 
-} // namespace a8::hal::rf24
+} // namespace a8::util::rf24

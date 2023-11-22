@@ -1,7 +1,7 @@
 #include "a8/hal.h"
 #include "a8/hal/arduino.h"
 #include "a8/hal/esp.h"
-#include "a8/hal/rf24.h"
+#include "a8/util/rf24.h"
 
 #include "ConfigUtil.h"
 #include "a8/link.h"
@@ -14,7 +14,7 @@
 using namespace a8::hal::arduino_;
 using namespace a8::ts;
 using namespace a8::ts::esp;
-using namespace a8::hal::rf24;
+using namespace a8::util::rf24;
 using namespace a8::hal::esp;
 using namespace a8;
 class TwoWire;

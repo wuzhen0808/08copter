@@ -1,7 +1,6 @@
 #pragma once
 #include "a8/util/Assert.h"
 #include "a8/util/Callback3.h"
-#include "a8/util/ForEach.h"
 #include "a8/util/Lang.h"
 #include "a8/util/Math.h"
 #include "a8/util/defines.h"
@@ -165,6 +164,12 @@ public:
         return len2;
     }
 
+    int write(T *buf, int bLen) {
+        int len = Math::min(this->length_, bLen);
+        Lang::copy(this->buffer_, 0, len, buf, 0);
+        return len;
+    }
+
     int toArray(T *buf, int len) {
         if (len != this->length_) {
             Assert::illegalArgument(String() << "buf length wrong.");
@@ -174,7 +179,7 @@ public:
         }
         return this->length_;
     }
-    
+
     void clear() {
         this->length_ = 0;
     }
@@ -273,9 +278,9 @@ public:
         }
         return ret;
     }
-    
+
     template <typename C>
-    void forEach(C c, void (*consumer)(C, T)){
+    void forEach(C c, void (*consumer)(C, T)) {
         for (int i = 0; i < this->length_; i++) {
             T ele = this->buffer_[i];
             consumer(c, ele);

@@ -2,7 +2,7 @@
 #include "a8/fc/uno.h"
 #include "a8/hal/arduino.h"
 #include "a8/hal/freertos.h"
-#include "a8/hal/rf24.h"
+#include "a8/util/rf24.h"
 #include "a8/link.h"
 #include "a8/util.h"
 #include "a8/util/comp.h"
@@ -17,7 +17,7 @@ using namespace a8::link;
 using namespace a8::hal::arduino_;
 using namespace a8::fc;
 using namespace a8::fc::uno;
-using namespace a8::hal::rf24;
+using namespace a8::util::rf24;
 using namespace a8;
 using namespace a8::hal::freertos;
 class TwoWire;

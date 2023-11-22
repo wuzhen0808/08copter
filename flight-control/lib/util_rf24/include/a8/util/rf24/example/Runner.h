@@ -1,19 +1,20 @@
 #pragma once
-#include "a8/hal/rf24.h"
-#include "a8/hal/rf24/example/BothExample.h"
-#include "a8/hal/rf24/example/ClientExample.h"
-#include "a8/hal/rf24/example/ServerExample.h"
+#include "a8/util/rf24.h"
+#include "a8/util/rf24/example/BothExample.h"
+#include "a8/util/rf24/example/ClientExample.h"
+#include "a8/util/rf24/example/ServerExample.h"
 #include "a8/util.h"
 #include "a8/util/net.h"
 
-namespace a8::hal::rf24::example {
+namespace a8::util::rf24::example {
 class Runner {
     System *sys;
     Scheduler *sch;
     LoggerFactory *logFac;
-
+    Rf24Hal * hal;
 public:
-    Runner(System *sys, Scheduler *sch, LoggerFactory *logFac) {
+    Runner(Rf24Hal * hal, System *sys, Scheduler *sch, LoggerFactory *logFac) {
+        this->hal = hal;
         this->sys = sys;
         this->sch = sch;
         this->logFac = logFac;
@@ -101,12 +102,12 @@ public:
         // ClientExample *example = new ClientExample(sys, logFac, sch);
         //  ServerExample *example = new ServerExample(sys, logFac, sch);
         if (type == 1) {
-            example = new ServerExample(sys, logFac, sch);
+            example = new ServerExample(hal, sys, logFac, sch);
         } else if (type == 2) {
-            example = new ClientExample(sys, logFac, sch);
+            example = new ClientExample(hal, sys, logFac, sch);
             static_cast<ClientExample *>(example)->setRate(rate);
         } else if (type == 3) {
-            example = new BothExample(sys, logFac, sch);
+            example = new BothExample(hal, sys, logFac, sch);
             static_cast<BothExample *>(example)->setRate(rate);
         } else {
             res << "no such type:" << type;
@@ -118,4 +119,4 @@ public:
         return example->start(res);
     }
 };
-} // namespace a8::hal::rf24::example
+} // namespace a8::util::rf24::example

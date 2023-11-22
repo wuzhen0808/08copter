@@ -1,14 +1,14 @@
 #pragma once
-#include "a8/hal/rf24.h"
+#include "a8/util/rf24.h"
 #include "a8/util.h"
 #include "a8/util/net.h"
 
-namespace a8::hal::rf24::example {
+namespace a8::util::rf24::example {
 
 using namespace a8::util;
 using namespace a8::util::net;
 using namespace a8::util::sched;
-using namespace a8::hal::rf24;
+using namespace a8::util::rf24;
 using namespace a8;
 using a8::util::String;
 
@@ -32,11 +32,13 @@ public:
     Rf24Hosts *hosts;
     Rf24Sockets *sockets;
     String name;
+    Rf24Hal * hal;
 
-    BaseExample(String name, System *sys,
+    BaseExample(String name, Rf24Hal * hal, System *sys,
                 LoggerFactory *logFac,
                 Scheduler *sch) : FlyWeight(logFac, name) {
         this->name = name;
+        this->hal = hal;
         this->sys = sys;
         this->sch = sch;
     }
@@ -53,7 +55,7 @@ public:
         using a8::util::String;
         hosts = buildHosts();
         log(String() << "hosts:" << hosts);
-        sockets = new Rf24Sockets(nodeId, hosts, sys, sch, loggerFactory);
+        sockets = new Rf24Sockets(hal, nodeId, hosts, sys, sch, loggerFactory);
 
         int ret = sockets->setup(9, 10, 90, res);
         if (ret < 0) {
@@ -66,4 +68,4 @@ public:
     virtual int start(Result &res) = 0;
 };
 
-} // namespace a8::hal::rf24::example
+} // namespace a8::util::rf24::example

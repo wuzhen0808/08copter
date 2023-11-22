@@ -1,18 +1,16 @@
 #pragma once
-#include "a8/hal/rf24/Rf24NetData.h"
 #include "a8/util.h"
+#include "a8/util/rf24/Rf24Hal.h"
+#include "a8/util/rf24/Rf24NetData.h"
 #include "a8/util/sched.h"
 
-#include <RF24.h>
-#include <RF24Network.h>
-namespace a8::hal::rf24 {
+namespace a8::util::rf24 {
 using namespace a8::util::sched;
 using namespace a8::util;
 
 class Rf24Net : public FlyWeight {
     using netDataHandler = void (*)(void *, Rf24NetData *&);
-    RF24 *radio;
-    RF24Network *network;
+    Rf24Hal::Network *network;
     int nodeId;
     Scheduler *sch;
     void *netDataHandlerContext;
@@ -21,10 +19,9 @@ class Rf24Net : public FlyWeight {
     SyncQueue<Rf24NetData *> *localDataQueue;
 
 public:
-    Rf24Net(RF24 *radio, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Rf24Net") {
-        this->radio = radio;
-        this->network = new RF24Network(*radio);
+    Rf24Net(Rf24Hal *hal, Rf24Hal::Radio *radio, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Rf24Net") {
         this->sch = sch;
+        this->network = hal->newNetwork(radio);
         this->netLock = sch->createLock();
         this->localDataQueue = sch->createSyncQueue<Rf24NetData *>(16);
     }
@@ -76,14 +73,14 @@ public:
         if (!this->network->available()) {
             return 0;
         }
-        RF24NetworkHeader header;
-        int size = this->network->peek(header);
+        // RF24NetworkHeader header;
+        int size = this->network->peek();
         if (size == 0) {
             log(String() << "peek size is 0?");
             return 0;
         }
         char buf[size];
-        int size2 = this->network->read(header, buf, size);
+        int size2 = this->network->read(buf, size);
         if (size2 != size) {
             log(String() << "size of data received is not the expected.");
         }
@@ -127,7 +124,7 @@ public:
             return 0;
         }
 
-        this->netDataHandler_(this->netDataHandlerContext, data);        
+        this->netDataHandler_(this->netDataHandlerContext, data);
         return 1;
     }
 
@@ -155,12 +152,12 @@ public:
         }
 
         log(String() << "sending data(" << data << ") to radio net");
-        RF24NetworkHeader header(data->node2);
+        // RF24NetworkHeader header(data->node2);
 
-        ret = this->syncNetOp5<Rf24Net *, RF24NetworkHeader *, char *, int, int>(
-            this, &header, wrb.buffer(), wrb.len(),
-            [](Rf24Net *this_, RF24NetworkHeader *header, char *buf, int len) {
-                return this_->doSendToRadioNet(header, buf, len);
+        ret = this->syncNetOp5<Rf24Net *, int, char *, int, int>(
+            this, data->node2, wrb.buffer(), wrb.len(),
+            [](Rf24Net *this_, int nodeId2, char *buf, int len) {
+                return this_->doSendToRadioNet(nodeId2, buf, len);
             } //
         );
 
@@ -171,10 +168,10 @@ public:
 
         return wrb.len();
     }
-    int doSendToRadioNet(RF24NetworkHeader *header, char *buf, int len) {
+    int doSendToRadioNet(int nodeId, char *buf, int len) {
         // send to radio net.
         this->network->update();
-        bool ok = this->network->write(*header, buf, len);
+        bool ok = this->network->write(nodeId, buf, len);
         if (!ok) {
             return -1;
         }
@@ -182,4 +179,4 @@ public:
     }
 };
 
-} // namespace a8::hal::rf24
+} // namespace a8::util::rf24

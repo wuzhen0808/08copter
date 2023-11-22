@@ -1,14 +1,14 @@
 #pragma once
-#include "a8/hal/rf24.h"
-#include "a8/hal/rf24/example/BaseExample.h"
+#include "a8/util/rf24.h"
+#include "a8/util/rf24/example/BaseExample.h"
 #include "a8/util.h"
 #include "a8/util/net.h"
-namespace a8::hal::rf24::example {
+namespace a8::util::rf24::example {
 
 using namespace a8::util;
 using namespace a8::util::net;
 using namespace a8::util::sched;
-using namespace a8::hal::rf24;
+using namespace a8::util::rf24;
 using namespace a8;
 using namespace a8::util::net;
 using a8::util::String;
@@ -156,7 +156,7 @@ public:
 
 class ServerExample : public BaseExample {
 public:
-    ServerExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample("ServerExample", sys, logFac, sch) {
+    ServerExample(Rf24Hal * hal, System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample("ServerExample", hal, sys, logFac, sch) {
     }
     int start(Result &res) override {
         using a8::util::String;
@@ -178,4 +178,4 @@ public:
     }
 };
 
-} // namespace a8::hal::rf24::example
+} // namespace a8::util::rf24::example

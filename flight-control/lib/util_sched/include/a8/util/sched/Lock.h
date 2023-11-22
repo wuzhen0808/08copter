@@ -29,6 +29,23 @@ public:
         return ret;
     }
 
+    template <typename C, typename C2, typename R>
+    R callInLock(C c, C2 c2, R (*call)(C c, C2 c2)) {
+        lock();
+        R ret = call(c, c2);
+        unLock();
+        return ret;
+    }
+
+
+    template <typename C, typename C2, typename C3, typename R>
+    R callInLock(C c, C2 c2,C3 c3, R (*call)(C c, C2 c2, C3 c3)) {
+        lock();
+        R ret = call(c, c2, c3);
+        unLock();
+        return ret;
+    }
+
     void unLock() {
         this->queue->offer(1);
     }

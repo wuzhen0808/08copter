@@ -1,16 +1,15 @@
 #pragma once
-#include "a8/hal/rf24/Rf24Hosts.h"
-#include "a8/hal/rf24/Rf24NetRequest.h"
-#include "a8/hal/rf24/Rf24Node.h"
-#include "a8/hal/rf24/Rf24Ports.h"
-#include "a8/hal/rf24/Rf24Sock.h"
+#include "a8/util/rf24/Rf24Hal.h"
+#include "a8/util/rf24/Rf24Hosts.h"
+#include "a8/util/rf24/Rf24NetRequest.h"
+#include "a8/util/rf24/Rf24Node.h"
+#include "a8/util/rf24/Rf24Ports.h"
+#include "a8/util/rf24/Rf24Sock.h"
 
 #include "a8/util/net.h"
-#include <RF24.h>
-#include <RF24Network.h>
-#include <SPI.h>
 
-namespace a8::hal::rf24 {
+
+namespace a8::util::rf24 {
 using namespace a8::util;
 using namespace a8::util::net;
 /**
@@ -22,6 +21,7 @@ using namespace a8::util::net;
 
 class Rf24Sockets : public Sockets, public FlyWeight {
 private:
+    Rf24Hal * hal;
     // dynamic
     Rf24Node *node;
     Rf24Ports *ports;
@@ -168,14 +168,15 @@ private:
     }
 
 public:
-    Rf24Sockets(int id, Rf24Hosts *hosts, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Rf24Sockets") {
+    Rf24Sockets(Rf24Hal * hal, int id, Rf24Hosts *hosts, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Rf24Sockets") {
+        this->hal = hal;
         this->hosts = hosts;
         this->host = host;
         this->sys = sys;
         this->sch = sch;
         this->nextId = 1;
         this->ports = new Rf24Ports();
-        this->node = new Rf24Node(hosts, id, sys, sch, logFac);
+        this->node = new Rf24Node(hal, hosts, id, sys, sch, logFac);
         this->table = new HashTable<int, Rf24Sock *>([](int k) { return k % 32; });
         this->binds = new HashTable<int, Rf24Sock *>([](int k) { return k % 16; });
     }
@@ -366,4 +367,4 @@ public:
         return -1;
     }
 };
-} // namespace a8::hal::rf24
+} // namespace a8::util::rf24

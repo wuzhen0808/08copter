@@ -1,18 +1,18 @@
 #pragma once
 
-#include "a8/hal/rf24/Rf24Connector.h"
-#include "a8/hal/rf24/Rf24Listener.h"
-#include "a8/hal/rf24/Rf24NetData.h"
-#include "a8/hal/rf24/Rf24Node.h"
-#include "a8/hal/rf24/Rf24Player.h"
-#include "a8/hal/rf24/Rf24Watcher.h"
-#include "a8/hal/rf24/Rf24Worker.h"
+#include "a8/util/rf24/Rf24Connector.h"
+#include "a8/util/rf24/Rf24Listener.h"
+#include "a8/util/rf24/Rf24NetData.h"
+#include "a8/util/rf24/Rf24Node.h"
+#include "a8/util/rf24/Rf24Player.h"
+#include "a8/util/rf24/Rf24Watcher.h"
+#include "a8/util/rf24/Rf24Worker.h"
 #include "a8/util.h"
 #include "a8/util/sched.h"
 
 #include "a8/util/net.h"
 
-namespace a8::hal::rf24 {
+namespace a8::util::rf24 {
 using namespace a8::util;
 using namespace a8::util::sched;
 
@@ -135,4 +135,4 @@ public:
     }
 };
 
-} // namespace a8::hal::rf24
+} // namespace a8::util::rf24

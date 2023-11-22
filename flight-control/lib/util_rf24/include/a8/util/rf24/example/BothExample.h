@@ -1,16 +1,16 @@
 #pragma once
-#include "a8/hal/rf24.h"
-#include "a8/hal/rf24/example/BaseExample.h"
-#include "a8/hal/rf24/example/ClientExample.h"
-#include "a8/hal/rf24/example/ServerExample.h"
+#include "a8/util/rf24.h"
+#include "a8/util/rf24/example/BaseExample.h"
+#include "a8/util/rf24/example/ClientExample.h"
+#include "a8/util/rf24/example/ServerExample.h"
 #include "a8/util.h"
 #include "a8/util/net.h"
-namespace a8::hal::rf24::example {
+namespace a8::util::rf24::example {
 
 using namespace a8::util;
 using namespace a8::util::net;
 using namespace a8::util::sched;
-using namespace a8::hal::rf24;
+using namespace a8::util::rf24;
 using namespace a8;
 using a8::util::String;
 
@@ -18,7 +18,7 @@ class BothExample : public BaseExample {
     Rate rate = 1.0f;
 
 public:
-    BothExample(System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample("BothExample", sys, logFac, sch) {
+    BothExample(Rf24Hal * hal,System *sys, LoggerFactory *logFac, Scheduler *sch) : BaseExample("BothExample", hal, sys, logFac, sch) {
     }
 
     void setRate(Rate rate) {
@@ -60,4 +60,4 @@ public:
     }
 };
 
-} // namespace a8::hal::rf24::example
+} // namespace a8::util::rf24::example

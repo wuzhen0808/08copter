@@ -1,5 +1,5 @@
 {
-  "name": "fc_esp",
+  "name": "util_rf24",
   "version": "1.0",
   "description": "test",
   "keywords": "no",
@@ -11,10 +11,9 @@
     }
   ],
   "license": "MIT",
-  "dependencies": {    
-    "fc": "^1.0",
-    "hal_esp": "^1.0",
-    "util_rf24": "^1.0"    
+  "dependencies": {
+    "util_net": "^1.0",
+    "hal_rf24": "^1.0"
   },
   "frameworks": "*",
   "platforms": "*"

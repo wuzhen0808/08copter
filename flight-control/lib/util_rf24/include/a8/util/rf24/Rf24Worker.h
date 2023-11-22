@@ -1,14 +1,14 @@
 #pragma once
 
-#include "a8/hal/rf24/Rf24NetData.h"
-#include "a8/hal/rf24/Rf24Player.h"
+#include "a8/util/rf24/Rf24NetData.h"
+#include "a8/util/rf24/Rf24Player.h"
 
 #include "a8/util.h"
 #include "a8/util/sched.h"
 
 #include "a8/util/net.h"
 
-namespace a8::hal::rf24 {
+namespace a8::util::rf24 {
 using namespace a8::util;
 using namespace a8::util::sched;
 class Rf24Worker : public Rf24Player {
@@ -35,4 +35,4 @@ public:
     }
 };
 
-} // namespace a8::hal::rf24
+} // namespace a8::util::rf24

@@ -1,7 +1,7 @@
 #pragma once
-#include "a8/hal/rf24/Rf24NetData.h"
+#include "a8/util/rf24/Rf24NetData.h"
 
-namespace a8::hal::rf24 {
+namespace a8::util::rf24 {
 class Rf24NetRequest {
 
 public:
@@ -33,4 +33,4 @@ public:
        delete this->data;
     }
 };
-} // namespace a8::hal::rf24
+} // namespace a8::util::rf24

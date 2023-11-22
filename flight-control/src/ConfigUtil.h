@@ -1,12 +1,12 @@
 #pragma once
-#include "a8/hal/rf24.h"
+#include "a8/util/rf24.h"
 #include "a8/link.h"
 #include "a8/util.h"
 
 namespace a8 {
 using namespace a8::link;
 using namespace a8::util;
-using namespace a8::hal::rf24;
+using namespace a8::util::rf24;
 
 class SetupUtil {
 public:
