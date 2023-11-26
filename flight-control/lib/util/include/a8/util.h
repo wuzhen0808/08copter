@@ -1,4 +1,6 @@
 #pragma once
+#include "a8/util/AnalogInputPin.h"
+#include "a8/util/DigitalInputPin.h"
 #include "a8/util/Assert.h"
 #include "a8/util/Attributes.h"
 #include "a8/util/Buffer.h"

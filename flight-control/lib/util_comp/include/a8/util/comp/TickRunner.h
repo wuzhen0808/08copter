@@ -78,13 +78,13 @@ public:
                 TickRunner *runner = new TickRunner(this->ticking->getStaging(), entry->rate, j);
                 runner->add(entry);
                 logger->info(String() << "schedule thread for runner:" << j);
-                runner->thread = context->scheduler->schedule(runner, tickFunc);
+                runner->thread = context->scheduler->createTask(String() << "TickRunner[" << j << "]", runner, tickFunc);
                 // todo storage of thread?
             }
         } else {
 
             logger->info(String() << "scheduleTimer:rate:" << rate);
-            this->timer = context->scheduler->scheduleTimer(tickFunc, this, rate);
+            this->timer = context->scheduler->createTimer(String() << "TickTimer[" << rate << "]", rate, this, tickFunc);
         }
 
         return;

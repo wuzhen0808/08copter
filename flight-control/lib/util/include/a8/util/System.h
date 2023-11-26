@@ -1,7 +1,12 @@
 #pragma once
 #include "a8/util/Output.h"
 #include "a8/util/Reader.h"
+#include "a8/util/Properties.h"
 namespace a8::util {
+enum PinMode{
+    IN,
+    OUT
+};
 
 class System {
 protected:
@@ -23,6 +28,14 @@ public:
     virtual int openFile(String fpath, Reader *&fReaderCb) = 0;
 
     virtual String getEnv(String name) = 0;
+
+    virtual void setPinMode(int pin, PinMode mode);
+
+    virtual int analogRead(int pin);
+
+    virtual bool digitalRead(int pin);
+
+    virtual void delay(long ms);
 
     Reader *getInput() {
         return this->input;
