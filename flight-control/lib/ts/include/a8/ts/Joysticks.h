@@ -3,6 +3,27 @@
 #include "a8/util.h"
 namespace a8::ts {
 using namespace a8::util;
+class Axis {
+
+protected:
+    String name;
+
+public:
+    Axis(String name) {
+        this->name = name;
+    }
+
+    bool operator==(const Axis &axis) const {
+        return this->name == axis.name;
+    }
+
+    friend String &operator<<(String &str, const Axis &axis) {
+        return str << axis.name;
+    }
+};
+
+static const Axis X = Axis("X");
+static const Axis Y = Axis("Y");
 
 class Joysticks : FlyWeight {
     Joystick *left;
@@ -17,78 +38,126 @@ public:
     }
 
     void setup() {
-        this->detectZero();
-        this->detectOne(this->left, "LEFT");
-        this->detectOne(this->right, "RIGHT");
+        this->detectZeroMinMax(this->left, X, "LEFT");
+        this->detectZeroMinMax(this->left, Y, "LEFT");
+        this->detectZeroMinMax(this->right, X, "RIGHT");
+        this->detectZeroMinMax(this->right, Y, "RIGHT");
+
+        this->detectMinMax(this->left, X, "LEFT");
+        this->detectMinMax(this->left, Y, "LEFT");
+        this->detectMinMax(this->right, X, "RIGHT");
+        this->detectMinMax(this->right, Y, "RIGHT");
     }
 
-    void detectOne(Joystick *js, String side) {
-
+    void waitMoving(AnalogInputPin *aPin, String prompt) {
         while (true) {
-            js->waitMoving(String() << "Please MOVE the joystick of " << side << " side around.");
-
-            long started = sys->getSteadyTime();
-            long steadyInterval = 3000;
-
-            long lastModified11 = started;
-            long lastModified12 = started;
-
-            int ret11 = -1;
-            int ret12 = -1;
-
-            bool retry = false;
-
-            while (ret11 < 0 || ret12 < 0) {
-
-                if (ret11 == -2 || ret12 == -2) {
-                    retry = true;
-                    break;
-                }
-
-                js->detectOne(started, lastModified11, lastModified12, steadyInterval, ret11, ret12);
-            }
-            if (retry) {
-                continue;
-            }
-            
-            break;
-        }
-
-        log("done of study the min/MAX scope of the joystick of " << side << " side.");
-    }
-
-    void detectZero() {
-
-        long started = sys->getSteadyTime();
-        long steadyInterval = 3000;
-
-        long lastModified11 = started;
-        long lastModified12 = started;
-        long lastModified21 = started;
-        long lastModified22 = started;
-
-        int ret11 = -1;
-        int ret12 = -1;
-        int ret21 = -1;
-        int ret22 = -1;
-
-        log("going to study the ZERO area of joysticks, do NOT touch the joy sticks, both left and right.");
-
-        while (true) {
-            bool hasError = false;
-            if (ret11 < 0 || ret12 < 0) {
-                this->left->detectZero(started, lastModified11, lastModified12, steadyInterval, ret11, ret12);
-                hasError = true;
-            }
-            if (ret21 < 0 || ret22 < 0) {
-                this->right->detectZero(started, lastModified21, lastModified22, steadyInterval, ret21, ret22);
-                hasError = true;
-            }
-            if (!hasError) {
+            log(prompt);
+            int moving = waitMoving(aPin, 5000);
+            if (moving > 0) {
+                log("start moving.");
                 break;
             }
         }
-        log("done of study zero area of joysticks.");
+    }
+
+    int waitMoving(AnalogInputPin *aPin, long timeout) {
+        long started = sys->getSteadyTime();
+        while (true) {
+            if (aPin->isMoving()) {
+                break;
+            }
+
+            if (sys->getSteadyTime() - started > timeout) {
+                return -1;
+            }
+        }
+        return 1;
+    }
+    void detectMinMax(AnalogInputPin *aPin, int &min, int &max) {
+        long started = sys->getSteadyTime();
+        long steadyInterval = 3000;
+
+        long lastModified = started;
+
+        while (true) {
+
+            int rValue = aPin->readRaw();
+
+            if (rValue < min || min == -1) {
+                min = rValue;
+                lastModified = sys->getSteadyTime();
+            }
+            if (rValue > max || max == -1) {
+                max = rValue;
+                lastModified = sys->getSteadyTime();
+            }
+
+            if (sys->getSteadyTime() - lastModified > steadyInterval) {
+                // timeout .
+                break;
+            }
+        }
+        return;
+    }
+    void detectMinMax(Joystick *js, Axis axis, String side) {
+        AnalogInputPin *aPin = (X == axis ? js->getXPin() : js->getYPin());
+        while (true) {
+            this->waitMoving(aPin, String() << "Please MOVE " << axis << " axis of " << side << " side joystick.");
+
+            bool retry = false;
+            int min = -1;
+            int max = -1;
+            this->detectMinMax(aPin, min, max);
+            // check the value.
+            int zeroMax = aPin->getZeroMax();
+            int zeroMin = aPin->getZeroMin();
+            if (max - min < 1000) {
+                log(String() << "the norm area is too small:" << min << "/" << max << ",retrying.");
+                retry = true;
+            }
+            if (max < zeroMax || min > zeroMin) {
+                log(String() << "the norm area is not fully cover the zero area:" << min << "/"
+                             << zeroMin << "/" << zeroMax << "/" << max << ",retrying.");
+                retry = true;
+            }
+
+            if (retry) {
+                continue;
+            }
+
+            aPin->setMin(min);
+            aPin->setMax(max);
+
+            log(String() << "done of study the scope(" << min << "," << max << ") of the " << axis << " axis of the " << side << " side joystick.");
+            break;
+        }
+    }
+
+    void detectZeroMinMax(Joystick *js, Axis axis, String side) {
+        AnalogInputPin *aPin = (X == axis ? js->getXPin() : js->getYPin());
+        while (true) {
+
+            bool retry = false;
+            int zeroMin = -1;
+            int zeroMax = -1;
+            this->detectMinMax(aPin, zeroMin, zeroMax);
+            // check the value.
+            if (zeroMax - zeroMin > 200) {
+
+                log(String() << "the zero area is too large:" << zeroMin << "/" << zeroMax << ",retrying.");
+                retry = true;
+            }
+
+            if (retry) {
+                continue;
+            }
+
+            aPin->setZeroMin(zeroMin);
+            aPin->setZeroMax(zeroMax);
+
+            log(String() << "done of study the zero scope(" << zeroMin << "," << zeroMax << ") of the " << axis << " axis of the " << side << " side joystick.");
+            break;
+        }
     }
 };
 } // namespace a8::ts

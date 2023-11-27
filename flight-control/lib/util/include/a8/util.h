@@ -23,6 +23,7 @@
 #include "a8/util/Pair.h"
 #include "a8/util/Properties.h"
 #include "a8/util/Queue.h"
+#include "a8/util/Point2.h"
 #include "a8/util/Rate.h"
 #include "a8/util/ReadWriteRunner.h"
 #include "a8/util/Result.h"

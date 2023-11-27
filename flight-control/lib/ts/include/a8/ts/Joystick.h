@@ -14,51 +14,31 @@ public:
         this->xPin = new AnalogInputPin(xPin, sys, logFac);
         this->yPin = new AnalogInputPin(yPin, sys, logFac);
     }
-
-    void waitMoving(String prompt) {
-        while (true) {
-            log(prompt);
-            int moving = waitMoving(5000);
-            if (moving > 0) {
-                log("start moving.");
-                break;
-            }
-        }
-    }
-    int waitMoving(long timeout) {
-        long started = sys->getSteadyTime();
-        while (true) {
-            if (xPin->isMoving()) {
-                break;
-            }
-            if (yPin->isMoving()) {
-                break;
-            }
-
-            if (sys->getSteadyTime() - started > timeout) {
-                return -1;
-            }
-        }
-        return 1;
+    AnalogInputPin *getXPin() {
+        return xPin;
     }
 
-    void detectZero(long started, long &lastModified1, long &lastModified2, long steadyInterval, int &ret1, int &ret2) {
-        if (ret1 < 0) {
-            ret1 = this->xPin->detectZero(started, lastModified1, steadyInterval);
-        }
-        if (ret2 < 0) {
-            ret2 = this->yPin->detectZero(started, lastModified2, steadyInterval);
-        }
+    AnalogInputPin *getYPin() {
+        return yPin;
     }
 
-    void detectOne(long started, long &lastModified1, long &lastModified2, long steadyInterval, int &ret1, int &ret2) {
-
-        if (ret1 < 0) {
-            ret1 = this->xPin->detectOne(started, lastModified1, steadyInterval);
-        }
-        if (ret2 < 0) {
-            ret2 = this->yPin->detectOne(started, lastModified2, steadyInterval);
-        }
+    Point2<int> getRaw() {
+        int x = xPin->readRaw();
+        int y = yPin->readRaw();
+        return Point2<int>(x, y);
     }
+
+    Point2<int> getZeroMin() {
+        int x = xPin->getZeroMin();
+        int y = yPin->getZeroMin();
+        return Point2<int>(x, y);
+    }
+
+    Point2<int> getZeroMax() {
+        int x = xPin->getZeroMin();
+        int y = yPin->getZeroMin();
+        return Point2<int>(x, y);
+    }
+
 };
 } // namespace a8::ts

@@ -5,10 +5,10 @@ namespace a8::util {
 class AnalogInputPin : public FlyWeight {
 private:
     System *sys;
-    int rawValueLeftMost = -1;
-    int rawValueZeroLeft = -1;
-    int rawValueZeroRight = -1;
-    int rawValueRightMost = -1;
+    int min = -1;
+    int zeroMin = -1;
+    int zeroMax = -1;
+    int max = -1;
     //
     bool reverse = true;
     int pin = -1;
@@ -23,9 +23,9 @@ public:
 
     bool isMoving() {
         int raw = this->readRaw();
-        int zeroWidth = this->rawValueZeroRight - this->rawValueZeroLeft + 1;
+        int zeroWidth = this->zeroMax - this->zeroMin + 1;
 
-        if (raw < this->rawValueZeroLeft - zeroWidth * 2 || raw > this->rawValueZeroRight + zeroWidth * 2) {
+        if (raw < this->zeroMin - zeroWidth * 2 || raw > this->zeroMax + zeroWidth * 2) {
             log("moving.");
             return true;
         }
@@ -45,65 +45,38 @@ public:
         return 1;
     }
 
-    int detectOne(long started, long &lastModified, long steadyInterval) {
-
-        int ret = this->resolveMinMax(this->rawValueLeftMost, this->rawValueRightMost, started, lastModified, steadyInterval);
-        if (ret < 0) {
-            return -1;
-        }
-
-        if (this->rawValueRightMost - this->rawValueLeftMost < 1000) {
-            log(String() << "the norm area is too small:" << this->rawValueLeftMost << "/" << this->rawValueRightMost << ",retrying.");
-
-            return -2;
-        } else if (this->rawValueRightMost < this->rawValueZeroRight || this->rawValueLeftMost > this->rawValueZeroLeft) {
-            log(String() << "the norm area is not fully cover the zero area:" << this->rawValueLeftMost << "/"
-                         << this->rawValueZeroLeft << "/" << this->rawValueZeroRight << "/" << this->rawValueRightMost << ",retrying.");
-            return -3;
-        }
-
-        log(String() << "got min/max value:" << this->rawValueLeftMost << "/" << this->rawValueRightMost);
-        return 1;
-    }
-
-    int detectZero(long started, long &lastModified, long steadyInterval) {
-
-        int ret = resolveMinMax(this->rawValueZeroLeft, this->rawValueZeroRight, started, lastModified, steadyInterval);
-        if (ret < 0) {
-            return ret;
-        }
-        if (ret > 0 && this->rawValueZeroRight - this->rawValueZeroLeft > 200) {
-
-            log(String() << "the zero area is too large:" << this->rawValueZeroLeft << "/" << this->rawValueZeroRight << ",retrying.");
-            return -1;
-        }
-
-        log(String() << "got zero area:" << this->rawValueZeroLeft << "/" << this->rawValueZeroRight);
-        return 1;
-    }
-
-    int resolveMinMax(int &min, int &max, long started, long &lastModified, long steadyInterval) {
-
-        int rValue = readRaw();
-
-        if (rValue < min || min == -1) {
-            min = rValue;
-            lastModified = sys->getSteadyTime();
-        }
-        if (rValue > max || max == -1) {
-            max = rValue;
-            lastModified = sys->getSteadyTime();
-        }
-
-        if (sys->getSteadyTime() - lastModified > steadyInterval) {
-            return 1;
-        } else {
-            return -1;
-        }
-    }
-
     int getLastRawRead() {
         return this->lastRawValue;
+    }
+    void setMin(int min) {
+        this->min = min;
+    }
+
+    int getMin() {
+        return this->max;
+    }
+    int getZeroMin() {
+        return this->zeroMin;
+    }
+
+    int getZeroMax() {
+        return this->zeroMax;
+    }
+
+    void setMax(int max) {
+        this->max = max;
+    }
+
+    void setZeroMax(int max) {
+        this->zeroMax = max;
+    }
+
+    void setZeroMin(int min) {
+        this->zeroMin = min;
+    }
+
+    int getMax() {
+        return this->min;
     }
 
     int readRaw() {
@@ -113,7 +86,7 @@ public:
     }
 
     bool isMiddle(int rawValue) {
-        return rawValue >= this->rawValueZeroLeft && rawValue <= this->rawValueZeroRight;
+        return rawValue >= this->zeroMin && rawValue <= this->zeroMax;
     }
 
     float readNorm() {
@@ -122,12 +95,12 @@ public:
         int value = readRaw();
         int direct = reverse ? -1 : 1;
 
-        if (value > this->rawValueZeroRight) {
-            one = this->rawValueRightMost;
-            zero = this->rawValueZeroRight;
-        } else if (value < this->rawValueZeroLeft) {
-            one = this->rawValueLeftMost;
-            zero = this->rawValueZeroLeft;
+        if (value > this->zeroMax) {
+            one = this->max;
+            zero = this->zeroMax;
+        } else if (value < this->zeroMin) {
+            one = this->min;
+            zero = this->zeroMin;
             direct = -direct;
         } else {
             return 0.0f;
