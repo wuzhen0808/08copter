@@ -2,21 +2,18 @@
 #include "MyPID.h"
 #include <Arduino.h>
 #include <ESP32Servo.h>
-#include <MPU9250.h>
 #include <Wire.h>
 
 float elapsedTime, timeMs, timeMsPrev;
 float desired_angle = 0;
 float error;
-// mpu9250
-MPU9250 mpu;
 
 // pwm
 float pwmLeft, pwmRight;
-float throttle = 1230;
-long pwmLimit = 1600;
+float throttle = 1300;
+long pwmLimit = 2000;
 long pwmManualAdjust = 0;
-long timeLimitSeconds = 60;
+long timeLimitSeconds = 1;
 long startTimeMs;
 // servos
 
@@ -24,16 +21,51 @@ const int len = 4;
 int pins[len] = {17, 18, 19, 20};
 Servo *servos = new Servo[len];
 // statistics
-float maxRoll = 0;
+float maxTy = 0;
 
 int setupMpu9250() {
-    mpu.setup(0x68);
-    mpu.selectFilter(QuatFilterSel::MADGWICK);
-    mpu.setFilterIterations(1);
-    study::log("success of setupMpu9250.", true);
+    Wire.beginTransmission(0x68);
+    Wire.write(0x6B);
+    Wire.write(0);
+    Wire.endTransmission(true);
     return 1;
 }
 
+int readRawXyz(int reg, int &x, int &y, int &z) {
+    Wire.beginTransmission(0x68);
+    Wire.write(reg); // Ask for the 0x3B register- correspond to Acc
+    Wire.endTransmission(false);
+    Wire.requestFrom(0x68, 6, 1);
+    x = Wire.read() << 8 | Wire.read(); // each value needs two registres
+    y = Wire.read() << 8 | Wire.read();
+    z = Wire.read() << 8 | Wire.read();
+    return 1;
+}
+int readRawAcc(int &x, int &y, int &z) {
+    return readRawXyz(0x3B, x, y, z);
+}
+int readRawGyro(int &x, int &y, int &z) {
+    return readRawXyz(0x43, x, y, z);
+}
+void calculateAccAngle(int rx, int ry, int rz, float &x, float &y, float &z) {
+    x = atan((rx / 16384.0) / sqrt(pow((rx / 16384.0), 2) + pow((rz / 16384.0), 2))) * rad_to_deg;
+    y = atan(-1 * (rx / 16384.0) / sqrt(pow((ry / 16384.0), 2) + pow((rz / 16384.0), 2))) * rad_to_deg;
+    z = 0;
+}
+void calculateGyroAngle(int rx, int ry, int rz, float &x, float &y, float &z) {
+    x = rx / 131.0f;
+    y = ry / 131.0f;
+    z = rz / 131.0f;
+}
+
+void calculateTotalAngle(float ax, float ay, float az, float gx, float gy, float gz, float &tx, float &ty, float &tz) {
+
+    /*---X axis angle---*/
+    tx = 0.98 * (tx + gx * elapsedTime) + 0.02 * ax;
+    /*---Y axis angle---*/
+    ty = 0.98 * (ty + gy * elapsedTime) + 0.02 * ay;
+    tz = 0;
+}
 int setupServos() {
     for (int i = 0; i < len; i++) {
         if (i == 0 || i == 1) {
@@ -57,17 +89,20 @@ int setupServos() {
     return 1;
 }
 
-void setup() {
+void setup1() {
     study::setupSerial();
     int ret = study::setupWire();
+
     if (ret < 0) {
+
         return;
     }
+    study::log("success of setupWire.", true);
     ret = setupMpu9250();
     if (ret < 0) {
         return;
     }
-
+    study::log("success of setupMpu9250.", true);
     ret = setupServos();
     if (ret < 0) {
         return;
@@ -81,25 +116,51 @@ void setup() {
     startTimeMs = timeMs;
 }
 
-void loop() {
-    if (!mpu.update()) {
-        study::log("skip loop for no update of mpu9250.", true);
-        return;
-    }
-
+void loop1() {
     timeMsPrev = timeMs;
     timeMs = millis();
     elapsedTime = (timeMs - timeMsPrev) / 1000.0f;
 
-    float roll = mpu.getRoll();
-    float pitch = mpu.getPitch();
-    float yaw = mpu.getYaw();
-    study::log("\trpy:", roll, pitch, yaw, false);
-    if (pitch > maxRoll) {
-        maxRoll = roll;
+    int arx;
+    int ary;
+    int arz;
+    int ret = readRawAcc(arx, ary, arz);
+    // delay(10);
+    if (ret > 0) {
+        //   log("acc-raw :", arx, ary, arz, false);
+    } else {
+        study::log("failed to readRawAcc.", false);
+    }
+    int grx;
+    int gry;
+    int grz;
+
+    ret = readRawGyro(grx, gry, grz);
+    if (ret > 0) {
+        //    log("\tgyro-raw:,", grx, gry, grz, false);
+    } else {
+        study::log("failed to readRawGyro.", false);
+    }
+    float ax;
+    float ay;
+    float az;
+    calculateAccAngle(arx, ary, arz, ax, ay, az);
+    study::log("acc", ax, ay, az, false);
+
+    float gx;
+    float gy;
+    float gz;
+    calculateGyroAngle(grx, gry, grz, gx, gy, gz);
+    // log("\tgyro:", gx, gy, gz, false);
+
+    float tx, ty, tz;
+    calculateTotalAngle(ax, ay, az, gx, gy, gz, tx, ty, tz);
+    study::log("\ttotal:", tx, ty, tz, false);
+    if (ty > maxTy) {
+        maxTy = ty;
     }
     // pid
-    error = desired_angle - roll  ;
+    error = ty - desired_angle;
     study::updatePid(error, elapsedTime);
     //
     study::log("error(");
@@ -136,7 +197,7 @@ void loop() {
     study::log(pwmManualAdjust);
     study::log(")");
     study::log("maxTy:");
-    study::log(maxRoll);
+    study::log(maxTy);
 
     pwmLeft += pwmManualAdjust;
     pwmRight += pwmManualAdjust;
