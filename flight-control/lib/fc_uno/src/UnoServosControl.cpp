@@ -2,7 +2,7 @@
 
 namespace a8::fc::uno {
 
-UnoServosControl::UnoServosControl(int totalServos, LoggerFactory *logFac) : ServosControl(totalServos, logFac) {
+UnoServosControl::UnoServosControl(int totalServos, LoggerFactory *logFac) : Servos(totalServos, logFac) {
 }
 
 void UnoServosControl::setThrottleNorm(int servoId, float velocity) {

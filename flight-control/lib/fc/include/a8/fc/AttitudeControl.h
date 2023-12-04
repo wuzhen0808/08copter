@@ -2,7 +2,7 @@
 #include "a8/common.h"
 #include "a8/fc/AttitudeSensor.h"
 #include "a8/fc/PidControl.h"
-#include "a8/fc/ServosControl.h"
+#include "a8/fc/Servos.h"
 #include "a8/fc/defines.h"
 #include "a8/util.h"
 #include "a8/util/Writer.h"
@@ -29,7 +29,7 @@ private:
     PidControl *pitchPid;
     PidControl *yawPid;
     AttitudeSensor *attitudeSensor;
-    ServosControl *servosControl;
+    Servos *servosControl;
     Writer *dataLog;
     int idxFR;
     int idxFL;
@@ -42,7 +42,7 @@ private:
     bool reverseYaw = false;
 
 public:
-    AttitudeControl(ServosControl *servosControl,
+    AttitudeControl(Servos *servosControl,
                     AttitudeSensor *attitudeSensor, System *sys) : Component("atc") {
 
         altitudePid = new PidControl(sys, .0f, .0f, .0f);

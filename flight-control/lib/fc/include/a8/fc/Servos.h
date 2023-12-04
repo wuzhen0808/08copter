@@ -7,15 +7,15 @@ namespace a8::fc {
 using namespace a8::util;
 using namespace a8::util::comp;
 
-class ServosControl : public FlyWeight {
+class Servos : public FlyWeight {
 protected:
     int totalServos;
 
 public:
-    ServosControl(int totalServos, LoggerFactory *logFac) : FlyWeight(logFac) {
+    Servos(int totalServos, LoggerFactory *logFac) : FlyWeight(logFac) {
         this->totalServos = totalServos;
     }
-    ~ServosControl() {
+    ~Servos() {
     }
     virtual void setThrottleNorm(int servoId, float velocity) = 0;
     void setThrottleNorm(int id1, float vel1, int id2, float vel2, int id3, float vel3, int id4, float vel4) {

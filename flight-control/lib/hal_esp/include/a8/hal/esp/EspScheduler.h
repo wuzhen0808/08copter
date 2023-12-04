@@ -6,15 +6,15 @@ namespace a8::hal::esp {
 using namespace a8::util;
 using namespace a8::util::sched;
 
-class FreeRtosScheduler : public Scheduler {
+class EspScheduler : public Scheduler {
 protected:
     SyncQueue<void *> *doCreateSyncQueue(int cap, int itemSize) override;
 
 public:
-    FreeRtosScheduler() : Scheduler() {
+    EspScheduler() : Scheduler() {
     }
 
-    ~FreeRtosScheduler() {
+    ~EspScheduler() {
     }
 
     // ESP32 already has a freeRtos running.

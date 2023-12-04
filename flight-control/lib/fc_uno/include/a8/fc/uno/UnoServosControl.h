@@ -4,7 +4,7 @@
 namespace a8::fc::uno {
 using namespace a8::fc;
 
-class UnoServosControl : public ServosControl {
+class UnoServosControl : public Servos {
 
 private:
 public:

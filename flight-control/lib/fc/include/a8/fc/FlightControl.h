@@ -3,7 +3,7 @@
 #include "a8/fc/AttitudeControl.h"
 #include "a8/fc/AttitudeSensor.h"
 #include "a8/fc/FcSkeleton.h"
-#include "a8/fc/ServosControl.h"
+#include "a8/fc/Servos.h"
 #include "a8/fc/defines.h"
 #include "a8/hal.h"
 #include "a8/util.h"
@@ -21,7 +21,7 @@ class FlightControl : public Component {
 protected: // fields
     int totalServos_;
     AttitudeSensor *attitudeSensor_;
-    ServosControl *servosControl_;
+    Servos *servosControl_;
     AttitudeControl *attitudeControl_;
     String propertiesFile;
     String host;

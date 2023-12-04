@@ -9,11 +9,11 @@ using namespace a8::fc;
 using namespace a8::util;
 
 
-class NativeServosControl : public ServosControl {
+class NativeServosControl : public Servos {
     SimOutStub *stub;
 
 public:
-    NativeServosControl(int totalServos, LoggerFactory *loggerFactory) : ServosControl(totalServos, loggerFactory) {
+    NativeServosControl(int totalServos, LoggerFactory *loggerFactory) : Servos(totalServos, loggerFactory) {
     }
     ~NativeServosControl() {}
 

@@ -1,6 +1,6 @@
 #include "a8/fc/AttitudeControl.h"
 #include "a8/fc/FlightControl.h"
-#include "a8/fc/ServosControl.h"
+#include "a8/fc/Servos.h"
 #include "a8/util/sched/Thread.h"
 #include "a8/util/Writer.h"
 #include "a8/util/string.h"

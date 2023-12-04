@@ -1,4 +1,4 @@
-#include "a8/fc/ServosControl.h"
+#include "a8/fc/Servos.h"
 #include "a8/util/Math.h"
 
 namespace a8::fc {

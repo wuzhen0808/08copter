@@ -1,4 +1,4 @@
-#include "a8/hal/esp/FreeRtosScheduler.h"
+#include "a8/hal/esp/EspScheduler.h"
 #include "a8/hal/esp/FreeRtosSemaphore.h"
 #include "a8/hal/esp/FreeRtosSyncQueue.h"
 #include "a8/hal/esp/FreeRtosThread.h"
@@ -28,7 +28,7 @@ void timerCallback(TimerHandle_t handle) {
  * After changed the creation method to xTaskCreatePinnedToCore(or xTaskCreateUniversal which is declared by header esp32-hal.h) the error disappeared.
  *
  */
-Thread *FreeRtosScheduler::createTask(const String name, void *context, sched::run run) {
+Thread *EspScheduler::createTask(const String name, void *context, sched::run run) {
     FreeRtosThread *thread = new FreeRtosThread(run, context);
     TaskHandle_t handle = 0;
 
@@ -63,7 +63,7 @@ Thread *FreeRtosScheduler::createTask(const String name, void *context, sched::r
     return thread;
 }
 
-Timer *FreeRtosScheduler::createTimer(const String name, const Rate &rate, void *context, sched::run run) {
+Timer *EspScheduler::createTimer(const String name, const Rate &rate, void *context, sched::run run) {
     FreeRtosTimer *timer = new FreeRtosTimer(run, context, rate);
     TimerHandle_t handle = 0;
     long ticks = configTICK_RATE_HZ / rate.Hz();
@@ -80,12 +80,12 @@ Timer *FreeRtosScheduler::createTimer(const String name, const Rate &rate, void 
     }
     return timer;
 }
-Semaphore *FreeRtosScheduler::createSemaphore(int cap, int initial) {
+Semaphore *EspScheduler::createSemaphore(int cap, int initial) {
     SemaphoreHandle_t handle = xSemaphoreCreateCounting(cap, initial);
     return new FreeRtosSemaphore(handle);
 }
 
-SyncQueue<void *> *FreeRtosScheduler::doCreateSyncQueue(int cap, int itemSize) {
+SyncQueue<void *> *EspScheduler::doCreateSyncQueue(int cap, int itemSize) {
     QueueHandle_t handle = xQueueCreate(cap, itemSize);
     return new FreeRtosSyncQueue(handle);
 }

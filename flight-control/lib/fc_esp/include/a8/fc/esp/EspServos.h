@@ -4,7 +4,7 @@
 namespace a8::fc::esp {
 using namespace a8::fc;
 
-class EspServosControl : public ServosControl {
+class EspServosControl : public Servos {
 
 private:
 public:

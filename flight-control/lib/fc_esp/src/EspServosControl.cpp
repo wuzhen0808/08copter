@@ -1,8 +1,8 @@
-#include "a8/fc/esp/EspServosControl.h"
+#include "a8/fc/esp/EspServos.h"
 
 namespace a8::fc::esp {
 
-EspServosControl::EspServosControl(int totalServos, LoggerFactory *logFac) : ServosControl(totalServos, logFac) {
+EspServosControl::EspServosControl(int totalServos, LoggerFactory *logFac) : Servos(totalServos, logFac) {
 }
 
 void EspServosControl::setThrottleNorm(int servoId, float velocity) {
