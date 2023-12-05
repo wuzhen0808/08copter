@@ -8,21 +8,26 @@ protected:
     LoggerFactory *loggerFactory;
     Logger *logger;
 
-public:
-    FlyWeight(LoggerFactory *logFac) {
+    void init(LoggerFactory *logFac, String name) {
         this->loggerFactory = logFac;
-        this->logger = logFac->getLogger("Unknown");
+        this->logger = logFac->getLogger(name);
+    }
+
+public:
+    FlyWeight() {
+    }
+    FlyWeight(LoggerFactory *logFac) {
+        this->init(logFac, "Unknown");
     }
 
     FlyWeight(LoggerFactory *logFac, String name) {
-        this->loggerFactory = logFac;
-        this->logger = logFac->getLogger(name);
+        this->init(logFac, name);
     }
 
     virtual ~FlyWeight() {
     }
 
-    void log(const String& msg) {
+    void log(const String &msg) {
         logger->info(msg);
     }
 };

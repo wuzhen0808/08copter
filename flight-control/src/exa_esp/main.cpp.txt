@@ -1,0 +1,43 @@
+#include "setup.h"
+
+MPU9250 mpu;
+
+void setup() {
+    // using a8::util::String;
+    // using namespace a8::util;
+    Serial.println(">>setup");
+    int ret = 0;
+    setupSerial();
+
+    // int ret = setup(res);
+    // if (ret < 0) {
+    //     Serial.println(res.errorMessage.text());
+    // }
+    ret = setupWire();
+    if (ret < 0) {
+        Serial.println("failed to setup wire.");
+        for (;;) {
+        }
+    }
+    ret = setupMpu9250(mpu);
+    if (ret < 0) {
+        Serial.println("failed to setup mpu9250.");
+        for (;;) {
+        }
+    }
+    Serial.println("delay some time.");
+    delay(5000);
+    Serial.println("<<setup");
+}
+
+void loop() {
+    if (!mpu.update()) {
+        Serial.println("failed to update.");
+        return;
+    }
+    float roll = mpu.getRoll();
+    Serial.print("roll:");
+    Serial.print(roll);
+    Serial.println();
+    delay(1000);
+}

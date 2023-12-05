@@ -1,30 +1,52 @@
-#include "a8/hal/arduino.h"
-#include "a8/util.h"
-#include "setup.h"
-#include <Arduino.h>
-#include <MPU9250.h>
-#include <Wire.h>
+#include "MyCommon.h"
+// #include "MyPID.h"
+// #include <Arduino.h>
+// #include <ESP32Servo.h>
+// #include <MPU9250.h>
+// #include <Wire.h>
 
 void setup() {
-    using a8::util::String;
-    using namespace a8::util;
-    Serial.begin(115200);
-    while (Serial.available()) {
-        Serial.read();
-    }
-    Wire.begin();
-
-    delay(1000);
-    Serial.println(">>setup");
-
-    Result res;
-    int ret = setup(res);
+    int ret = 0;
+    /*
+    study::setupSerial();
+    ret = study::setupWire();
     if (ret < 0) {
-        Serial.println(res.errorMessage.text());
+        return;
     }
-    Serial.println("<<setup");
+    ret = study::setupMpu9250();
+    if (ret < 0) {
+        return;
+    }
+    */
+    ret = study::setupExample();
+    
+    study::log("success of setup.", true);
 }
-
+int skips = 0;
 void loop() {
-    delay(1000 * 10);
+    // if (!study::mpuUpdate()) {
+    //     // study::log("skip loop for no update of mpu9250.", true);
+    //     skips++;
+    //     if (skips > 1000) {
+    //         study::log("skip 1000 loop for no update of mpu9250.", true);
+    //         skips = 0;
+    //     }
+    //     delay(10);
+    //     return;
+    // }
+    delay(1000);
+
+    // timeMsPrev = timeMs;
+    // timeMs = millis();
+    // elapsedTime = (timeMs - timeMsPrev) / 1000.0f;
+
+    // float roll = study::mpuGetRoll();
+    // float pitch = study::mpuGetPitch();
+    // float yaw = study::mpuGetYaw();
+
+    // study::log(roll, false);
+    // study::log(",", false);
+    // study::log(pitch, false);
+    // study::log(",", false);
+    // study::log(yaw, true);
 }

@@ -7,31 +7,25 @@
 
 namespace a8::fc::esp {
 class EspRpy : public Rpy, public FlyWeight {
-    MPU9250 mpu;
+    MPU9250 *mpu;
 
 public:
-    EspRpy(LoggerFactory *logFac) : FlyWeight(logFac, "EspRpy") {
+    EspRpy(MPU9250 *mpu, LoggerFactory *logFac) : FlyWeight(logFac, "EspRpy") {
+        this->mpu = mpu;
     }
-
-    int setup(Result &res) {
-        if (!mpu.setup(0x68)) {
-            res << "failed to setup mpu9256.";
-            return -1;
-        }
-        mpu.selectFilter(QuatFilterSel::MADGWICK);
-        mpu.setFilterIterations(1);
-        return 1;
+    bool update() override {
+        return mpu->update();
     }
-
-    int getRollPitchYaw(float &roll, float &pitch, float &yaw) override {
-        if (!mpu.update()) {
-            return -1;
-        }
-        roll = mpu.getRoll();
-        pitch = mpu.getPitch();
-        yaw = mpu.getYaw();
-        return 1;
+    float getRoll() override {
+        return mpu->getRoll();
     }
+    float getPitch() override {
+        return mpu->getPitch();
+    }
+    float getYaw() override {
+        return mpu->getYaw();
+    }
+    
 };
 
 } // namespace a8::fc::esp

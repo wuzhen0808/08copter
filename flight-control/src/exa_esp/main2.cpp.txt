@@ -1,0 +1,97 @@
+#include "setup.h"
+// MPU9250 mpu;
+int ret = -1;
+// void setup_() {
+//     ret = setupBalanceExample();
+// }
+
+int setupSerial() {
+    Serial.begin(115200);
+    while (Serial.available()) {
+        Serial.read();
+    }
+    return 1;
+}
+int setupWire() {
+    bool ok = Wire.begin(2, 1);
+    if (!ok) {
+        Serial.println("failed to setup wire.");
+    } else {
+        Serial.println("success of setup wire.");
+    }
+    return ok ? 1 : -1;
+}
+MPU9250 mpu;
+
+int setupMpu9250() {
+    // using namespace a8::util;
+    // using namespace a8::fc;
+    // using namespace a8::hal::esp;
+    // using namespace a8::fc::esp;
+    bool ok = mpu.setup(0x68);
+    if (!ok) {
+        println("failed to setup mpu.");
+        return -1;
+    }
+    mpu.selectFilter(QuatFilterSel::MADGWICK);
+    mpu.setFilterIterations(1);
+    Serial.println("success of setupMpu9250.");
+    return 1;
+}
+
+bool mpuUpdate() {
+    return mpu.update();
+
+    // return exa->mpuUpdate();
+}
+float mpuGetRoll() {
+    float roll = mpu.getRoll();
+    //println("roll:");
+    //println(roll);
+    /*
+    float roll2 = exa->mpuGetRoll();
+    println("roll2:");
+    println(roll2);
+    return roll2;
+    */
+    return roll;
+}
+void setup() {
+    ret = setupSerial();
+    if (ret < 0) {
+        return;
+    }
+    ret = setupWire();
+    if (ret < 0) {
+        return;
+    }
+    // ret = setupSystem();
+    // if (ret < 0) {
+    //     return;
+    // }
+    ret = setupMpu9250();
+    if (ret < 0) {
+        return;
+    }
+    delay_(5000);
+}
+// void loop_() {
+//     delay_(1000);
+// }
+
+void loop() {
+    if (ret < 0) {
+        println("failed setup.");
+        for (;;)
+            ;
+    }
+    ret = mpuUpdate();
+    if (ret < 0) {
+        println("failed mpuUpdate().");
+    } else {
+
+        float roll = mpuGetRoll();
+        println(roll);
+    }
+    delay_(1000);
+}
