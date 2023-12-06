@@ -4,5 +4,5 @@
 #include "a8/fc/Rpy.h"
 #include "a8/fc/Pid.h"
 #include "a8/fc/Propeller.h"
-#include "a8/fc/Balancer.h"
+#include "a8/fc/Pilot.h"
 

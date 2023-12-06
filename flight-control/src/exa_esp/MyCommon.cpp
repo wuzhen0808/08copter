@@ -89,7 +89,7 @@ System *sys = new EspSystem();
 Scheduler *sch = new EspScheduler();
 LoggerFactory *logFac = new EspLoggerFactory(sys, sch);
 EspRpy *rpy = new EspRpy(mpu, logFac);
-EspBalanceExample *exa = new EspBalanceExample(mpu);
+EspPilotExample *exa = new EspPilotExample(mpu);
 int setupExample() {
     Result res;
     int ret = exa->start(res);
@@ -106,17 +106,17 @@ int setupMpu9250() {
     return 1;
 }
 
-bool mpuUpdate() {
-    return exa->update();
-}
-float mpuGetRoll() {
-    return exa->getRoll();
-}
-float mpuGetPitch() {
-    return exa->getPitch();
-}
-float mpuGetYaw() {
-    return exa->getYaw();
-}
+// bool mpuUpdate() {
+//     return exa->update();
+// }
+// float mpuGetRoll() {
+//     return exa->getRoll();
+// }
+// float mpuGetPitch() {
+//     return exa->getPitch();
+// }
+// float mpuGetYaw() {
+//     return exa->getYaw();
+// }
 
 } // namespace study
