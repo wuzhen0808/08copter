@@ -1,5 +1,8 @@
 #pragma once
-namespace a8::fc {
+#include "a8/util.h"
+namespace a8::fc::throttle {
+using namespace a8::util;
+
 class Pid {
 
     // pid
@@ -12,12 +15,11 @@ class Pid {
     float i = 0;
     float lastError = 0;
     long lastTimeMs = -1;
-    long &timeMs;
 
 public:
-    Pid(long &timeMs) : timeMs(timeMs) {
+    Pid() {
     }
-    void update(float actual, float desired, String &msg) {
+    void update(long timeMs, float actual, float desired, String &msg) {
 
         if (lastTimeMs < 0) {
             lastTimeMs = timeMs;
@@ -25,9 +27,9 @@ public:
 
         float error = desired - actual;
         float p = kp * error;
-        if (-3 < error < 3) {
-            i = i + (ki * error);
-        }
+        // if (-3 < error < 3) {
+        //     i = i + (ki * error);
+        // }
         float d = 0;
         long elapsedTime = timeMs - lastTimeMs;
         if (elapsedTime > 0) {
@@ -35,7 +37,7 @@ public:
         }
         //
         pwm = p + i + d;
-        //msg << "pid:(" << pwm << "=" << p << "+" << i << "+" << d << ")";
+        // msg << "pid:(" << pwm << "=" << p << "+" << i << "+" << d << ")";
         if (pwm < -1000) {
             pwm = -1000;
         }
@@ -53,4 +55,4 @@ public:
         return this->pwm;
     }
 };
-} // namespace a8::fc
+} // namespace a8::fc::throttle

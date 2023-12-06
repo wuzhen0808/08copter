@@ -1,9 +1,5 @@
 #pragma once
-#include "a8/fc/BalanceThrottler.h"
-#include "a8/fc/ElevatorThrottler.h"
-#include "a8/fc/LandingThrottler.h"
-#include "a8/fc/LimitThrottler.h"
-#include "a8/fc/Throttler.h"
+#include "a8/fc/throttle/MainThrottler.h"
 
 #include "a8/util.h"
 
@@ -12,18 +8,27 @@ using namespace a8::util;
 
 class Pilot : FlyWeight {
     System *sys;
-    Buffer<Throttler *> throttlers;
-    Throttler::Context *context = 0;
+
     Propeller *propellerLH;
     Propeller *propellerRH;
     Propeller *propellerLA;
     Propeller *propellerRA;
-    long pwmElevation = 210;
-    long pwmLimitLH = -1; // 1000;
-    long pwmLimitRH = -1; // 1000;
-    long pwmLimitLA = -1;
-    long pwmLimitRA = -1;
-    long flyingTimeLimitMs = 20 * 1000;
+
+    throttle::Context *context = 0;
+    throttle::MainThrottler *throttler;
+
+    int doUpdate(Result &res) {
+        int ret = this->throttler->update(*this->context, res);
+        if (ret < 0) {
+            return ret;
+        }
+        // apply pwm .
+        propellerLH->setThrottlePwm(this->context->pwmLH_);
+        propellerRH->setThrottlePwm(this->context->pwmRH_);
+        propellerLA->setThrottlePwm(this->context->pwmLA_);
+        propellerRA->setThrottlePwm(this->context->pwmRA_);
+        return 1;
+    }
 
 public:
     Pilot(Propeller *propellerLH, Propeller *propellerRH, Propeller *propellerLA, Propeller *propellerRA,
@@ -33,37 +38,7 @@ public:
         this->propellerRH = propellerRH;
         this->propellerLA = propellerLA;
         this->propellerRA = propellerRA;
-        {
-            ElevatorThrottler *et = new ElevatorThrottler(sys, logFac);
-            et->setPwmElevation(pwmElevation);
-            throttlers.append(et);
-        }
-        {
-
-            BalanceThrottler *t1 = new BalanceThrottler(rpy, sys, logFac);
-            throttlers.append(t1);
-        }
-        {
-
-            LimitThrottler *lt = new LimitThrottler(logFac);
-            throttlers.append(lt);
-        }
-        {
-
-            LandingThrottler *lt = new LandingThrottler(logFac);
-            lt->timeBeforeLanding(flyingTimeLimitMs);
-            throttlers.append(lt);
-        }
-        {
-
-            LimitThrottler *lt2 = new LimitThrottler(logFac);
-            lt2->limitPwmLH(this->pwmLimitLH);
-            lt2->limitPwmRH(this->pwmLimitRH);
-            lt2->limitPwmLA(this->pwmLimitLA);
-            lt2->limitPwmRA(this->pwmLimitRA);
-
-            throttlers.append(lt2);
-        }
+        this->throttler = new throttle::MainThrottler(rpy, sys, logFac);
     }
     int start() {
 
@@ -71,33 +46,15 @@ public:
             return -1;
         }
         long timeMs = this->sys->getSteadyTime();
-        this->context = new Throttler::Context(timeMs);
+        this->context = new throttle::Context(timeMs);
         return 1;
     }
-
     int update(Result &res) {
-        int ret = -1;
         long timeMs = sys->getSteadyTime();
         this->context->beforeUpdate(timeMs);
-        for (int i = 0; i < throttlers.len(); i++) {
-            Throttler *th = throttlers.get(i);
-            ret = th->update(*this->context, res);
-
-            if (ret < 0) {
-                break;
-            }
-        }
+        int ret = doUpdate(res);
         log(String() << this->context);
-
-        applyPwm(this->context);
-        this->context->afterUpdate();
-        return 1;
-    }
-    void applyPwm(Throttler::Context *ctx) {
-        propellerLH->setThrottlePwm(ctx->pwmLH);
-        propellerRH->setThrottlePwm(ctx->pwmRH);
-        propellerLA->setThrottlePwm(ctx->pwmLA);
-        propellerRA->setThrottlePwm(ctx->pwmRA);
+        return ret;
     }
 };
 

@@ -1,11 +1,11 @@
 #pragma once
-#include "a8/fc/Pid.h"
+#include "a8/fc/throttle/Pid.h"
 #include "a8/fc/Propeller.h"
 #include "a8/fc/Rpy.h"
-#include "a8/fc/Throttler.h"
+#include "a8/fc/throttle/Throttler.h"
 #include "a8/util.h"
 
-namespace a8::fc {
+namespace a8::fc::throttle {
 using namespace a8::util;
 
 class LandingThrottler : public Throttler {
@@ -24,19 +24,19 @@ public:
     }
 
     int update(Context &ctx, Result &res) override {
-        long pwmLH = ctx.pwmLH;
-        long pwmRH = ctx.pwmRH;
-        long pwmLA = ctx.pwmLA;
-        long pwmRA = ctx.pwmRA;
+        long pwmLH = ctx.pwmLH_;
+        long pwmRH = ctx.pwmRH_;
+        long pwmLA = ctx.pwmLA_;
+        long pwmRA = ctx.pwmRA_;
         if (timeBeforeLanding_ > 0) {
 
             if (this->comeDownStartTimeMs == -1) {
-                if (ctx.timeMs - ctx.startTimeMs > timeBeforeLanding_) {
+                if (ctx.timeMs_ - ctx.startTimeMs > timeBeforeLanding_) {
                     ctx << (String() << ";start come down.");
-                    this->comeDownStartTimeMs = ctx.timeMs;
+                    this->comeDownStartTimeMs = ctx.timeMs_;
                 }
             } else {
-                float comeDownProgress = (ctx.timeMs - comeDownStartTimeMs) / (float)timeLimitForLanding;
+                float comeDownProgress = (ctx.timeMs_ - comeDownStartTimeMs) / (float)timeLimitForLanding;
                 if (comeDownProgress > 1) {
                     comeDownProgress = 1;
                 }

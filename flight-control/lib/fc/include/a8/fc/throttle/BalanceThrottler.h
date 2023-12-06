@@ -1,11 +1,11 @@
 #pragma once
-#include "a8/fc/Pid.h"
+#include "a8/fc/throttle/Pid.h"
 #include "a8/fc/Propeller.h"
 #include "a8/fc/Rpy.h"
-#include "a8/fc/Throttler.h"
+#include "a8/fc/throttle/Throttler.h"
 #include "a8/util.h"
 
-namespace a8::fc {
+namespace a8::fc::throttle {
 using namespace a8::util;
 
 class BalanceThrottler : public Throttler {
@@ -15,12 +15,10 @@ class BalanceThrottler : public Throttler {
     Pid *pidRoll;
     Pid *pidPitch;
 
-    long timeMs;
     float desiredRoll = .0f;
     float desiredPitch = .0f;
     float desiredYaw = .0f;
 
-    long timeLimitMs = -1;
     long startTimeMs = -1;
 
 public:
@@ -28,12 +26,8 @@ public:
 
         this->rpy = rpy;
         this->sys = sys;
-        this->pidRoll = new Pid(this->timeMs);
-        this->pidPitch = new Pid(this->timeMs);
-    }
-
-    void setTimeLimitMs(long ms) {
-        this->timeLimitMs = ms;
+        this->pidRoll = new Pid();
+        this->pidPitch = new Pid();
     }
 
     int update(Context &ctx, Result &res) override {
@@ -50,14 +44,14 @@ public:
         ctx << (String() << "rpy:(" << roll << "," << pitch << "," << yaw << ")");
         // pid
 
-        pidRoll->update(roll, desiredRoll, ctx.message);
-        pidPitch->update(pitch, desiredPitch, ctx.message);
+        pidRoll->update(ctx.timeMs_, roll, desiredRoll, ctx.message);
+        pidPitch->update(ctx.timeMs_, pitch, desiredPitch, ctx.message);
 
         //
         long pwmRoll = pidRoll->getPwm();
         long pwmPitch = pidPitch->getPwm();
-        pwmRoll /= 2;
-        pwmPitch /= 2;
+        // pwmRoll /= 2;
+        // pwmPitch /= 2;
 
         //========================================================================================
         // TODO there is a wired problem:

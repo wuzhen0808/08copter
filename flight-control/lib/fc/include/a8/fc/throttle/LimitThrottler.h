@@ -1,11 +1,11 @@
 #pragma once
-#include "a8/fc/Pid.h"
 #include "a8/fc/Propeller.h"
 #include "a8/fc/Rpy.h"
-#include "a8/fc/Throttler.h"
+#include "a8/fc/throttle/Pid.h"
+#include "a8/fc/throttle/Throttler.h"
 #include "a8/util.h"
 
-namespace a8::fc {
+namespace a8::fc::throttle {
 using namespace a8::util;
 
 class LimitThrottler : public Throttler {
@@ -36,10 +36,10 @@ public:
     }
 
     int update(Context &ctx, Result &res) override {
-        long pwmLH = ctx.pwmLH;
-        long pwmRH = ctx.pwmRH;
-        long pwmLA = ctx.pwmLA;
-        long pwmRA = ctx.pwmRA;
+        long pwmLH = ctx.pwmLH_;
+        long pwmRH = ctx.pwmRH_;
+        long pwmLA = ctx.pwmLA_;
+        long pwmRA = ctx.pwmRA_;
 
         limitPwm(pwmLH, pwmMin, pwmMax, pwmMaxLH);
         limitPwm(pwmRH, pwmMin, pwmMax, pwmMaxRH);
@@ -62,4 +62,4 @@ public:
         }
     }
 };
-} // namespace a8::fc
+} // namespace a8::fc::throttle

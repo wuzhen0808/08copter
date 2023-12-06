@@ -1,11 +1,11 @@
 #pragma once
-#include "a8/fc/Pid.h"
+#include "a8/fc/throttle/Pid.h"
 #include "a8/fc/Propeller.h"
 #include "a8/fc/Rpy.h"
-#include "a8/fc/Throttler.h"
+#include "a8/fc/throttle/Throttler.h"
 #include "a8/util.h"
 
-namespace a8::fc {
+namespace a8::fc::throttle {
 using namespace a8::util;
 
 class ElevatorThrottler : public Throttler {
