@@ -9,15 +9,22 @@ class Pid {
     float pwm;
 
     /////////////////PID CONSTANTS/////////////////
-    double kp = 3.55;  // 3.55
-    double ki = 0.003; // 0.003
-    double kd = 2.05;  // 2.05
+    double kp = 0; // 3.55
+    double ki = 0; // 0.003
+    double kd = 0; // 2.05
     float i = 0;
     float lastError = 0;
     long lastTimeMs = -1;
 
 public:
-    Pid() {
+    Pid(double kp, double ki, double kd) {
+        this->config(kp, ki, kd);
+    }
+    
+    void config(double kp, double ki, double kd) {
+        this->kp = kp;
+        this->ki = ki;
+        this->kd = kd;
     }
     void update(long timeMs, float actual, float desired, String &msg) {
 
@@ -27,13 +34,13 @@ public:
 
         float error = desired - actual;
         float p = kp * error;
+        long elapsedTimeSec = (timeMs - lastTimeMs) / 1000.0f;
         // if (-3 < error < 3) {
-        //     i = i + (ki * error);
+        i = i + (ki * error * elapsedTimeSec);
         // }
         float d = 0;
-        long elapsedTime = timeMs - lastTimeMs;
-        if (elapsedTime > 0) {
-            d = kd * ((error - lastError) / (elapsedTime / 1000.0f));
+        if (elapsedTimeSec > 0) {
+            d = kd * ((error - lastError) / elapsedTimeSec);
         }
         //
         pwm = p + i + d;

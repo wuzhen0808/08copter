@@ -6,6 +6,13 @@ namespace a8::util {
 
 class Format {
 private:
+    // set may failed if no space for the buf to storage the ch..
+    static bool copy(char *buf, int idx2, int idx1, int bufLen) {
+        if (idx1 < bufLen) {
+            return set(buf, idx2, buf[idx1], bufLen);
+        }
+        return false;
+    }
     static bool set(char *buf, int idx, char ch, int bufLen) {
         if (idx >= 0 && idx < bufLen) {
             buf[idx] = ch;
@@ -29,26 +36,67 @@ public:
             exp++;
         }
 
+        int expThreshold = 6;
+
         int idx = 0;
         if (value < 0) {
             set(buf, idx++, '-', bufLen);
         }
+        int exp1 = 0;
+        if (exp > 0 && exp <= expThreshold) {
+            exp1 = exp;
+        }
+        if (exp < 0 && exp > -expThreshold) {
+            // TODO, exp1 = exp;
+            exp1 = exp;
+        }
+        exp -= exp1;
 
-        set(buf, idx++, '0', bufLen);
-        set(buf, idx++, '.', bufLen);
-
-        long longM = long(m * Math::pow10<T>(float(precision)));
-        int mRightLen = formatAsInt<T>(buf + idx, bufLen - idx, longM, false);
-        idx += mRightLen;
-        set(buf, idx++, 'e', bufLen);
-
-        if (exp < 0) {
-            exp = -exp;
-            set(buf, idx++, '-', bufLen);
+        if (precision < exp1) {
+            precision = exp1;
         }
 
-        int eRightLen = formatAsInt<T>(buf + idx, bufLen - idx, exp, false);
-        idx += eRightLen;
+        long longM = long(m * Math::pow10<T>(float(precision)));
+        long longMLeft = 0;
+        long longMRight = longM;
+        if (exp1 >= 0) { // correct the two part for moving point right.
+            longMLeft = long(m * Math::pow10<T>(float(exp1)));
+            longMRight = longM - longMLeft * Math::pow10<T>(float(precision - exp1));
+        }
+        // left part.
+        int mLeftLen = formatAsInt<T>(buf + idx, bufLen - idx, longMLeft, false);
+        idx += mLeftLen;
+        // point.
+        set(buf, idx++, '.', bufLen);
+        // right part.
+        if (exp1 < 0) {
+            // moving point left.
+            for (int i = exp1; i < 0; i++) {
+                set(buf, idx++, '0', bufLen);
+            }
+        }
+        int mRightLen = formatAsInt<T>(buf + idx, bufLen - idx, longMRight, false);
+        idx += mRightLen;
+
+        // move point.
+        if (exp1 > 0) {
+        }
+
+        if (exp1 < 0) {
+            // TODO
+        }
+
+        // exp part.
+        if (exp != 0) {
+            set(buf, idx++, 'e', bufLen);
+            if (exp < 0) {
+                exp = -exp;
+                set(buf, idx++, '-', bufLen);
+            }
+
+            int eRightLen = formatAsInt<T>(buf + idx, bufLen - idx, exp, false);
+            idx += eRightLen;
+        }
         if (addTail && idx < bufLen) {
             buf[idx] = '\0';
         }
@@ -112,6 +160,7 @@ public:
 
         int capRight = capacity - lenLeft; // remaining capacity
         char *bufRight = buf + lenLeft;    // give a offset to storage result.
+        // try format first time, and then check the length.
         int lenRight = format<T>(bufRight, capRight, value, precision, false);
         int lenTail = lenRight; // the content
         int leading = 0;
@@ -130,6 +179,7 @@ public:
 
             capRight = capacity - lenLeft;
             bufRight = buf + lenLeft;
+            // format again, with a larger capacity.
             lenRight = format<T>(bufRight + leading, capRight - leading, value, precision, false);
 
             if (lenRight + 1 > capRight) {

@@ -1,11 +1,11 @@
 #pragma once
+#include "a8/fc/Config.h"
 #include "a8/fc/throttle/BalanceThrottler.h"
 #include "a8/fc/throttle/Context.h"
 #include "a8/fc/throttle/ElevatorThrottler.h"
 #include "a8/fc/throttle/LandingThrottler.h"
 #include "a8/fc/throttle/LimitThrottler.h"
 #include "a8/fc/throttle/Throttler.h"
-
 #include "a8/util.h"
 
 namespace a8::fc::throttle {
@@ -13,46 +13,49 @@ using namespace a8::util;
 
 class MainThrottler : public Throttler {
     Buffer<throttle::Throttler *> throttlers;
-    long pwmElevation = 210;
-    long pwmLimitLH = -1; // 1000;
-    long pwmLimitRH = -1; // 1000;
-    long pwmLimitLA = -1;
-    long pwmLimitRA = -1;
-    long flyingTimeLimitMs = 20 * 1000;
+    ElevatorThrottler *elevator;
+    BalanceThrottler *balance;
+    LandingThrottler *landing;
+    LimitThrottler *lastLimit;
+    LimitThrottler *firstLimit;
 
 public:
-    MainThrottler(Rpy *rpy, System *sys, LoggerFactory *logFac) : Throttler(logFac, String("MainThrottle")) {
-        {
-            ElevatorThrottler *et = new ElevatorThrottler(sys, logFac);
-            et->setPwmElevation(pwmElevation);
-            throttlers.append(et);
-        }
-        {
+    MainThrottler(Config &config, Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, String("MainThrottle")) {
 
-            BalanceThrottler *t1 = new BalanceThrottler(rpy, sys, logFac);
-            throttlers.append(t1);
-        }
-        {
+        elevator = new ElevatorThrottler(logFac);
+        elevator->setPwmElevation(config.pwmElevation);
+        throttlers.append(elevator);
 
-            LimitThrottler *lt = new LimitThrottler(logFac);
-            throttlers.append(lt);
-        }
-        {
+        balance = new BalanceThrottler(rpy, logFac);
+        balance->setup(config.pidKp, config.pidKi, config.pidKd);
+        throttlers.append(balance);
 
-            LandingThrottler *lt = new LandingThrottler(logFac);
-            lt->timeBeforeLanding(flyingTimeLimitMs);
-            throttlers.append(lt);
-        }
-        {
+        firstLimit = new LimitThrottler(logFac);
+        throttlers.append(firstLimit);
 
-            LimitThrottler *lt2 = new LimitThrottler(logFac);
-            lt2->limitPwmLH(this->pwmLimitLH);
-            lt2->limitPwmRH(this->pwmLimitRH);
-            lt2->limitPwmLA(this->pwmLimitLA);
-            lt2->limitPwmRA(this->pwmLimitRA);
+        landing = new LandingThrottler(logFac);
+        throttlers.append(landing);
 
-            throttlers.append(lt2);
-        }
+        lastLimit = new LimitThrottler(logFac);
+        lastLimit->limitPwmLH(config.pwmLimitLH);
+        lastLimit->limitPwmRH(config.pwmLimitRH);
+        lastLimit->limitPwmLA(config.pwmLimitLA);
+        lastLimit->limitPwmRA(config.pwmLimitRA);
+        throttlers.append(lastLimit);
+    }
+    ~MainThrottler() {
+        this->throttlers.forEach<MainThrottler *>(this, [](MainThrottler *this_, throttle::Throttler *throttler) {
+            delete throttler;
+        });
+        this->throttlers.clear();
+    }
+    
+    bool isLanded() {
+        return this->landing->isLanded();
+    }
+    
+    int startLanding(long timeMs) {
+        return this->landing->startLanding(timeMs);
     }
 
     int update(Context &ctx, Result &res) {

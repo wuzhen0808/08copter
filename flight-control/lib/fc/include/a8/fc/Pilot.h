@@ -7,14 +7,12 @@ namespace a8::fc {
 using namespace a8::util;
 
 class Pilot : FlyWeight {
-    System *sys;
-
     Propeller *propellerLH;
     Propeller *propellerRH;
     Propeller *propellerLA;
     Propeller *propellerRA;
 
-    throttle::Context *context = 0;
+    throttle::Context *context;
     throttle::MainThrottler *throttler;
 
     int doUpdate(Result &res) {
@@ -29,28 +27,48 @@ class Pilot : FlyWeight {
         propellerRA->setThrottlePwm(this->context->pwmRA_);
         return 1;
     }
+    Config config;
 
 public:
-    Pilot(Propeller *propellerLH, Propeller *propellerRH, Propeller *propellerLA, Propeller *propellerRA,
-          Rpy *rpy, System *sys, LoggerFactory *logFac) : FlyWeight(logFac, "Pilot") {
-        this->sys = sys;
-        this->propellerLH = propellerLH;
-        this->propellerRH = propellerRH;
-        this->propellerLA = propellerLA;
-        this->propellerRA = propellerRA;
-        this->throttler = new throttle::MainThrottler(rpy, sys, logFac);
+    Pilot(Config &config, Buffer<Propeller *> propellers,
+          Rpy *rpy, LoggerFactory *logFac) : FlyWeight(logFac, "Pilot") {
+        this->propellerLH = propellers.get(0);
+        this->propellerRH = propellers.get(1);
+        this->propellerLA = propellers.get(2);
+        this->propellerRA = propellers.get(3);
+        this->throttler = new throttle::MainThrottler(config, rpy, logFac);
+        this->context = 0;
     }
-    int start() {
-
+    ~Pilot() {
+        delete this->throttler;
         if (this->context != 0) {
+            delete this->context;
+        }
+    }
+
+    int start(long timeMs) {
+        if (this->context != 0) {
+            // cannot restart.
             return -1;
         }
-        long timeMs = this->sys->getSteadyTime();
         this->context = new throttle::Context(timeMs);
         return 1;
     }
-    int update(Result &res) {
-        long timeMs = sys->getSteadyTime();
+
+    int landing(long timeMs) {
+        return this->throttler->startLanding(timeMs);
+    }
+    
+    bool isLanded() {
+        return this->throttler->isLanded();
+    }
+    
+    int update(long timeMs, Result &res) {
+
+        if (this->context == 0) {
+            res << "not started yet.";
+            return -1;
+        }
         this->context->beforeUpdate(timeMs);
         int ret = doUpdate(res);
         log(String() << this->context);

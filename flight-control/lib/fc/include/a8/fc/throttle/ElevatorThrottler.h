@@ -13,7 +13,7 @@ class ElevatorThrottler : public Throttler {
     long pwmElevation = 0;
 
 public:
-    ElevatorThrottler(System *sys, LoggerFactory *logFac) : Throttler(logFac, "ElevatorThrottler") {
+    ElevatorThrottler(LoggerFactory *logFac) : Throttler(logFac, "ElevatorThrottler") {
     }
 
     void setPwmElevation(long pwm) {

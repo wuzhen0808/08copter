@@ -1,7 +1,7 @@
 #pragma once
-#include "a8/fc/throttle/Pid.h"
 #include "a8/fc/Propeller.h"
 #include "a8/fc/Rpy.h"
+#include "a8/fc/throttle/Pid.h"
 #include "a8/fc/throttle/Throttler.h"
 #include "a8/util.h"
 
@@ -11,7 +11,6 @@ using namespace a8::util;
 class BalanceThrottler : public Throttler {
 
     Rpy *rpy;
-    System *sys;
     Pid *pidRoll;
     Pid *pidPitch;
 
@@ -22,12 +21,16 @@ class BalanceThrottler : public Throttler {
     long startTimeMs = -1;
 
 public:
-    BalanceThrottler(Rpy *rpy, System *sys, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
+    BalanceThrottler(Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
 
         this->rpy = rpy;
-        this->sys = sys;
-        this->pidRoll = new Pid();
-        this->pidPitch = new Pid();
+        this->pidRoll = new Pid(0,0,0);
+        this->pidPitch = new Pid(0,0,0);
+    }
+
+    void setup(double kp, double ki, double kd) {
+        this->pidRoll->config(kp,ki,kd);
+        this->pidPitch->config(kp,ki,kd);
     }
 
     int update(Context &ctx, Result &res) override {
@@ -71,4 +74,4 @@ public:
         return 1;
     }
 };
-} // namespace a8::fc
+} // namespace a8::fc::throttle

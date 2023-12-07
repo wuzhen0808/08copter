@@ -14,7 +14,7 @@ class EspPilot : public Pilot {
     Rpy *rpy;
 
 public:
-    EspPilot(Propeller *lh, Propeller *rh, Propeller *la, Propeller *ra, MPU9250 *mpu, System *sys, LoggerFactory *logFac) : Pilot(lh, rh, la, ra, buildRpy(this, mpu, logFac), sys, logFac) {
+    EspPilot(Config &config, Buffer<Propeller *> propellers, MPU9250 *mpu, System *sys, LoggerFactory *logFac) : Pilot(config, propellers, buildRpy(this, mpu, logFac), logFac) {
     }
 };
 } // namespace a8::fc::esp

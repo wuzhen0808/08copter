@@ -19,8 +19,20 @@ public:
         return e1 == e2 && l1 == l2;
     }
 
+    // TODO delete this function.
     template <typename T>
     static T parse(const String &fStr) {
+        T fV = .0f;
+        parseFloat<T>(fStr, fV, 0);
+        return fV;
+    }
+
+    template <typename T>
+    static int parseFloat(const String &fStr, T &fValue, String *debug) {
+
+        if (fStr.isEmpty()) {
+            return -1;
+        }
         int dotIdx = fStr.indexOf('.');
         int exp = dotIdx;
         if (dotIdx < 0) {
@@ -28,7 +40,8 @@ public:
         }
         exp -= 1;
 
-        T fValue = 0.0f;
+        T fv = 0.0f;
+        bool error = false;
 
         for (int i = 0; i < fStr.length(); i++) {
             if (i == dotIdx) {
@@ -39,13 +52,24 @@ public:
 
             short sCh = (short)ch - (short)'0';
             if (sCh < 0 || sCh > 9) {
+                error = true;
                 sCh = 0;
             }
-
-            fValue += (T)sCh * Math::power(10, exp);
+            if (debug != 0) {
+                *debug << "i:" << i << ",sCh:" << sCh << ",fv:" << fv;
+            }
+            fv += (T)sCh * Math::power<T>(10, exp);
+            if (debug != 0) {
+                *debug << "=>" << fv;
+                *debug << "\n";
+            }
             exp--;
         }
-        return fValue;
+        if (error) {
+            return -1;
+        }
+        fValue = fv;
+        return 1;
     }
 };
 
