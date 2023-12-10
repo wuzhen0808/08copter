@@ -29,9 +29,13 @@ class Pilot : FlyWeight {
     }
     Config config;
 
+protected:
+    Rpy *rpy;
+
 public:
     Pilot(Config &config, Buffer<Propeller *> propellers,
           Rpy *rpy, LoggerFactory *logFac) : FlyWeight(logFac, "Pilot") {
+        this->rpy = rpy;
         this->propellerLH = propellers.get(0);
         this->propellerRH = propellers.get(1);
         this->propellerLA = propellers.get(2);
@@ -46,10 +50,19 @@ public:
         }
     }
 
-    int start(long timeMs) {
+    int checkIfReady(Result res) {
+        
         if (this->context != 0) {
             // cannot restart.
             return -1;
+        }      
+
+        return 1;
+    }
+    int start(long timeMs, Result &res) {
+        int ret = this->checkIfReady(res);
+        if (ret < 0) {
+            return ret;
         }
         this->context = new throttle::Context(timeMs);
         return 1;
@@ -58,11 +71,11 @@ public:
     int landing(long timeMs) {
         return this->throttler->startLanding(timeMs);
     }
-    
+
     bool isLanded() {
         return this->throttler->isLanded();
     }
-    
+
     int update(long timeMs, Result &res) {
 
         if (this->context == 0) {

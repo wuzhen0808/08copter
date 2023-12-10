@@ -22,8 +22,18 @@ private:
     }
 
 public:
+    /**
+     * Return the length of the formatted string.
+     * The length may great than the provided buffer len, in this case the string will be truncated.
+     *
+     */
     template <typename T>
     static int format(char *buf, int bufLen, T value, int precision, bool addTail) {
+        return format<T>(buf, bufLen, value, precision, 6, addTail);
+    }
+
+    template <typename T>
+    static int format(char *buf, int bufLen, T value, int precision, int expThreshold, bool addTail) {
 
         if (precision == 0) {
             return formatAsInt<T>(buf, bufLen, value, addTail);
@@ -35,8 +45,6 @@ public:
             m = m / 10;
             exp++;
         }
-
-        int expThreshold = 6;
 
         int idx = 0;
         if (value < 0) {

@@ -103,5 +103,12 @@ public:
             return ldexp_((double)m, exp);
         }
     }
+    template <typename F>
+    static F abs(F f) {
+        if (f < 0) {
+            return -f;
+        }
+        return f;
+    }
 };
 } // namespace a8::util

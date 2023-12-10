@@ -5,16 +5,12 @@
 namespace a8::fc::esp {
 using namespace a8::fc;
 class EspPilot : public Pilot {
-    static Rpy *buildRpy(EspPilot *this_, MPU9250 *mpu, LoggerFactory *logFac) {
-        this_->rpy = new EspRpy(mpu, logFac);
-
-        return this_->rpy;
-    }
-
-    Rpy *rpy;
 
 public:
-    EspPilot(Config &config, Buffer<Propeller *> propellers, MPU9250 *mpu, System *sys, LoggerFactory *logFac) : Pilot(config, propellers, buildRpy(this, mpu, logFac), logFac) {
+    EspPilot(Config &config, Rpy *rpy, Buffer<Propeller *> propellers, MPU9250 *mpu, System *sys, LoggerFactory *logFac) : Pilot(config, propellers, rpy, logFac) {
+    }
+    ~EspPilot() {
+        
     }
 };
 } // namespace a8::fc::esp

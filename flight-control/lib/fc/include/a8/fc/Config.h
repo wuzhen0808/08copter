@@ -2,7 +2,7 @@
 namespace a8::fc {
 class Config {
 public:
-    long pwmElevation = 210;
+    long pwmElevation = 100;//210
     long pwmLimitLH = -1; // 1000;
     long pwmLimitRH = -1; // 1000;
     long pwmLimitLA = -1;

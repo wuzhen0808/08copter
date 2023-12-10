@@ -103,55 +103,108 @@ public:
         while (true) {
             int i = 1;
             int total = 5;
+            config.pwmElevation = readInputFloat(String() << i++ << "/" << total << ". Please input pwmElevation argument (" << config.pwmElevation << "):", config.pwmElevation);
             config.pidKp = readInputFloat(String() << i++ << "/" << total << ". Please input pid argument Kp(" << config.pidKp << "):", config.pidKp);
             config.pidKi = readInputFloat(String() << i++ << "/" << total << ". Please input pid argument Ki(" << config.pidKi << "):", config.pidKi);
             config.pidKd = readInputFloat(String() << i++ << "/" << total << ". Please input pid argument Kd(" << config.pidKd << "):", config.pidKd);
             config.flyingTimeLimitSec = readInputFloat(String() << ". Please input flyingTimeLimitSec(" << config.flyingTimeLimitSec << "):", config.flyingTimeLimitSec);
+            //
+            sys->out->println(String() << "pwmElevation:           " << config.pwmElevation);
             sys->out->println(String() << "Kp:                     " << config.pidKp);
             sys->out->println(String() << "Ki:                     " << config.pidKi);
             sys->out->println(String() << "Kd:                     " << config.pidKd);
             sys->out->println(String() << "flyingTimeLimit(sec): " << config.flyingTimeLimitSec);
 
-            if (confirm(String() << i++ << "/" << total << ". Do you confirm the config above? (y/Y/Enter)")) {
+            if (confirm(String() << i++ << "/" << total << ". Confirm the config above? (y/Y/Enter)")) {
+
                 break;
+            } else {
+                if (!confirm(String() << "Config again?")) {
+                    return -1;
+                }
             }
         }
 
         return 1;
     }
+    int doRun(Config &config, Pilot *pilot, Result res) {
+        long startTimeMs = sys->getSteadyTime();
+
+        int ret = pilot->start(startTimeMs, res);
+        if (ret < 0) {
+            return ret;
+        }
+        long secs = 3;
+        if (!confirm(String() << "Please check the drone's attitude, is it balanced? " //
+                              << "Propeller will powered in "                          //
+                              << secs                                                  //
+                              << " seconds after your confirmation.")) {
+            return -1;
+        }
+
+        // wait 3 secs.
+        delay(secs * 1000);
+
+        bool landing = false;
+        while (true) {
+            Result res;
+            long timeMs = sys->getSteadyTime();
+            ret = pilot->update(timeMs, res);
+            if (ret < 0) {
+                log(String() << "failed to update pilot, detail:" << res);
+            }
+            if (pilot->isLanded()) {
+                break;
+            }
+            if (landing) {
+                continue;
+            }
+            if (timeMs - startTimeMs > config.flyingTimeLimitSec * 1000) {
+                landing = true;
+                pilot->landing(timeMs);
+            }
+        }
+        return 1;
+    }
 
     void run() {
         Config config;
+        Rpy *rpy = new EspRpy(mpu, loggerFactory);
+
         while (true) {
+
+            // get rpy ready.
+            while (true) {
+                Result res;
+                int ret = rpy->checkIfReady(res);
+                if (ret < 0) {
+                    log(res.errorMessage);
+                    String msg = String() << "Force start with the current rpy number as below:\n " //
+                                          << "Roll:"                                                //
+                                          << rpy->getRoll()                                         //
+                                          << ",Pitch:" << rpy->getPitch()                           //
+                        ;
+                    if (!confirm(msg)) {
+                        continue;
+                    }
+                    break;
+                }
+                log("rpy is ready.");
+                break;
+            }
 
             int ret = readConfig(config);
             if (ret < 0) {
                 continue;
             }
-            Pilot *pilot = new EspPilot(config, propellers, mpu, sys, loggerFactory);
-            long startTimeMs = sys->getSteadyTime();
-            ret = pilot->start(startTimeMs);
-            bool landing = false;
-            while (true) {
-                Result res;
-                long timeMs = sys->getSteadyTime();
-                ret = pilot->update(timeMs, res);
-                if (ret < 0) {
-                    log(String() << "failed to update pilot, detail:" << res);
-                }
-                if (pilot->isLanded()) {
-                    break;
-                }
-                if (landing) {
-                    continue;
-                }
-                if (timeMs - startTimeMs > config.flyingTimeLimitSec * 1000) {
-                    landing = true;
-                    pilot->landing(timeMs);
-                }
-            }
 
+            Pilot *pilot = new EspPilot(config, rpy, propellers, mpu, sys, loggerFactory);
+            Result res;
+            ret = this->doRun(config, pilot, res);
             delete pilot;
+            if (ret < 0) {
+                log(res.errorMessage);
+            }
         }
     }
 };
