@@ -1,5 +1,6 @@
 #pragma once
 #include "a8/util.h"
+#include "a8/fc/Propellers.h"
 
 namespace a8::fc::throttle {
 using namespace a8::util;
@@ -9,60 +10,36 @@ public:
     long startTimeMs = -1;
     long timeMs_;
     long lastTimeMs_;
-    long pwmLH_;
-    long pwmRH_;
-    long pwmLA_;
-    long pwmRA_;
+    Propellers* propellers;
     String message;
 
-    Context(long startTimeMs) {
+    Context(long startTimeMs, Propellers * propellers) {
         this->startTimeMs = startTimeMs;
         this->timeMs_ = this->startTimeMs;
+        this->propellers = propellers;
     }
-    long averagePwm() {
-        return (pwmLH_ + pwmRH_ + pwmLA_ + pwmRA_) / 4;
+
+    ~Context() {
     }
 
     Context &operator<<(String &str) {
         message << str;
         return *this;
     }
-
-    void beforeUpdate(long timeMs) {
+    
+    void startUpdate(long timeMs) {
         this->lastTimeMs_ = this->timeMs_;
-        this->timeMs_ = timeMs;
-        pwmLH_ = 0;
-        pwmRH_ = 0;
-        pwmLA_ = 0;
-        pwmRA_ = 0;
+        this->timeMs_ = timeMs;    
         this->message.clear();
+        this->propellers->startUpdate();        
     }
-
-    void setPwm(long pwm0, long pwm1, long pwm2, long pwm3) {
-        this->pwmLH_ = pwm0;
-        this->pwmRH_ = pwm1;
-        this->pwmLA_ = pwm2;
-        this->pwmRA_ = pwm3;
-        this->recordPwm();
-    }
-    void addPwm(long pwm) {
-        addPwm(pwm, pwm, pwm, pwm);
-    }
-    void addPwm(long pwm0, long pwm1, long pwm2, long pwm3) {
-        this->pwmLH_ += pwm0;
-        this->pwmRH_ += pwm1;
-        this->pwmLA_ += pwm2;
-        this->pwmRA_ += pwm3;
-        this->recordPwm();
-    }
-
     Context &operator+=(long pwm) {
-        addPwm(pwm, pwm, pwm, pwm);
+        this->propellers->addPwm(pwm);
         return *this;
     }
 
-    void recordPwm() {
-        message << ";pwm:(" << pwmLH_ << "," << pwmRH_ << "," << pwmLA_ << "," << pwmRA_ << ")";
+    void commitUpdate() {
+        propellers->commitUpdate();
     }
 
     friend String &operator<<(String &str, const Context *ctx) {
@@ -79,4 +56,4 @@ public:
     }
 };
 
-} // namespace a8::fc
+} // namespace a8::fc::throttle

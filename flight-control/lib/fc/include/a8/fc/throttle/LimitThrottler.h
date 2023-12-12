@@ -10,55 +10,38 @@ using namespace a8::util;
 
 class LimitThrottler : public Throttler {
 
-    long pwmMin = 1000;
-    long pwmMax = 2000;
-
-    long pwmMaxLH = -1;
-    long pwmMaxRH = -1;
-    long pwmMaxLA = -1;
-    long pwmMaxRA = -1;
+    long pwmMin;
+    long pwmMax;
 
 public:
-    LimitThrottler(LoggerFactory *logFac) : Throttler(logFac, "LimitThrottler") {
+    LimitThrottler(long pwmMin, long pwmMax, LoggerFactory *logFac) : Throttler(logFac, "LimitThrottler") {
+        this->pwmMin = pwmMin;
+        this->pwmMax = pwmMax;
     }
-    void limitPwmLH(long pwm) {
-        this->pwmMaxLH = pwm;
+    void printHistory(int intend, String &msg) override{
+        
     }
-
-    void limitPwmRH(long pwm) {
-        this->pwmMaxRH = pwm;
-    }
-    void limitPwmLA(long pwm) {
-        this->pwmMaxLA = pwm;
-    }
-    void limitPwmRA(long pwm) {
-        this->pwmMaxRA = pwm;
-    }
-
     int update(Context &ctx, Result &res) override {
-        long pwmLH = ctx.pwmLH_;
-        long pwmRH = ctx.pwmRH_;
-        long pwmLA = ctx.pwmLA_;
-        long pwmRA = ctx.pwmRA_;
+        long pwmLH = ctx.propellers->getPwm(0);
+        long pwmRH = ctx.propellers->getPwm(1);
+        long pwmLA = ctx.propellers->getPwm(2);
+        long pwmRA = ctx.propellers->getPwm(3);
 
-        limitPwm(pwmLH, pwmMin, pwmMax, pwmMaxLH);
-        limitPwm(pwmRH, pwmMin, pwmMax, pwmMaxRH);
-        limitPwm(pwmLA, pwmMin, pwmMax, pwmMaxLA);
-        limitPwm(pwmRA, pwmMin, pwmMax, pwmMaxRA);
+        limitPwm(pwmLH, pwmMin, pwmMax);
+        limitPwm(pwmRH, pwmMin, pwmMax);
+        limitPwm(pwmLA, pwmMin, pwmMax);
+        limitPwm(pwmRA, pwmMin, pwmMax);
 
-        ctx.setPwm(pwmLH, pwmRH, pwmLA, pwmRA);
+        ctx.propellers->setPwm(pwmLH, pwmRH, pwmLA, pwmRA);
         return 1;
     }
 
-    void limitPwm(long &pwm, long min, long max, long max2) {
+    void limitPwm(long &pwm, long min, long max) {
         if (min >= 0 && pwm < min) {
             pwm = min;
         }
         if (max >= 0 && pwm > max) {
             pwm = max;
-        }
-        if (max2 >= 0 && pwm > max2) {
-            pwm = max2;
         }
     }
 };

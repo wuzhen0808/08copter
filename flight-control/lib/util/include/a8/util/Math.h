@@ -45,6 +45,12 @@ public:
             return pow10((double)value);
         }
     }
+    template <typename T>
+    static void limit(T &value, T max) {
+        if (value > max) {
+            value = max;
+        }
+    }
 
     template <typename T>
     static T min(T t1, T t2) {

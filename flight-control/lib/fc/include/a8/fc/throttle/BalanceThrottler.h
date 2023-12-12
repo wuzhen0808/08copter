@@ -20,17 +20,28 @@ class BalanceThrottler : public Throttler {
 
     long startTimeMs = -1;
 
+    long maxBalancePwm = 0;
+
 public:
     BalanceThrottler(Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
 
         this->rpy = rpy;
-        this->pidRoll = new Pid(0,0,0);
-        this->pidPitch = new Pid(0,0,0);
+        this->pidRoll = new Pid();
+        this->pidPitch = new Pid();
     }
-
-    void setup(double kp, double ki, double kd) {
-        this->pidRoll->config(kp,ki,kd);
-        this->pidPitch->config(kp,ki,kd);
+    ~BalanceThrottler() {
+        delete this->pidRoll;
+        delete this->pidPitch;
+    }
+    void printHistory(int depth, String &msg) override {
+        msg << StringUtil::space(depth) << "Balance-history-rollPid:\n";
+        this->pidRoll->printHistory(depth + 1, msg);
+        msg << StringUtil::space(depth) << "Balance-history-pitchPid:\n";
+        this->pidPitch->printHistory(depth + 1, msg);
+    }
+    void setPidArgument(double kp, double ki, double kd, float maxBalancePidOutput, float maxPidIntegralOutput) {
+        this->pidRoll->config(kp, ki, kd, maxBalancePidOutput, maxPidIntegralOutput);
+        this->pidPitch->config(kp, ki, kd, maxBalancePidOutput, maxPidIntegralOutput);
     }
 
     int update(Context &ctx, Result &res) override {
@@ -70,7 +81,7 @@ public:
         long pwmRH = 0 - pwmRoll + pwmPitch;
         long pwmLA = 0 + pwmRoll - pwmPitch;
         long pwmRA = 0 - pwmRoll - pwmPitch;
-        ctx.addPwm(pwmLH, pwmRH, pwmLA, pwmRA);
+        ctx.propellers->addPwm(pwmLH, pwmRH, pwmLA, pwmRA);
         return 1;
     }
 };

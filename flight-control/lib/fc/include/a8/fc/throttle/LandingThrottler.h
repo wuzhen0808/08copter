@@ -17,7 +17,9 @@ class LandingThrottler : public Throttler {
 public:
     LandingThrottler(LoggerFactory *logFac) : Throttler(logFac, "SafetyThrottler") {
     }
-
+    void printHistory(int intend, String &msg) override{
+        
+    }
     bool isLanded() {
         if (this->landingStartTimeMs < 0) {
             return false;
@@ -31,16 +33,12 @@ public:
     }
 
     int update(Context &ctx, Result &res) override {
-        long pwmLH = ctx.pwmLH_;
-        long pwmRH = ctx.pwmRH_;
-        long pwmLA = ctx.pwmLA_;
-        long pwmRA = ctx.pwmRA_;
 
         if (this->landingStartTimeMs > 0) {
             progress = (ctx.timeMs_ - landingStartTimeMs) / (float)timeLimitForLanding;
             progress = progress > 1 ? 1.0f : progress;
             long pwmDelta = 1000 * progress;
-            ctx.addPwm(-pwmDelta);
+            ctx.propellers->addPwm(-pwmDelta);
         }
 
         return 1;

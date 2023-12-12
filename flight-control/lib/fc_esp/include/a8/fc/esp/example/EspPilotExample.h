@@ -14,26 +14,14 @@ using namespace a8::hal::esp::example;
 
 class EspPilotExample : public BaseEspExample {
     MPU9250 *mpu;
-    Buffer<Propeller *> propellers;
+    EspPropellers *propellers;
     LineReader *input;
 
 public:
     EspPilotExample(MPU9250 *mpu) : BaseEspExample("EspPilotExample") {
         this->mpu = mpu;
-        addPropeller(17, 50);
-        addPropeller(18, 50);
-        addPropeller(19, 100);
-        addPropeller(20, 100);
+        this->propellers = new EspPropellers(17, 18, 19, 20, loggerFactory);
         this->input = new LineReader(sys->getInput());
-    }
-
-    void addPropeller(int pin, int hz) {
-        EspPropeller *prop = new EspPropeller();
-        prop->hz(hz);
-        int channel = prop->attach(pin);
-        prop->setup();
-        log(String() << "propeller setup,pin:" << pin << ",hz:" << hz << ",channel:" << channel);
-        this->propellers.append(prop);
     }
 
     ~EspPilotExample() {
@@ -81,13 +69,41 @@ public:
 
         return fValue;
     }
-    bool confirm(String prompt) {
-        sys->out->println(prompt);
-        String line = readLine();
-        if (line == "y" || line == "Y" || line == "") {
-            return true;
+
+    bool confirm(String prompt, bool def) {
+        return select(prompt, "Yes", "No", def ? 0 : 1);
+    }
+
+    bool readBool(String prompt, bool def) {
+        return 0 == select(prompt, "Yes", "No", def ? 0 : 1);
+    }
+
+    int select(String prompt, String option0, String option1) {
+        return select(prompt, option0, option1, 0);
+    }
+    int select(String prompt, String option0, String option1, int def) {
+        int ret = def;
+        while (true) {
+
+            sys->out->println(prompt);
+            sys->out->println(String() << " " << 0 << (def == 0 ? "*" : " ") << ":" << option0);
+            sys->out->println(String() << " " << 1 << (def == 1 ? "*" : " ") << ":" << option1);
+
+            String selected = readLine();
+            if (selected == "") {
+                break; // use default
+            }
+            if (selected == "0") {
+                ret = 0;
+                break;
+            }
+            if (selected == "1") {
+                ret = 1;
+                break;
+            }
+            sys->out->println(String() << "no  such option:" << selected);
         }
-        return false;
+        return ret;
     }
     String readLine() {
         String line;
@@ -98,71 +114,98 @@ public:
         sys->out->println(line);
         return line;
     }
+    void step(int &step, int total) {
+        step++;
+        sys->out->println(String() << "Step " << step << " of " << total);
+    }
 
     int readConfig(Config &config) {
         while (true) {
-            int i = 1;
-            int total = 5;
-            config.pwmElevation = readInputFloat(String() << i++ << "/" << total << ". Please input pwmElevation argument (" << config.pwmElevation << "):", config.pwmElevation);
-            config.pidKp = readInputFloat(String() << i++ << "/" << total << ". Please input pid argument Kp(" << config.pidKp << "):", config.pidKp);
-            config.pidKi = readInputFloat(String() << i++ << "/" << total << ". Please input pid argument Ki(" << config.pidKi << "):", config.pidKi);
-            config.pidKd = readInputFloat(String() << i++ << "/" << total << ". Please input pid argument Kd(" << config.pidKd << "):", config.pidKd);
-            config.flyingTimeLimitSec = readInputFloat(String() << ". Please input flyingTimeLimitSec(" << config.flyingTimeLimitSec << "):", config.flyingTimeLimitSec);
+            int i = 0;
+            int total = 10;
+            step(i, total);
+            config.maxBalancePidOutput = readInputFloat(String() << " Please input maxBalancePidOutput(" << config.maxBalancePidOutput << "):", config.maxBalancePidOutput);
+            step(i, total);
+            config.maxBalancePidIntegralOutput = readInputFloat(String() << " Please input maxPidIntegralOutput(" << config.maxBalancePidIntegralOutput << "):", config.maxBalancePidIntegralOutput);
+            step(i, total);
+            config.pidKp = readInputFloat(String() << total << " Please input pid argument Kp(" << config.pidKp << "):", config.pidKp);
+            step(i, total);
+            config.pidKi = readInputFloat(String() << total << " Please input pid argument Ki(" << config.pidKi << "):", config.pidKi);
+            step(i, total);
+            config.pidKd = readInputFloat(String() << total << " Please input pid argument Kd(" << config.pidKd << "):", config.pidKd);
+            step(i, total);
+            config.pwmElevation = readInputFloat(String() << " Please input pwmElevation argument (" << config.pwmElevation << "):", config.pwmElevation);
+            step(i, total);
+            config.flyingTimeLimitSec = readInputFloat(String() << " Please input flyingTimeLimitSec(" << config.flyingTimeLimitSec << "):", config.flyingTimeLimitSec);
+            step(i, total);
+            config.delayBeforeStartSec = readInputFloat(String() << " Please input delayBeforeStartSec(" << config.delayBeforeStartSec << "):", config.delayBeforeStartSec);
+            step(i, total);
+            config.enablePropeller = readBool(String() << "Enable propeller?", config.enablePropeller);
+            step(i, total);
             //
-            sys->out->println(String() << "pwmElevation:           " << config.pwmElevation);
-            sys->out->println(String() << "Kp:                     " << config.pidKp);
-            sys->out->println(String() << "Ki:                     " << config.pidKi);
-            sys->out->println(String() << "Kd:                     " << config.pidKd);
-            sys->out->println(String() << "flyingTimeLimit(sec): " << config.flyingTimeLimitSec);
+            sys->out->println(String() << "Configuration: ");
 
-            if (confirm(String() << i++ << "/" << total << ". Confirm the config above? (y/Y/Enter)")) {
+            sys->out->println(String() << " Pid arguments:");
+            sys->out->println(String() << "  maxBalancePidOutput: " << config.maxBalancePidOutput );
+            sys->out->println(String() << "  maxBalancePidIntegralOutput: " << config.maxBalancePidIntegralOutput );
+            sys->out->println(String() << "  Kp:                     " << config.pidKp);
+            sys->out->println(String() << "  Ki:                     " << config.pidKi);
+            sys->out->println(String() << "  Kd:                     " << config.pidKd);
+            sys->out->println(String() << " pwmElevation:           " << config.pwmElevation);
+            sys->out->println(String() << " flyingTimeLimit(sec): " << config.flyingTimeLimitSec);
+            sys->out->println(String() << " delayBeforeStart(sec): " << config.delayBeforeStartSec);
+            sys->out->println(String() << " enablePropeller: " << (config.enablePropeller ? "Y" : "N"));
 
+            if (0 == select("Where to go?",                                                                               //
+                            String() << "Use above config and start after " << config.delayBeforeStartSec << " seconds.", //
+                            "Re-configure.")) {
                 break;
-            } else {
-                if (!confirm(String() << "Config again?")) {
-                    return -1;
-                }
             }
+            // reconfigure
         }
 
         return 1;
     }
     int doRun(Config &config, Pilot *pilot, Result res) {
         long startTimeMs = sys->getSteadyTime();
-
-        int ret = pilot->start(startTimeMs, res);
+        propellers->enableAll(config.enablePropeller);
+        throttle::Context context(startTimeMs, this->propellers);
+        int ret = pilot->start(context, res);
         if (ret < 0) {
             return ret;
         }
-        long secs = 3;
-        if (!confirm(String() << "Please check the drone's attitude, is it balanced? " //
-                              << "Propeller will powered in "                          //
-                              << secs                                                  //
-                              << " seconds after your confirmation.")) {
-            return -1;
-        }
 
         // wait 3 secs.
-        delay(secs * 1000);
+        sys->out->println(String() << "delay ... " << config.delayBeforeStartSec << " sec before start.");
+        delay(config.delayBeforeStartSec * 1000);
 
         bool landing = false;
+        long preTimeMs = sys->getSteadyTime();
         while (true) {
             Result res;
             long timeMs = sys->getSteadyTime();
-            ret = pilot->update(timeMs, res);
+            long remainMs = config.tickTimeMs - (timeMs - preTimeMs);
+            if (remainMs > 0) {
+                delay(remainMs);
+            }
+            ret = pilot->update(&context, timeMs, res);
+
             if (ret < 0) {
                 log(String() << "failed to update pilot, detail:" << res);
             }
+
             if (pilot->isLanded()) {
                 break;
             }
-            if (landing) {
-                continue;
+
+            if (!landing) { //
+                // check if need start landing.
+                if (timeMs - startTimeMs > config.flyingTimeLimitSec * 1000) {
+                    landing = true;
+                    pilot->landing(timeMs);
+                }
             }
-            if (timeMs - startTimeMs > config.flyingTimeLimitSec * 1000) {
-                landing = true;
-                pilot->landing(timeMs);
-            }
+            preTimeMs = timeMs;
         }
         return 1;
     }
@@ -179,15 +222,12 @@ public:
                 int ret = rpy->checkIfReady(res);
                 if (ret < 0) {
                     log(res.errorMessage);
-                    String msg = String() << "Force start with the current rpy number as below:\n " //
-                                          << "Roll:"                                                //
-                                          << rpy->getRoll()                                         //
-                                          << ",Pitch:" << rpy->getPitch()                           //
-                        ;
-                    if (!confirm(msg)) {
-                        continue;
+
+                    if (0 == select("Where to go?",
+                                    String() << "Force start with the current rpy number(Roll:" << rpy->getRoll() << ",Pitch:" << rpy->getPitch() << ")", //
+                                    "Continue to wait the rpy ready.", 0)) {
+                        break;
                     }
-                    break;
                 }
                 log("rpy is ready.");
                 break;
@@ -201,6 +241,10 @@ public:
             Pilot *pilot = new EspPilot(config, rpy, propellers, mpu, sys, loggerFactory);
             Result res;
             ret = this->doRun(config, pilot, res);
+            String msg;
+            propellers->printHistory(msg);
+            pilot->printHistory(0, msg);
+            this->sys->out->println(msg);
             delete pilot;
             if (ret < 0) {
                 log(res.errorMessage);

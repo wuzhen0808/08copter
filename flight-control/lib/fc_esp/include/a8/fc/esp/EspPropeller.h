@@ -1,14 +1,14 @@
 #pragma once
 #include "a8/fc.h"
 #include <ESP32Servo.h>
-namespace a8::fc {
+namespace a8::fc::esp {
 using namespace a8::fc;
 
 class EspPropeller : public Propeller {
     Servo servo;
 
 public:
-    EspPropeller() {
+    EspPropeller(String name) : Propeller(name) {
     }
 
     void hz(int hz) {
@@ -22,7 +22,7 @@ public:
         servo.writeMicroseconds(1000);
     }
 
-    void setThrottlePwm(long pwm) override {
+    void doApplyPwm() override {
         servo.writeMicroseconds(pwm);
     }
 };

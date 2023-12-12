@@ -16,8 +16,7 @@ class MainThrottler : public Throttler {
     ElevatorThrottler *elevator;
     BalanceThrottler *balance;
     LandingThrottler *landing;
-    LimitThrottler *lastLimit;
-    LimitThrottler *firstLimit;
+    LimitThrottler *limit;
 
 public:
     MainThrottler(Config &config, Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, String("MainThrottle")) {
@@ -27,42 +26,51 @@ public:
         throttlers.append(elevator);
 
         balance = new BalanceThrottler(rpy, logFac);
-        balance->setup(config.pidKp, config.pidKi, config.pidKd);
+        balance->setPidArgument(config.pidKp, config.pidKi, config.pidKd, config.maxBalancePidOutput, config.maxBalancePidIntegralOutput);
         throttlers.append(balance);
 
-        firstLimit = new LimitThrottler(logFac);
-        throttlers.append(firstLimit);
+        limit = new LimitThrottler(config.pwmMin, config.pwmMax, logFac);
+        throttlers.append(limit);
 
         landing = new LandingThrottler(logFac);
         throttlers.append(landing);
 
-        lastLimit = new LimitThrottler(logFac);
-        lastLimit->limitPwmLH(config.pwmLimitLH);
-        lastLimit->limitPwmRH(config.pwmLimitRH);
-        lastLimit->limitPwmLA(config.pwmLimitLA);
-        lastLimit->limitPwmRA(config.pwmLimitRA);
-        throttlers.append(lastLimit);
+        throttlers.append(limit);
     }
+
     ~MainThrottler() {
-        this->throttlers.forEach<MainThrottler *>(this, [](MainThrottler *this_, throttle::Throttler *throttler) {
-            delete throttler;
-        });
         this->throttlers.clear();
+        delete this->balance;
+        delete this->elevator;
+        delete this->limit;
+        delete this->landing;
     }
-    
+
+    void printHistory(int depth, String &msg) override {
+        msg << StringUtil::space(depth) << "MainThrottler-history:\n";
+        this->balance->printHistory(depth + 1, msg);
+    }
+
     bool isLanded() {
         return this->landing->isLanded();
     }
-    
+
     int startLanding(long timeMs) {
         return this->landing->startLanding(timeMs);
     }
 
     int update(Context &ctx, Result &res) {
         int ret = -1;
+        int totalPropellers = ctx.propellers->getTotalPropellers();
         for (int i = 0; i < throttlers.len(); i++) {
             Throttler *th = throttlers.get(i);
+
             ret = th->update(ctx, res);
+            ctx.message << "(";
+            for (int j = 0; j < totalPropellers; j++) {
+                ctx.message << String() << ctx.propellers->getPwm(j) << ",";
+            }
+            ctx.message << ")";
             if (ret < 0) {
                 break;
             }

@@ -1,6 +1,6 @@
 #pragma once
-#include "a8/util.h"
 #include "a8/fc/throttle/Context.h"
+#include "a8/util.h"
 
 namespace a8::fc::throttle {
 using namespace a8::util;
@@ -11,6 +11,8 @@ public:
     }
 
     virtual int update(Context &ctx, Result &res) = 0;
+
+    virtual void printHistory(int depth, String &msg) = 0;
 };
 
-} // namespace a8::fc
+} // namespace a8::fc::throttle

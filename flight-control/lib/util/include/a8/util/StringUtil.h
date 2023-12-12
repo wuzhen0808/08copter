@@ -5,6 +5,13 @@ namespace a8::util {
 
 class StringUtil {
 public:
+    static String space(int len) {
+        String str;
+        for (int i = 0; i < len; i++) {
+            str << " ";
+        }
+        return str;
+    }
     static String buildStr(Buffer<char> buf) {
         String str;
         for (int i = 0; i < buf.len(); i++) {
@@ -62,11 +69,11 @@ public:
         return str;
     }
 
-    static String toHexString(const char* buf, int len) {
+    static String toHexString(const char *buf, int len) {
         Buffer<char> buf2(buf, len);
         return toHexString(buf2);
     }
-    
+
     static String toHexString(const Buffer<char> &buf) {
         String buf2;
         for (int i = 0; i < buf.len(); i++) {
