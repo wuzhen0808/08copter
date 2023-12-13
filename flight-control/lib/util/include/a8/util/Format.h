@@ -33,12 +33,25 @@ public:
     }
 
     template <typename T>
+    static bool isZero(T fValue) {
+        return fValue > -1e-20 && fValue < 1e-20;
+    }
+
+    template <typename T>
     static int format(char *buf, int bufLen, T value, int precision, int expThreshold, bool addTail) {
 
         if (precision == 0) {
             return formatAsInt<T>(buf, bufLen, value, addTail);
         }
-        T aValue = value < 0 ? -value : value;
+
+        int idx = 0;
+        if (isZero(value)) {
+            set(buf, idx++, '0', bufLen);
+            set(buf, idx++, '.', bufLen);
+            set(buf, idx++, '0', bufLen);
+            return idx;
+        }
+        T aValue = value < -0.0f ? (-value) : value;
         int exp = int(Math::log10<T>(aValue));
         float m = aValue / Math::pow10<T>(float(exp));
         if (m >= 1.0f) {
@@ -46,15 +59,14 @@ public:
             exp++;
         }
 
-        int idx = 0;
-        if (value < 0) {
+        if (value < 0.0f) {
             set(buf, idx++, '-', bufLen);
         }
         int exp1 = 0;
-        if (exp > 0 && exp <= expThreshold) {
+        if (exp >= 0.0f && exp <= expThreshold) {
             exp1 = exp;
         }
-        if (exp < 0 && exp > -expThreshold) {
+        if (exp < 0.0f && exp > -expThreshold) {
             // TODO, exp1 = exp;
             exp1 = exp;
         }
@@ -97,10 +109,10 @@ public:
         // exp part.
         if (exp != 0) {
             set(buf, idx++, 'e', bufLen);
-            if (exp < 0) {
-                exp = -exp;
-                set(buf, idx++, '-', bufLen);
-            }
+            // if (exp < 0) {
+            //     exp = -exp;
+            //     set(buf, idx++, '-', bufLen);
+            // }
 
             int eRightLen = formatAsInt<T>(buf + idx, bufLen - idx, exp, false);
             idx += eRightLen;
@@ -116,7 +128,7 @@ public:
         T rValue = iValue;
         int idx = bufLen - 1;
         bool neg = false;
-        if (rValue < 0) {
+        if (rValue < -0.0f) {
             rValue = -rValue;
             neg = true;
         }

@@ -8,6 +8,7 @@
 namespace a8::fc::esp {
 class EspRpy : public Rpy, public FlyWeight {
     MPU9250 *mpu;
+    bool stableChecked_ = false;
 
 public:
     EspRpy(MPU9250 *mpu, LoggerFactory *logFac) : FlyWeight(logFac, "EspRpy") {
@@ -39,7 +40,12 @@ public:
         return ret;
     }
     int checkIfStable(Result &res) override {
+        if (this->stableChecked_) {
+            log("no need to do stable checking, already checked before.");
+            return 1;
+        }
         log("checking rpy if stable ...");
+
         float rollAvg = 0;
         float rollMin;
         float rollMax;
@@ -62,7 +68,7 @@ public:
                     rollMax = roll;
                 }
             }
-            delay(10);
+            delay(5);
         }
 
         if (Math::abs<float>(rollAvg - rollMin) > 0.5f || Math::abs<float>(rollMax - rollAvg) > 0.5f) {
@@ -71,6 +77,7 @@ public:
         }
 
         log("done of rpy stable check.");
+        this->stableChecked_ = true;
         return 1;
     }
 

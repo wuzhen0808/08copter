@@ -1,9 +1,6 @@
 #pragma once
 #include "a8/common.h"
-#include "a8/fc/AttitudeControl.h"
-#include "a8/fc/AttitudeSensor.h"
 #include "a8/fc/FcSkeleton.h"
-#include "a8/fc/Servos.h"
 #include "a8/fc/defines.h"
 #include "a8/hal.h"
 #include "a8/util.h"
@@ -20,9 +17,6 @@ class FlightControl : public Component {
 
 protected: // fields
     int totalServos_;
-    AttitudeSensor *attitudeSensor_;
-    Servos *servosControl_;
-    AttitudeControl *attitudeControl_;
     String propertiesFile;
     String host;
     int port;
@@ -100,16 +94,12 @@ public:
             }
         } else {
             SensorsData sd;
-            int ret = attitudeSensor_->getAltitude(sd.altitude, ticking->rst);
-            ret = gsApi->sensors(sd, ticking->rst);
-            if (ret < 0) {
-                ticking->rst << "failed to send sensor dat to gs.";
-            }
+            ticking->rst << "failed to send sensor dat to gs.";
         }
     }
     void processTsCommands(TickingContext *ticking) {
         log(">>processTsCommands");
-        
+
         log(">>processTsCommands");
     }
 
@@ -128,8 +118,6 @@ public:
 
     virtual void populate(StagingContext *context) override {
         Component::populate(context);
-        attitudeControl_ = new AttitudeControl(servosControl_, attitudeSensor_, context->getSys());
-        this->addChild(context, attitudeControl_);
         //
     }
     virtual void setup(StagingContext *context) override {

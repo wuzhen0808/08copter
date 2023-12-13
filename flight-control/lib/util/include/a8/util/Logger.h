@@ -6,7 +6,6 @@
 namespace a8::util {
 using namespace a8::util;
 
-
 class Logger {
 private:
 protected:
@@ -26,7 +25,7 @@ public:
 
     ~Logger() {
     }
-    String getName(){
+    String getName() {
         return this->name;
     }
     virtual void log(Level level, const String &msg) = 0;
@@ -49,6 +48,15 @@ public:
 
     void trace(String &msg) {
         log(Trace, msg);
+    }
+
+    Logger *operator<<(String &msg) {
+        log(Info, msg);
+        return this;
+    }
+    friend Logger *operator<<(Logger *logger, String &msg) {
+        logger->log(Info, msg);
+        return logger;
     }
 
     friend String &operator<<(String &str, Level level) {

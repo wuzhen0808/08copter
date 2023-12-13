@@ -11,5 +11,7 @@ public:
     virtual float getYaw() = 0;
     virtual int checkIfReady(Result &res) = 0;
     virtual int checkIfStable(Result &res) = 0;
+    virtual int checkIfBalance(Result &res) = 0;
+
 };
 } // namespace a8::fc

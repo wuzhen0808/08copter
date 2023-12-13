@@ -7,9 +7,9 @@ using namespace a8::fc;
 class EspPilot : public Pilot {
 
 public:
-    EspPilot(Config &config, Rpy *rpy, Propellers* propellers, MPU9250 *mpu, System *sys, LoggerFactory *logFac) : Pilot(config, propellers, rpy, logFac) {
+    EspPilot(Config &config, Rpy *rpy, Propellers *propellers, LoggerFactory *logFac) : Pilot(config, propellers, rpy, logFac) {
     }
     ~EspPilot() {
-        }
+    }
 };
 } // namespace a8::fc::esp

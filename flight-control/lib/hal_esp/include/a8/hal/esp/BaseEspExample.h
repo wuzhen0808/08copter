@@ -2,8 +2,8 @@
 #include "a8/hal/esp.h"
 #include "a8/util.h"
 #include "a8/util/sched.h"
-
-namespace a8::hal::esp::example {
+#include <Wire.h>
+namespace a8::hal::esp {
 using namespace a8::util;
 using namespace a8::util::sched;
 using namespace a8::hal::esp;

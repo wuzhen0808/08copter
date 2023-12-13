@@ -6,7 +6,6 @@
 namespace study {
 using namespace a8::fc::esp;
 using namespace a8::hal::esp;
-using namespace a8::fc::esp::example;
 void log(const char *msg) {
     Serial.print(msg);
 }
@@ -89,7 +88,7 @@ System *sys = new EspSystem();
 Scheduler *sch = new EspScheduler();
 LoggerFactory *logFac = new EspLoggerFactory(sys, sch);
 EspRpy *rpy = new EspRpy(mpu, logFac);
-EspPilotExample *exa = new EspPilotExample(mpu);
+EspApplication *exa = new EspApplication(mpu);
 int setupExample() {
     Result res;
     int ret = exa->start(res);

@@ -40,7 +40,7 @@ public:
         }
         exp -= 1;
 
-        T fv = 0.0f;
+        T fv = (T)0.0f;
         bool error = false;
 
         for (int i = 0; i < fStr.length(); i++) {
