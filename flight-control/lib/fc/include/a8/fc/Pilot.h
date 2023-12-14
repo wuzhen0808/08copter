@@ -9,7 +9,6 @@ using namespace a8::util;
 class Pilot : FlyWeight {
     Propellers *propellers;
     throttle::MainThrottler *throttler;
-    Config config;
 
 protected:
     Rpy *rpy;

@@ -9,8 +9,15 @@ class Output {
 public:
     virtual void print(const String msg) = 0;
 
+    void print(const char ch) {
+        print(String() << ch);
+    }
+
     void print(const char *buf, int len) {
         print(String(buf, len));
+    }
+    void println() {
+        this->print("\n");
     }
 
     void println(const String msg) {

@@ -17,9 +17,10 @@ class MainThrottler : public Throttler {
     BalanceThrottler *balance;
     LandingThrottler *landing;
     LimitThrottler *limit;
+    a8::fc::Config &config;
 
 public:
-    MainThrottler(Config &config, Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, String("MainThrottle")) {
+    MainThrottler(a8::fc::Config &config, Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, String("MainThrottle")), config(config) {
 
         elevator = new ElevatorThrottler(logFac);
         elevator->setPwmElevation(config.pwmElevation);

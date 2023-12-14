@@ -64,7 +64,7 @@ public:
     int len() const {
         return this->length_;
     }
-
+    
     T get(int idx, T def) const {
         if (this->hasIndex(idx)) {
             return this->buffer_[idx];

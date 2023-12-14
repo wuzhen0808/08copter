@@ -64,7 +64,7 @@ public:
     String(const char ch) {
         append(&ch, 0, 1);
     }
-    
+
     char get(int i) {
         return charAt(i);
     }
@@ -105,7 +105,7 @@ public:
         }
     }
 
-    String(const char * buf) {
+    String(const char *buf) {
         int len = Lang::strLength(buf);
         append(buf, 0, len);
     }
@@ -195,6 +195,10 @@ public:
 
     void append(const int iValue) {
         append<int>(0, ' ', iValue, 0);
+    }
+
+    void append(const bool bValue) {
+        append(bValue ? "true" : "false");
     }
 
     void append(const long lValue) {
@@ -298,6 +302,11 @@ public:
 
     String &operator<<(const float fValue) {
         append(fValue);
+        return *this;
+    }
+
+    String &operator<<(const bool bValue) {
+        append(bValue);
         return *this;
     }
     String &operator<<(const double fValue) {

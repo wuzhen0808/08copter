@@ -1,7 +1,5 @@
 #pragma once
 #include "a8/fc/Config.h"
-#include "a8/fc/FcConfigTree.h"
-
 #include "a8/fc/Pilot.h"
 #include "a8/util.h"
 #include "a8/util/sched.h"
@@ -11,53 +9,14 @@ using namespace a8::util;
 class Executor : public FlyWeight {
 protected:
     System *sys;
-    ConfigTree *configTree;
-    LineReader *reader;
+    Reader *reader;
 
 public:
     Executor(System *sys, LoggerFactory *logFac) : FlyWeight(logFac, "Executor") {
         this->sys = sys;
-        this->reader = new LineReader(sys->input);
-        this->configTree = new FcConfigTree(reader, sys->out, 0, "Root", logFac);
+        this->reader = sys->input;
     }
     ~Executor() {
-        delete this->reader;
-    }
-
-    void getRpyReady(Rpy *rpy, FcConfigTree *configTree) {
-
-        while (true) { // stable check.
-            Result res;
-            int stable = rpy->checkIfStable(res);
-            if (stable < 0) {
-                log(res.errorMessage);
-                String prompt = "Where to go?";
-                String option0 = "Force start with UN-stable rpy? ";
-                String option1 = "Check again.";
-                if (0 == configTree->select(prompt, option0, option1, 0)) {
-                    break;
-                }
-            }
-            log("rpy is stable.");
-            break;
-        }
-
-        while (true) {
-            Result res;
-            int balance = rpy->checkIfBalance(res);
-
-            if (balance < 0) {
-                log(res.errorMessage);
-
-                if (0 == configTree->select("Where to go?",
-                                            String() << "Force start with the UN-balanced rpy(Roll:" << rpy->getRoll() << ",Pitch:" << rpy->getPitch() << ")", //
-                                            "Adjust the attitude of the quad copter and try again.", 0)) {
-                    break;
-                }
-            }
-            log("rpy is balanced.");
-            break;
-        }
     }
 
     int doRun(Propellers *propellers, Config &config, Pilot *pilot, Result res) {
@@ -110,22 +69,33 @@ public:
     virtual void releasePilot(Pilot *pilot) = 0;
 
     void run() {
-        Config config;
         Rpy *rpy = this->getRpy();
         Propellers *propellers = this->getPropellers();
-
-        FcConfigTree *configTree = new FcConfigTree(reader, sys->out, config, loggerFactory);
+        log(">>config");
+        Config config(reader, sys->out, rpy, logger);
+        log(">>config.2");
         while (true) {
-            this->getRpyReady(rpy, configTree);
+
             Result res;
+            ConfigContext cc(reader, sys->out, logger, res);
             log(">>configTree->config");
-            int ret = configTree->config(this->logger, res);
+            config.config(cc);
+
             log("<<configTree->config");
-            if (ret < 0) {
+            if (!config.isValid()) {
+                //print all the invalid ones.
+                log("not valid and config again.");
                 continue;
             }
+
+            if (!config.start) {
+                log("start is disabled.");    
+                continue;
+            }
+            //todo print and confirm again.
+            log("todo print all config items and confirm.");
             Pilot *pilot = this->createPilot(config);
-            ret = this->doRun(propellers, config, pilot, res);
+            int ret = this->doRun(propellers, config, pilot, res);
             String msg;
             propellers->printHistory(msg);
             pilot->printHistory(0, msg);
@@ -135,7 +105,6 @@ public:
                 log(res.errorMessage);
             }
         }
-        delete configTree;
     }
 };
 
