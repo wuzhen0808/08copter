@@ -1,6 +1,7 @@
 #pragma once
 #include "a8/fc/Config.h"
 #include "a8/fc/Pilot.h"
+#include "a8/fc/PowerManage.h"
 #include "a8/util.h"
 #include "a8/util/sched.h"
 
@@ -66,33 +67,39 @@ public:
     virtual Rpy *getRpy() = 0;
     virtual Propellers *getPropellers() = 0;
     virtual Pilot *createPilot(Config &config) = 0;
+    virtual PowerManage *getPowerManage() = 0;
     virtual void releasePilot(Pilot *pilot) = 0;
 
-    void run() {
+    int run(Result &res) {
+        PowerManage *pm = this->getPowerManage();
+        int ret = pm->isReady(res);
+        if (ret < 0) {
+            return ret;
+        }
         Rpy *rpy = this->getRpy();
         Propellers *propellers = this->getPropellers();
         log(">>config");
-        Config config(reader, sys->out, rpy, logger);
+        Config config(reader, sys->out, pm, rpy, logger);
         log(">>config.2");
         while (true) {
 
             Result res;
             ConfigContext cc(reader, sys->out, logger, res);
             log(">>configTree->config");
-            config.config(cc);
+            config.enter(cc);
 
             log("<<configTree->config");
             if (!config.isValid()) {
-                //print all the invalid ones.
+                // print all the invalid ones.
                 log("not valid and config again.");
                 continue;
             }
 
-            if (!config.start) {
-                log("start is disabled.");    
+            if (!config.startAfterConfig) {
+                log("start is disabled.");
                 continue;
             }
-            //todo print and confirm again.
+            // todo print and confirm again.
             log("todo print all config items and confirm.");
             Pilot *pilot = this->createPilot(config);
             int ret = this->doRun(propellers, config, pilot, res);
@@ -105,6 +112,7 @@ public:
                 log(res.errorMessage);
             }
         }
+        return 1;
     }
 };
 

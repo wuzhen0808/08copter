@@ -33,7 +33,11 @@ public:
 
     virtual int analogRead(int pin);
 
+    virtual int analogReadMilliVolts(int pin);
+
     virtual bool digitalRead(int pin);
+
+    virtual void digitalWrite(int pin, bool high);
 
     virtual void delay(long ms);
 

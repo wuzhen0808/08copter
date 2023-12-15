@@ -8,7 +8,8 @@ namespace a8::util {
 
 template <typename T>
 class Directory {
-    using memoF = String (*)(T);
+    using titleF = String (*)(Directory<T> *);
+    using tagsF = String (*)(Directory<T> *);
 
 protected:
     Buffer<Directory<T> *> children;
@@ -22,7 +23,8 @@ protected:
     }
 
 public:
-    memoF memo = [](T) { return String(); };
+    titleF title = [](Directory<T> *dir) { return dir->getName(); };
+    tagsF tags = [](Directory<T> *dir) { return String(); };
 
 public:
     Directory(T ele) {
@@ -50,10 +52,17 @@ public:
             delete child;
         }
     }
-
-    String getMemo() {
-        return this->memo(this->element);
+    int getTotalChildren() {
+        return this->children.len();
     }
+    String getTitle() {
+        return this->title(this);
+    }
+
+    String getTags() {
+        return this->tags(this);
+    }
+
     bool isRoot() {
         return this->parent == 0;
     }
@@ -142,6 +151,9 @@ public:
     Directory<T> *get() {
         return this->tree;
     }
+    void enter(Directory<T> *dir) {
+        to(dir, -1);
+    }
 
     void to(Directory<T> *dir) {
         to(dir, -1);
@@ -199,12 +211,22 @@ public:
     bool next(int offset) {
         Directory<T> *parent = this->tree->getParent();
         if (parent == 0) {
+            // this is root,no brother.
             return false;
         }
         if (this->indexAsChild == -1) {
             this->indexAsChild = parent->getChildIndex(this->tree);
         }
         int idx = this->indexAsChild + offset;
+        Buffer<Directory<T> *> buffer = parent->getChildren();
+
+        if (idx < 0) {
+            idx += buffer.len();
+        }
+        if (idx >= buffer.len()) {
+            idx = idx - buffer.len();
+        }
+
         Directory<T> *next = parent->getChildIfHas(idx);
         if (next == 0) { // parent has no such child.
             return false;
@@ -290,19 +312,27 @@ public:
         Directory<T> *parent = this->tree->getParent();
         out->println("+------ directory tree -------+");
         if (parent == 0) {
-            doPrint(this->tree);
+            doPrint(0, this->tree);
         } else {
             Buffer<Directory<T> *> list = parent->getChildren();
             for (int i = 0; i < list.len(); i++) {
-                doPrint(list.get(i));
+                doPrint(i, list.get(i));
             }
         }
         out->println("+-----------------------------+");
     }
 
-    void doPrint(Directory<T> *dir) {
-        out->println(String() << (dir == this->tree ? "[*]" : "[ ]") << dir->getName() << "(" << dir->getMemo() << ")");
+    void doPrint(int idx, Directory<T> *dir) {
+        String tags = dir->getTags();
+        out->println(String()
+                     << (dir == this->tree ? " o-> " : "     ") // focus.
+                     << (dir->getTotalChildren() > 0 ? "+" : " ")
+                     << (idx > 9 ? "[" : "[ ") << idx << "]" // index
+                     << "[" << tags << "]"                   // tags
+                     << dir->getTitle())                     // title.
+            ;
     }
+
     void log(String msg) {
         out->println(msg);
     }

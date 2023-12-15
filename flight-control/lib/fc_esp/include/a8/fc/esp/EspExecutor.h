@@ -10,14 +10,23 @@ class EspExecutor : public Executor {
     MPU9250 *mpu;
     Rpy *rpy;
     Propellers *propellers;
+    PowerManage *pm;
 
 public:
-    EspExecutor(MPU9250 *mpu, System *sys, LoggerFactory *logFac) : Executor(sys, logFac) {
+    EspExecutor(PowerManage *pm, MPU9250 *mpu, System *sys, LoggerFactory *logFac) : Executor(sys, logFac) {
+        this->pm = pm;
         this->mpu = mpu;
         this->rpy = new EspRpy(mpu, loggerFactory);
         this->propellers = new EspPropellers(17, 18, 19, 20, loggerFactory);
     }
-
+    ~EspExecutor() {
+        delete this->pm;
+        delete this->propellers;
+        delete this->rpy;
+    }
+    PowerManage *getPowerManage() {
+        return pm;
+    }
     Rpy *getRpy() override {
         return rpy;
     }

@@ -13,7 +13,9 @@ public:
     String getEnv(String name) override;
     void setPinMode(int pin, PinMode pinMode) override;
     int analogRead(int pin) override;
+    virtual int analogReadMilliVolts(int pin) = 0;
     bool digitalRead(int pin) override;
+    void digitalWrite(int pin, bool high) override;
     void delay(long ms) override;
 };
 } // namespace a8::hal::arduino_

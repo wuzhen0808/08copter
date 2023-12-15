@@ -3,26 +3,33 @@
 #include "a8/util/Input.h"
 
 namespace a8::util {
+class ConfigItem;
 
 class ConfigContext : public InputContext {
 public:
     Result &res;
+    DirectoryNavigator<ConfigContext &, ConfigItem *> *navigator = 0;
     ConfigContext(Reader *reader, Output *out, Logger *logger, Result &res) : res(res), InputContext(reader, out, logger) {
     }
 };
 
 class ConfigItem {
+    using onEnterF = void (*)(ConfigContext &);
+
 protected:
     Directory<ConfigItem *> *tree;
 
 public:
-    void (*onEnter)(ConfigContext &, ConfigItem *) = [](ConfigContext &cc, ConfigItem *ci) { ci->config(cc); };
+    // event handler.
+    onEnterF onEnter = 0;
 
 public:
     ConfigItem() {
         this->tree = 0;
     }
-
+    Directory<ConfigItem *> *getDirectory() {
+        return this->tree;
+    }
     template <typename T>
     T *getParent() {
         if (this->tree == 0) {
@@ -33,6 +40,12 @@ public:
             return 0;
         }
         return (T *)p->getElement();
+    }
+
+    virtual void onLeftFailure(ConfigContext &cc) {
+    }
+
+    virtual void onRightFailure(ConfigContext &cc) {
     }
 
     virtual bool isValid() {
@@ -50,8 +63,8 @@ public:
         return ret;
     }
 
-    virtual String getMemo() {
-        return "";
+    virtual String getTitle(String name) {
+        return name;
     }
 
     ConfigItem *add(String name) {
@@ -78,7 +91,10 @@ public:
         return this->tree->getName();
     }
 
-    virtual void config(ConfigContext &cc) {
+    virtual void enter(ConfigContext &cc) {
+        if (this->onEnter != 0) {
+            this->onEnter(cc);
+        }
     }
 
     virtual bool attach(Directory<ConfigItem *> *tree) {
@@ -90,9 +106,17 @@ public:
         }
         this->tree = tree;
         this->tree->setElement(this);
-        this->tree->memo = [](ConfigItem *ci) {
-            return ci->getMemo();
+        this->tree->title = [](Directory<ConfigItem *> *dir) {
+            String name = dir->getName();
+            return dir->getElement()->getTitle(name);
         };
+        this->tree->tags = [](Directory<ConfigItem *> *tree) {
+            bool valid = tree->getElement()->isValid();
+            String str;
+            str << (valid ? "_" : "*");
+            return str;
+        };
+
         this->onAttached();
         return true;
     }
@@ -138,11 +162,13 @@ public:
     ~BindingInputConfigItem() {
         this->releaseInput_(this->input);
     }
-    String getMemo() override {
-        return String() << "value:" << bind;
+
+    String getTitle(String name) override {
+        return String() << name << "(value:" << bind << ")";
     }
-    void config(ConfigContext &cc) override {
-        ConfigItem::config(cc);
+
+    void enter(ConfigContext &cc) override {
+        ConfigItem::enter(cc);
         bind = this->input->readValue(&cc);
         cc.logger->debug(String() << "<<config,bind:" << bind);
     }
@@ -192,6 +218,10 @@ public:
         return ci->add(name, ci2);
     }
 
+    static ConfigItem *addReturn(ConfigItem *ci, String name, ConfigItem *ci2) {
+        return ci->addReturn(name, ci2);
+    }
+
     static ConfigItem *addReturn(ConfigItem *ci, String name) {
         return ci->addReturn(name);
     }
@@ -216,7 +246,7 @@ public:
         BindingInputConfigItem<T> ci(input, bind);
         Result res;
         ConfigContext cc(reader, out, logger, res);
-        ci.config(cc);
+        ci.enter(cc);
         logger->debug(String() << "<<read,bind:" << bind);
         return bind;
     }

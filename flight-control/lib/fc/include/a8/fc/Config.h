@@ -1,4 +1,5 @@
 #pragma once
+#include "a8/fc/PowerManage.h"
 #include "a8/fc/Rpy.h"
 #include "a8/util.h"
 
@@ -13,21 +14,25 @@ public:
     RpyStableCheckConfigItem(Rpy *rpy) {
         this->rpy = rpy;
     }
-    String getMemo() override {
-        return String() << "stable:" << stable << "forceStart:" << forceStart;
+
+    String getTitle(String name) override {
+        return String() << name << "(stable:" << stable << "forceStart:" << forceStart << ")";
     }
+
     void onAttached() override {
         {
 
             ConfigItem *ci = ConfigItems::addReturn(this, "Force start with UN-stable rpy?");
-            ci->onEnter = [](ConfigContext &cc, ConfigItem *ci) {
+            ci->onEnter = [](ConfigContext &cc) {
+                ConfigItem *ci = cc.navigator->get()->getElement();
                 RpyStableCheckConfigItem *this_ = ci->getParent<RpyStableCheckConfigItem>();
                 this_->forceStart = !this_->forceStart;
             };
         }
         {
             ConfigItem *ci = ConfigItems::addReturn(this, "Check again.");
-            ci->onEnter = [](ConfigContext &cc, ConfigItem *ci) {
+            ci->onEnter = [](ConfigContext &cc) {
+                ConfigItem *ci = cc.navigator->get()->getElement();
                 RpyStableCheckConfigItem *this_ = ci->getParent<RpyStableCheckConfigItem>();
                 this_->check(cc);
             };
@@ -45,7 +50,7 @@ public:
         return this->stable || this->forceStart;
     }
 
-    void config(ConfigContext &cc) override {
+    void enter(ConfigContext &cc) override {
         if (!this->stable) {
             this->check(cc);
         }
@@ -64,8 +69,8 @@ public:
     RpyBalanceCheckConfigItem(Rpy *rpy) {
         this->rpy = rpy;
     }
-    String getMemo() override {
-        return String() << "balance:" << balance << "forceStart:" << forceStart;
+    String getTitle(String name) override {
+        return String() << name << "(balance:" << balance << "forceStart:" << forceStart << ")";
     }
     bool isValid() {
         return this->balance || forceStart;
@@ -73,14 +78,16 @@ public:
     void onAttached() override {
         {
             ConfigItem *ci = ConfigItems::addReturn(this, "Force start with UN-balanced rpy?");
-            ci->onEnter = [](ConfigContext &cc, ConfigItem *ci) {
+            ci->onEnter = [](ConfigContext &cc) {
+                ConfigItem *ci = cc.navigator->get()->getElement();
                 RpyBalanceCheckConfigItem *this_ = ci->getParent<RpyBalanceCheckConfigItem>();
                 this_->forceStart = !this_->forceStart;
             };
         }
         {
             ConfigItem *ci = ConfigItems::addReturn(this, "Adjust the attitude of the quad copter and check again.");
-            ci->onEnter = [](ConfigContext &cc, ConfigItem *ci) {
+            ci->onEnter = [](ConfigContext &cc) {
+                ConfigItem *ci = cc.navigator->get()->getElement();
                 RpyBalanceCheckConfigItem *this_ = ci->getParent<RpyBalanceCheckConfigItem>();
                 this_->check(cc);
             };
@@ -90,11 +97,65 @@ public:
         Result res;
         balance = this->rpy->checkIfBalance(res) > 0;
     }
-    void config(ConfigContext &cc) override {
+    void enter(ConfigContext &cc) override {
         this->check(cc);
         if (!this->balance) {
             // todo warn.
         }
+    }
+};
+class PowerConfigItem : public ConfigItem {
+    PowerManage *pm;
+
+public:
+    PowerConfigItem(PowerManage *pm) {
+        this->pm = pm;
+    }
+
+    bool isValid() override {
+        Result res;
+        int ret = pm->isReady(res);
+        return ret > 0;
+    }
+
+    String getTitle(String name) override {
+        return String() << name << "(voltage:" << pm->getVoltage() << ")";
+    }
+
+    void enter(ConfigContext &cc) override {
+        ConfigItem::enter(cc);
+    }
+};
+
+class ExitConfigItem : public ConfigItem {
+    bool &start;
+
+public:
+    ExitConfigItem(bool &start) : start(start) {
+    }
+    void onAttached() override {
+        {
+            ConfigItem *ci = ConfigItems::addReturn(this, "Toggle start after config?");
+            ci->onEnter = [](ConfigContext &cc) {
+                ConfigItem *ci = cc.navigator->get()->getElement();
+                ExitConfigItem *this_ = ci->getParent<ExitConfigItem>();
+                this_->start = !this_->start;
+            };
+        }
+        {
+            ConfigItem *ci = ConfigItems::addReturn(this, "Start now.");
+            ci->onEnter = [](ConfigContext &cc) {
+                ConfigItem *ci = cc.navigator->get()->getElement();
+                ExitConfigItem *this_ = ci->getParent<ExitConfigItem>();
+                this_->start = true;
+                cc.navigator->stop(1);
+            };
+        }
+        }
+    String getTitle(String name) override {
+        return String() << name << "(start:" << start << ")";
+    }
+    void enter(ConfigContext &cc) override {
     }
 };
 
@@ -102,30 +163,31 @@ class Config : public ConfigItem {
 
     Reader *reader;
     Output *out;
+    ConfigItem *exitConfigItem;
 
 public:
     long tickTimeMs = 10;
     long pwmElevation = 200; // 210
     long flyingTimeLimitSec = 10;
     long delayBeforeStartSec = 3;
-    int enablePropeller = 0;
+    bool enablePropeller = false;
     long pwmMax = 2000;
     long pwmMin = 1000;
     double pidKp = 6.0;
     double pidKi = 0.0;
     double pidKd = 0.0;
-    double maxBalancePidOutput = 118; //(-300,300)
+    double maxBalancePidOutput = 118.0; //(-300,300)
     double maxBalancePidIntegralOutput = 75;
-    bool start = false;
-
+    bool startAfterConfig = false;
 public:
-    Config(Reader *reader, Output *out, Rpy *rpy, Logger *logger) {
+    Config(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Logger *logger) {
         this->reader = reader;
         this->out = out;
         ConfigItem *ci = this;
         this->attach(new Directory<ConfigItem *>("Root", 0));
-
+        ConfigItems::addReturn(ci, String() << "", new PowerConfigItem(pm));
         logger->debug(".");
+        ci = this;
         ci = ConfigItems::addReturn(ci, String() << "Rpy-check");
         logger->debug("..");
         {
@@ -151,12 +213,18 @@ public:
         ConfigItems::add(ci, String() << "flyingTimeLimit(sec)", flyingTimeLimitSec);
         ConfigItems::add(ci, String() << "delayBeforeStart(sec)", delayBeforeStartSec);
         ConfigItems::add(ci, String() << "enablePropeller", enablePropeller);
-        ConfigItems::add(ci, String() << "start", start);
+        this->exitConfigItem = ConfigItems::addReturn(ci, String() << "exit", new ExitConfigItem(this->startAfterConfig));
     }
 
-    void config(ConfigContext &cc) override {
+    void onLeftFailure(ConfigContext &cc) override {
+        cc.navigator->enter(this->exitConfigItem->getDirectory());
+    }
+
+    void enter(ConfigContext &cc) override {
+
         cc.logger->debug(">>Config::config.");
         DirectoryNavigator<ConfigContext &, ConfigItem *> nav(cc.reader, cc.out, this->tree);
+        cc.navigator = &nav;
         nav.onDirectoryEnter = [](ConfigContext &cc, DirectoryNavigator<ConfigContext &, ConfigItem *> *nav) {
             cc.logger->debug("dir enter.");
             Directory<ConfigItem *> *dir = nav->get();
@@ -165,13 +233,18 @@ public:
                 return;
             }
             ConfigItem *ci = dir->getElement();
-            ci->onEnter(cc, ci);
+            ci->enter(cc);
         };
         nav.onLeftFailure = [](ConfigContext &cc, DirectoryNavigator<ConfigContext &, ConfigItem *> *nav) {
-            nav->stop(1);
+            Directory<ConfigItem *> *dir = nav->get();
+            ConfigItem *ci = dir->getElement();
+            ci->onLeftFailure(cc);
         };
+
         cc.logger->debug(String() << "run...");
-        int ret = nav.run(cc);
+
+        int ret = nav.run(cc); // blocked here until stop nav.
+
         cc.logger->debug(String() << "<<Config::config,ret:" << ret);
     }
 };

@@ -14,6 +14,10 @@ public:
         this->xPin = new AnalogInputPin(xPin, sys, logFac);
         this->yPin = new AnalogInputPin(yPin, sys, logFac);
     }
+    ~Joystick(){
+        delete this->xPin;
+        delete this->yPin;
+    }
     AnalogInputPin *getXPin() {
         return xPin;
     }

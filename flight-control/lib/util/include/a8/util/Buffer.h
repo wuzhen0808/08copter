@@ -64,7 +64,7 @@ public:
     int len() const {
         return this->length_;
     }
-    
+
     T get(int idx, T def) const {
         if (this->hasIndex(idx)) {
             return this->buffer_[idx];
@@ -82,6 +82,14 @@ public:
         }
         return this->buffer_[idx];
     }
+
+    T getLast(T def) {
+        if (this->length_ == 0) {
+            return def;
+        }
+        return this->buffer_[this->length_ - 1];
+    }
+
     T *buffer() const {
         return this->buffer_;
     }
@@ -184,6 +192,11 @@ public:
         this->length_ = 0;
     }
 
+    void clear(void (*release)(T)) {
+        this->forEach(release);
+        this->clear();
+    }
+
     Buffer<T> *append(Buffer<T> *buf, int from, int len) {
         return this->append(buf->buffer_, from, len);
     }
@@ -284,6 +297,12 @@ public:
         for (int i = 0; i < this->length_; i++) {
             T ele = this->buffer_[i];
             consumer(c, ele);
+        }
+    }
+    void forEach(void (*consumer)(T)) {
+        for (int i = 0; i < this->length_; i++) {
+            T ele = this->buffer_[i];
+            consumer(ele);
         }
     }
 };

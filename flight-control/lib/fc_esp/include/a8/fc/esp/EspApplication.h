@@ -8,15 +8,17 @@
 namespace a8::fc::esp {
 using namespace a8::util;
 using namespace a8::hal::esp;
-class EspApplication : public BaseEspExample {
+class EspApplication : public BaseEspApplication {
 protected:
     Executor *executor;
     MPU9250 *mpu;
+    PowerManage *pm;
 
 public:
-    EspApplication(MPU9250 *mpu) : BaseEspExample("EspApplication") {
+    EspApplication(MPU9250 *mpu) : BaseEspApplication("EspApplication") {
         this->mpu = mpu;
-        this->executor = new EspExecutor(mpu, sys, loggerFactory);
+        this->pm = new PowerManage(sys, 5, 21, loggerFactory);
+        this->executor = new EspExecutor(pm, mpu, sys, loggerFactory);
     }
 
     ~EspApplication() {
@@ -33,14 +35,27 @@ public:
         this->setupSerial();
         this->setupWire();
         this->setupMpu9250();
-
-        sch->createTask<EspApplication *>("EspPilotExample", this, [](EspApplication *this_) {
+        this->pm->setup();
+        sch->createTimer<EspApplication *>("100Hz", 100.0f, this, [](EspApplication *this_) {
+            this_->hz100();
+        });
+        sch->createTask<EspApplication *>("EspApplication", this, [](EspApplication *this_) {
             this_->run();
         });
         return 1;
     }
+    void hz100() {
+        long timeMs = sys->getSteadyTime();
+        this->pm->tick(timeMs);
+    }
+
     void run() {
-        this->executor->run();
+        Result res;
+        int ret = this->executor->run(res);
+        if (ret < 0) {
+            log(res.errorMessage);
+        }
+        log("done of application.");
     }
 };
 

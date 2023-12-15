@@ -15,6 +15,7 @@
 #include "a8/util/HashTable.h"
 #include "a8/util/Input.h"
 #include "a8/util/Lang.h"
+#include "a8/util/Led.h"
 #include "a8/util/LinkedList.h"
 #include "a8/util/Logger.h"
 #include "a8/util/LoggerFactory.h"

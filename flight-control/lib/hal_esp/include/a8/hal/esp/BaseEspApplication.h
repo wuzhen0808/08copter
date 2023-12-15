@@ -8,7 +8,7 @@ using namespace a8::util;
 using namespace a8::util::sched;
 using namespace a8::hal::esp;
 
-class BaseEspExample : public FlyWeight {
+class BaseEspApplication : public FlyWeight {
 protected:
     System *sys;
     Scheduler *sch;
@@ -32,7 +32,7 @@ protected:
     }
 
 public:
-    BaseEspExample(String name) {
+    BaseEspApplication(String name) {
         sys = new EspSystem();
         sch = new EspScheduler();
         LoggerFactory *logFac = new EspLoggerFactory(sys, sch);

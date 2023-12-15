@@ -37,14 +37,18 @@ void ArduinoSystem::setPinMode(int pin, PinMode mode) {
     } else {
     }
 }
-bool ArduinoSystem::digitalRead(int pin){
+bool ArduinoSystem::digitalRead(int pin) {
     return LOW != ::digitalRead(pin);
+}
+
+void ArduinoSystem::digitalWrite(int pin, bool high) {
+    ::digitalWrite(pin, high ? HIGH : LOW);
 }
 
 int ArduinoSystem::analogRead(int pin) {
     return ::analogRead(pin);
 }
-void ArduinoSystem::delay(long ms){
+void ArduinoSystem::delay(long ms) {
     ::delay(ms);
 }
 } // namespace a8::hal::arduino_
