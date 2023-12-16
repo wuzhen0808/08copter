@@ -34,20 +34,59 @@ public:
             this->add(off, false);
             this->add(on, true);
         }
+        Mode(long off, long on, long off2, long on2, System *sys) {
+            this->sys = sys;
+            this->add(off, false);
+            this->add(on, true);
+            this->add(off2, false);
+            this->add(on2, true);
+        }
+        Mode(long off, long on, long off2, long on2, long off3, long on3, System *sys) {
+            this->sys = sys;
+            this->add(off, false);
+            this->add(on, true);
+            this->add(off2, false);
+            this->add(on2, true);
+            this->add(off3, false);
+            this->add(on3, true);
+        }
+
         ~Mode() {
             lights.clear([](Light *light) {
                 delete light;
             });
         }
-        void add(long timeMs, bool on) {
-            this->add(new Light(timeMs, on));
+
+        Mode *off(long timeMs) {
+            return add(timeMs, false);
         }
 
-        void add(Light *light) {
+        Mode *on(long timeMs) {
+            return add(timeMs, true);
+        }
+
+        Mode *offOn(long off, long on) {
+            add(off, false);
+            add(on, true);
+            return this;
+        }
+
+        Mode *onOff(long on, long off) {
+            add(on, true);
+            add(off, false);
+            return this;
+        }
+
+        Mode *add(long timeMs, bool on) {
+            return add(new Light(timeMs, on));
+        }
+
+        Mode *add(Light *light) {
             Light *preLight = this->lights.getLast(0);
             this->lights.append(light);
             light->startTimeMs = preLight == 0 ? 0 : preLight->endTimeMs;
             light->endTimeMs = light->startTimeMs + light->timeMs;
+            return this;
         }
         void log(String msg) {
             sys->out->println(msg);
@@ -90,6 +129,18 @@ protected:
     System *sys;
     Mode *mode = 0;
 
+    bool releaseMode_ = true;
+
+    void releaseMode() {
+        if (this->mode == 0) {
+            return;
+        }
+        if (this->releaseMode_) {
+            delete this->mode;
+        }
+        this->mode = 0;
+    }
+
 public:
     Led(System *sys, int pin) {
         this->sys = sys;
@@ -97,13 +148,6 @@ public:
     }
     ~Led() {
         releaseMode();
-    }
-    void releaseMode() {
-        if (this->mode == 0) {
-            return;
-        }
-        delete this->mode;
-        this->mode = 0;
     }
 
     void setup() {
@@ -115,11 +159,13 @@ public:
     }
 
     void update(long off, long on) {
-        update(new Mode(off, on, this->sys));
+        update(new Mode(off, on, this->sys), true);
     }
-    void update(Mode *mode) {
-        releaseMode();
+
+    void update(Mode *mode, bool releaseMode) {
+        this->releaseMode();
         this->mode = mode;
+        this->releaseMode_ = releaseMode;
     }
 
     int tick(long timeMs, Result &res) {
@@ -146,40 +192,37 @@ public:
 }; // end of Led.
 
 class StyledLed : public Led {
-    enum Style {
-        DANGER,
-        WARN,
-        INFO,
-        UNKNOWN
-    };
-    Style style = UNKNOWN;
+    Mode *dangerMode;
+    Mode *warnMode;
+    Mode *infoMode;
 
 public:
     StyledLed(System *sys, int pin) : Led(sys, pin) {
+        this->dangerMode = new Led::Mode(sys);
+        this->dangerMode->off(1000);
+        for (int i = 0; i < 5; i++) {
+            this->dangerMode->onOff(100, 100);
+        }
+        this->warnMode = new Led::Mode(900, 100, sys);
+        this->infoMode = new Led::Mode(2900, 100, sys);
         this->info();
     }
+    ~StyledLed() {
+        delete this->dangerMode;
+        delete this->warnMode;
+        delete this->infoMode;
+    }
+
     void danger() {
-        if (style == DANGER) {
-            return;
-        }
-        update(new Led::Mode(200, 200, this->sys));
-        style = DANGER;
+        this->update(this->dangerMode, false);
     }
 
     void warn() {
-        if (style == WARN) {
-            return;
-        }
-        update(new Mode(1900, 200, this->sys));
-        style = WARN;
+        this->update(this->warnMode, false);
     }
 
     void info() {
-        if (style == INFO) {
-            return;
-        }
-        update(new Mode(2900, 200, this->sys));
-        style = INFO;
+        this->update(this->infoMode, false);
     }
 };
 } // namespace a8::util

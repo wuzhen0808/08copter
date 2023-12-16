@@ -84,8 +84,8 @@ public:
     int isReady(Result &res) {
         long timeMs = sys->getSteadyTime();
         this->update(timeMs);
-        if (this->voltage < remindVoltage) {
-            res << "voltage(" << voltage << ") is low, it must higher than " << remindVoltage << ".";
+        if (this->voltage < dangerVoltage) {
+            res << "voltage(" << voltage << ") is low, it must higher than " << dangerVoltage << ".";
             return -1;
         }
         return 1;

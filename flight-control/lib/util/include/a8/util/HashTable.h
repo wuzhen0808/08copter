@@ -26,7 +26,7 @@ class HashTable {
 
 public:
     HashTable() {
-        this->init([](K k) { return k % 128; }, [](K k1, K k2) { return k1 == k2; });
+        this->init([](K k) { return k % 32; }, [](K k1, K k2) { return k1 == k2; });
     }
 
     HashTable(hashCode hashCodeF) {

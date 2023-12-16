@@ -36,24 +36,47 @@ public:
         this->setupWire();
         this->setupMpu9250();
         this->pm->setup();
-        sch->createTimer<EspApplication *>("100Hz", 100.0f, this, [](EspApplication *this_) {
+        sch->createTimer<EspApplication *>("100Hz", 500.0f, this, [](EspApplication *this_) {
             this_->hz100();
         });
+        sch->createTimer<EspApplication *>("500Hz", 500.0f, this, [](EspApplication *this_) {
+            this_->hz500();
+        });
+
         sch->createTask<EspApplication *>("EspApplication", this, [](EspApplication *this_) {
             this_->run();
         });
         return 1;
     }
+    void hz500() {
+        long timeMs = sys->getSteadyTime();
+        // this->pm->tick(timeMs);
+    }
+
     void hz100() {
         long timeMs = sys->getSteadyTime();
         this->pm->tick(timeMs);
     }
 
     void run() {
-        Result res;
-        int ret = this->executor->run(res);
-        if (ret < 0) {
-            log(res.errorMessage);
+        while (true) {
+            while (true) {
+                Result res;
+                int ret = pm->isReady(res);
+                if (ret < 0) {
+                    log(res.errorMessage);
+                    sys->delay(1000);
+                    continue;
+                }
+                break;
+            }
+            log("calling executor to run.");
+            Result res;
+            int ret = this->executor->run(res);
+            if (ret < 0) {
+                log(res.errorMessage);
+            }
+            sys->delay(5000);
         }
         log("done of application.");
     }

@@ -1,5 +1,5 @@
 #pragma once
-#include "a8/fc/Config.h"
+#include "a8/fc/config/Config.h"
 #include "a8/fc/Pilot.h"
 #include "a8/fc/PowerManage.h"
 #include "a8/util.h"

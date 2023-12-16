@@ -9,6 +9,7 @@
 #include "a8/util/ConfigItem.h"
 #include "a8/util/DigitalInputPin.h"
 #include "a8/util/Directory.h"
+#include "a8/util/Debug.h"
 #include "a8/util/EventCenter.h"
 #include "a8/util/FlyWeight.h"
 #include "a8/util/Format.h"

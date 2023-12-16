@@ -1,6 +1,7 @@
 #pragma once
 #include "a8/util/Assert.h"
 #include "a8/util/Callback3.h"
+#include "a8/util/Debug.h"
 #include "a8/util/Lang.h"
 #include "a8/util/Math.h"
 #include "a8/util/defines.h"
@@ -172,6 +173,10 @@ public:
         return len2;
     }
 
+    void reverse() {
+        Lang::reverse<T>(this->buffer_, this->length_);
+    }
+
     int write(T *buf, int bLen) {
         int len = Math::min(this->length_, bLen);
         Lang::copy(this->buffer_, 0, len, buf, 0);
@@ -226,12 +231,11 @@ public:
     }
 
     Buffer<T> *append(const T *elements, const int from, const int len) {
-        LOG(">>Buffer<T> *append(const T *elements, const int from, const int len)");
+        A8_DEBUG(">>Buffer<T> *append(const T *elements, const int from, const int len)");
         Lang::append<T>(this->buffer_, this->length_, this->capacity_,
                         DELTA_BUF_CAP, 0,
                         elements, from, len);
-        LOG2("this->buffer_:", this->buffer_);
-        LOG("<<Buffer<T> *append(const T *elements, const int from, const int len)");
+        A8_DEBUG("<<Buffer<T> *append(const T *elements, const int from, const int len)");
         return this;
     }
     bool setIfNeeded(int idx, T emptyValue, T element) {

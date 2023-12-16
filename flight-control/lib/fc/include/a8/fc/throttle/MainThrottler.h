@@ -1,5 +1,5 @@
 #pragma once
-#include "a8/fc/Config.h"
+#include "a8/fc/config/Config.h"
 #include "a8/fc/throttle/BalanceThrottler.h"
 #include "a8/fc/throttle/Context.h"
 #include "a8/fc/throttle/ElevatorThrottler.h"

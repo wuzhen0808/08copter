@@ -32,6 +32,16 @@ public:
         return String(str, Lang::strLength(str));
     }
 
+    static int hashCode(String str, int fish) {
+        int maxLen = 50;
+        int len = str.len();
+        int sum = 0;
+        for (int i = 0; i < len && i < maxLen; i++) {
+            sum += (int)str.get(i);
+        }
+        return sum % fish;
+    }
+
     // dynamic methods
     String() {
     }
@@ -303,6 +313,10 @@ public:
     String &operator<<(const float fValue) {
         append(fValue);
         return *this;
+    }
+
+    int operator%(int iValue) {
+        return hashCode(*this, iValue);
     }
 
     String &operator<<(const bool bValue) {

@@ -1,8 +1,9 @@
 #pragma once
 #include "a8/util/Directory.h"
+#include "a8/util/HashTable.h"
 #include "a8/util/Input.h"
-
 namespace a8::util {
+
 class ConfigItem;
 
 class ConfigContext : public InputContext {
@@ -14,7 +15,43 @@ public:
 };
 
 class ConfigItem {
+public:
+    const static int TAG_IS_VALID = 11;
+
+public:
+    class TitleBuilder : HashTable<String, String> {
+    public:
+        ConfigItem *configItem;
+        TitleBuilder(ConfigItem *configItem) {
+            this->configItem = configItem;
+        }
+        void tag(int key, char value) {
+            configItem->getDirectory()->tag(key, value);
+        }
+
+        template <typename T>
+        void set(String key, T value) {
+            HashTable<String, String>::set(key, String() << value);
+        }
+
+        String build() {
+            String title(configItem->getName());
+            Directory<ConfigItem *> *dir = configItem->getDirectory();
+            title << "[";
+            title << (configItem->isValid() ? '_' : '*');
+            title << "]";
+
+            title << "(";
+            this->forEach<String &>(title, [](String &title, String key, String value) {
+                title << key << ":" << value << ",";
+            });
+            title << ")";
+            return title;
+        }
+    };
+
     using onEnterF = void (*)(ConfigContext &);
+    using onBuildTitleF = void (*)(TitleBuilder &);
 
 protected:
     Directory<ConfigItem *> *tree;
@@ -22,6 +59,7 @@ protected:
 public:
     // event handler.
     onEnterF onEnter = 0;
+    onBuildTitleF onBuildTitle = 0;
 
 public:
     ConfigItem() {
@@ -63,8 +101,10 @@ public:
         return ret;
     }
 
-    virtual String getTitle(String name) {
-        return name;
+    virtual void buildTitle(TitleBuilder &title) {
+        if (onBuildTitle != 0) {
+            this->onBuildTitle(title);
+        }
     }
 
     ConfigItem *add(String name) {
@@ -108,15 +148,10 @@ public:
         this->tree->setElement(this);
         this->tree->title = [](Directory<ConfigItem *> *dir) {
             String name = dir->getName();
-            return dir->getElement()->getTitle(name);
+            TitleBuilder title(dir->getElement());
+            dir->getElement()->buildTitle(title);
+            return title.build();
         };
-        this->tree->tags = [](Directory<ConfigItem *> *tree) {
-            bool valid = tree->getElement()->isValid();
-            String str;
-            str << (valid ? "_" : "*");
-            return str;
-        };
-
         this->onAttached();
         return true;
     }
@@ -163,8 +198,8 @@ public:
         this->releaseInput_(this->input);
     }
 
-    String getTitle(String name) override {
-        return String() << name << "(value:" << bind << ")";
+    void buildTitle(TitleBuilder &title) override {
+        title.set<T>("value", bind);
     }
 
     void enter(ConfigContext &cc) override {

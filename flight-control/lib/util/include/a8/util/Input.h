@@ -1,13 +1,17 @@
 #pragma once
+#include "a8/util/Debug.h"
 #include "a8/util/LineReader.h"
 #include "a8/util/Logger.h"
 #include "a8/util/Output.h"
 #include "a8/util/String.h"
-
+#define A8_INPUT_DEBUG (0)
 namespace a8::util {
 class InputContext {
-    int boxWidth = 80;
+    int minBoxWidth = 10;
+    int maxInfoWidth = 80;
     int currentLineWidth = 0;
+    char leftBorder = '>';
+    int leftMargin = 1;
 
 public:
     Reader *reader;
@@ -32,16 +36,23 @@ public:
         out->println(line);
         return line;
     }
-    void printBorder(char ch) {
-        for (int i = 0; i < boxWidth; i++) {
-            out->print(ch);
+
+    void println(char ch0, char ch1, int len, char ch2) {
+        out->print(ch0);
+        for (int i = 0; i < len; i++) {
+            out->print(ch1);
         }
+        out->print(ch2);
         out->println();
     }
     void startInput(String prompt) {
-        printBorder('.');
+        println('+', '.', prompt.len(), '.');
         this->currentLineWidth = 0;
         println(prompt);
+    }
+
+    void endInput(String prompt) {
+        println('.', '.', prompt.len(), '+');
     }
     void println(String prompt) {
         println(0, prompt);
@@ -53,20 +64,31 @@ public:
         }
         line << prompt;
         line << "\n";
-        this->print(line);
+        this->doPrint(line);
     }
-    void print(String msg) {
 
+    void printLeft() {
+        out->print(leftBorder);
+        // margin
+        for (int i = 0; i < leftMargin; i++) {
+            out->print(' ');
+        }
+    }
+    void doPrint(String msg) {
+        if (this->currentLineWidth == 0) {
+            printLeft();
+        }
         for (int i = 0; i < msg.len(); i++) {
             char ch = msg.get(i);
             bool autoBreak = false;
             bool userBreak = ch == '\n';
-            if (currentLineWidth == boxWidth) {
+            if (currentLineWidth == maxInfoWidth) {
                 autoBreak = true;
             }
             if (autoBreak || userBreak) {
                 out->println();
                 currentLineWidth = 0;
+                printLeft();
             }
 
             if (!userBreak) {
@@ -76,9 +98,6 @@ public:
         }
     }
 
-    void endInput() {
-        printBorder('_');
-    }
 }; // end of InputContext.
 
 template <typename T>
@@ -127,7 +146,7 @@ public:
     T readValue(InputContext *ic) {
         ic->startInput(this->prompt);
         update(ic);
-        ic->endInput();
+        ic->endInput(this->prompt);
         return this->value;
     }
 
@@ -141,7 +160,7 @@ public:
     }
 
     virtual void update(InputContext *ic) override {
-        ic->logger->debug(">>readValue.");
+        A8_LOG_DEBUG(ic->logger, ">>readValue.");
         this->value = this->template readNumber<T>(ic, this->prompt, this->default_);
     }
 };
@@ -168,7 +187,7 @@ public:
         }
         ic->println(String() << "Input the number to select the options above.");
         NumberInput<int>::update(ic);
-        ic->logger->debug(String() << "<<readValue:" << value);
+        A8_LOG_DEBUG(ic->logger, String() << "<<readValue:" << value);
     }
 };
 class BoolInput : public Input<bool> {

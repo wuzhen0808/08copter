@@ -7,6 +7,10 @@ class StringUtil {
 public:
     static String space(int len) {
         String str;
+        return space(str, len);
+    }
+
+    static String &space(String &str, int len) {
         for (int i = 0; i < len; i++) {
             str << " ";
         }

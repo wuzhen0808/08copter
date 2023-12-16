@@ -263,6 +263,14 @@ public:
             }
         }
     }
+    template <typename T>
+    static void reverse(T *buf, int len) {
+        for (int i = 0; i < len / 2; i++) {
+            T tmp = buf[i];
+            buf[i] = buf[len - 1 - i];
+            buf[len - 1 - i] = tmp;
+        }
+    }
 
     static int strLength(const char *str) {
         if (str == 0) {
