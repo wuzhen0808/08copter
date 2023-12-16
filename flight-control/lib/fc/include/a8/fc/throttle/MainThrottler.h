@@ -1,7 +1,7 @@
 #pragma once
+#include "a8/fc/Context.h"
 #include "a8/fc/config/Config.h"
 #include "a8/fc/throttle/BalanceThrottler.h"
-#include "a8/fc/throttle/Context.h"
 #include "a8/fc/throttle/ElevatorThrottler.h"
 #include "a8/fc/throttle/LandingThrottler.h"
 #include "a8/fc/throttle/LimitThrottler.h"
@@ -27,7 +27,7 @@ public:
         throttlers.append(elevator);
 
         balance = new BalanceThrottler(rpy, logFac);
-        balance->setPidArgument(config.pidKp, config.pidKi, config.pidKd, config.maxBalancePidOutput, config.maxBalancePidIntegralOutput);
+        balance->setPidArgument(config.pidKp, config.pidKi, config.pidKd, config.pidOutputLimit, config.pidOutputLimitI);
         throttlers.append(balance);
 
         limit = new LimitThrottler(config.pwmMin, config.pwmMax, logFac);
@@ -46,7 +46,11 @@ public:
         delete this->limit;
         delete this->landing;
     }
-
+    void getLimitInTheory(long &minSample, long &maxSample) override {
+        for (int i = 0; i < throttlers.len(); i++) {
+            throttlers.get(i)->getLimitInTheory(minSample, maxSample);
+        }
+    }
     void printHistory(int depth, String &msg) override {
         msg << StringUtil::space(depth) << "MainThrottler-history:\n";
         this->balance->printHistory(depth + 1, msg);

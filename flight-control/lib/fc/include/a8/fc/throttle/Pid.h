@@ -31,6 +31,14 @@ public:
     float historyMaxOutputD;
     float historyMaxOutput;
 
+    void limit(float &output, float min, float max) {
+        if (output > max) {
+            output = max;
+        } else if (output < min) {
+            output = min;
+        }
+    }
+
 public:
     Pid() {
     }
@@ -43,6 +51,11 @@ public:
         this->integralOutputLimit = integralOutputLimit;
         this->resetHistory();
     }
+
+    float getOutputLimit() {
+        return outputLimit;
+    }
+
     void resetHistory() {
         this->historyMinOutputP = outputLimit;
         this->historyMinOutputI = integralOutputLimit;
@@ -55,9 +68,14 @@ public:
     }
 
     void printHistory(int depth, String &msg) {
-        msg << StringUtil::space(depth) << "historyMaxOutputP:" << this->historyMaxOutputP << "\n";
-        msg << StringUtil::space(depth) << "historyMaxOutputI(limit:" << this->integralOutputLimit << "):" << this->historyMaxOutputI << "\n";
-        msg << StringUtil::space(depth) << "historyMaxOutput(limit:" << this->outputLimit << "):" << this->historyMaxOutput << "\n";
+        printHistory(depth, msg, "historyOutput", this->outputLimit, this->historyMinOutput, this->historyMaxOutput);
+        printHistory(depth, msg, "historyOutputP", this->outputLimit, this->historyMinOutputP, this->historyMaxOutputP);
+        printHistory(depth, msg, "historyOutputI", this->integralOutputLimit, this->historyMinOutputI, this->historyMaxOutputI);
+        printHistory(depth, msg, "historyOutputD", this->outputLimit, this->historyMinOutputD, this->historyMaxOutputD);
+    }
+    void printHistory(int depth, String &msg, String name, float limit, float min, float max) {
+
+        msg << StringUtil::space(depth) << name << ",limit:(" << -limit << "," << limit << "),min" << (min <= -limit ? "*" : "") << ":" << min << ",max" << (max >= limit ? "*" : "") << ":" << max << "\n";
     }
 
     void updateHistoryMinMax(float fValue, float &min, float &max) {
@@ -102,13 +120,6 @@ public:
         lastTimeMs = timeMs;
     }
 
-    void limit(float &output, float min, float max) {
-        if (output > max) {
-            output = max;
-        } else if (output < min) {
-            output = min;
-        }
-    }
     float getLastError() {
         return this->lastError;
     }

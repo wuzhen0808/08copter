@@ -13,12 +13,19 @@ protected:
     long pwm;
     String name;
     bool enable_ = true;
+    long minInTheory = 0;
+    long maxInTheory = 2000;
 
 public:
     Propeller(String name) {
         this->name = name;
     }
-    bool isEnabled(){
+    void setLimitInTheory(long min, long max) {
+        this->minInTheory = min;
+        this->maxInTheory = max;
+    }
+
+    bool isEnabled() {
         return this->enable_;
     }
 
@@ -28,9 +35,10 @@ public:
     String getName() {
         return this->name;
     }
+    
     void printHistory(String intend, String &msg) {
-        msg << intend << "historyMinPwm:" << this->historyMinPwm
-            << intend << "historyMaxPwm:" << this->historyMaxPwm;
+        msg << intend << "historyMinPwm(inTheory:" << this->minInTheory << "):" << this->historyMinPwm
+            << intend << "historyMaxPwm(inTheory:" << this->maxInTheory << "):" << this->historyMaxPwm;
     }
 
     void addPwm(long pwm) {
@@ -50,7 +58,7 @@ public:
     }
     void start() {
         this->historyMaxPwm = 0;
-        this->historyMinPwm = 2000;        
+        this->historyMinPwm = 2000;
     }
     void updateHistory() {
         // update history

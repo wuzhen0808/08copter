@@ -2,7 +2,7 @@
 #include "a8/util.h"
 #include "a8/fc/Propellers.h"
 
-namespace a8::fc::throttle {
+namespace a8::fc {
 using namespace a8::util;
 
 class Context {

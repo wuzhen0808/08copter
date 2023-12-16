@@ -33,15 +33,20 @@ public:
         delete this->pidRoll;
         delete this->pidPitch;
     }
+    void getLimitInTheory(long &minSample, long &maxSample) override {
+        minSample = minSample - pidRoll->getOutputLimit() - pidPitch->getOutputLimit();
+        maxSample = maxSample + pidRoll->getOutputLimit() + pidPitch->getOutputLimit();
+    }
+
     void printHistory(int depth, String &msg) override {
         msg << StringUtil::space(depth) << "Balance-history-rollPid:\n";
         this->pidRoll->printHistory(depth + 1, msg);
         msg << StringUtil::space(depth) << "Balance-history-pitchPid:\n";
         this->pidPitch->printHistory(depth + 1, msg);
     }
-    void setPidArgument(double kp, double ki, double kd, float maxBalancePidOutput, float maxPidIntegralOutput) {
-        this->pidRoll->config(kp, ki, kd, maxBalancePidOutput, maxPidIntegralOutput);
-        this->pidPitch->config(kp, ki, kd, maxBalancePidOutput, maxPidIntegralOutput);
+    void setPidArgument(double kp, double ki, double kd, float outputLimit, float maxPidIntegralOutput) {
+        this->pidRoll->config(kp, ki, kd, outputLimit, maxPidIntegralOutput);
+        this->pidPitch->config(kp, ki, kd, outputLimit, maxPidIntegralOutput);
     }
 
     int update(Context &ctx, Result &res) override {

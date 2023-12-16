@@ -90,6 +90,12 @@ public:
         }
         return this->buffer_[this->length_ - 1];
     }
+    T getFirst(T def) {
+        if (this->length_ == 0) {
+            return def;
+        }
+        return this->buffer_[0];
+    }
 
     T *buffer() const {
         return this->buffer_;

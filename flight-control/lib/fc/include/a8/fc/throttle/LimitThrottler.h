@@ -18,8 +18,12 @@ public:
         this->pwmMin = pwmMin;
         this->pwmMax = pwmMax;
     }
-    void printHistory(int intend, String &msg) override{
-        
+    void getLimitInTheory(long &minSample, long &maxSample) override {
+        limitPwm(minSample, pwmMin, pwmMax);
+        limitPwm(maxSample, pwmMin, pwmMax);
+    }
+
+    void printHistory(int intend, String &msg) override {
     }
     int update(Context &ctx, Result &res) override {
         long pwmLH = ctx.propellers->getPwm(0);

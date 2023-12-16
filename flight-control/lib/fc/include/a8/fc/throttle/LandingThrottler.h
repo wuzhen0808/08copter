@@ -16,9 +16,14 @@ class LandingThrottler : public Throttler {
 
 public:
     LandingThrottler(LoggerFactory *logFac) : Throttler(logFac, "SafetyThrottler") {
+    
     }
-    void printHistory(int intend, String &msg) override{
-        
+    
+    void getLimitInTheory(long &minSample, long &maxSample) override {
+        minSample -= 1000;
+    }
+
+    void printHistory(int intend, String &msg) override {
     }
     bool isLanded() {
         if (this->landingStartTimeMs < 0) {

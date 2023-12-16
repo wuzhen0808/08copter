@@ -15,7 +15,10 @@ class ElevatorThrottler : public Throttler {
 public:
     ElevatorThrottler(LoggerFactory *logFac) : Throttler(logFac, "ElevatorThrottler") {
     }
-
+    void getLimitInTheory(long &minSample, long &maxSample) override {
+        minSample += pwmMin + this->pwmElevation;
+        maxSample += pwmMin + this->pwmElevation;
+    }
     void setPwmElevation(long pwm) {
         this->pwmElevation = pwm;
     }

@@ -9,6 +9,7 @@ using namespace a8::util;
 class Pilot : FlyWeight {
     Propellers *propellers;
     throttle::MainThrottler *throttler;
+    long startTimeMs;
 
 protected:
     Rpy *rpy;
@@ -28,11 +29,15 @@ public:
         return 1;
     }
 
-    int start(throttle::Context &context, Result &res) {
+    int start(Context &context, Result &res) {
         int ret = this->checkIfReady(res);
         if (ret < 0) {
             return ret;
         }
+        long minInTheory = 0;
+        long maxInTheory = 0;
+        throttler->getLimitInTheory(minInTheory, maxInTheory);
+        this->propellers->setLimitInTheory(minInTheory, maxInTheory);
         this->propellers->start();
         return 1;
     }
@@ -45,11 +50,11 @@ public:
         return this->throttler->isLanded();
     }
 
-    int update(throttle::Context *context, long timeMs, Result &res) {
+    int update(Context *context, long timeMs, Result &res) {
         context->startUpdate(timeMs);
         int ret = this->throttler->update(*context, res);
         context->message << ",Propellers:[";
-        this->propellers->getAll().forEach<throttle::Context *>(context, [](throttle::Context *c, Propeller *propeller) {
+        this->propellers->getAll().forEach<Context *>(context, [](Context *c, Propeller *propeller) {
             c->message << (propeller->isEnabled() ? "Enabled" : "Disabled") << ",";
         });
         context->message << "]";

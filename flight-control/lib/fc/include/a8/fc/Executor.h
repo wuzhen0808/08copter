@@ -23,7 +23,7 @@ public:
     int doRun(Propellers *propellers, Config &config, Pilot *pilot, Result res) {
         long startTimeMs = sys->getSteadyTime();
         propellers->enableAll(config.enablePropeller);
-        throttle::Context context(startTimeMs, propellers);
+        Context context(startTimeMs, propellers);
         int ret = pilot->start(context, res);
         if (ret < 0) {
             return ret;

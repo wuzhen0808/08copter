@@ -1,5 +1,5 @@
 #pragma once
-#include "a8/fc/throttle/Context.h"
+#include "a8/fc/Context.h"
 #include "a8/util.h"
 
 namespace a8::fc::throttle {
@@ -13,6 +13,8 @@ public:
     virtual int update(Context &ctx, Result &res) = 0;
 
     virtual void printHistory(int depth, String &msg) = 0;
+
+    virtual void getLimitInTheory(long &minBase, long &maxBase) = 0;
 };
 
 } // namespace a8::fc::throttle

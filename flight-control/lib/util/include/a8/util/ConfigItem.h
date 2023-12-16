@@ -35,11 +35,12 @@ public:
         }
 
         String build() {
-            String title(configItem->getName());
+            String title;
             Directory<ConfigItem *> *dir = configItem->getDirectory();
             title << "[";
             title << (configItem->isValid() ? '_' : '*');
             title << "]";
+            title << configItem->getName();
 
             title << "(";
             this->forEach<String &>(title, [](String &title, String key, String value) {

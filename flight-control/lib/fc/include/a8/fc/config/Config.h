@@ -1,32 +1,38 @@
 #pragma once
 #include "a8/fc/PowerManage.h"
 #include "a8/fc/Rpy.h"
-#include "a8/fc/config/ExitConfigItem.h"
 #include "a8/fc/config/PowerConfigItem.h"
 #include "a8/fc/config/RpyConfigItem.h"
+#include "a8/fc/config/StartConfigItem.h"
 #include "a8/util.h"
 
 namespace a8::fc {
 using namespace a8::util;
+/**
+ * Test report:
+ * pwmElevation,P,      I,  D,  pidLimit(actual),  pidLimitI(actual), actualMaxPwm
+ * 200,         6.0,    0,  0,  150(-158),          75(0),
+ *
+ */
 class Config : public ConfigItem {
 
     Reader *reader;
     Output *out;
-    ConfigItem *exitConfigItem;
+    ConfigItem *startConfigItem;
 
 public:
-    long tickTimeMs = 10;
-    long pwmElevation = 200; // 210
+    long tickTimeMs = 1;
+    long pwmElevation = 210; // 210
     long flyingTimeLimitSec = 10;
     long delayBeforeStartSec = 3;
-    bool enablePropeller = false;
+    bool enablePropeller = true;
     long pwmMax = 2000;
     long pwmMin = 1000;
-    double pidKp = 6.0;
-    double pidKi = 0.0;
-    double pidKd = 0.0;
-    double maxBalancePidOutput = 118.0; //(-300,300)
-    double maxBalancePidIntegralOutput = 75;
+    double pidKp = 5.2; //
+    double pidKi = 1.0;
+    double pidKd = 1.65;
+    double pidOutputLimit = 340.0; //
+    double pidOutputLimitI = 100;
     bool startAfterConfig = false;
 
 public:
@@ -35,29 +41,28 @@ public:
         this->out = out;
         ConfigItem *ci = this;
         this->attach(new Directory<ConfigItem *>("Root", 0));
-        ConfigItems::add(ci, String() << "Power-manage", new PowerConfigItem(pm));        
-        ConfigItems::add(ci, String() << "Rpy-check", new RpyConfigItem(rpy));
+        this->startConfigItem = ConfigItems::addReturn(ci, String() << "Start-now", new StartConfigItem(startAfterConfig));
+        ConfigItems::add(ci, "Power-manage", new PowerConfigItem(pm));
+        ConfigItems::add(ci, "tickTimeMs", tickTimeMs);
+        ConfigItems::add(ci, "flyingTimeLimit(sec)", flyingTimeLimitSec);
+        ConfigItems::add(ci, "enablePropeller", enablePropeller);
+        ConfigItems::add(ci, "startAfterConfig", this->startAfterConfig);
         ConfigItems::add(ci, "delayBeforeStartSec", delayBeforeStartSec);
-        ci = ConfigItems::addReturn(ci, String() << "Pid-arguments:");
+        ConfigItems::add(ci, "pwmElevation", pwmElevation);
+        ConfigItems::add(ci, "Rpy-check", new RpyConfigItem(rpy));
+        ci = ConfigItems::addReturn(ci, "Pid-arguments:");
         {
 
-            ConfigItems::add(ci, String() << "Kp", pidKp);
-            ConfigItems::add(ci, String() << "Ki", pidKi);
-            ConfigItems::add(ci, String() << "Kd", pidKd);
-            ConfigItems::add(ci, String() << "maxBalancePidOutput", maxBalancePidOutput);
-            ConfigItems::add(ci, String() << "maxBalancePidIntegralOutput", maxBalancePidIntegralOutput);
+            ConfigItems::add(ci, "pidOutputLimit", pidOutputLimit);
+            ConfigItems::add(ci, "pidOutputLimitI", pidOutputLimitI);
+            ConfigItems::add(ci, "Kp", pidKp);
+            ConfigItems::add(ci, "Ki", pidKi);
+            ConfigItems::add(ci, "Kd", pidKd);
         }
-        logger->debug(".....");
-        ci = this;
-        ConfigItems::add(ci, String() << "pwmElevation", pwmElevation);
-        ConfigItems::add(ci, String() << "flyingTimeLimit(sec)", flyingTimeLimitSec);
-        ConfigItems::add(ci, String() << "delayBeforeStart(sec)", delayBeforeStartSec);
-        ConfigItems::add(ci, String() << "enablePropeller", enablePropeller);
-        this->exitConfigItem = ConfigItems::addReturn(ci, String() << "exit", new ExitConfigItem(this->startAfterConfig));
     }
 
     void onLeftFailure(ConfigContext &cc) override {
-        cc.navigator->to(this->exitConfigItem->getDirectory());
+        cc.navigator->to(this->startConfigItem->getDirectory());
     }
 
     void enter(ConfigContext &cc) override {
@@ -78,6 +83,7 @@ public:
         nav.setLeftHandler([](ConfigContext &cc, DirectoryNavigator<ConfigContext &, ConfigItem *> *nav) {
             bool changed = nav->left();
             if (!changed) {
+                // go to start config item if at root node & press left key.
                 Directory<ConfigItem *> *dir = nav->get();
                 ConfigItem *ci = dir->getElement();
                 ci->onLeftFailure(cc);

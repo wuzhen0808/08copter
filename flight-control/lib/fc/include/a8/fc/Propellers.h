@@ -39,6 +39,11 @@ public:
             propeller->start();
         });
     }
+    void setLimitInTheory(long minInTheory, long maxInTheory) {
+        for (int i = 0; i < propellers.len(); i++) {
+            propellers.get(i)->setLimitInTheory(minInTheory, maxInTheory);
+        }
+    }
 
     void addPwm(long pwmLH, long pwmRH, long pwmLA, long pwmRA) {
         propellers[0]->addPwm(pwmLH);

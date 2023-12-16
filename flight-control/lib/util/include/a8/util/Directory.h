@@ -80,6 +80,14 @@ public:
     String getName() {
         return name;
     }
+    Directory<T> *getFirstChild() {
+        return this->children.getFirst(0);
+    }
+
+    Directory<T> *getLastChild() {
+        return this->children.getLast(0);
+    }
+
     Buffer<Directory<T> *> getChildren() {
         return children;
     }
@@ -232,6 +240,54 @@ public:
         return true;
     }
 
+    bool parentNeighbor(int offset) {
+        bool changed = this->left();
+        if (!changed) {
+            return false;
+        }
+        return this->neighbor(1);
+    }
+
+    bool parent() {
+        return left();
+    }
+
+    bool lastNeighbor() {
+        Directory<T> *parent = this->tree->getParent();
+        if (parent == 0) {
+            return false; // no neighbor.
+        }
+        Directory<T> *child = parent->getLastChild();
+        if (child == 0) {
+            return false;
+        }
+        to(child);
+        return true;
+    }
+
+    bool firstNeighbor() {
+        Directory<T> *parent = this->tree->getParent();
+        if (parent == 0) {
+            return false; // no neighbor.
+        }
+        Directory<T> *child = parent->getFirstChild();
+        if (child == 0) {
+            return false;
+        }
+        to(child);
+        return true;
+    }
+
+    int ensureIndexAsChild() {
+        if (this->indexAsChild == -1) {
+            Directory<T> *parent = this->tree->getParent();
+            if (parent != 0) {
+                this->indexAsChild = parent->getChildIndex(this->tree);
+            }
+        }
+        return this->indexAsChild;
+    }
+
     bool neighbor(int offset) {
         return neighbor(offset, true);
     }
@@ -242,10 +298,8 @@ public:
             // this is root,no brother.
             return false;
         }
-        if (this->indexAsChild == -1) {
-            this->indexAsChild = parent->getChildIndex(this->tree);
-        }
-        int idx = this->indexAsChild + offset;
+
+        int idx = ensureIndexAsChild() + offset;
         Buffer<Directory<T> *> buffer = parent->getChildren();
         if (adjustOffset) {
             if (idx < 0) {
@@ -300,6 +354,10 @@ public:
     char downKey = 66;
     char leftKey = 68;
     char rightKey = 67;
+    char endKey = 70;
+    char pgUpKey = 53;
+    char pgDownKey = 54;
+    char homeKey = 72;
     HashTable<char, keyHandler> handlers;
 
 public:
@@ -322,6 +380,19 @@ public:
         });
         setHandler(enterKey, [](C c, DirectoryNavigator<C, T> *nav) {
             // do nothing.
+        });
+        setHandler(pgDownKey, [](C c, DirectoryNavigator<C, T> *nav) {
+            bool changed = nav->lastNeighbor();
+            if (!changed) {
+                nav->parentNeighbor(1);
+            }
+        });
+
+        setHandler(pgUpKey, [](C c, DirectoryNavigator<C, T> *nav) {
+            bool changed = nav->firstNeighbor();
+            if (!changed) {
+                nav->parent();
+            }
         });
     }
     void setUpHandler(keyHandler handler) {
