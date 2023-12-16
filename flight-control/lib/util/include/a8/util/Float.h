@@ -2,6 +2,7 @@
 #include "a8/util/Math.h"
 #include "a8/util/String.h"
 #include "a8/util/StringUtil.h"
+#define A8_FLOAT_DEBUG (0)
 namespace a8::util {
 
 class Float {
@@ -55,14 +56,19 @@ public:
                 error = true;
                 sCh = 0;
             }
+
+            T valueI = (T)sCh * Math::power<T>(10, exp);
+            T fvBefore = fv;
+            fv = fv + valueI;
+#if A8_FLOAT_DEBUG > 0
             if (debug != 0) {
-                *debug << "i:" << i << ",sCh:" << sCh << ",fv:" << fv;
-            }
-            fv += (T)sCh * Math::power<T>(10, exp);
-            if (debug != 0) {
-                *debug << "=>" << fv;
+                *debug << String() << "1.01=" << 1.01f << "?,"
+                       << "5.012=" << 5.012f << "?";
+                *debug << String() << "i:" << i << ",exp:" << exp << ",sCh:" << sCh << ",valueI:" << valueI << "+fv:" << fvBefore;
+                *debug << String() << "=" << fv;
                 *debug << "\n";
             }
+#endif
             exp--;
         }
         if (error) {

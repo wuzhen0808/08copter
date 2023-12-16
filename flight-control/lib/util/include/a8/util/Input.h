@@ -131,8 +131,12 @@ public:
                 // use default value.
                 break;
             }
+            A8_LOG_DEBUG(ic->logger, line);
             F fValue2;
-            int ret = Float::parseFloat<T>(line, fValue2, 0);
+
+            String debug;
+            int ret = Float::parseFloat<T>(line, fValue2, &debug);
+            ic->println(debug);
             if (ret < 0) {
                 ic->println("cannot parse string(" << line << ",len:" << line.len() << ") as a number, please re-input.");
             } else {

@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef A8_DEBUG_LEVEL
-#define A8_DEBUG_LEVEL (3)
+#define A8_DEBUG_LEVEL (1)
 #endif
 
 #define A8_DEBUG(exp)         // do nothing.

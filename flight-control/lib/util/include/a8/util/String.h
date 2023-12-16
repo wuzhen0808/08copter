@@ -4,7 +4,7 @@
 #include "a8/util/defines.h"
 #include "debug.h"
 #define PREFER_INT_WIDTH 1
-#define FORMAT_FLOAT32_PRECISION 3
+#define FORMAT_FLOAT32_PRECISION 6
 #define FORMAT_FLOAT64_PRECISION 6
 
 namespace a8::util {
@@ -186,25 +186,25 @@ public:
     }
 
     void append(const float fValue) {
-        append<float>(0, ' ', fValue, FORMAT_FLOAT32_PRECISION);
+        append<float>(0, ' ', fValue, true, FORMAT_FLOAT32_PRECISION);
     }
 
     void append(const double fValue) {
-        append<double>(0, ' ', fValue, FORMAT_FLOAT64_PRECISION);
+        append<double>(0, ' ', fValue, true, FORMAT_FLOAT64_PRECISION);
     }
 
     void append(const int iValue, const int width, const char fill) {
-        append<int>(width, fill, iValue, 0);
+        append<int>(width, fill, iValue, false, 0);
     }
 
     template <typename T>
-    void append(int width, char fill, T value, int precision) {
-        Format::append<T>(this->text_, this->length_, this->capacity_, DELTA_STR_CAP,
-                          width, fill, value, precision, true);
+    void append(int width, char fill, T value, bool asFloat, int floatPrecision) {
+        Format::appendNumber<T>(this->text_, this->length_, this->capacity_, DELTA_STR_CAP,
+                                width, fill, value, asFloat, floatPrecision, true);
     }
 
     void append(const int iValue) {
-        append<int>(0, ' ', iValue, 0);
+        append<int>(0, ' ', iValue, false, 0);
     }
 
     void append(const bool bValue) {
@@ -212,15 +212,15 @@ public:
     }
 
     void append(const long lValue) {
-        append<int>(0, ' ', lValue, 0);
+        append<int>(0, ' ', lValue, false, 0);
     }
 
     void append(const long long lValue) {
-        append<int>(0, ' ', lValue, 0);
+        append<int>(0, ' ', lValue, false, 0);
     }
 
     void append(const unsigned iValue) {
-        append<unsigned>(0, ' ', iValue, true);
+        append<unsigned>(0, ' ', iValue, false, true);
     }
 
     int lastIndexOf(char ch) const {

@@ -1,7 +1,7 @@
 #pragma once
 #include "a8/util/Lang.h"
 #include "a8/util/Math.h"
-
+#define A8_FORMAT_DEBUG (0)
 namespace a8::util {
 
 class Format {
@@ -27,10 +27,6 @@ public:
      * The length may great than the provided buffer len, in this case the string will be truncated.
      *
      */
-    template <typename T>
-    static int format(char *buf, int bufLen, T value, int precision, bool addTail) {
-        return format<T>(buf, bufLen, value, precision, 6, addTail);
-    }
 
     template <typename T>
     static bool isZero(T fValue) {
@@ -38,19 +34,12 @@ public:
     }
 
     template <typename T>
-    static int format(char *buf, int bufLen, T value, int precision, int expThreshold, bool addTail) {
-
-        if (precision == 0) {
-            return formatAsInt<T>(buf, bufLen, value, addTail);
+    static int formatAsFloat(char *buf, int bufLen, T value, int precision, bool addTail) {
+        if (precision < 1) {
+            precision = 1; // precision at least is 1.
         }
 
         int idx = 0;
-        if (isZero(value)) {
-            set(buf, idx++, '0', bufLen);
-            set(buf, idx++, '.', bufLen);
-            set(buf, idx++, '0', bufLen);
-            return idx;
-        }
         T aValue = value < -0.0f ? (-value) : value;
         int exp = int(Math::log10<T>(aValue));
         float m = aValue / Math::pow10<T>(float(exp));
@@ -62,51 +51,14 @@ public:
         if (value < 0.0f) {
             set(buf, idx++, '-', bufLen);
         }
-        int exp1 = 0;
-        if (exp >= 0.0f && exp <= expThreshold) {
-            exp1 = exp;
-        }
-        if (exp < 0.0f && exp > -expThreshold) {
-            // TODO, exp1 = exp;
-            exp1 = exp;
-        }
-        exp -= exp1;
-
-        if (precision < exp1) {
-            precision = exp1;
-        }
 
         long longM = long(m * Math::pow10<T>(float(precision)));
-        long longMLeft = 0;
-        long longMRight = longM;
-        if (exp1 >= 0) { // correct the two part for moving point right.
-            longMLeft = long(m * Math::pow10<T>(float(exp1)));
-            longMRight = longM - longMLeft * Math::pow10<T>(float(precision - exp1));
-        }
-        // left part.
-        int mLeftLen = formatAsInt<T>(buf + idx, bufLen - idx, longMLeft, false);
-        idx += mLeftLen;
         // point.
         set(buf, idx++, '.', bufLen);
-        // right part.
-        if (exp1 < 0) {
-            // moving point left.
-            for (int i = exp1; i < 0; i++) {
-                set(buf, idx++, '0', bufLen);
-            }
-        }
-        int mRightLen = formatAsInt<T>(buf + idx, bufLen - idx, longMRight, false);
-        idx += mRightLen;
-
-        // move point.
-        if (exp1 > 0) {
-        }
-
-        if (exp1 < 0) {
-            // TODO
-        }
-
-        // exp part.
+        // m-part.
+        int mLen = formatAsInt<long>(buf + idx, bufLen - idx, longM, false);
+        idx += mLen;
+        // exp-part.
         if (exp != 0) {
             set(buf, idx++, 'e', bufLen);
             // if (exp < 0) {
@@ -114,8 +66,8 @@ public:
             //     set(buf, idx++, '-', bufLen);
             // }
 
-            int eRightLen = formatAsInt<T>(buf + idx, bufLen - idx, exp, false);
-            idx += eRightLen;
+            int eLen = formatAsInt<int>(buf + idx, bufLen - idx, exp, false);
+            idx += eLen;
         }
         if (addTail && idx < bufLen) {
             buf[idx] = '\0';
@@ -165,8 +117,17 @@ public:
      *
      */
     template <typename T>
-    static void append(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
-                       int preferWidth, char fillLeading, T value, int precision, bool addTail) {
+    static int formatNumber(char *buf, int bufLen, T value, bool asFloat, int floatPrecision, bool addTail) {
+        if (asFloat) {
+            return formatAsFloat(buf, bufLen, value, floatPrecision, addTail);
+        } else {
+            return formatAsInt(buf, bufLen, value, addTail);
+        }
+    }
+
+    template <typename T>
+    static void appendNumber(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
+                             int preferWidth, char fillLeading, T value, bool asFloat, int floatPrecision, bool addTail) {
 
         char *buf = bufRef;
         int capacity = capRef;
@@ -181,7 +142,7 @@ public:
         int capRight = capacity - lenLeft; // remaining capacity
         char *bufRight = buf + lenLeft;    // give a offset to storage result.
         // try format first time, and then check the length.
-        int lenRight = format<T>(bufRight, capRight, value, precision, false);
+        int lenRight = formatNumber<T>(bufRight, capRight, value, asFloat, floatPrecision, false);
         int lenTail = lenRight; // the content
         int leading = 0;
         if (lenRight < preferWidth) {
@@ -200,7 +161,7 @@ public:
             capRight = capacity - lenLeft;
             bufRight = buf + lenLeft;
             // format again, with a larger capacity.
-            lenRight = format<T>(bufRight + leading, capRight - leading, value, precision, false);
+            lenRight = formatNumber<T>(bufRight + leading, capRight - leading, value, asFloat, floatPrecision, false);
 
             if (lenRight + 1 > capRight) {
                 // error processing?
