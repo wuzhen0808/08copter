@@ -116,5 +116,9 @@ public:
         }
         return f;
     }
+    template <typename T>
+    static T max(T t1, T t2) {
+        return t1 > t2 ? t1 : t2;
+    }
 };
 } // namespace a8::util

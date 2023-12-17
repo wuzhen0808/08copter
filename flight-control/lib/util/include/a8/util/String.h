@@ -186,25 +186,33 @@ public:
     }
 
     void append(const float fValue) {
-        append<float>(0, ' ', fValue, true, FORMAT_FLOAT32_PRECISION);
+        appendAsFloat<float>(0, ' ', fValue, FORMAT_FLOAT32_PRECISION);
     }
 
     void append(const double fValue) {
-        append<double>(0, ' ', fValue, true, FORMAT_FLOAT64_PRECISION);
+        appendAsFloat<double>(0, ' ', fValue, FORMAT_FLOAT64_PRECISION);
     }
 
     void append(const int iValue, const int width, const char fill) {
-        append<int>(width, fill, iValue, false, 0);
+        appendAsInt<int>(width, fill, iValue);
     }
 
     template <typename T>
-    void append(int width, char fill, T value, bool asFloat, int floatPrecision) {
-        Format::appendNumber<T>(this->text_, this->length_, this->capacity_, DELTA_STR_CAP,
-                                width, fill, value, asFloat, floatPrecision, true);
+    void appendAsFloat(int width, char fill, T value, int precision) {
+
+        Format::appendNumberAsFloat<T>(this->text_, this->length_, this->capacity_, DELTA_STR_CAP,
+                                width, fill, value, precision, true);
+    }
+
+    
+    template <typename T>
+    void appendAsInt(int width, char fill, T value) {
+        Format::appendNumberAsInt<T>(this->text_, this->length_, this->capacity_, DELTA_STR_CAP,
+                                width, fill, value, true);
     }
 
     void append(const int iValue) {
-        append<int>(0, ' ', iValue, false, 0);
+        appendAsInt<int>(0, ' ', iValue);
     }
 
     void append(const bool bValue) {
@@ -212,15 +220,15 @@ public:
     }
 
     void append(const long lValue) {
-        append<int>(0, ' ', lValue, false, 0);
+        appendAsInt<int>(0, ' ', lValue);
     }
 
     void append(const long long lValue) {
-        append<int>(0, ' ', lValue, false, 0);
+        appendAsInt<int>(0, ' ', lValue);
     }
 
     void append(const unsigned iValue) {
-        append<unsigned>(0, ' ', iValue, false, true);
+        appendAsInt<unsigned>(0, ' ', iValue);
     }
 
     int lastIndexOf(char ch) const {
