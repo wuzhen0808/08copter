@@ -26,6 +26,7 @@ public:
     void printHistory(int intend, String &msg) override {
     }
     int update(Context &ctx, Result &res) override {
+        A8_LOG_DEBUG(logger, ">>Limit.update.");
         long pwmLH = ctx.propellers->getPwm(0);
         long pwmRH = ctx.propellers->getPwm(1);
         long pwmLA = ctx.propellers->getPwm(2);
@@ -37,6 +38,7 @@ public:
         limitPwm(pwmRA, pwmMin, pwmMax);
 
         ctx.propellers->setPwm(pwmLH, pwmRH, pwmLA, pwmRA);
+        A8_LOG_DEBUG(logger, "<<Limit.update.");
         return 1;
     }
 

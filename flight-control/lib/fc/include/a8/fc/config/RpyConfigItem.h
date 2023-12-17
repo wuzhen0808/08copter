@@ -59,6 +59,7 @@ public:
         Result res;
         int stable = rpy->checkIfStable(res);
         this->stable = stable > 0;
+        cc.logger->debug("end of checking rpy stable.");
     }
 
     void checkBalance(ConfigContext &cc) {

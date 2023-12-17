@@ -17,5 +17,9 @@ float Math::trunc_(float f) { return std::trunc(f); }
 double Math::frexp_(double f, int *e) { return std::frexp(f, e); }
 double Math::ldexp_(double f, int e) { return std::ldexp(f, e); }
 double Math::trunc_(double f) { return std::trunc(f); }
+bool Math::isnan(float fValue){return std::isnan(fValue);}
+bool Math::isnan(double fValue){return std::isnan(fValue);}
+bool Math::isinf(float fValue){return std::isinf(fValue);}
+bool Math::isinf(double fValue){return std::isinf(fValue);}
 
 } // namespace a8::util

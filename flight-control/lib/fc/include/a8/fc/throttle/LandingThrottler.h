@@ -38,14 +38,14 @@ public:
     }
 
     int update(Context &ctx, Result &res) override {
-
+        A8_LOG_DEBUG(logger, ">>Landing.update.");
         if (this->landingStartTimeMs > 0) {
             progress = (ctx.timeMs_ - landingStartTimeMs) / (float)timeLimitForLanding;
             progress = progress > 1 ? 1.0f : progress;
             long pwmDelta = 1000 * progress;
             ctx.propellers->addPwm(-pwmDelta);
         }
-
+        A8_LOG_DEBUG(logger, "<<Landing.update.");
         return 1;
     }
 };

@@ -3,7 +3,7 @@
 namespace a8::fc::throttle {
 using namespace a8::util;
 
-class Pid {
+class Pid : public FlyWeight {
 
     float outputLimit = 0;
     float integralOutputLimit = 0;
@@ -40,7 +40,7 @@ public:
     }
 
 public:
-    Pid() {
+    Pid(LoggerFactory *logFac, String name) : FlyWeight(logFac, name) {
     }
 
     void config(double kp, double ki, double kd, float outputLimit, float integralOutputLimit) {
@@ -94,7 +94,7 @@ public:
     }
 
     void update(long timeMs, float actual, float desired, String &msg) {
-
+        A8_LOG_DEBUG(logger, String() << ">>update," << actual << "," << desired);
         if (lastTimeMs < 0) {
             lastTimeMs = timeMs;
         }
@@ -118,6 +118,8 @@ public:
 
         lastError = error;
         lastTimeMs = timeMs;
+        A8_LOG_DEBUG(logger, String() << "<<update," << p << "," << i << "," << d << ","
+                                      << "output:" << output);
     }
 
     float getLastError() {

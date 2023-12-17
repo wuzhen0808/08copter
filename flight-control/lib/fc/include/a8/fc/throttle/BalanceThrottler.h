@@ -26,8 +26,8 @@ public:
     BalanceThrottler(Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
 
         this->rpy = rpy;
-        this->pidRoll = new Pid();
-        this->pidPitch = new Pid();
+        this->pidRoll = new Pid(logFac, "RollPid");
+        this->pidPitch = new Pid(logFac, "PitchPid");
     }
     ~BalanceThrottler() {
         delete this->pidRoll;
@@ -50,22 +50,29 @@ public:
     }
 
     int update(Context &ctx, Result &res) override {
+        A8_LOG_DEBUG(logger, ">>Bal.update.");
         bool ok = rpy->update();
         if (!ok) {
             res << "failed to update rpy.";
+            A8_LOG_DEBUG(logger, "<<Bal.update.failed");
             return -1;
         }
-
+        A8_LOG_DEBUG(logger, ">>Bal.update.1");
         float roll = rpy->getRoll();
+        A8_LOG_DEBUG(logger, ">>Bal.update.2");
         float pitch = rpy->getPitch();
-
+        A8_LOG_DEBUG(logger, ">>Bal.update.3");
         float yaw = rpy->getYaw();
-        ctx << (String() << "rpy:(" << roll << "," << pitch << "," << yaw << ")");
+        A8_LOG_DEBUG(logger, ">>Bal.update.31");
+        ctx << (String() << "rpy:(");
+        A8_LOG_DEBUG(logger, ">>Bal.update.32");
+        ctx << (String()<< roll << "," << pitch << "," << yaw << ")");
         // pid
-
+        A8_LOG_DEBUG(logger, ">>Bal.update.5");
         pidRoll->update(ctx.timeMs_, roll, desiredRoll, ctx.message);
+        A8_LOG_DEBUG(logger, ">>Bal.update.6");
         pidPitch->update(ctx.timeMs_, pitch, desiredPitch, ctx.message);
-
+        A8_LOG_DEBUG(logger, ">>Bal.update.8");
         //
         long pwmRoll = pidRoll->getPwm();
         long pwmPitch = pidPitch->getPwm();
@@ -86,7 +93,9 @@ public:
         long pwmRH = 0 - pwmRoll + pwmPitch;
         long pwmLA = 0 + pwmRoll - pwmPitch;
         long pwmRA = 0 - pwmRoll - pwmPitch;
+        A8_LOG_DEBUG(logger, ">>Bal.update.9");
         ctx.propellers->addPwm(pwmLH, pwmRH, pwmLA, pwmRA);
+        A8_LOG_DEBUG(logger, "<<Bal.update.2");
         return 1;
     }
 };

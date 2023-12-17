@@ -15,7 +15,11 @@ public:
         this->mpu = mpu;
     }
     bool update() override {
-        return mpu->update();
+
+        A8_LOG_DEBUG(logger, ">>EspRpy::update.");
+        bool ret = mpu->update();
+        A8_LOG_DEBUG(logger, "<<EspRpy::update.");
+        return ret;
     }
     float getRoll() override {
         return mpu->getRoll();
@@ -51,12 +55,19 @@ public:
         float rollMax;
 
         // What's wrong with mpu9250? if i = 10 and delay 100, the mpu will read roll,pitch yaw all as a zero().
-
+        int updateOks = 0;
         for (int i = 0; i < 100; i++) { //
-            this->update();
+            bool ok = this->update();
+            if (ok) {
+                updateOks++;
+            } else {
+                continue;
+            }
             float roll = -this->getRoll();
             float pitch = -this->getPitch();
+
             log(String() << "roll:" << roll << ",pitch:" << pitch);
+
             rollAvg = (rollAvg * i + roll) / (i + 1);
             if (i == 0) {
                 rollMax = rollMin = roll;
@@ -70,7 +81,10 @@ public:
             }
             delay(5);
         }
-
+        if (updateOks == 0) {
+            res << "rpy is not available, all update are failed.";
+            return -1;
+        }
         if (Math::abs<float>(rollAvg - rollMin) > 0.5f || Math::abs<float>(rollMax - rollAvg) > 0.5f) {
             res << "rpy is not stable,rollAvg:" << rollAvg << ",rollMin:" << rollMin << ",rollMax" << rollMax;
             return -1;
@@ -81,7 +95,8 @@ public:
         return 1;
     }
 
-    int checkIfBalance(Result &res) {
+    int
+    checkIfBalance(Result &res) {
         float roll = this->getRoll();
         float pitch = this->getPitch();
         log(String() << "check rpy if balance, roll:" << roll << ",pitch:" << pitch);

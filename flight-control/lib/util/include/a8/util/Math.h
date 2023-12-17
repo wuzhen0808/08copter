@@ -18,6 +18,10 @@ private:
     static double log10(double f);
     static float pow10(float f);
     static double pow10(double f);
+    static bool isnan(float fValue);
+    static bool isnan(double fValue);
+    static bool isinf(float fValue);
+    static bool isinf(double fValue);
 
 public:
     template <typename T>
@@ -119,6 +123,32 @@ public:
     template <typename T>
     static T max(T t1, T t2) {
         return t1 > t2 ? t1 : t2;
+    }
+    template <typename T>
+    static bool isnan(T value) {
+        if (sizeof(T) == sizeof(float)) {
+            return isnan((float)value);
+        } else {
+            return isnan((double)value);
+        }
+    }
+
+    template <typename T>
+    static bool isinf(T value) {
+        if (sizeof(T) == sizeof(float)) {
+            return isinf((float)value);
+        } else {
+            return isinf((double)value);
+        }
+    }
+
+    template <typename T>
+    static bool isZero(T value) {
+        if (sizeof(T) == sizeof(float)) {
+            return value == 0.0f;
+        } else {
+            return value == 0.0;
+        }
     }
 };
 } // namespace a8::util

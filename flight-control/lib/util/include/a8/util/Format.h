@@ -1,7 +1,10 @@
 #pragma once
+#include "a8/util/Debug.h"
 #include "a8/util/Lang.h"
 #include "a8/util/Math.h"
+#ifndef A8_FORMAT_DEBUG
 #define A8_FORMAT_DEBUG (0)
+#endif
 #define AUTO_POINT_OFFSET (101)
 
 namespace a8::util {
@@ -19,6 +22,47 @@ private:
         }
         return false;
     }
+    static void shift(char *buf, int fromIdx, int len, int shift, int bufLen) {
+        if (shift == 0) {
+            // do nothing.
+        } else if (shift < 0) {
+            // shift left
+            for (int i = 0; i < len; i++) {
+                char ch;
+                if (get(buf, fromIdx + i, ch, bufLen)) {
+                    set(buf, fromIdx + i + shift, ch, bufLen);
+                }
+            }
+        } else {
+            // shift right
+            for (int i = 0; i < len; i++) {
+                char ch;
+                if (get(buf, fromIdx + len - 1 - i, ch, bufLen)) {
+                    set(buf, fromIdx + len - 1 - i + shift, ch, bufLen);
+                }
+            }
+        }
+    }
+    static int write(char *buf, int idx, const char *ch, int bufLen) {
+        int i = 0;
+        while (true) {
+            if (ch[i] == '\0') {
+                break;
+            }
+            set(buf, idx + i, ch[i], bufLen);
+            i++;
+        }
+
+        return i;
+    }
+    static bool get(char *buf, int idx, char &ch, int bufLen) {
+        if (idx >= 0 && idx < bufLen) {
+            ch = buf[idx];
+            return true;
+        }
+        return false;
+    }
+
     static bool set(char *buf, int idx, char ch, int bufLen) {
         if (idx >= 0 && idx < bufLen) {
             buf[idx] = ch;
@@ -29,6 +73,7 @@ private:
 
     template <typename T>
     static int formatNumber(char *buf, int bufLen, T value, bool asFloat, int precision, int pointOffset, bool addEndOfStr) {
+
         if (asFloat) {
             return formatAsFloat<T>(buf, bufLen, value, precision, pointOffset, addEndOfStr);
         } else {
@@ -107,6 +152,10 @@ public:
 
     static int formatAsFloat(char *buf, int bufLen, bool neg, float m, int exp, int precision, int pointOffset, bool addEndOfStr) {
 
+#if A8_FORMAT_DEBUG == 1
+        A8_DEBUG6("formatAsFloat,", neg, m, exp, precision, pointOffset);
+#endif
+
         if (pointOffset == AUTO_POINT_OFFSET) {
             if (Math::abs(exp) <= 6) {
                 pointOffset = exp;
@@ -133,7 +182,7 @@ public:
         }
         // number, numberLen should = precision.
 
-        int pointIdx = idx + pointOffset; // remember the point position.
+        int pointIdx = idx + pointOffset; // remember the point position for positive pointOffset.
 
         int numberLen = formatAsInt<long>(buf + idx, bufLen - idx, number, false);
         idx += numberLen;
@@ -143,8 +192,8 @@ public:
 
             int tailNumberLen = numberLen - pointOffset;
             if (tailNumberLen > 0) { // shift tail number right & reserve one more space for the point position.
-                Lang::shift<char>(buf + pointIdx, tailNumberLen, 1);
-                idx++; //
+                shift(buf, pointIdx, tailNumberLen, 1, bufLen);
+                idx++;
                 // got the point space and set it.
                 set(buf, pointIdx, '.', bufLen);
             } else {
@@ -172,11 +221,32 @@ public:
 
     template <typename T>
     static int formatAsFloat(char *buf, int bufLen, T value, int precision, int pointOffset, bool addEndOfStr) {
-
+#if A8_FORMAT_DEBUG == 1
+        A8_DEBUG4("formatAsFloat,", value, precision, pointOffset);
+#endif
+        if (Math::isnan<T>(value)) {
+            return write(buf, 0, "nan", bufLen);
+        }
+        if (Math::isinf<T>(value)) {
+            return write(buf, 0, "inf", bufLen);
+        }
+        if (Math::isZero<T>(value)) {
+            return write(buf, 0, "0.0", bufLen);
+        }
         bool neg = value < -0.0f;
         T aValue = neg ? (-value) : value; // convert to positive.
-        int exp = int(Math::log10<T>(aValue));
+        T fExp = Math::log10<T>(aValue);
+        if (Math::isnan<T>(fExp)) {
+            return write(buf, 0, "e-nan", bufLen);
+        }
+        int exp = int(fExp);
+
+        // float m = 123456;
         float m = aValue / Math::pow10<T>(float(exp));
+        if (Math::isnan<float>(m)) {
+            // overflow?
+            return write(buf, 0, "m-nan", bufLen);
+        }
         if (m >= 1.0f) {
             m = m / 10;
             exp++;

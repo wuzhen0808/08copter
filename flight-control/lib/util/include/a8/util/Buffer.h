@@ -6,7 +6,9 @@
 #include "a8/util/Math.h"
 #include "a8/util/defines.h"
 #include "debug.h"
-
+#ifndef A8_BUFFER_DEBUG
+#define A8_BUFFER_DEBUG (0)
+#endif
 namespace a8::util {
 
 template <typename T>
@@ -237,11 +239,17 @@ public:
     }
 
     Buffer<T> *append(const T *elements, const int from, const int len) {
+
+#if A8_BUFFER_DEBUG == 1
         A8_DEBUG(">>Buffer<T> *append(const T *elements, const int from, const int len)");
+#endif
+
         Lang::append<T>(this->buffer_, this->length_, this->capacity_,
                         DELTA_BUF_CAP, 0,
                         elements, from, len);
+#if A8_BUFFER_DEBUG == 1
         A8_DEBUG("<<Buffer<T> *append(const T *elements, const int from, const int len)");
+#endif
         return this;
     }
     bool setIfNeeded(int idx, T emptyValue, T element) {

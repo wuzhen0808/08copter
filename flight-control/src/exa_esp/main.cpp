@@ -1,3 +1,5 @@
+
+#include "a8/hal/arduino.h"
 #include "MyCommon.h"
 // #include "MyPID.h"
 // #include <Arduino.h>

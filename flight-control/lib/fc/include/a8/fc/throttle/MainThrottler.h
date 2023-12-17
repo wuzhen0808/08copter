@@ -7,6 +7,7 @@
 #include "a8/fc/throttle/LimitThrottler.h"
 #include "a8/fc/throttle/Throttler.h"
 #include "a8/util.h"
+#define A8_M_THRO_DEBUG(logger, msg) A8_LOG_DEBUG(logger, msg)
 
 namespace a8::fc::throttle {
 using namespace a8::util;
@@ -66,7 +67,9 @@ public:
 
     int update(Context &ctx, Result &res) {
         int ret = -1;
+        A8_M_THRO_DEBUG(logger, String()<<">>update.");
         int totalPropellers = ctx.propellers->getTotalPropellers();
+        A8_M_THRO_DEBUG(logger, String()<<">>update.");
         for (int i = 0; i < throttlers.len(); i++) {
             Throttler *th = throttlers.get(i);
 
@@ -80,6 +83,7 @@ public:
                 break;
             }
         }
+        A8_M_THRO_DEBUG(logger, String()<<"<<update.");
         return ret;
     }
 };

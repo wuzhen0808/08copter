@@ -21,7 +21,7 @@ class Config : public ConfigItem {
     ConfigItem *startConfigItem;
 
 public:
-    long tickTimeMs = 1;
+    long tickTimeMs = 2;
     long pwmElevation = 210; // 210
     long flyingTimeLimitSec = 10;
     long delayBeforeStartSec = 3;
@@ -33,7 +33,7 @@ public:
     double pidKd = 1.65;
     double pidOutputLimit = 340.0; //
     double pidOutputLimitI = 100;
-    bool startAfterConfig = false;
+    bool startAfterConfig = true;
 
 public:
     Config(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Logger *logger) {

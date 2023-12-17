@@ -51,21 +51,33 @@ public:
     }
 
     int update(Context *context, long timeMs, Result &res) {
+        
+        A8_LOG_DEBUG(logger, String() << ">>update,timeMs:" << timeMs);
+
         context->startUpdate(timeMs);
+        
+        A8_LOG_DEBUG(logger, String() << ".update,timeMs:" << timeMs<<",.1");
         int ret = this->throttler->update(*context, res);
+        A8_LOG_DEBUG(logger, String() << ".update,timeMs:" << timeMs<<",.2");
         context->message << ",Propellers:[";
+        A8_LOG_DEBUG(logger, String() << ".update,timeMs:" << timeMs<<",.4");
         this->propellers->getAll().forEach<Context *>(context, [](Context *c, Propeller *propeller) {
             c->message << (propeller->isEnabled() ? "Enabled" : "Disabled") << ",";
         });
+        A8_LOG_DEBUG(logger, String() << ".update,timeMs:" << timeMs<<",.5");
         context->message << "]";
 
         if (ret > 0) {
+            A8_LOG_DEBUG(logger, String() << ".update,timeMs:" << timeMs<<",.6");
             context->commitUpdate();
+            A8_LOG_DEBUG(logger, String() << ".update,timeMs:" << timeMs<<",.7");
             context->message << ",Commited.";
         } else {
+            A8_LOG_DEBUG(logger, String() << ".update,timeMs:" << timeMs<<",.8");
             context->message << ",Give-up.";
         }
         log(String() << context);
+        A8_LOG_DEBUG(logger, String() << "<<update,timeMs:" << timeMs);
         return ret;
     }
     void printHistory(int depth, String &msg) {

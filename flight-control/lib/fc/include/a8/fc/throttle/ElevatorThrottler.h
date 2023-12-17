@@ -24,7 +24,9 @@ public:
     }
 
     int update(Context &ctx, Result &res) override {
+        A8_LOG_DEBUG(logger, String()<<">>Ele.update.");
         ctx.propellers->addPwm(pwmMin + pwmElevation);
+        A8_LOG_DEBUG(logger, String()<<"<<Ele.update.");
         return 1;
     }
     void printHistory(int intend, String &msg) override {
