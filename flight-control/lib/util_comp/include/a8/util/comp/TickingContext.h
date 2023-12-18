@@ -11,7 +11,7 @@ class TickingContext {
     StagingContext *staging;
     Rate rate;
     int group;
-    long startTimestamp_;
+    long tickTimeMs;
     // for thead safe, attributes is used to store thread local variables.
     Buffer<void *> variables;
     //    
@@ -26,8 +26,15 @@ public:
         this->group = group;
         this->ret = 0;
     }
-    long getStartTimestamp(){
-        return startTimestamp_;
+    System* getSys(){
+        return this->staging->getSys();
+    }
+    long getTickTimeMs(){
+        return tickTimeMs;
+    }
+
+    long getSteadyTime(){
+        return this->staging->getSys()->getSteadyTime();
     }
 
     void setVar(int key, void *var) {
@@ -56,8 +63,8 @@ public:
         return this->staging;
     }
 
-    void beforTick() {
-        this->startTimestamp_ = staging->getSys()->getSteadyTime();
+    void beforTick(long timeMs) {
+        this->tickTimeMs = timeMs;
     }
     void afterTick() {
         this->ret = 0;

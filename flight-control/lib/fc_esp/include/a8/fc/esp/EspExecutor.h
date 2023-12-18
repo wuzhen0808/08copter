@@ -13,16 +13,17 @@ class EspExecutor : public Executor {
     PowerManage *pm;
 
 public:
-    EspExecutor(PowerManage *pm, MPU9250 *mpu, System *sys, LoggerFactory *logFac) : Executor(sys, logFac) {
+    EspExecutor(PowerManage *pm, Rpy* rpy, System *sys, LoggerFactory *logFac) : Executor(sys, logFac) {
         this->pm = pm;
         this->mpu = mpu;
-        this->rpy = new EspRpy(mpu, loggerFactory);
-        this->propellers = new EspPropellers(17, 18, 19, 20, loggerFactory);
+        this->rpy = rpy;
+        this->propellers = new EspPropellers(pm, 17, 18, 19, 20, loggerFactory);
     }
     ~EspExecutor() {
-        delete this->pm;
         delete this->propellers;
-        delete this->rpy;
+    }
+    void setup()override{        
+        this->propellers->setup();
     }
     PowerManage *getPowerManage() {
         return pm;

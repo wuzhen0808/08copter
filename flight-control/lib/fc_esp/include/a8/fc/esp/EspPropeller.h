@@ -5,10 +5,9 @@ namespace a8::fc::esp {
 using namespace a8::fc;
 
 class EspPropeller : public Propeller {
-    Servo servo;
-
+    Servo servo;    
 public:
-    EspPropeller(String name) : Propeller(name) {
+    EspPropeller(String name, PwmManage *pwmManage) : Propeller(name, pwmManage) {
     }
 
     void hz(int hz) {
@@ -18,12 +17,12 @@ public:
     int attach(int pin) {
         return servo.attach(pin);
     }
-    void setup() {
+    void setup() override {
         servo.writeMicroseconds(1000);
     }
 
-    void doApplyPwm() override {
+    void doApply(long pwm) override {
         servo.writeMicroseconds(pwm);
     }
 };
-} // namespace a8::fc
+} // namespace a8::fc::esp

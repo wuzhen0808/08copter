@@ -16,14 +16,13 @@ class LandingThrottler : public Throttler {
 
 public:
     LandingThrottler(LoggerFactory *logFac) : Throttler(logFac, "SafetyThrottler") {
-    
-    }
-    
-    void getLimitInTheory(long &minSample, long &maxSample) override {
-        minSample -= 1000;
     }
 
-    void printHistory(int intend, String &msg) override {
+    void getLimitInTheory(float &minSample, float &maxSample) override {
+        minSample = 0.0f;
+    }
+
+    void printHistory(int depth, History &his) override {
     }
     bool isLanded() {
         if (this->landingStartTimeMs < 0) {
@@ -38,14 +37,19 @@ public:
     }
 
     int update(Context &ctx, Result &res) override {
-        A8_LOG_DEBUG(logger, ">>Landing.update.");
+        if (A8_THROTTLE_DEBUG) {
+
+            A8_LOG_DEBUG(logger, ">>Landing.update.");
+        }
         if (this->landingStartTimeMs > 0) {
             progress = (ctx.timeMs_ - landingStartTimeMs) / (float)timeLimitForLanding;
             progress = progress > 1 ? 1.0f : progress;
-            long pwmDelta = 1000 * progress;
-            ctx.propellers->addPwm(-pwmDelta);
+            float throttleDelta = this->maxThrottle * progress;
+            ctx.propellers->addThrottle(-throttleDelta);
         }
-        A8_LOG_DEBUG(logger, "<<Landing.update.");
+        if (A8_THROTTLE_DEBUG) {
+            A8_LOG_DEBUG(logger, "<<Landing.update.");
+        }
         return 1;
     }
 };

@@ -7,7 +7,12 @@
 #include "a8/fc/throttle/LimitThrottler.h"
 #include "a8/fc/throttle/Throttler.h"
 #include "a8/util.h"
+
+#if A8_THROTTLE_DEBUG == 1
 #define A8_M_THRO_DEBUG(logger, msg) A8_LOG_DEBUG(logger, msg)
+#else
+#define A8_M_THRO_DEBUG(logger, msg) 
+#endif
 
 namespace a8::fc::throttle {
 using namespace a8::util;
@@ -24,14 +29,14 @@ public:
     MainThrottler(a8::fc::Config &config, Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, String("MainThrottle")), config(config) {
 
         elevator = new ElevatorThrottler(logFac);
-        elevator->setPwmElevation(config.pwmElevation);
+        elevator->setElevationThrottle(config.elevationThrottle);
         throttlers.append(elevator);
 
         balance = new BalanceThrottler(rpy, logFac);
         balance->setPidArgument(config.pidKp, config.pidKi, config.pidKd, config.pidOutputLimit, config.pidOutputLimitI);
         throttlers.append(balance);
 
-        limit = new LimitThrottler(config.pwmMin, config.pwmMax, logFac);
+        limit = new LimitThrottler(config.maxThrottle, logFac);
         throttlers.append(limit);
 
         landing = new LandingThrottler(logFac);
@@ -47,14 +52,14 @@ public:
         delete this->limit;
         delete this->landing;
     }
-    void getLimitInTheory(long &minSample, long &maxSample) override {
+    void getLimitInTheory(float &minSample, float &maxSample) override {
         for (int i = 0; i < throttlers.len(); i++) {
             throttlers.get(i)->getLimitInTheory(minSample, maxSample);
         }
     }
-    void printHistory(int depth, String &msg) override {
-        msg << StringUtil::space(depth) << "MainThrottler-history:\n";
-        this->balance->printHistory(depth + 1, msg);
+    void printHistory(int depth, History &his) override {
+        his.add(depth, "MainThrottler-history:");
+        this->balance->printHistory(depth + 1, his);
     }
 
     bool isLanded() {
@@ -76,7 +81,7 @@ public:
             ret = th->update(ctx, res);
             ctx.message << "(";
             for (int j = 0; j < totalPropellers; j++) {
-                ctx.message << String() << ctx.propellers->getPwm(j) << ",";
+                ctx.message << String() << ctx.propellers->getThrottle(j) << ",";
             }
             ctx.message << ")";
             if (ret < 0) {

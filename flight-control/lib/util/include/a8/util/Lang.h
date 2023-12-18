@@ -226,13 +226,16 @@ public:
         if (new_) {
             T *buffer = new T[cap2];
             copy<T>(bufferRef, 0, lengthRef, buffer);
+
             if (bufferRef != 0) {
-                delete bufferRef;
+                delete[] bufferRef;
             }
             bufferRef = buffer; // write pointer back.
             capacityRef = cap2; // write capacity back.
         }
+
         copy<T>(buf1, from1, len1, bufferRef, lengthRef);
+
         lengthRef = length3; // write length back.
     }
 

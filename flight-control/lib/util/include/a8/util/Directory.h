@@ -21,6 +21,7 @@ protected:
     Directory<T> *parent;
     T element;
     HashTable<int, char> tags;
+    HashTable<int, void *> attributes;
     void init(Directory<T> *parent, String name, T ele) {
         this->name = name;
         this->parent = parent;
@@ -56,6 +57,19 @@ public:
             delete child;
         }
     }
+    void setAttribute(int key, void *value) {
+        this->attributes.set(key, value);
+    }
+    template <typename X>
+    X getAttribute(X def) {
+        return this->getAttribute(0, def);
+    }
+    template <typename X>
+    X getAttribute(int key, X def) {
+        void *p = this->attributes.get(key, def);
+        return static_cast<X>(p);
+    }
+
     int getTotalChildren() {
         return this->children.len();
     }

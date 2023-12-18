@@ -20,7 +20,7 @@ class BalanceThrottler : public Throttler {
 
     long startTimeMs = -1;
 
-    long maxBalancePwm = 0;
+    float maxBalanceThrottle = 0;
 
 public:
     BalanceThrottler(Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
@@ -33,16 +33,16 @@ public:
         delete this->pidRoll;
         delete this->pidPitch;
     }
-    void getLimitInTheory(long &minSample, long &maxSample) override {
+    void getLimitInTheory(float &minSample, float &maxSample) override {
         minSample = minSample - pidRoll->getOutputLimit() - pidPitch->getOutputLimit();
         maxSample = maxSample + pidRoll->getOutputLimit() + pidPitch->getOutputLimit();
     }
 
-    void printHistory(int depth, String &msg) override {
-        msg << StringUtil::space(depth) << "Balance-history-rollPid:\n";
-        this->pidRoll->printHistory(depth + 1, msg);
-        msg << StringUtil::space(depth) << "Balance-history-pitchPid:\n";
-        this->pidPitch->printHistory(depth + 1, msg);
+    void printHistory(int depth, History &his) override {
+        his.add(depth, "Balance-history-rollPid:");
+        this->pidRoll->printHistory(depth + 1, his);
+        his.add(depth, "Balance-history-pitchPid:");
+        this->pidPitch->printHistory(depth + 1, his);
     }
     void setPidArgument(double kp, double ki, double kd, float outputLimit, float maxPidIntegralOutput) {
         this->pidRoll->config(kp, ki, kd, outputLimit, maxPidIntegralOutput);
@@ -57,25 +57,17 @@ public:
             A8_LOG_DEBUG(logger, "<<Bal.update.failed");
             return -1;
         }
-        A8_LOG_DEBUG(logger, ">>Bal.update.1");
         float roll = rpy->getRoll();
-        A8_LOG_DEBUG(logger, ">>Bal.update.2");
         float pitch = rpy->getPitch();
-        A8_LOG_DEBUG(logger, ">>Bal.update.3");
         float yaw = rpy->getYaw();
-        A8_LOG_DEBUG(logger, ">>Bal.update.31");
         ctx << (String() << "rpy:(");
-        A8_LOG_DEBUG(logger, ">>Bal.update.32");
         ctx << (String()<< roll << "," << pitch << "," << yaw << ")");
         // pid
-        A8_LOG_DEBUG(logger, ">>Bal.update.5");
         pidRoll->update(ctx.timeMs_, roll, desiredRoll, ctx.message);
-        A8_LOG_DEBUG(logger, ">>Bal.update.6");
         pidPitch->update(ctx.timeMs_, pitch, desiredPitch, ctx.message);
-        A8_LOG_DEBUG(logger, ">>Bal.update.8");
         //
-        long pwmRoll = pidRoll->getPwm();
-        long pwmPitch = pidPitch->getPwm();
+        float rollThrottle = pidRoll->getOutput();
+        float pitchThrottle = pidPitch->getOutput();
         // pwmRoll /= 2;
         // pwmPitch /= 2;
 
@@ -89,12 +81,12 @@ public:
         //  (0.00,0.00,-7.51)
         //========================================================================================
 
-        long pwmLH = 0 + pwmRoll + pwmPitch;
-        long pwmRH = 0 - pwmRoll + pwmPitch;
-        long pwmLA = 0 + pwmRoll - pwmPitch;
-        long pwmRA = 0 - pwmRoll - pwmPitch;
+        float thLH = 0 + rollThrottle + pitchThrottle;
+        float thRH = 0 - rollThrottle + pitchThrottle;
+        float thLA = 0 + rollThrottle - pitchThrottle;
+        float thRA = 0 - rollThrottle - pitchThrottle;
         A8_LOG_DEBUG(logger, ">>Bal.update.9");
-        ctx.propellers->addPwm(pwmLH, pwmRH, pwmLA, pwmRA);
+        ctx.propellers->addThrottle(thLH, thRH, thLA, thRA);
         A8_LOG_DEBUG(logger, "<<Bal.update.2");
         return 1;
     }

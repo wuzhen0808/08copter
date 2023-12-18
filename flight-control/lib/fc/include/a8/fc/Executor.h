@@ -1,7 +1,7 @@
 #pragma once
-#include "a8/fc/config/Config.h"
 #include "a8/fc/Pilot.h"
 #include "a8/fc/PowerManage.h"
+#include "a8/fc/config/Config.h"
 #include "a8/util.h"
 #include "a8/util/sched.h"
 
@@ -11,7 +11,8 @@ class Executor : public FlyWeight {
 protected:
     System *sys;
     Reader *reader;
-
+    History his;
+    
 public:
     Executor(System *sys, LoggerFactory *logFac) : FlyWeight(logFac, "Executor") {
         this->sys = sys;
@@ -20,10 +21,8 @@ public:
     ~Executor() {
     }
 
-    int doRun(Propellers *propellers, Config &config, Pilot *pilot, Result res) {
-        long startTimeMs = sys->getSteadyTime();
-        propellers->enableAll(config.enablePropeller);
-        Context context(startTimeMs, propellers);
+    int doRun(long startTimeMs, Context &context, Config &config, Pilot *pilot, Result res) {
+
         int ret = pilot->start(context, res);
         if (ret < 0) {
             return ret;
@@ -34,7 +33,7 @@ public:
         sys->delay(config.delayBeforeStartSec * 1000);
 
         bool landing = false;
-        long preTimeMs = sys->getSteadyTime();
+        long preTimeMs = startTimeMs;
         while (true) {
             Result res;
             long timeMs = sys->getSteadyTime();
@@ -69,7 +68,9 @@ public:
     virtual Pilot *createPilot(Config &config) = 0;
     virtual PowerManage *getPowerManage() = 0;
     virtual void releasePilot(Pilot *pilot) = 0;
-
+    virtual void setup() {
+        
+    }
     int run(Result &res) {
         PowerManage *pm = this->getPowerManage();
         int ret = pm->isReady(res);
@@ -78,11 +79,15 @@ public:
         }
         Rpy *rpy = this->getRpy();
         Propellers *propellers = this->getPropellers();
+        ret = propellers->isReady(res);
+        if(ret < 0){
+            return ret;
+        }
         log(">>config");
-        Config config(reader, sys->out, pm, rpy, logger);
-        log(">>config.2");
-        while (true) {
+        Config config(reader, sys->out, pm, rpy, logger, his);
 
+        log(">>config.2");
+        while (true) {            
             Result res;
             ConfigContext cc(reader, sys->out, logger, res);
             log(">>configTree->config");
@@ -99,18 +104,27 @@ public:
                 log("start is disabled.");
                 continue;
             }
+            his.reset();
             // todo print and confirm again.
             log("todo print all config items and confirm.");
             Pilot *pilot = this->createPilot(config);
-            int ret = this->doRun(propellers, config, pilot, res);
-            String msg;
-            propellers->printHistory(msg);
-            pilot->printHistory(0, msg);
-            this->sys->out->println(msg);
+            long startTimeMs = sys->getSteadyTime();
+            propellers->open(config.enablePropeller);
+            Context context(startTimeMs, propellers, his);
+            int ret = this->doRun(startTimeMs, context, config, pilot, res);
+            A8_LOG_DEBUG(cc.logger,"after doRun()");
+            propellers->printHistory(0, his);
+            A8_LOG_DEBUG(cc.logger,"after doRun()2");
+            pilot->printHistory(0, his);
+            A8_LOG_DEBUG(cc.logger,"after doRun()3");
+            propellers->close();
+            A8_LOG_DEBUG(cc.logger,"after doRun()5");
             releasePilot(pilot);
             if (ret < 0) {
                 log(res.errorMessage);
             }
+            log("done of pilot mission.");
+            his.print(sys->out);
         }
         return 1;
     }

@@ -46,7 +46,7 @@ public:
         log(Debug, msg);
     }
 
-    void trace(String &msg) {
+    void trace(const String &msg) {
         log(Trace, msg);
     }
 

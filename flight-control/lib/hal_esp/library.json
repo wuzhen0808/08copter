@@ -14,7 +14,8 @@
   "dependencies": {
     "hal_arduino": "^1.0",
     "framework-arduinoespressif32": "^2.0.11",
-    "util_sched": "^1.0"
+    "util_sched": "^1.0",
+    "util_comp": "^1.0"
   },
   "frameworks": "*",
   "platforms": "*"

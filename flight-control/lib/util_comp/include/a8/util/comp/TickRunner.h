@@ -36,15 +36,15 @@ public:
     void tick() {
         ticks++;
         long now = this->ticking->getStaging()->getSys()->getSteadyTime();
-        bool doLog = now - lastLogTime > 10 * 1000;
-        if (doLog) {
+        bool doLog = A8_LOG_TRACE_ENABLED && (now - lastLogTime > 10 * 1000);
 
-            logger->info(String() << ">>TickRunner::tick(),rate:" << this->ticking->getRate().Hz() << ",ticksFromLastLog:" << (ticks - lastLogTicks) << ",ticks:" << ticks);
+        if (doLog) {
+            logger->trace(String() << ">>TickRunner::tick(),rate:" << this->ticking->getRate().Hz() << ",ticksFromLastLog:" << (ticks - lastLogTicks) << ",ticks:" << ticks);
             lastLogTime = now;
             lastLogTicks = ticks;
         }
 
-        this->ticking->beforTick();
+        this->ticking->beforTick(now);
 
         for (int i = 0; i < entries->length(); i++) {
             Component::TickEntry *entry = entries->get(i);
@@ -57,7 +57,7 @@ public:
 
         this->ticking->afterTick();
         if (doLog) {
-            logger->info("<<TickRunner::tick()");
+            logger->trace("<<TickRunner::tick()");
         }
     }
 

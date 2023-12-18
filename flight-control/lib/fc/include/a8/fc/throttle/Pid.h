@@ -67,15 +67,14 @@ public:
         this->historyMaxOutput = -outputLimit;
     }
 
-    void printHistory(int depth, String &msg) {
-        printHistory(depth, msg, "historyOutput", this->outputLimit, this->historyMinOutput, this->historyMaxOutput);
-        printHistory(depth, msg, "historyOutputP", this->outputLimit, this->historyMinOutputP, this->historyMaxOutputP);
-        printHistory(depth, msg, "historyOutputI", this->integralOutputLimit, this->historyMinOutputI, this->historyMaxOutputI);
-        printHistory(depth, msg, "historyOutputD", this->outputLimit, this->historyMinOutputD, this->historyMaxOutputD);
+    void printHistory(int depth, History &his) {
+        printHistory(depth, his, "historyOutput", this->outputLimit, this->historyMinOutput, this->historyMaxOutput);
+        printHistory(depth, his, "historyOutputP", this->outputLimit, this->historyMinOutputP, this->historyMaxOutputP);
+        printHistory(depth, his, "historyOutputI", this->integralOutputLimit, this->historyMinOutputI, this->historyMaxOutputI);
+        printHistory(depth, his, "historyOutputD", this->outputLimit, this->historyMinOutputD, this->historyMaxOutputD);
     }
-    void printHistory(int depth, String &msg, String name, float limit, float min, float max) {
-
-        msg << StringUtil::space(depth) << name << ",limit:(" << -limit << "," << limit << "),min" << (min <= -limit ? "*" : "") << ":" << min << ",max" << (max >= limit ? "*" : "") << ":" << max << "\n";
+    void printHistory(int depth, History &his, String name, float limit, float min, float max) {
+        his.add(depth, String() << name << ",limit:(" << -limit << "," << limit << "),min" << (min <= -limit ? "*" : "") << ":" << min << ",max" << (max >= limit ? "*" : "") << ":" << max << "");
     }
 
     void updateHistoryMinMax(float fValue, float &min, float &max) {
@@ -126,7 +125,7 @@ public:
         return this->lastError;
     }
 
-    long getPwm() {
+    float getOutput() {
         return this->output;
     }
 };

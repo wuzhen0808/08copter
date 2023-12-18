@@ -19,9 +19,21 @@ protected:
 public:
     Propellers(LoggerFactory *logFac) : FlyWeight(logFac, "Propellers") {
     }
+    virtual void setup() {
+    }
 
+    virtual int isReady(Result &res) {
+        return 1;
+    }
     Propeller *get(int idx) {
         return propellers.get(idx);
+    }
+
+    void open(bool enable) {
+        this->enableAll(enable);
+        propellers.forEach<int>(0, [](int c, Propeller *propeller) {
+            propeller->open();
+        });
     }
     void startUpdate() {
         propellers.forEach<int>(0, [](int c, Propeller *propeller) {
@@ -34,47 +46,48 @@ public:
         });
     }
 
-    void start() {
-        propellers.forEach<int>(0, [](int c, Propeller *propeller) {
-            propeller->start();
+    void close() {
+        propellers.forEach<int>(0, [](int, Propeller *propeller) {
+            propeller->close();
         });
     }
+
     void setLimitInTheory(long minInTheory, long maxInTheory) {
         for (int i = 0; i < propellers.len(); i++) {
             propellers.get(i)->setLimitInTheory(minInTheory, maxInTheory);
         }
     }
 
-    void addPwm(long pwmLH, long pwmRH, long pwmLA, long pwmRA) {
-        propellers[0]->addPwm(pwmLH);
-        propellers[1]->addPwm(pwmRH);
-        propellers[2]->addPwm(pwmLA);
-        propellers[3]->addPwm(pwmRA);
+    void addThrottle(float th0, float th1, float th2, float th3) {
+        propellers[0]->addThrottle(th0);
+        propellers[1]->addThrottle(th1);
+        propellers[2]->addThrottle(th2);
+        propellers[3]->addThrottle(th3);
     }
 
-    void setPwm(long pwmLH, long pwmRH, long pwmLA, long pwmRA) {
-        propellers[0]->setPwm(pwmLH);
-        propellers[1]->setPwm(pwmRH);
-        propellers[2]->setPwm(pwmLA);
-        propellers[3]->setPwm(pwmRA);
+    void setThrottle(float th0, float th1, float th2, float th3) {
+        propellers[0]->setThrottle(th0);
+        propellers[1]->setThrottle(th1);
+        propellers[2]->setThrottle(th2);
+        propellers[3]->setThrottle(th3);
     }
 
-    long getPwm(int idx) {
-        return propellers[idx]->getPwm();
+    float getThrottle(int idx) {
+        return propellers[idx]->getThrottle();
     }
 
-    void addPwm(long pwm) {
+    void addThrottle(long pwm) {
         propellers.forEach<long>(pwm, [](long pwm, Propeller *propeller) {
-            propeller->addPwm(pwm);
+            propeller->addThrottle(pwm);
         });
     }
-    void printHistory(String &msg) {
+    void printHistory(int depth, History &his) {
 
-        propellers.forEach<String &>(msg, [](String &msg, Propeller *propeller) {
-            msg << "propeller[" << propeller->getName() << "]:";
-            propeller->printHistory("\n ", msg);
-            msg << "\n";
-        });
+        for (int i = 0; i < this->propellers.len(); i++) {
+            Propeller *propeller = propellers.get(i);
+            his.add(depth, String() << "propeller[" << propeller->getName() << "]:");
+            propeller->printHistory(depth + 1, his);
+        }
     }
 
     void enableAll(bool enable) {

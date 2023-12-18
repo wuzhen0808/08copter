@@ -2,6 +2,7 @@
 #include "a8/util/Debug.h"
 #include "a8/util/Lang.h"
 #include "a8/util/Math.h"
+
 #ifndef A8_FORMAT_DEBUG
 #define A8_FORMAT_DEBUG (0)
 #endif

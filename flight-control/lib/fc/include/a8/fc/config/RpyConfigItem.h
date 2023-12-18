@@ -7,9 +7,8 @@ namespace a8::fc {
 using namespace a8::util;
 class RpyConfigItem : public ConfigItem {
     Rpy *rpy;
-    bool forceStart = false;
-    bool stable = false;
-    bool balance = false;
+    bool enableStartWithUnStable = false;
+    bool enableStartWithUnBalance = true;
 
 public:
     RpyConfigItem(Rpy *rpy) {
@@ -17,70 +16,69 @@ public:
     }
 
     void buildTitle(ConfigItem::TitleBuilder &title) override {
-        title.set<bool>("stable", stable);
-        title.set<bool>("balance", balance);
-        title.set<bool>("forceStart", forceStart);
+        title.set<bool>("stable", rpy->isStable());
+        title.set<bool>("balance", rpy->isBalance());
+        title.set<bool>("forceStart", enableStartWithUnStable);
     }
 
     void onAttached() override {
         {
 
-            ConfigItem *ci = ConfigItems::addReturn(this, "Force start with UN-stable or UN-balance rpy?");
+            ConfigItem *ci = ConfigItems::addReturn(this, "Enable start with UN-stable rpy?");
             ci->onEnter = [](ConfigContext &cc) {
                 ConfigItem *ci = cc.navigator->get()->getElement();
                 RpyConfigItem *this_ = ci->getParent<RpyConfigItem>();
-                this_->forceStart = !this_->forceStart;
+                this_->enableStartWithUnStable = !this_->enableStartWithUnStable;
             };
             ci->onBuildTitle = [](ConfigItem::TitleBuilder &title) {
                 RpyConfigItem *rpyConfigItem = title.configItem->getParent<RpyConfigItem>();
-                title.set<bool>("value", rpyConfigItem->forceStart);
+                title.set<bool>("value", rpyConfigItem->enableStartWithUnStable);
             };
         }
         {
-            ConfigItem *ci = ConfigItems::addReturn(this, "Check stable again.");
+
+            ConfigItem *ci = ConfigItems::addReturn(this, "Enable start with UN-balance rpy?");
             ci->onEnter = [](ConfigContext &cc) {
                 ConfigItem *ci = cc.navigator->get()->getElement();
                 RpyConfigItem *this_ = ci->getParent<RpyConfigItem>();
-                this_->checkStable(cc);
+                this_->enableStartWithUnStable = !this_->enableStartWithUnStable;
+            };
+            ci->onBuildTitle = [](ConfigItem::TitleBuilder &title) {
+                RpyConfigItem *rpyConfigItem = title.configItem->getParent<RpyConfigItem>();
+                title.set<bool>("value", rpyConfigItem->enableStartWithUnStable);
             };
         }
         {
-            ConfigItem *ci = ConfigItems::addReturn(this, "Check balance again.");
+            ConfigItem *ci = ConfigItems::addReturn(this, "Check stable.");
             ci->onEnter = [](ConfigContext &cc) {
                 ConfigItem *ci = cc.navigator->get()->getElement();
                 RpyConfigItem *this_ = ci->getParent<RpyConfigItem>();
-                this_->checkBalance(cc);
+                Result res;
+                this_->rpy->checkIfStable(res);
             };
         }
-    }
-
-    void checkStable(ConfigContext &cc) {
-        cc.logger->debug("checking rpy stable.");
-        Result res;
-        int stable = rpy->checkIfStable(res);
-        this->stable = stable > 0;
-        cc.logger->debug("end of checking rpy stable.");
-    }
-
-    void checkBalance(ConfigContext &cc) {
-        Result res;
-        balance = this->rpy->checkIfBalance(res) > 0;
+        {
+            ConfigItem *ci = ConfigItems::addReturn(this, "Check balance.");
+            ci->onEnter = [](ConfigContext &cc) {
+                ConfigItem *ci = cc.navigator->get()->getElement();
+                RpyConfigItem *this_ = ci->getParent<RpyConfigItem>();
+                Result res;
+                this_->rpy->checkIfBalance(res);
+            };
+        }
     }
 
     bool isValid() override {
-        return this->stable && this->balance || this->forceStart;
+        return (this->enableStartWithUnStable || this->rpy->isStable()) && (this->enableStartWithUnBalance || this->rpy->isBalance());
     }
 
     void enter(ConfigContext &cc) override {
-        if (!this->stable) {
-            this->checkStable(cc);
-        }
-        if (!this->balance) {
-            this->checkBalance(cc);
-        }
-        if (!this->stable) {
-            // todo warn
-        }
+
+        A8_LOG_DEBUG(cc.logger, "checking rpy stable.");
+        Result res;
+        int stable = rpy->checkIfStable(res);
+        A8_LOG_DEBUG(cc.logger, "end of checking rpy stable.");
+        this->rpy->checkIfBalance(res);
     }
 };
 

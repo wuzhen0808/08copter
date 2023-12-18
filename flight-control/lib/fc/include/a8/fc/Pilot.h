@@ -1,6 +1,6 @@
 #pragma once
 #include "a8/fc/throttle/MainThrottler.h"
-
+#include "a8/fc/History.h"
 #include "a8/util.h"
 
 namespace a8::fc {
@@ -34,11 +34,10 @@ public:
         if (ret < 0) {
             return ret;
         }
-        long minInTheory = 0;
-        long maxInTheory = 0;
+        float minInTheory = 0;
+        float maxInTheory = 0;
         throttler->getLimitInTheory(minInTheory, maxInTheory);
         this->propellers->setLimitInTheory(minInTheory, maxInTheory);
-        this->propellers->start();
         return 1;
     }
 
@@ -56,33 +55,26 @@ public:
 
         context->startUpdate(timeMs);
         
-        A8_LOG_DEBUG(logger, String() << ".update,timeMs:" << timeMs<<",.1");
         int ret = this->throttler->update(*context, res);
-        A8_LOG_DEBUG(logger, String() << ".update,timeMs:" << timeMs<<",.2");
         context->message << ",Propellers:[";
-        A8_LOG_DEBUG(logger, String() << ".update,timeMs:" << timeMs<<",.4");
         this->propellers->getAll().forEach<Context *>(context, [](Context *c, Propeller *propeller) {
             c->message << (propeller->isEnabled() ? "Enabled" : "Disabled") << ",";
         });
-        A8_LOG_DEBUG(logger, String() << ".update,timeMs:" << timeMs<<",.5");
         context->message << "]";
 
         if (ret > 0) {
-            A8_LOG_DEBUG(logger, String() << ".update,timeMs:" << timeMs<<",.6");
             context->commitUpdate();
-            A8_LOG_DEBUG(logger, String() << ".update,timeMs:" << timeMs<<",.7");
             context->message << ",Commited.";
         } else {
-            A8_LOG_DEBUG(logger, String() << ".update,timeMs:" << timeMs<<",.8");
             context->message << ",Give-up.";
         }
         log(String() << context);
         A8_LOG_DEBUG(logger, String() << "<<update,timeMs:" << timeMs);
         return ret;
     }
-    void printHistory(int depth, String &msg) {
-        msg << StringUtil::space(depth) << "Pilot-history:\n";
-        this->throttler->printHistory(depth + 1, msg);
+    void printHistory(int depth, History&his) {
+        his.add(depth, "Pilot-history:");
+        this->throttler->printHistory(depth + 1, his);
     }
 };
 

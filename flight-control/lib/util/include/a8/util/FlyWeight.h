@@ -14,8 +14,7 @@ protected:
     }
 
 public:
-    FlyWeight() {
-    }
+    
     FlyWeight(LoggerFactory *logFac) {
         this->init(logFac, "Unknown");
     }

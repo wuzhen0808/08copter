@@ -55,7 +55,7 @@ public:
     using onBuildTitleF = void (*)(TitleBuilder &);
 
 protected:
-    Directory<ConfigItem *> *tree;
+    Directory<ConfigItem *> *dir;
 
 public:
     // event handler.
@@ -64,17 +64,28 @@ public:
 
 public:
     ConfigItem() {
-        this->tree = 0;
+        this->dir = 0;
+    }
+
+    void setAttribute(void * value){
+        this->setAttribute(0, value);
+    }
+    void setAttribute(int key, void * value){
+        this->dir->setAttribute(key, value);
+    }
+    template<typename T>
+    T getAttribute(int key, T def){
+        return dir->getAttribute<T>(key, def);
     }
     Directory<ConfigItem *> *getDirectory() {
-        return this->tree;
+        return this->dir;
     }
     template <typename T>
     T *getParent() {
-        if (this->tree == 0) {
+        if (this->dir == 0) {
             return 0;
         }
-        Directory<ConfigItem *> *p = this->tree->getParent();
+        Directory<ConfigItem *> *p = this->dir->getParent();
         if (p == 0) {
             return 0;
         }
@@ -89,8 +100,8 @@ public:
 
     virtual bool isValid() {
         bool ret = true;
-        if (this->tree != 0) {
-            Buffer<Directory<ConfigItem *> *> buf = this->tree->getChildren();
+        if (this->dir != 0) {
+            Buffer<Directory<ConfigItem *> *> buf = this->dir->getChildren();
             for (int i = 0; i < buf.len(); i++) {
                 ConfigItem *ci = buf.get(i)->getElement();
                 if (!ci->isValid()) {
@@ -121,15 +132,15 @@ public:
         return addReturn(name, ci);
     }
     ConfigItem *addReturn(String name, ConfigItem *ci) {
-        Directory<ConfigItem *> *childTree = tree->addChild(name, 0);
+        Directory<ConfigItem *> *childTree = dir->addChild(name, 0);
         ci->attach(childTree);
         return ci;
     }
     String getName() {
-        if (this->tree == 0) {
+        if (this->dir == 0) {
             return "Unknown";
         }
-        return this->tree->getName();
+        return this->dir->getName();
     }
 
     virtual void enter(ConfigContext &cc) {
@@ -138,16 +149,16 @@ public:
         }
     }
 
-    virtual bool attach(Directory<ConfigItem *> *tree) {
-        if (this->tree != 0) {
+    virtual bool attach(Directory<ConfigItem *> *dir) {
+        if (this->dir != 0) {
             return false;
         }
-        if (tree->getElement() != 0) {
+        if (dir->getElement() != 0) {
             return false;
         }
-        this->tree = tree;
-        this->tree->setElement(this);
-        this->tree->title = [](Directory<ConfigItem *> *dir) {
+        this->dir = dir;
+        this->dir->setElement(this);
+        this->dir->title = [](Directory<ConfigItem *> *dir) {
             String name = dir->getName();
             TitleBuilder title(dir->getElement());
             dir->getElement()->buildTitle(title);
@@ -162,11 +173,11 @@ public:
 
     template <typename C>
     void forEach(C c, void (*consumer)(C, ConfigItem *), bool recursive) {
-        if (this->tree == 0) {
+        if (this->dir == 0) {
             // not attached.
             return;
         }
-        Buffer<Directory<ConfigItem *> *> list = this->tree->getChildren();
+        Buffer<Directory<ConfigItem *> *> list = this->dir->getChildren();
         for (int i = 0; i < list.len(); i++) {
             Directory<ConfigItem *> *childTree = list.get(i);
             ConfigItem *child = childTree->getElement();

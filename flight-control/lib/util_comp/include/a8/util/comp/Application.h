@@ -64,6 +64,10 @@ public:
      *
      */
     static Application *start(String name, StagingContext *context, Component *child) {
+        A8_DEBUG_PRINT("Application::start,name:");
+        A8_DEBUG_PRINT(name.text());
+        A8_DEBUG_PRINTLN();
+        
         Application *app = new Application(name.text());
         app->addChild(context, child)->stageTo(PostStart, context);
 

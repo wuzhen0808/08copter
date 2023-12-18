@@ -23,18 +23,9 @@ void log(const char *prompt, int x, int y, int z, bool ln) ;
 void log(float x, float y, float z, bool ln) ;
 void log(const char *prompt, float x, float y, float z, bool ln) ;
 
-int setupWire() ;
-
 int setupSerial() ;
 
-
-int setupMpu9250() ;
-
-bool mpuUpdate();
-float mpuGetRoll();
-float mpuGetPitch();
-float mpuGetYaw();
-int setupExample();
+int setup();
 
 } // namespace study
 #endif

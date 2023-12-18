@@ -6,6 +6,7 @@
 #include "a8/util/Math.h"
 #include "a8/util/defines.h"
 #include "debug.h"
+
 #ifndef A8_BUFFER_DEBUG
 #define A8_BUFFER_DEBUG (0)
 #endif
@@ -215,9 +216,7 @@ public:
     }
 
     Buffer<T> *append(const T &element) {
-        T buf[1];
-        buf[0] = element;
-        return append(buf, 0, 1);
+        return append(&element, 0, 1);
     }
 
     Buffer<T> *append(const T *elements, int length_) {
@@ -241,7 +240,7 @@ public:
     Buffer<T> *append(const T *elements, const int from, const int len) {
 
 #if A8_BUFFER_DEBUG == 1
-        A8_DEBUG(">>Buffer<T> *append(const T *elements, const int from, const int len)");
+        A8_DEBUG4(">>Buffer::append,length_: ", this->length_, ",capacity_:", this->capacity_);
 #endif
 
         Lang::append<T>(this->buffer_, this->length_, this->capacity_,

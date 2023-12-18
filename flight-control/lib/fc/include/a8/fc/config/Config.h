@@ -22,12 +22,11 @@ class Config : public ConfigItem {
 
 public:
     long tickTimeMs = 2;
-    long pwmElevation = 210; // 210
+    float elevationThrottle = 210.0f; // 210
     long flyingTimeLimitSec = 10;
     long delayBeforeStartSec = 3;
-    bool enablePropeller = true;
-    long pwmMax = 2000;
-    long pwmMin = 1000;
+    bool enablePropeller = false;
+    float maxThrottle = 1000;
     double pidKp = 5.2; //
     double pidKi = 1.0;
     double pidKd = 1.65;
@@ -36,19 +35,28 @@ public:
     bool startAfterConfig = true;
 
 public:
-    Config(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Logger *logger) {
+    Config(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Logger *logger, History &his) {
         this->reader = reader;
         this->out = out;
         ConfigItem *ci = this;
         this->attach(new Directory<ConfigItem *>("Root", 0));
         this->startConfigItem = ConfigItems::addReturn(ci, String() << "Start-now", new StartConfigItem(startAfterConfig));
+        ci = ConfigItems::addReturn(ci, "Print-history");
+        {
+            ci->setAttribute(&his);
+            ci->onEnter = [](ConfigContext &cc) {
+                History *his = cc.navigator->get()->getAttribute<History *>(0);
+                his->print(cc.out);
+            };
+        }
+        ci = this;
         ConfigItems::add(ci, "Power-manage", new PowerConfigItem(pm));
         ConfigItems::add(ci, "tickTimeMs", tickTimeMs);
         ConfigItems::add(ci, "flyingTimeLimit(sec)", flyingTimeLimitSec);
         ConfigItems::add(ci, "enablePropeller", enablePropeller);
         ConfigItems::add(ci, "startAfterConfig", this->startAfterConfig);
         ConfigItems::add(ci, "delayBeforeStartSec", delayBeforeStartSec);
-        ConfigItems::add(ci, "pwmElevation", pwmElevation);
+        ConfigItems::add(ci, "maxThrottle", maxThrottle);
         ConfigItems::add(ci, "Rpy-check", new RpyConfigItem(rpy));
         ci = ConfigItems::addReturn(ci, "Pid-arguments:");
         {
@@ -68,7 +76,7 @@ public:
     void enter(ConfigContext &cc) override {
 
         cc.logger->debug(">>Config::config.");
-        DirectoryNavigator<ConfigContext &, ConfigItem *> nav(cc.reader, cc.out, this->tree);
+        DirectoryNavigator<ConfigContext &, ConfigItem *> nav(cc.reader, cc.out, this->dir);
         cc.navigator = &nav;
         nav.setEnterHandler([](ConfigContext &cc, DirectoryNavigator<ConfigContext &, ConfigItem *> *nav) {
             cc.logger->debug("dir enter.");

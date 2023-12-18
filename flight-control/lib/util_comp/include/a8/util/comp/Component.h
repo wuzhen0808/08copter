@@ -135,6 +135,11 @@ public:
     }
 
     template <typename T>
+    void scheduleHz500(void (*handleF)(TickingContext *tc, T *this_)) {
+        this->schedule(500.0f, handleF);
+    }
+
+    template <typename T>
     void scheduleHz10(void (*handleF)(TickingContext *tc, T *this_)) {
         this->schedule(10.0f, handleF);
     }
@@ -152,10 +157,8 @@ public:
         entry->component = this;
         entry->handle = reinterpret_cast<void *>(handleF);
         entry->tickHandle = [](TickingContext *tc, void *this_, void *handleF2) {
-            
             handleT handleF3 = reinterpret_cast<handleT>(handleF2);
             handleF3(tc, Lang::cast<T *>(this_));
-            
         };
         this->ticks.append(entry);
     }
@@ -169,6 +172,9 @@ public:
     }
 
     void init(const String &name) {
+        A8_DEBUG_PRINT("Component::init,name:");
+        A8_DEBUG_PRINT(name.text());
+        A8_DEBUG_PRINTLN();
         this->children = new Buffer<Component *>();
         this->logger = 0;
         this->stage = Zero;
@@ -248,6 +254,9 @@ public:
     }
 
     void beforeStage(StagingContext *context) {
+        A8_DEBUG_PRINT("Component::beforeStage,name:");
+        A8_DEBUG_PRINT(name.text());
+        A8_DEBUG_PRINTLN();
         Buffer<String> *path = context->getPath();
         path->append(this->name);
         String msg(">>");

@@ -1,26 +1,42 @@
 #pragma once
+#include "a8/fc/PwmManage.h"
 #include "a8/util/Result.h"
 #include "a8/util/comp.h"
-
 namespace a8::fc {
 using namespace a8::util;
 using namespace a8::util::comp;
 
 class Propeller {
 protected:
+    float historyMaxThrottle;
+    float historyMinThrottle;
     long historyMaxPwm;
     long historyMinPwm;
-    long pwm;
+    float throttle;
     String name;
     bool enable_ = true;
-    long minInTheory = 0;
-    long maxInTheory = 2000;
+    float minInTheory = 0;
+    float maxInTheory = 1000;
+    PwmManage *pwmManage;
+    long pwm;
 
 public:
-    Propeller(String name) {
+    Propeller(String name, PwmManage *pwmManage) {
         this->name = name;
+        this->pwmManage = pwmManage;
     }
-    void setLimitInTheory(long min, long max) {
+
+    virtual void setup() = 0;
+    void open() {
+        this->historyMaxThrottle = 0.0f;
+        this->historyMinThrottle = 1000.0f;
+        this->historyMaxPwm = 0;
+        this->historyMinPwm = 1000;
+    }
+    void close() {
+    }
+
+    void setLimitInTheory(float min, float max) {
         this->minInTheory = min;
         this->maxInTheory = max;
     }
@@ -35,50 +51,58 @@ public:
     String getName() {
         return this->name;
     }
-    
-    void printHistory(String intend, String &msg) {
-        msg << intend << "historyMinPwm(inTheory:" << this->minInTheory << "):" << this->historyMinPwm
-            << intend << "historyMaxPwm(inTheory:" << this->maxInTheory << "):" << this->historyMaxPwm;
+
+    void printHistory(int depth, History &his) {
+        
+        String msg1 = String() << "historyMinThrottle(inTheory:" << this->minInTheory << "):" << this->historyMinThrottle;        
+        his.add(depth, msg1);
+        his.add(depth, String() << "historyMaxThrottle(inTheory:" << this->maxInTheory << "):" << this->historyMaxThrottle);
+        his.add(depth, String() << "historyMinPwm:" << this->historyMinPwm);
+        his.add(depth, String() << "historyMaxPwm:" << this->historyMaxPwm);
+        
     }
 
-    void addPwm(long pwm) {
-        this->setPwm(this->pwm + pwm);
+    void addThrottle(float pwm) {
+        this->setThrottle(this->throttle + pwm);
     }
 
-    long getPwm() {
-        return this->pwm;
+    float getThrottle() {
+        return this->throttle;
     }
 
-    void setPwm(long pwm) {
-        this->pwm = pwm;
+    void setThrottle(long pwm) {
+        this->throttle = pwm;
     }
 
     void startUpdate() {
-        this->pwm = 0;
+        this->throttle = 0;
     }
-    void start() {
-        this->historyMaxPwm = 0;
-        this->historyMinPwm = 2000;
-    }
+
     void updateHistory() {
         // update history
-        if (pwm > historyMaxPwm) {
-            historyMaxPwm = pwm;
-        } else if (pwm < historyMinPwm) {
-            historyMinPwm = pwm;
+        updateMinMax<float>(throttle, historyMinThrottle, historyMaxThrottle);
+        updateMinMax<long>(pwm, historyMinPwm, historyMaxPwm);
+    }
+
+    template <typename T>
+    void updateMinMax(T value, T &min, T &max) {
+        if (value < min) {
+            min = value;
+        }
+        if (value > max) {
+            max = value;
         }
     }
     void commitUpdate() {
+        pwm = this->pwmManage->resolvePwmByThrottle(this->throttle);
         if (this->enable_) {
-            this->doApplyPwm();
-        } else {
-            // do not apply pwm.
+            this->doApply(pwm);
         }
 
         this->updateHistory();
     }
 
-    virtual void doApplyPwm() = 0;
+    virtual void doApply(long pwm) = 0;
 };
 
 } // namespace a8::fc
