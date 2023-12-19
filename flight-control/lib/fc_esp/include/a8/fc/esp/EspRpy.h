@@ -10,7 +10,9 @@ class EspRpy : public Rpy, public FlyWeight {
     MPU9250 *mpu;
     bool setupOk_;
     int continueUpdateFailed = 0;
-    bool stableChecked_ = false;
+    bool firstStableCheckedIsOk = false;
+    String lastStableCheckError;
+    String lastBalanceCheckError;
     int setupMpu9250() {
         mpu->setup(0x68);
         mpu->selectFilter(QuatFilterSel::MADGWICK);
@@ -22,6 +24,8 @@ class EspRpy : public Rpy, public FlyWeight {
 public:
     EspRpy(LoggerFactory *logFac) : FlyWeight(logFac, "EspRpy") {
         this->mpu = new MPU9250();
+        this->lastBalanceCheckError = "balance is unknown.";
+        this->lastStableCheckError = "stable is unknown.";
     }
 
     void setup() override {
@@ -33,12 +37,16 @@ public:
             this->setupOk_ = false;
         }
     }
+
+    String getLastError() override {
+        return String() << this->lastStableCheckError << ";" << this->lastBalanceCheckError;
+    }
     void tick() override {
         if (!this->setupOk_) {
             A8_LOG_DEBUG(logger, "missing setup? or you need setup again.");
             return; //
         }
-        if (this->stableChecked_) {
+        if (this->firstStableCheckedIsOk) {
             return;
         }
 
@@ -50,7 +58,10 @@ public:
         }
 
         Result res;
-        int ret = this->checkIfStable(false, res);
+        int ret = this->doCheckStable(false, res);
+        if (ret > 0) {
+            this->firstStableCheckedIsOk = true;
+        }
     }
 
     bool update() override {
@@ -74,37 +85,36 @@ public:
     float getYaw() override {
         return mpu->getYaw();
     }
-    int checkIfReady(Result &res) override {
+    int checkReady(Result &res) override {
 
-        int ret = this->checkIfStable(false, res);
+        int ret = this->doCheckStable(false, res);
         if (ret < 0) {
             return ret;
         }
-        ret = this->checkIfBalance(res);
+        ret = this->checkBalance(res);
         if (ret < 0) {
             return ret;
         }
 
         return ret;
     }
-    bool isStable() override{
-        return this->stableChecked_;
-    }
-    bool isBalance() override{
+
+    bool isBalance() override {
         Result res;
-        return this->checkIfBalance(res) > 0;
+        return this->checkBalance(res) > 0;
     }
-    int checkIfStable(Result &res) override {
-        return checkIfStable(false, res);
+    
+    int checkStable(Result &res) override {
+        int ret = doCheckStable(false, res);
+        if (ret < 0) {
+            this->lastStableCheckError = String() << ret << ":" << res.errorMessage;
+        } else {
+            this->lastStableCheckError.clear();
+        }
+        return ret;
     }
 
-    int checkIfStable(bool background, Result &res) {
-        if (this->stableChecked_) {
-            if (!background) {
-                log("no need to do stable checking, already checked before.");
-            }
-            return 1;
-        }
+    int doCheckStable(bool background, Result &res) {
 
         if (!background) {
             log("checking rpy if stable ...");
@@ -157,14 +167,21 @@ public:
             log("done of rpy stable check.");
         }
 
-        this->stableChecked_ = true;
         return 1;
     }
-
-    int checkIfBalance(Result &res) {
+    int checkBalance(Result &res) {
+        int ret = this->doCheckBalance(res);
+        if (ret < 0) {
+            this->lastBalanceCheckError = String() << ret << ":" << res.errorMessage;
+        } else {
+            this->lastBalanceCheckError.clear();
+        }
+        return ret;
+    }
+    int doCheckBalance(Result &res) {
         float roll = this->getRoll();
         float pitch = this->getPitch();
-        log(String() << "check rpy if balance, roll:" << roll << ",pitch:" << pitch);
+        A8_LOG_DEBUG(logger, String() << "check rpy if balance, roll:" << roll << ",pitch:" << pitch);
 
         if (Math::abs<float>(roll) > 1) {
             res << "rpy is not balance, roll(" << roll << ") value showing the attitude of the drone is not in a balance position, please adjust and try again.";
@@ -174,7 +191,7 @@ public:
             res << "rpy is not balance, pitch(" << pitch << ") value showing the attitude of the drone is not in a balance position, please adjust and try again.";
             return -2;
         }
-        log("done of rpy balance check.");
+        A8_LOG_DEBUG(logger, "done of rpy balance check.");
         return 1;
     }
 };

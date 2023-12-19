@@ -1,6 +1,6 @@
 #pragma once
 #include "a8/fc.h"
-#include "a8/fc/esp/EspExecutor.h"
+#include "a8/fc/esp/EspCommander.h"
 #include "a8/hal/esp.h"
 #include "a8/util.h"
 #include "a8/util/sched.h"
@@ -21,7 +21,7 @@ public:
     virtual void populate(StagingContext *sc) override {
         Assembler::populate(sc);
         this->rpy = new EspRpy(loggerFactory);
-        this->executor = new EspExecutor(pm, rpy, sc->getSys(), loggerFactory);
+        this->executor = new EspCommander(pm, rpy, sc->getSys(), sc->scheduler, loggerFactory);
     }
     virtual void setup(StagingContext *sc) override {        
         Assembler::setup(sc);

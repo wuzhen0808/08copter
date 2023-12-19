@@ -34,6 +34,11 @@ public:
             HashTable<String, String>::set(key, String() << value);
         }
 
+        template <typename T>
+        T *getConfigItem() {
+            return static_cast<T *>(this->configItem);
+        }
+
         String build() {
             String title;
             Directory<ConfigItem *> *dir = configItem->getDirectory();
@@ -67,15 +72,21 @@ public:
         this->dir = 0;
     }
 
-    void setAttribute(void * value){
-        this->setAttribute(0, value);
+    void setAttribute(void *value, void (*release)(void *)) {
+        this->setAttribute(0, value, release);
     }
-    void setAttribute(int key, void * value){
-        this->dir->setAttribute(key, value);
+
+    void setAttribute(int key, void *value, void (*release)(void *)) {
+        this->dir->setAttribute(key, value, release);
     }
-    template<typename T>
-    T getAttribute(int key, T def){
+
+    template <typename T>
+    T getAttribute(int key, T def) {
         return dir->getAttribute<T>(key, def);
+    }
+    template <typename T>
+    T getAttribute(T def) {
+        return dir->getAttribute<T>(def);
     }
     Directory<ConfigItem *> *getDirectory() {
         return this->dir;
@@ -190,28 +201,57 @@ public:
 };
 
 template <typename T>
-class BindingInputConfigItem : public ConfigItem {
+class InputConfigItem : public ConfigItem {
     using releaseInput = void (*)(Input<T> *);
+
+protected:
     Input<T> *input;
     releaseInput releaseInput_ = [](Input<T> *) {};
-    T &bind;
 
 public:
-    BindingInputConfigItem(Input<T> &input, T &variable) : bind(variable) {
+    InputConfigItem(Input<T> &input) {
         this->input = &input;
     }
 
-    BindingInputConfigItem(Input<T> *input, releaseInput releaseInputF, T &variable) : bind(variable) {
+    InputConfigItem(Input<T> *input, releaseInput releaseInputF) {
         this->input = input;
         this->releaseInput_ = releaseInputF;
     }
 
-    ~BindingInputConfigItem() {
+    ~InputConfigItem() {
         this->releaseInput_(this->input);
     }
 
-    void buildTitle(TitleBuilder &title) override {
-        title.set<T>("value", bind);
+    virtual void buildTitle(TitleBuilder &title) = 0;
+
+    virtual void enter(ConfigContext &cc) = 0;
+};
+
+template <typename T>
+class BindingInputConfigItem : public InputConfigItem<T> {
+    using releaseInput = void (*)(Input<T> *);
+    T &bind;
+
+public:
+    BindingInputConfigItem(Input<T> &input, T &variable) : InputConfigItem<T>(input), bind(variable) {
+    }
+
+    BindingInputConfigItem(Input<T> *input, releaseInput releaseInputF, T &variable) : InputConfigItem<T>(input, releaseInputF), bind(variable) {
+    }
+
+    ~BindingInputConfigItem() {
+    }
+
+    void buildTitle(ConfigItem::TitleBuilder &title) override {
+        if (this->onBuildTitle == 0) {
+            title.set<T>("value", bind);
+        } else {
+            this->onBuildTitle(title);
+        }
+    }
+
+    T getValue() {
+        return this->bind;
     }
 
     void enter(ConfigContext &cc) override {
@@ -221,13 +261,48 @@ public:
     }
 };
 
+template <typename C, typename T>
+class MethodInputConfigItem : public InputConfigItem<T> {
+    using releaseInput = void (*)(Input<T> *);
+    using getMethod = T (*)(C);
+    using setMethod = void (*)(C, T);
+
+    C context;
+    getMethod getMethod_;
+    setMethod setMethod_;
+
+public:
+    MethodInputConfigItem(Input<T> &input, C c, getMethod getMethod, setMethod setMethod) : InputConfigItem<T>(input) {
+        this->context = c;
+        this->getMethod_ = getMethod;
+        this->setMethod_ = setMethod;
+    }
+
+    MethodInputConfigItem(Input<T> *input, releaseInput releaseInputF, C c, getMethod getMethod, setMethod setMethod) : InputConfigItem<T>(input, releaseInputF) {
+        this->context = c;
+        this->getMethod_ = getMethod;
+        this->setMethod_ = setMethod;
+    }
+
+    ~MethodInputConfigItem() {
+    }
+
+    void buildTitle(ConfigItem::TitleBuilder &title) override {
+        T value = this->getMethod_(this->context);
+        title.set<T>("value", value);
+    }
+
+    void enter(ConfigContext &cc) override {
+        ConfigItem::enter(cc);
+        T value = this->input->readValue(&cc);
+        this->setMethod_(this->context, value);
+    }
+};
+
 class ConfigItems {
 public:
-    static int select(Reader *reader, Output *out, String prompt, Buffer<String> options, int def, Logger *logger) {
-        SelectInput input(prompt, options, def);
-        int selected = read<int>(reader, out, input, logger);
-        logger->debug(String() << "ConfigItems::selected:" << selected);
-        return selected;
+    static bool confirm(ConfigContext &cc, String prompt, bool def) {
+        return confirm(cc.lines, cc.out, prompt, def, cc.logger);
     }
 
     static bool confirm(Reader *reader, Output *out, String prompt, bool def, Logger *logger) {
@@ -253,8 +328,22 @@ public:
     static ConfigItem *add(ConfigItem *ci, String name, int &var) {
         return addNumberInput<int>(ci, name, var);
     }
+    template <typename C>
+    static ConfigItem *add(ConfigItem *ci, String name, int &var, C c, int len, String (*options)(C, int)) {
+        return addSelectInput<C>(ci, name, var, c, len, options);
+    }
+
     static ConfigItem *add(ConfigItem *ci, String name, bool &var) {
-        return addNumberInput<bool>(ci, name, var);
+        ConfigItem *ci2 = addReturn<bool>(
+            ci, name, new BoolInput(name, var),       //
+            [](Input<bool> *input) { delete input; }, //
+            var                                       //
+        );
+        ci2->onBuildTitle = [](ConfigItem::TitleBuilder &title) {
+            BindingInputConfigItem<bool> *ci = title.getConfigItem<BindingInputConfigItem<bool>>();
+            title.set<String>("value", ci->getValue() ? "Yes" : "No");
+        };
+        return ci;
     }
 
     static ConfigItem *add(ConfigItem *ci, String name) {
@@ -273,11 +362,60 @@ public:
         return ci->addReturn(name);
     }
 
+    template <typename C>
+    static ConfigItem *addReturn(ConfigItem *ci, String name, C c, int (*action)(C, Result &)) {
+        struct Context {
+            C c;
+            int (*action)(C, Result &);
+            Result res;
+            int ret = 0;
+            String getTitle() {
+                return String() << ret << ":" << res.errorMessage;
+            }
+        } *c2 = new Context();
+        c2->c = c;
+        c2->action = action;
+
+        ci = ConfigItems::addReturn(ci, name);
+        ci->setAttribute(c2, Lang::release<Context *>);
+        ci->onBuildTitle = [](ConfigItem::TitleBuilder &title) {
+            Context *context = title.configItem->getAttribute<Context *>(0);
+            title.set<String>("status", context->getTitle());
+        };
+        ci->onEnter = [](ConfigContext &cc) {
+            ConfigItem *ci = cc.navigator->get()->getElement();
+            Context *c2 = ci->getAttribute<Context *>(0);
+            Result res;
+            int ret = c2->action(c2->c, res);
+            c2->res = res;
+            c2->ret = ret;
+        };
+        return ci;
+    }
+
+    template <typename C>
+    static ConfigItem *addSelectInput(ConfigItem *ci, String name, int &var, C c, int len, String (*options)(C, int)) {
+        return add<int>(
+            ci, name, new SelectInput<C>(String() << "Please select " << name << ":", c, len, options, var), //
+            [](Input<int> *input) { delete input; },                                                         //
+            var                                                                                              //
+        );
+    }
     template <typename T>
     static ConfigItem *addNumberInput(ConfigItem *ci, String name, T &var) {
-
         return add<T>(
-            ci, name, new NumberInput<T>(String() << "Please input " << name << ":", var), [](Input<T> *input) { delete input; }, var);
+            ci, name, new NumberInput<T>(String() << "Please input " << name << ":", var), //
+            [](Input<T> *input) { delete input; },                                         //
+            var                                                                            //
+        );
+    }
+
+    template <typename C, typename T>
+    static ConfigItem *add(ConfigItem *ci, String name, C c, T (*get)(C), void (*set)(C, T)) {
+        Input<T> *input = new NumberInput<T>(String() << "Please input " << name << ":", 0);
+        MethodInputConfigItem<C, T> *ci2 = new MethodInputConfigItem<C, T>(
+            input, [](Input<T> *input) { delete input; }, c, get, set);
+        return add(ci, name, ci2);
     }
 
     template <typename T>

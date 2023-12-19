@@ -78,6 +78,7 @@ Timer *EspScheduler::createTimer(const String name, const Rate &rate, void *cont
         delete timer;
         return 0;
     }
+    timer->setHandle(handle);
     return timer;
 }
 Semaphore *EspScheduler::createSemaphore(int cap, int initial) {

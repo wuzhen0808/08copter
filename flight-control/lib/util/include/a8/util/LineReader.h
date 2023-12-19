@@ -7,7 +7,7 @@
 namespace a8::util {
 /**
  */
-class LineReader {
+class LineReader : public Reader {
 private:
     const static int BUF_LEN = 128;
     // dynamic member
@@ -17,7 +17,7 @@ private:
     int localResult;
     int globalResult;
 
-    void syncLocalIfNeeded(Result& res) {
+    void syncLocalIfNeeded(Result &res) {
         if (this->localPointer != -1) { // Read global at least once.
             if (localResult > 0) {      // has local content waiting to be processed.
                 return;
@@ -50,6 +50,20 @@ public:
         this->reader = reader;
         this->localPointer = -1; // indicated as not reading
     }
+
+    int read(char *buf, int bufLen, Result &res) override {
+
+        syncLocalIfNeeded(res);
+        if (localResult <= 0) {
+            return localResult;
+        }
+        int len = Math::min(bufLen, localResult);
+        Lang::copy<char>(this->buf, this->localPointer, len, buf);
+        this->localPointer += len;
+        this->localResult -= len;
+        return len;
+    }
+
     /**
      * Read one line and append to the ret parameter ref.
      *
@@ -86,11 +100,17 @@ public:
         return readLine(line, appendSeparator, rst);
     }
 
-    int readLine(String &line, bool appendSeparator, Result &rst) {
+    int readLine(String &line, bool appendSeparator, Result &res) {
+        return readLine<int>(
+            line, appendSeparator, 0, [](int, char ch) { return ch == '\n'; }, res);
+    }
+
+    template <typename C>
+    int readLine(String &line, bool appendSeparator, C c, bool (*isLineBreak)(C, char), Result &res) {
         int thisResult = 0;
         bool found = false;
         while (true) {
-            syncLocalIfNeeded(rst);
+            syncLocalIfNeeded(res);
             if (localResult <= 0) {
                 // align and sync this result with local
                 if (thisResult == 0) {
@@ -107,7 +127,7 @@ public:
             int len = localResult;
             for (int i = 0; i < localResult; i++) {
 
-                if (buf[localPointer + i] == '\n') {
+                if (isLineBreak(c, buf[localPointer + i])) {
                     len = i + 1;
                     found = true;
                     break;

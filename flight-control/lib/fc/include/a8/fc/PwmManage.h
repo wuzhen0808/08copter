@@ -37,8 +37,8 @@ public:
         float maxElevation = this->elevationEstimator->getMaxEstimated();
         float pwmFromThrottle = Math::map<float>(elevation, 0, maxElevation, 0, maxPwm - minPwm);
         long totalPwm = minPwm + pwmFromThrottle;
-        A8_LOG_INFO(logger, String() << "elevation:" << elevation << ",maxElevation:" << maxElevation << ",pwmFromThrottle:" << pwmFromThrottle);
-        A8_LOG_INFO(logger, String() << "throttle:" << throttle << ",minPwm:" << minPwm << ",totalPwm:" << totalPwm);
+        A8_LOG_DEBUG(logger, String() << "elevation:" << elevation << ",maxElevation:" << maxElevation << ",pwmFromThrottle:" << pwmFromThrottle);
+        A8_LOG_DEBUG(logger, String() << "throttle:" << throttle << ",minPwm:" << minPwm << ",totalPwm:" << totalPwm);
         return totalPwm;
     }
 };

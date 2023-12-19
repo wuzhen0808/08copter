@@ -103,4 +103,5 @@ public:
         return str;
     }
 };
+
 } // namespace a8::util

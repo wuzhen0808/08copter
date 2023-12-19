@@ -167,6 +167,10 @@ public:
         return -1;
     }
 
+    bool contains(T ele){
+        return indexOf(ele) >= 0;
+    }
+
     int indexOf(T ele) {
         return indexOf(ele, [](T ele1, T ele2) { return ele1 == ele2; });
     }

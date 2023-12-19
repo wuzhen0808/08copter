@@ -8,9 +8,29 @@
 
 #define A8_DIRECTORY_DEBUG (0)
 namespace a8::util {
-
 template <typename T>
 class Directory {
+
+public:
+    using releaseAttribute = void (*)(void *);
+    class Attribute {
+    public:
+        void *value;
+        releaseAttribute release;
+        Attribute(void *value, releaseAttribute release) {
+            this->value = value;
+            this->release = release;
+        }
+        ~Attribute() {
+            this->release(this->value);
+        }
+        void set(void *value, releaseAttribute release) {
+            this->release(this->value);
+            this->value = value;
+            this->release = release;
+        }
+    };
+
 public:
     using titleF = String (*)(Directory<T> *);
     const static int TAG_KEY_FOCUS = 1;
@@ -21,7 +41,7 @@ protected:
     Directory<T> *parent;
     T element;
     HashTable<int, char> tags;
-    HashTable<int, void *> attributes;
+    HashTable<int, Attribute *> attributes;
     void init(Directory<T> *parent, String name, T ele) {
         this->name = name;
         this->parent = parent;
@@ -56,18 +76,34 @@ public:
             Directory *child = this->children.get(i);
             delete child;
         }
+        // delete attribute
+        this->attributes.template forEach<int>(0, [](int c, int k, Attribute *att) {
+            delete att;
+        });
+        this->attributes.clear();
     }
-    void setAttribute(int key, void *value) {
-        this->attributes.set(key, value);
+
+    void setAttribute(int key, void *value, releaseAttribute release) {
+        Attribute *att = this->attributes.get(key, 0);
+        if (att == 0) {
+            att = new Attribute(value, release);
+            this->attributes.set(key, att);
+        } else {
+            att->set(value, release);
+        }
     }
+
     template <typename X>
     X getAttribute(X def) {
         return this->getAttribute(0, def);
     }
     template <typename X>
     X getAttribute(int key, X def) {
-        void *p = this->attributes.get(key, def);
-        return static_cast<X>(p);
+        Attribute *att = this->attributes.get(key, 0);
+        if (att == 0 || att->value == 0) {
+            return def;
+        }
+        return static_cast<X>(att->value);
     }
 
     int getTotalChildren() {

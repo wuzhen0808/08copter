@@ -6,5 +6,6 @@ class Timer {
 public:
     Timer(){};
     ~Timer(){};
+    virtual int close() = 0;
 };
 } // namespace a8::util::sched

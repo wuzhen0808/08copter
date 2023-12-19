@@ -11,7 +11,7 @@
 #if A8_THROTTLE_DEBUG == 1
 #define A8_M_THRO_DEBUG(logger, msg) A8_LOG_DEBUG(logger, msg)
 #else
-#define A8_M_THRO_DEBUG(logger, msg) 
+#define A8_M_THRO_DEBUG(logger, msg)
 #endif
 
 namespace a8::fc::throttle {
@@ -72,14 +72,14 @@ public:
 
     int update(Context &ctx, Result &res) {
         int ret = -1;
-        A8_M_THRO_DEBUG(logger, String()<<">>update.");
+        A8_M_THRO_DEBUG(logger, String() << ">>update.");
         int totalPropellers = ctx.propellers->getTotalPropellers();
-        A8_M_THRO_DEBUG(logger, String()<<">>update.");
+        A8_M_THRO_DEBUG(logger, String() << ">>update.");
         for (int i = 0; i < throttlers.len(); i++) {
             Throttler *th = throttlers.get(i);
 
             ret = th->update(ctx, res);
-            ctx.message << "(";
+            ctx.message << this->name << ":(";
             for (int j = 0; j < totalPropellers; j++) {
                 ctx.message << String() << ctx.propellers->getThrottle(j) << ",";
             }
@@ -88,7 +88,7 @@ public:
                 break;
             }
         }
-        A8_M_THRO_DEBUG(logger, String()<<"<<update.");
+        A8_M_THRO_DEBUG(logger, String() << "<<update.");
         return ret;
     }
 };

@@ -1,28 +1,28 @@
 #pragma once
 #include "a8/fc.h"
-#include "a8/fc/esp/EspPilot.h"
+#include "a8/fc/esp/EspMission.h"
 #include "a8/fc/esp/EspPropellers.h"
 #include "a8/fc/esp/EspRpy.h"
 
 namespace a8::fc::esp {
 
-class EspExecutor : public Executor {
+class EspCommander : public Commander {
     MPU9250 *mpu;
     Rpy *rpy;
     Propellers *propellers;
     PowerManage *pm;
 
 public:
-    EspExecutor(PowerManage *pm, Rpy* rpy, System *sys, LoggerFactory *logFac) : Executor(sys, logFac) {
+    EspCommander(PowerManage *pm, Rpy *rpy, System *sys, Scheduler *sch, LoggerFactory *logFac) : Commander(sys, sch, logFac) {
         this->pm = pm;
         this->mpu = mpu;
         this->rpy = rpy;
         this->propellers = new EspPropellers(pm, 17, 18, 19, 20, loggerFactory);
     }
-    ~EspExecutor() {
+    ~EspCommander() {
         delete this->propellers;
     }
-    void setup()override{        
+    void setup() override {
         this->propellers->setup();
     }
     PowerManage *getPowerManage() {
@@ -36,11 +36,11 @@ public:
         return propellers;
     }
 
-    Pilot *createPilot(Config &config) override {
-        return new EspPilot(config, rpy, propellers, loggerFactory);
+    Mission *createMission(Config &config) override {
+        return new EspMission(config, rpy, propellers, loggerFactory);
     }
 
-    void releasePilot(Pilot *pilot) override {
+    void releaseMission(Mission *pilot) override {
         delete pilot;
     }
 };

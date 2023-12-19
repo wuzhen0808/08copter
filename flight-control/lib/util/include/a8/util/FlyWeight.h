@@ -7,14 +7,15 @@ class FlyWeight {
 protected:
     LoggerFactory *loggerFactory;
     Logger *logger;
+    String name;
 
     void init(LoggerFactory *logFac, String name) {
+        this->name = name;
         this->loggerFactory = logFac;
         this->logger = logFac->getLogger(name);
     }
 
 public:
-    
     FlyWeight(LoggerFactory *logFac) {
         this->init(logFac, "Unknown");
     }
@@ -23,7 +24,10 @@ public:
         this->init(logFac, name);
     }
 
-    virtual ~FlyWeight() {
+    ~FlyWeight() {
+    }
+    String getName() {
+        return name;
     }
 
     void log(const String &msg) {

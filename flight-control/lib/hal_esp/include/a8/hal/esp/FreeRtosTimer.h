@@ -33,6 +33,16 @@ public:
     void setHandle(TimerHandle_t handle) {
         this->handle = handle;
     }
+    int close() override {
+        long timeoutSec = 1;
+        long ticks = configTICK_RATE_HZ * timeoutSec;
+
+        BaseType_t ok = xTimerDelete(this->handle, ticks);
+        if (ok == pdFALSE) {
+            return -1;
+        }
+        return 1;
+    }
 };
 
 } // namespace a8::hal::esp

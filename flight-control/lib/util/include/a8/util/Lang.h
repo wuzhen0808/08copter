@@ -325,6 +325,10 @@ public:
     static T noneConvert(const T &value) {
         return value;
     }
+    template <typename T>
+    static void release(void *v) {
+        delete static_cast<T *>(v);
+    }
 };
 
 } // namespace a8::util

@@ -369,6 +369,11 @@ public:
         return *this;
     }
 
+    String &operator<<(const String *str) {
+        append(*str);
+        return *this;
+    }
+
     char operator[](int idx) const {
         if (idx < 0 || idx > this->length_) {
             Lang::illegalArgument("index out of bound.");

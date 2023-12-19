@@ -1,5 +1,6 @@
 #pragma once
 #include "a8/util/Debug.h"
+#include "a8/util/Keys.h"
 #include "a8/util/LineReader.h"
 #include "a8/util/Logger.h"
 #include "a8/util/Output.h"
@@ -35,6 +36,43 @@ public:
         }
         out->println(line);
         return line;
+    }
+
+    int readChar(char &ch, Result res) {
+        return lines->read(&ch, 1, res);
+    }
+
+    template <typename C>
+    int readChar(C c, bool (*handle)(C, char)) {
+        int len = 0;
+        while (true) {
+            char ch;
+            Result res;
+            int ret = this->readChar(ch, res);
+            if (ret <= 0) {
+                return ret;
+            }
+            bool done = handle(c, ch);
+            len++;
+            if (done) {
+                break;
+            }
+        }
+        return len;
+    }
+    int readOneOfTheChar(Buffer<char> chs, char &ch, Result res) {
+        while (true) {
+            char ch2;
+            int ret = this->readChar(ch2, res);
+            if (ret < 0) {
+                return ret;
+            }
+            if (chs.contains(ch2)) {
+                ch = ch2;
+                break;
+            }
+        }
+        return 1;
     }
 
     void println(char ch0, char ch1, int len, char ch2) {
@@ -122,6 +160,7 @@ public:
     String getName() {
         return prompt;
     }
+
     template <typename F>
     F readNumber(InputContext *ic, String prompt, F def) {
         F fValue = def;
@@ -168,41 +207,84 @@ public:
         this->value = this->template readNumber<T>(ic, this->prompt, this->default_);
     }
 };
+template <typename C>
 class SelectInput : public NumberInput<int> {
-    Buffer<String> options;
+public:
+    using optionsF = String (*)(C, int);
+
+protected:
+    C context;
+    optionsF options_;
+    int focused = 0;
+    int len;
 
 public:
-    SelectInput(String prompt, Buffer<String> options, int def) : NumberInput(prompt, def) {
-        this->addOptions(options);
+    SelectInput(String prompt, C c, int len, optionsF options, int def) : NumberInput(prompt, def) {
+        this->context = c;
+        this->len = len;
+        this->options_ = options;
     }
 
-    void addOptions(Buffer<String> options) {
-        this->options.append(options);
-    }
+    void print(InputContext *ic) {
+        for (int i = 0; i < this->len; i++) {
 
-    void addOption(String option) {
-        this->options.append(option);
-    }
-
-    void update(InputContext *ic) override {
-
-        for (int i = 0; i < options.len(); i++) {
-            ic->println(String() << (default_ == i ? "[*]" : "[ ]") << i << "" << options.get(i));
+            ic->println(String() << " " << (focused == i ? " o->" : "    ") //
+                                 << i                                       //
+                                 << (value == i ? "[*]" : "[ ]")            //
+                                 << this->options_(context, i));
         }
-        ic->println(String() << "Input the number to select the options above.");
-        NumberInput<int>::update(ic);
+        ic->println(String() << "Press up/down and enter to select the options above.");
+    }
+    void update(InputContext *ic) override {
+        this->focused = this->value;
+        struct Params {
+            SelectInput *this_;
+            bool done = false;
+        } p;
+        p.this_ = this;
+        while (!p.done) {
+            this->print(ic);
+            ic->readChar<Params *>(&p, [](Params *p, char ch) {
+                return p->this_->onKey(ch, p->done);
+            });
+        }
         A8_LOG_DEBUG(ic->logger, String() << "<<readValue:" << value);
+    }
+
+    bool onKey(char ch, bool &done) {
+
+        switch (ch) {
+        case Keys::upKey: {
+            focused--;
+            if (focused < 0) {
+                focused += this->len;
+            }
+            this->focused %= this->len;
+
+        } break;
+        case Keys::downKey: {
+            focused++;
+            this->focused %= this->len;
+        } break;
+        case Keys::enterKey: {
+            this->value = this->focused;
+            done = true;
+        } break;
+        default:
+            return false;
+        }
+        return true;
     }
 };
 class BoolInput : public Input<bool> {
-    SelectInput *select;
+    SelectInput<BoolInput *> *select;
 
 public:
     BoolInput(String prompt, bool def) : Input(prompt, def) {
-        Buffer<String> options;
-        options.append("Yes");
-        options.append("No");
-        this->select = new SelectInput(prompt, options, def ? 0 : 1);
+        String (*options)(BoolInput *, int) = [](BoolInput *this_, int idx) {
+            return idx == 0 ? String("Yes") : String("No");
+        };
+        this->select = new SelectInput<BoolInput *>(prompt, this, 2, options, def ? 0 : 1);
     }
 
     ~BoolInput() {

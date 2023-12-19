@@ -1,5 +1,5 @@
 #pragma once
-#include "a8/fc/Executor.h"
+#include "a8/fc/Commander.h"
 #include "a8/fc/PowerManage.h"
 #include "a8/fc/Rpy.h"
 #include "a8/util/comp.h"
@@ -8,7 +8,7 @@ namespace a8::fc {
 class Assembler : public Component {
 
 protected:
-    Executor *executor = 0;
+    Commander *executor = 0;
     Rpy *rpy = 0;
     PowerManage *pm;
 

@@ -6,7 +6,7 @@
 namespace a8::fc {
 using namespace a8::util;
 
-class Pilot : FlyWeight {
+class Mission : FlyWeight {
     Propellers *propellers;
     throttle::MainThrottler *throttler;
     long startTimeMs;
@@ -15,13 +15,13 @@ protected:
     Rpy *rpy;
 
 public:
-    Pilot(Config &config, Propellers *propellers,
-          Rpy *rpy, LoggerFactory *logFac) : FlyWeight(logFac, "Pilot") {
+    Mission(Config &config, Propellers *propellers,
+          Rpy *rpy, LoggerFactory *logFac) : FlyWeight(logFac, "Mission") {
         this->rpy = rpy;
         this->propellers = propellers;
         this->throttler = new throttle::MainThrottler(config, rpy, logFac);
     }
-    ~Pilot() {
+    ~Mission() {
         delete this->throttler;
     }
 
