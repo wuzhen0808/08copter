@@ -79,25 +79,29 @@ public:
     bool hasIndex(int idx) const {
         return idx >= 0 && idx < length_;
     }
-
+    // TODO remove this method.
     T get(int idx) const {
-        if (idx < 0 || idx > this->length_ - 1) {
-            Assert::illegalArgument(String() << "idx out of range.");
+        if (this->hasIndex(idx)) {
+            return this->buffer_[idx];
         }
+        Assert::illegalArgument("no such element.");
         return this->buffer_[idx];
     }
 
-    T getLast(T def) {
-        if (this->length_ == 0) {
-            return def;
+    int tryGet(int idx, T &ele) const {
+        if (idx < 0 || idx > this->length_ - 1) {
+            return -1;
         }
-        return this->buffer_[this->length_ - 1];
+        ele = this->buffer_[idx];
+        return 1;
     }
-    T getFirst(T def) {
-        if (this->length_ == 0) {
-            return def;
-        }
-        return this->buffer_[0];
+
+    T getLast(T def) const {
+        return this->get(this->length_ - 1, def);
+    }
+
+    T getFirst(T def) const {
+        return this->get(0, def);
     }
 
     T *buffer() const {
@@ -167,7 +171,7 @@ public:
         return -1;
     }
 
-    bool contains(T ele){
+    bool contains(T ele) {
         return indexOf(ele) >= 0;
     }
 

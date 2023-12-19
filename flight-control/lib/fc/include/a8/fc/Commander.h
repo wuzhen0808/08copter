@@ -72,6 +72,15 @@ public:
     virtual void releaseMission(Mission *pilot) = 0;
     virtual void setup() {
     }
+
+    int checkSafetyWhenIgnoreBalance(Config &config, Result &res) {
+        if (config.enablePropeller) {
+            res << "propeller is enabled,it's not safe to start the mission with un-balance rpy.";
+            return -1;
+        }
+        return 1;
+    }
+
     int run(Result &res) {
         PowerManage *pm = this->getPowerManage();
         int ret = pm->isReady(res);
@@ -127,6 +136,17 @@ public:
                     if (!ok) {
                         continue;
                     } // ask to start.
+                } else if (config.unBalanceAction == UnBalanceAction::IGNORE) {
+
+                } else if (config.unBalanceAction == UnBalanceAction::IGNORE_IF_SAFE) {
+                    Result res;
+                    if (checkSafetyWhenIgnoreBalance(config, res) < 0) {
+                        log(res.errorMessage);
+                        continue;
+                    }
+                } else {
+                    log("cannot create mission, it is not allowed to start with a un-balanced-rpy.");
+                    continue;
                 }
             }
 
