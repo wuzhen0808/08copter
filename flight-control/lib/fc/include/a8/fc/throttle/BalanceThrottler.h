@@ -24,7 +24,6 @@ class BalanceThrottler : public Throttler {
 
 public:
     BalanceThrottler(Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
-
         this->rpy = rpy;
         this->pidRoll = new Pid(logFac, "RollPid");
         this->pidPitch = new Pid(logFac, "PitchPid");
@@ -33,17 +32,21 @@ public:
         delete this->pidRoll;
         delete this->pidPitch;
     }
+
+    void setup() override {
+        this->pidRoll->setup();
+        this->pidPitch->setup();
+    }
+
+    void collectDataItems(Collector &collector) override {
+        this->pidRoll->collectDataItems(collector);
+        this->pidPitch->collectDataItems(collector);
+    }
     void getLimitInTheory(float &minSample, float &maxSample) override {
         minSample = minSample - pidRoll->getOutputLimit() - pidPitch->getOutputLimit();
         maxSample = maxSample + pidRoll->getOutputLimit() + pidPitch->getOutputLimit();
     }
 
-    void printHistory(int depth, History &his) override {
-        his.add(depth, "Balance-history-rollPid:");
-        this->pidRoll->printHistory(depth + 1, his);
-        his.add(depth, "Balance-history-pitchPid:");
-        this->pidPitch->printHistory(depth + 1, his);
-    }
     void setPidArgument(double kp, double ki, double kd, float outputLimit, float maxPidIntegralOutput) {
         this->pidRoll->config(kp, ki, kd, outputLimit, maxPidIntegralOutput);
         this->pidPitch->config(kp, ki, kd, outputLimit, maxPidIntegralOutput);
@@ -51,15 +54,23 @@ public:
 
     int update(Throttle &ctx, Result &res) override {
         A8_LOG_DEBUG(logger, ">>Bal.update.");
-        bool ok = rpy->update();
-        if (!ok) {
-            res << "failed to update rpy.";
+        int maxRetries = 10;
+        int retries = 0;
+        while (true) {
+            bool ok = rpy->update();
+            if (ok) {
+                break;
+            }
+            if (retries > maxRetries) {
+                res << "failed to update rpy after retries:" << retries;
+                return -1;
+            }
+            retries++;
             A8_LOG_DEBUG(logger, "<<Bal.update.failed");
-            return -1;
         }
         float roll = rpy->getRoll();
         float pitch = rpy->getPitch();
-        float yaw = rpy->getYaw();        
+        float yaw = rpy->getYaw();
         // pid
         pidRoll->update(ctx.timeMs_, roll, desiredRoll);
         pidPitch->update(ctx.timeMs_, pitch, desiredPitch);

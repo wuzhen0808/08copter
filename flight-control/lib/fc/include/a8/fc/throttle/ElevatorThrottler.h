@@ -18,6 +18,7 @@ public:
         minSample += this->elevationThrottle;
         maxSample += this->elevationThrottle;
     }
+    void setup()override{}
     void setElevationThrottle(float pwm) {
         this->elevationThrottle = pwm;
     }
@@ -32,8 +33,6 @@ public:
             A8_LOG_DEBUG(logger, String() << "<<Ele.update.");
         }
         return 1;
-    }
-    void printHistory(int intend, History &his) override {
     }
 };
 } // namespace a8::fc::throttle

@@ -18,14 +18,20 @@ public:
         ConfigContext &configContext;
         Config &config;
         Throttle &throttle;
+        Collector &collector;
         bool landing;
         long startTimeMs;
         long tickCostTimeMs;
-        Context(Config &config, ConfigContext &configContext, Throttle &throttle) : configContext(configContext), config(config), throttle(throttle) {
+        long timeMs;
+        Context(Collector &collector, Config &config, ConfigContext &configContext, Throttle &throttle) : configContext(configContext), config(config), throttle(throttle), collector(collector) {
             this->landing = false;
         }
+
         ~Context() {
-            A8_DEBUG("~Mission::Context()");
+        }
+        void beforeUpdate(long timeMs) {
+            this->timeMs = timeMs;
+            throttle.beforeUpdate(timeMs);
         }
     };
 
@@ -36,16 +42,11 @@ protected:
     Config &config;
     System *sys;
 
-protected:
     int beforeRun(Context &mc, Result &res) {
         int ret = checkRpy(mc.configContext, res);
         if (ret < 0) {
             return ret;
         }
-        float minInTheory = 0;
-        float maxInTheory = 0;
-        throttler->getLimitInTheory(minInTheory, maxInTheory);
-        this->propellers->setLimitInTheory(minInTheory, maxInTheory);
         return ret;
     }
 
@@ -119,38 +120,59 @@ public:
         this->propellers = propellers;
         this->throttler = new throttle::MainThrottler(config, rpy, logFac);
     }
+
     ~Mission() {
-        A8_DEBUG(">>~Mission()");
         delete this->throttler;
-        A8_DEBUG("<<~Mission()");
+    }
+    void setup() {
+        this->throttler->setup();
+    }
+
+    void collectDataItems(Collector &collector, Context &mc) {
+        collector.add<Context &>("timeMs", mc, [](Context &mc) {
+            return (double)mc.timeMs;
+        });
+        throttler->collectDataItems(collector);
+        propellers->collectDataItems(collector);
     }
     int run(Context &mc, Result &res) {
+
         int ret = this->beforeRun(mc, res);
         if (ret < 0) {
             return ret;
         }
+        ret = this->run2(mc, res);
+        return ret;
+    }
+    int run2(Context &mc, Result &res) {
+        long timeMs = mc.startTimeMs;
+        float minInTheory = 0;
+        float maxInTheory = 0;
+        throttler->getLimitInTheory(minInTheory, maxInTheory);
+        this->propellers->setLimitInTheory(minInTheory, maxInTheory);
         propellers->open(config.enablePropeller);
         // wait 3 secs.
         sys->out->println(String() << "running ... ");
         mc.startTimeMs = sys->getSteadyTime();
         mc.throttle.reset(mc.startTimeMs);
-        long timeMs = mc.startTimeMs;
+        this->collectDataItems(mc.collector, mc);
+        mc.collector.writeHeader();
+        // m
+        int ret = -1;
         while (true) {
 
-            mc.throttle.beforeUpdate(timeMs);
-            Result res;
+            mc.beforeUpdate(timeMs);
 
-            int ret = this->throttler->update(mc.throttle, res);
+            bool running = true;
+            Result res;
+            ret = this->throttler->update(mc.throttle, res);
             if (ret > 0) {
                 mc.throttle.commitUpdate();
             } else {
                 mc.throttle.discardUpdate();
+                this->landing(timeMs);
             }
 
-            if (ret < 0) {
-                log(String() << "failed to update throttle, detail:" << res);
-            }
-            bool running = true;
 
             if (running && throttler->isLanded()) {
                 running = false;
@@ -163,9 +185,13 @@ public:
             }
             mc.tickCostTimeMs = now - timeMs;
 
+            mc.collector.update();
+            // check if done of mission.
             if (!running) {
                 break;
             }
+
+            // calculate next tick time.
             long remain = mc.config.tickTimeMs - mc.tickCostTimeMs;
             if (remain > 0) {
                 sys->delay(remain);

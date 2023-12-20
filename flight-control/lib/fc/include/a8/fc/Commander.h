@@ -18,7 +18,7 @@ protected:
     PowerManage *pm;
     Rpy *rpy;
     Collector *collector;
-    Propellers *propellers;
+    Throttler* throttler;
 
 public:
     Commander(PowerManage *pm, Rpy *rpy, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Executor") {
@@ -27,20 +27,16 @@ public:
         this->sch = sch;
         this->pm = pm;
         this->rpy = rpy;
-        this->collector = new Collector(logFac);
+        
     }
+
     ~Commander() {
     }
 
     virtual Propellers *getPropellers() = 0;
     virtual Mission *createMission(Config &config) = 0;
-    virtual void setup() {
-        this->propellers = this->getPropellers();
-        this->collector->add<Commander *>("throttle0", this, [](Commander *this_) { return (double)this_->propellers->get(0)->getThrottle(); });
-        this->collector->add<Commander *>("throttle1", this, [](Commander *this_) { return (double)this_->propellers->get(1)->getThrottle(); });
-        this->collector->add<Commander *>("throttle2", this, [](Commander *this_) { return (double)this_->propellers->get(2)->getThrottle(); });
-        this->collector->add<Commander *>("throttle3", this, [](Commander *this_) { return (double)this_->propellers->get(3)->getThrottle(); });
-        this->collector->add<Commander *>("pidRoll", this, [](Commander *this_) { return (double)this_->propellers->get(3)->getThrottle(); });
+    virtual void setup() {      
+        
     }
 
     int run(Result &res) {
@@ -49,6 +45,7 @@ public:
         if (ret < 0) {
             return ret;
         }
+        Propellers *propellers = this->getPropellers();
         ret = propellers->isReady(res);
         if (ret < 0) {
             return ret;
@@ -78,9 +75,10 @@ public:
             // todo print and confirm again.
             log("todo print all config items and confirm.");
             //
-            Throttle throttle(this->propellers);
-
-            Mission::Context mc(config, cc, throttle);
+            Throttle throttle(propellers);
+            OutputWriter writer(this->sys->out);
+            Collector collector(&writer);
+            Mission::Context mc(collector, config, cc, throttle);
             Mission *mission = this->createMission(config);
             ret = mission->run(mc, res);
             delete mission;

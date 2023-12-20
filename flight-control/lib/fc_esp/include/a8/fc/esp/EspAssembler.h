@@ -21,13 +21,13 @@ public:
     virtual void populate(StagingContext *sc) override {
         Assembler::populate(sc);
         this->rpy = new EspRpy(loggerFactory);
-        this->executor = new EspCommander(pm, rpy, sc->getSys(), sc->scheduler, loggerFactory);
+        this->commander = new EspCommander(pm, rpy, sc->getSys(), sc->scheduler, loggerFactory);
     }
     virtual void setup(StagingContext *sc) override {        
         Assembler::setup(sc);
         EspUtil::setupWire();
         this->rpy->setup();
-        this->executor->setup();
+        this->commander->setup();
     }
     
 };

@@ -8,7 +8,7 @@ namespace a8::fc {
 class Assembler : public Component {
 
 protected:
-    Commander *executor = 0;
+    Commander *commander = 0;
     Rpy *rpy = 0;
     PowerManage *pm;
 
@@ -23,6 +23,14 @@ public:
 
     virtual void setup(StagingContext *sc) override {
         this->pm->setup();
+        if (this->commander == 0) {
+            sc->stop("commander is 0.");
+            return;
+        }
+        if (this->rpy == 0) {
+            sc->stop("rpy is 0.");
+            return;
+        }
     }
     virtual void postShutdown(StagingContext *sc) override {
     }
@@ -71,7 +79,7 @@ public:
             }
             log("calling executor to run.");
             Result res;
-            int ret = this->executor->run(res);
+            int ret = this->commander->run(res);
             if (ret < 0) {
                 log(res.errorMessage);
             }

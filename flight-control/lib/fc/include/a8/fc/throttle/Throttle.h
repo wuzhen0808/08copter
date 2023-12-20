@@ -20,7 +20,7 @@ public:
     ~Throttle() {
         A8_DEBUG("~Throttle()");
     }
-
+    
     void reset(long timeMs) {
         this->startTimeMs = timeMs;
         this->timeMs_ = this->startTimeMs;

@@ -1,5 +1,6 @@
 #pragma once
 #include "a8/fc/Propeller.h"
+#include "a8/fc/collect/Collector.h"
 #include "a8/util/Result.h"
 #include "a8/util/comp.h"
 #define A8_PROPELLER_COUNT (4)
@@ -11,6 +12,7 @@
 namespace a8::fc {
 using namespace a8::util;
 using namespace a8::util::comp;
+using namespace a8::fc::collect;
 
 class Propellers : public FlyWeight {
 protected:
@@ -20,6 +22,12 @@ public:
     Propellers(LoggerFactory *logFac) : FlyWeight(logFac, "Propellers") {
     }
     virtual void setup() {
+    }
+
+    void collectDataItems(Collector &collector) {
+        propellers.forEach<Collector &>(collector, [](Collector &collector, Propeller *p) {
+            p->collectDataItems(collector);
+        });
     }
 
     virtual int isReady(Result &res) {
@@ -80,14 +88,6 @@ public:
         propellers.forEach<long>(pwm, [](long pwm, Propeller *propeller) {
             propeller->addThrottle(pwm);
         });
-    }
-    void printHistory(int depth, History &his) {
-
-        for (int i = 0; i < this->propellers.len(); i++) {
-            Propeller *propeller = propellers.get(i, 0);
-            his.add(depth, String() << "propeller[" << propeller->getName() << "]:");
-            propeller->printHistory(depth + 1, his);
-        }
     }
 
     void enableAll(bool enable) {

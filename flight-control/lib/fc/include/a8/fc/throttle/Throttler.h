@@ -12,10 +12,12 @@ protected:
 public:
     Throttler(LoggerFactory *logFac, String name) : FlyWeight(logFac, name) {
     }
+    virtual void setup() = 0;
+
+    virtual void collectDataItems(Collector &collector) {
+    }
 
     virtual int update(Throttle &ctx, Result &res) = 0;
-
-    virtual void printHistory(int depth, History &his) = 0;
 
     virtual void getLimitInTheory(float &minBase, float &maxBase) = 0;
 };

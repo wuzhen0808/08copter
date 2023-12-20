@@ -1,17 +1,16 @@
 #pragma once
 #include "a8/fc/PwmManage.h"
 #include "a8/util/Result.h"
+#include "a8/fc/collect/Collector.h"
 #include "a8/util/comp.h"
+
 namespace a8::fc {
 using namespace a8::util;
 using namespace a8::util::comp;
+using namespace a8::fc::collect;
 
 class Propeller {
 protected:
-    float historyMaxThrottle;
-    float historyMinThrottle;
-    long historyMaxPwm;
-    long historyMinPwm;
     float throttle;
     String name;
     bool enable_ = true;
@@ -27,11 +26,12 @@ public:
     }
 
     virtual void setup() = 0;
+
+    void collectDataItems(Collector &collector) {
+        collector.add<Propeller *>(String("propeller-") << this->name, this, [](Propeller *this_) { return (double)this_->getPwm(); });
+    }
+
     void open() {
-        this->historyMaxThrottle = 0.0f;
-        this->historyMinThrottle = 1000.0f;
-        this->historyMaxPwm = 0;
-        this->historyMinPwm = 1000;
     }
     void close() {
     }
@@ -52,16 +52,6 @@ public:
         return this->name;
     }
 
-    void printHistory(int depth, History &his) {
-        
-        String msg1 = String() << "historyMinThrottle(inTheory:" << this->minInTheory << "):" << this->historyMinThrottle;        
-        his.add(depth, msg1);
-        his.add(depth, String() << "historyMaxThrottle(inTheory:" << this->maxInTheory << "):" << this->historyMaxThrottle);
-        his.add(depth, String() << "historyMinPwm:" << this->historyMinPwm);
-        his.add(depth, String() << "historyMaxPwm:" << this->historyMaxPwm);
-        
-    }
-
     void addThrottle(float pwm) {
         this->setThrottle(this->throttle + pwm);
     }
@@ -78,10 +68,8 @@ public:
         this->throttle = 0;
     }
 
-    void updateHistory() {
-        // update history
-        updateMinMax<float>(throttle, historyMinThrottle, historyMaxThrottle);
-        updateMinMax<long>(pwm, historyMinPwm, historyMaxPwm);
+    long getPwm() {
+        return pwm;
     }
 
     template <typename T>
@@ -98,8 +86,6 @@ public:
         if (this->enable_) {
             this->doApply(pwm);
         }
-
-        this->updateHistory();
     }
 
     virtual void doApply(long pwm) = 0;

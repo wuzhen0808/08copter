@@ -1,7 +1,9 @@
 #pragma once
+#include "a8/fc/collect/Collector.h"
 #include "a8/util.h"
 namespace a8::fc::throttle {
 using namespace a8::util;
+using namespace a8::fc::collect;
 
 class Pid : public FlyWeight {
 
@@ -20,17 +22,9 @@ class Pid : public FlyWeight {
     float d = 0;
     float lastError = 0;
     long lastTimeMs = -1;
+
     //
 public:
-    float historyMinOutputP;
-    float historyMinOutputI;
-    float historyMinOutputD;
-    float historyMinOutput;
-    float historyMaxOutputP;
-    float historyMaxOutputI;
-    float historyMaxOutputD;
-    float historyMaxOutput;
-
     void limit(float &output, float min, float max) {
         if (output > max) {
             output = max;
@@ -49,47 +43,19 @@ public:
         this->kd = kd;
         this->outputLimit = outputLimit;
         this->integralOutputLimit = integralOutputLimit;
-        this->resetHistory();
+    }
+
+    void setup() {
+    }
+
+    void collectDataItems(Collector &collector) {
+        collector.add<Pid *>(String(this->name) << "-p", this, [](Pid *pid) { return (double)pid->getP(); });
+        collector.add<Pid *>(String(this->name) << "-i", this, [](Pid *pid) { return (double)pid->getI(); });
+        collector.add<Pid *>(String(this->name) << "-d", this, [](Pid *pid) { return (double)pid->getD(); });
     }
 
     float getOutputLimit() {
         return outputLimit;
-    }
-
-    void resetHistory() {
-        this->historyMinOutputP = outputLimit;
-        this->historyMinOutputI = integralOutputLimit;
-        this->historyMinOutputD = outputLimit;
-        this->historyMinOutput = outputLimit;
-        this->historyMaxOutputP = -outputLimit;
-        this->historyMaxOutputI = -integralOutputLimit;
-        this->historyMaxOutputD = -outputLimit;
-        this->historyMaxOutput = -outputLimit;
-    }
-
-    void printHistory(int depth, History &his) {
-        printHistory(depth, his, "historyOutput", this->outputLimit, this->historyMinOutput, this->historyMaxOutput);
-        printHistory(depth, his, "historyOutputP", this->outputLimit, this->historyMinOutputP, this->historyMaxOutputP);
-        printHistory(depth, his, "historyOutputI", this->integralOutputLimit, this->historyMinOutputI, this->historyMaxOutputI);
-        printHistory(depth, his, "historyOutputD", this->outputLimit, this->historyMinOutputD, this->historyMaxOutputD);
-    }
-    void printHistory(int depth, History &his, String name, float limit, float min, float max) {
-        his.add(depth, String() << name << ",limit:(" << -limit << "," << limit << "),min" << (min <= -limit ? "*" : "") << ":" << min << ",max" << (max >= limit ? "*" : "") << ":" << max << "");
-    }
-
-    void updateHistoryMinMax(float fValue, float &min, float &max) {
-        if (fValue < min) {
-            min = fValue;
-        }
-        if (fValue > max) {
-            max = fValue;
-        }
-    }
-    void updateHistory() {
-        this->updateHistoryMinMax(this->output, this->historyMinOutput, this->historyMaxOutput);
-        this->updateHistoryMinMax(this->p, this->historyMinOutputP, this->historyMaxOutputP);
-        this->updateHistoryMinMax(this->i, this->historyMinOutputI, this->historyMaxOutputI);
-        this->updateHistoryMinMax(this->d, this->historyMinOutputD, this->historyMaxOutputD);
     }
 
     void update(long timeMs, float actual, float desired) {
@@ -113,8 +79,6 @@ public:
         output = p + i + d;
         limit(output, -outputLimit, outputLimit);
 
-        updateHistory();
-
         lastError = error;
         lastTimeMs = timeMs;
         A8_LOG_DEBUG(logger, String() << "<<update," << p << "," << i << "," << d << ","
@@ -123,6 +87,15 @@ public:
 
     float getLastError() {
         return this->lastError;
+    }
+    float getP() {
+        return p;
+    }
+    float getI() {
+        return i;
+    }
+    float getD() {
+        return d;
     }
 
     float getOutput() {

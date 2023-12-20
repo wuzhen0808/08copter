@@ -16,13 +16,11 @@ public:
     LimitThrottler(float max, LoggerFactory *logFac) : Throttler(logFac, "LimitThrottler") {
         this->maxThrottle = max;
     }
-
+void setup()override{}
     void getLimitInTheory(float &minSample, float &maxSample) override {
         limitThrottle(maxSample, 0, maxThrottle);
     }
 
-    void printHistory(int intend, History &his) override {
-    }
     int update(Throttle &ctx, Result &res) override {
         if (A8_THROTTLE_DEBUG) {
             A8_LOG_DEBUG(logger, ">>Limit.update.");
