@@ -109,6 +109,12 @@ public:
     template <typename T>
     static void append(T *&bufferRef, int &lengthRef, int &capacityRef, int deltaCap, int tailCap,
                        const T *buf1, const int from1, const int len1) {
+        add(bufferRef, lengthRef, capacityRef, deltaCap, tailCap, buf1, from1, len1);
+    }
+    
+    template <typename T>
+    static void add(T *&bufferRef, int &lengthRef, int &capacityRef, int deltaCap, int tailCap,
+                    const T *buf1, const int from1, const int len1) {
 
         int length3 = lengthRef + len1;
 
@@ -180,7 +186,7 @@ public:
             }
         }
     }
-    
+
     /**
      * 1. cap - the current cap of some buffer.
      * 2. deltaCap - increase by delta.
@@ -209,7 +215,6 @@ public:
             delete[] a2;
         }
     }
-
 };
 
 } // namespace a8::util

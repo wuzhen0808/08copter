@@ -54,7 +54,7 @@ public:
     }
     void getLimitInTheory(float &minSample, float &maxSample) override {
         for (int i = 0; i < throttlers.len(); i++) {
-            throttlers.get(i)->getLimitInTheory(minSample, maxSample);
+            throttlers.get(i, 0)->getLimitInTheory(minSample, maxSample);
         }
     }
     void printHistory(int depth, History &his) override {
@@ -76,7 +76,7 @@ public:
         int totalPropellers = ctx.propellers->getTotalPropellers();
         A8_M_THRO_DEBUG(logger, String() << ">>update.");
         for (int i = 0; i < throttlers.len(); i++) {
-            Throttler *th = throttlers.get(i);
+            Throttler *th = throttlers.get(i, 0);
 
             ret = th->update(ctx, res);
             ctx.message << this->name << ":(";

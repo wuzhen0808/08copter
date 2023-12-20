@@ -312,14 +312,14 @@ public:
 
         Buffer<Directory<T> *> path = this->getPath();
         out->println("+------ Directory ------------");
-        print(0, 0, path.get(0), path);
+        print(0, 0, path.get(0, 0), path);
         out->println("-----------------------------+");
     }
 
     void print(int depth, int idx, Directory<T> *dir, Buffer<Directory<T> *> &path) {
         Buffer<Directory<T> *> list = dir->getChildren();
         bool expand = false;
-        if (depth < path.len() - 1 && path.get(depth) == dir) {
+        if (depth < path.len() - 1 && path.get(depth, 0) == dir) {
             // only expand focused directories.
             // do not expand the last one.
             expand = true;
@@ -328,7 +328,7 @@ public:
         if (expand) {
             // print child if need expand.
             for (int i = 0; i < list.len(); i++) {
-                print(depth + 1, i, list.get(i), path);
+                print(depth + 1, i, list.get(i,0), path);
             }
         }
     }

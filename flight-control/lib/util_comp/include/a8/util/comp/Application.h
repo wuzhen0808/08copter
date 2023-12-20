@@ -25,12 +25,12 @@ protected:
         Buffer<Component *> *allComponents = this->collect(new Buffer<Component *>());
 
         for (int i = 0; i < allComponents->length(); i++) {
-            Component *component = allComponents->get(i);
+            Component *component = allComponents->get(i, 0);
 
             Buffer<Component::TickEntry*> entries = component->getTicks();
 
             for (int j = 0; j < entries.len(); j++) {
-                Component::TickEntry * entry = entries.get(j);
+                Component::TickEntry * entry = entries.get(j, 0);
                 // find a runner for the component.
                 TickRunner *runner = this->findTickRunner(runners, entry->rate, j);
                 if (runner == 0) {                    
@@ -44,7 +44,7 @@ protected:
     }
     TickRunner *findTickRunner(Buffer<TickRunner *> *runners, const Rate &rate_, const int group) {
         for (int i = 0; i < runners->length(); i++) {
-            TickRunner *runner = runners->get(i);
+            TickRunner *runner = runners->get(i, 0);
             long mHz1 = runner->getTicking()->getRate().mHz();
             long mHz2 = rate_.mHz();
             int group1 = runner->getTicking()->getGroup();            
@@ -94,7 +94,7 @@ public:
 
         logger->info("====== Start of properties === ");
         for (int i = 0; i < names.length(); i++) {
-            String name = names.get(i);
+            String name = names.get(i, 0);
             String line = context->properties->getLine(name);
             logger->info(line);
         }
@@ -110,7 +110,7 @@ public:
         // ticker/timer and thread, non-blocking the staging while running the run() method..
         this->rateRunners_ = buildTickRunners(context, new Buffer<TickRunner *>());
         for (int i = 0; i < rateRunners_->length(); i++) {
-            TickRunner *runner = rateRunners_->get(i);
+            TickRunner *runner = rateRunners_->get(i, 0);
             runner->start(context);
         }
     }

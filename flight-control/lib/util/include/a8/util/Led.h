@@ -110,7 +110,7 @@ public:
             // find a light
             Light *l = 0;
             for (int i = 0; i < lights.len(); i++) {
-                l = lights.get(i);
+                l = lights.get(i, 0);
                 if (elapsed2 < l->endTimeMs) {
                     if (A8_LED_DEBUG) {
                         log(String() << "found light:" << i);

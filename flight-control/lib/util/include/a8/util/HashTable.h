@@ -144,7 +144,7 @@ public:
         p.consumer_ = consumer;
 
         for (int i = 0; i < table.len(); i++) {
-            LinkedList<Entry<K, V>> *list = table.get(i);
+            LinkedList<Entry<K, V>> *list = table.get(i, 0);
             if (list == 0) {
                 continue;
             }

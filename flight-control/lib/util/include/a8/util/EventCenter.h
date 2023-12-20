@@ -30,7 +30,7 @@ public:
             return;
         }
         for (int i = 0; i < buf->len(); i++) {
-            Entry *en = buf->get(i);
+            Entry *en = buf->get(i, 0);
             en->eventHandle(data, en->context, en->handle);
         }
     }
@@ -38,7 +38,7 @@ public:
     Buffer<Entry *> *get(int type, bool create) {
         Buffer<Entry *> *buf = 0;
         if (type < entries->len()) {
-            buf = entries->get(type);
+            buf = entries->get(type, 0);
         }
         if (buf == 0 && create) {
             buf = new Buffer<Entry *>();

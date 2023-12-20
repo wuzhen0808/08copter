@@ -81,7 +81,7 @@ public:
     static String toHexString(const Buffer<char> &buf) {
         String buf2;
         for (int i = 0; i < buf.len(); i++) {
-            char ch = buf.get(i);
+            char ch = buf.get(i, 0);
             buf2.append(Lang::high4Hex(ch));
             buf2.append(Lang::low4Hex(ch));
         }
@@ -91,7 +91,7 @@ public:
     static Buffer<char> toHexBuffer(const Buffer<char> &buf) {
         Buffer<char> buf2;
         for (int i = 0; i < buf.len(); i++) {
-            char ch = buf.get(i);
+            char ch = buf.get(i, 0);
             buf2.append(Lang::high4Hex(ch));
             buf2.append(Lang::low4Hex(ch));
         }

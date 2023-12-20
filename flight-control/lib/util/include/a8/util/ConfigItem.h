@@ -115,7 +115,7 @@ public:
         if (this->dir != 0) {
             Buffer<Directory<ConfigItem *> *> buf = this->dir->getChildren();
             for (int i = 0; i < buf.len(); i++) {
-                ConfigItem *ci = buf.get(i)->getElement();
+                ConfigItem *ci = buf.get(i, 0)->getElement();
                 if (!ci->isValid()) {
                     ret = false;
                     break;
@@ -191,7 +191,7 @@ public:
         }
         Buffer<Directory<ConfigItem *> *> list = this->dir->getChildren();
         for (int i = 0; i < list.len(); i++) {
-            Directory<ConfigItem *> *childTree = list.get(i);
+            Directory<ConfigItem *> *childTree = list.get(i,0);
             ConfigItem *child = childTree->getElement();
             consumer(c, child);
             if (recursive) {

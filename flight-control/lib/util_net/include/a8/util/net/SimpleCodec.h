@@ -66,7 +66,7 @@ public:
             return ret;
         }
         len += ret;
-        Codec *subCodec = subCodecs.get(type);
+        Codec *subCodec = subCodecs.get(type, 0);
         if (subCodec != 0) {
             ret = subCodec->write(writer, type, data, rst);
             if (ret < 0) {
@@ -90,7 +90,7 @@ public:
             return ret;
         }
         ret2 = ret;
-        Codec *codec = subCodecs.get(type);
+        Codec *codec = subCodecs.get(type, 0);
         if (codec == 0) {
             rst.errorMessage << "cannot decode, no codec found for data type:" << type;
             return -2; // failed to decode buffer.

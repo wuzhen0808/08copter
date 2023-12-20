@@ -20,7 +20,7 @@ using namespace a8::util::net;
 
 static void toSet(Buffer<SOCK> &socks, fd_set &set) {
     for (int i = 0; i < socks.length(); i++) {
-        set.fd_array[0] = socks.get(i);
+        set.fd_array[0] = socks.get(i,0);
         set.fd_count = i + 1;
     }
 }

@@ -26,7 +26,7 @@ public:
         return 1;
     }
     Propeller *get(int idx) {
-        return propellers.get(idx);
+        return propellers.get(idx, 0);
     }
 
     void open(bool enable) {
@@ -54,7 +54,7 @@ public:
 
     void setLimitInTheory(long minInTheory, long maxInTheory) {
         for (int i = 0; i < propellers.len(); i++) {
-            propellers.get(i)->setLimitInTheory(minInTheory, maxInTheory);
+            propellers.get(i, 0)->setLimitInTheory(minInTheory, maxInTheory);
         }
     }
 
@@ -84,7 +84,7 @@ public:
     void printHistory(int depth, History &his) {
 
         for (int i = 0; i < this->propellers.len(); i++) {
-            Propeller *propeller = propellers.get(i);
+            Propeller *propeller = propellers.get(i, 0);
             his.add(depth, String() << "propeller[" << propeller->getName() << "]:");
             propeller->printHistory(depth + 1, his);
         }

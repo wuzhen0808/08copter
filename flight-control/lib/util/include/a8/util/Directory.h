@@ -73,7 +73,7 @@ public:
         }
         // delete all children.
         for (int i = 0; i < this->children.len(); i++) {
-            Directory *child = this->children.get(i);
+            Directory *child = this->children.get(i,0);
             delete child;
         }
         // delete attribute
@@ -172,9 +172,9 @@ public:
             return 0;
         }
         if (subPathIdx == path.len() - 1) {
-            return findChild(path.get(subPathIdx));
+            return findChild(path.get(subPathIdx, ""));
         }
-        String childName = path.get(subPathIdx);
+        String childName = path.get(subPathIdx,"");
         Directory *child = findChild(childName);
         if (child == 0) {
             return 0;

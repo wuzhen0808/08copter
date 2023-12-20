@@ -37,7 +37,7 @@ public:
         Buffer<String> buf;
         Buffer<String> args = StringUtil::strings(argc, argv);
         for (int i = 0; i < args.length(); i++) {
-            String str = args.get(i);
+            String str = args.get(i, "");
             if (str.length() > 10000) {
                 Lang::bug();
             }

@@ -63,7 +63,7 @@ public:
         sys->getProperties(pts);
         Buffer<String> lines = pts.getAllLines();
         for (int i = 0; i < lines.len(); i++) {
-            str << lines.get(i) << "\n";
+            str << lines.get(i, 0) << "\n";
         }
         return str;
     }

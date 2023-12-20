@@ -83,7 +83,7 @@ class Properties {
 
     Entry *findEntry(const String &name, bool useZeroEntry) {
         for (int i = 0; i < buffer->length(); i++) {
-            Entry *entry = buffer->get(i);
+            Entry *entry = buffer->get(i, 0);
             if (name == entry->name) {
                 return entry;
             }
@@ -103,7 +103,7 @@ public:
     ~Properties() {
 
         for (int j = 0; j < buffer->length(); j++) {
-            Entry *entry = buffer->get(j);
+            Entry *entry = buffer->get(j, 0);
             delete entry;
         }
         delete buffer;
@@ -112,7 +112,7 @@ public:
 
     void setLines(const Buffer<String> &lines) {
         for (int i = 0; i < lines.length(); i++) {
-            String str = lines.get(i);
+            String str = lines.get(i, 0);
             if (str.length() > 10000) {
                 Lang::bug();
             }
@@ -188,7 +188,7 @@ public:
     }
     void write(Writer &writer) {
         for (int i = 0; i < buffer->length(); i++) {
-            Entry *entry = buffer->get(i);
+            Entry *entry = buffer->get(i, 0);
             writer.write(entry->name.text(), entry->name.length());
             writer.write("=", 1);
             writer.write(entry->value.text(), entry->value.length());
@@ -199,7 +199,7 @@ public:
     Buffer<String> getNames() {
         Buffer<String> ret;
         for (int i = 0; i < this->buffer->length(); i++) {
-            ret.append(this->buffer->get(i)->name);
+            ret.append(this->buffer->get(i, 0)->name);
         }
         return ret;
     }
@@ -255,7 +255,7 @@ public:
     void mergeFrom(Properties *pts, bool overwrite) {
 
         for (int i = 0; i < pts->buffer->length(); i++) {
-            Entry *entry = pts->buffer->get(i);
+            Entry *entry = pts->buffer->get(i, 0);
             if (overwrite && this->contains(entry->name)) {
                 continue;
             }
@@ -281,7 +281,7 @@ public:
         Buffer<String> buf;
         Buffer<String> names = this->getNames();
         for (int i = 0; i < names.len(); i++) {
-            String name = names.get(i);
+            String name = names.get(i, "");
             buf.append(this->getLine(name));
         }
         return buf;

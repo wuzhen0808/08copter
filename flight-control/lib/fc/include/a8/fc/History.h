@@ -19,7 +19,7 @@ public:
             out->println("No history.");
         }
         for (int i = 0; i < messages.len(); i++) {
-            String msg = messages.get(i);
+            String msg = messages.get(i, 0);
             out->println(msg);
         }
     }

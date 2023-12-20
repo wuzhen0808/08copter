@@ -47,7 +47,7 @@ public:
         this->ticking->beforTick(now);
 
         for (int i = 0; i < entries->length(); i++) {
-            Component::TickEntry *entry = entries->get(i);
+            Component::TickEntry *entry = entries->get(i,0);
             entry->tickHandle(ticking, entry->component, entry->handle);
         }
 
@@ -74,7 +74,7 @@ public:
         if (ticking->getRate().isRun()) {
             // start 1 thread for each ticking.
             for (int j = 0; j < entries->length(); j++) {
-                Component::TickEntry *entry = entries->get(j);
+                Component::TickEntry *entry = entries->get(j, 0);
                 TickRunner *runner = new TickRunner(this->ticking->getStaging(), entry->rate, j);
                 runner->add(entry);
                 logger->info(String() << "schedule thread for runner:" << j);

@@ -113,7 +113,7 @@ private:
     }
 
     Rf24Sock *get(int id, Result &res) {
-        Rf24Sock *sock = this->get(id);
+        Rf24Sock *sock = this->get(id,0);
         if (sock == 0) {
             res << "no such sock id:" << id;
         }

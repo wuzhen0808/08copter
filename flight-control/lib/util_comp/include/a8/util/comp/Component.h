@@ -93,7 +93,7 @@ protected:
             return;
         }
         for (int i = 0; i < children->len(); i++) {
-            children->get(i)->print(writer, indent + 1, recursive);
+            children->get(i, 0)->print(writer, indent + 1, recursive);
         }
     }
 
@@ -114,7 +114,7 @@ public:
         tmp.append(this->children);
 
         for (int i = tmp.length() - 1; i >= 0; i--) {
-            Component *com = tmp.get(i);
+            Component *com = tmp.get(i, 0);
             deleteChild(com);
         }
         delete this->children;
@@ -206,7 +206,7 @@ public:
 
     Component *findChild(const String &name) {
         for (int i = 0; i < this->children->length(); i++) {
-            Component *child = children->get(i);
+            Component *child = children->get(i, 0);
             if (child->isName(name)) {
                 return child;
             }
@@ -215,7 +215,7 @@ public:
     }
 
     Component *findComponent(Buffer<String> &path, int from) {
-        String name = path.get(from);
+        String name = path.get(from, "");
         Component *child = this->findChild(name);
         if (child == 0 || from >= path.length()) {
             return 0;
@@ -226,7 +226,7 @@ public:
     Buffer<Component *> *collect(Buffer<Component *> *buffer) {
         buffer->append(*this->children);
         for (int i = 0; i < children->length(); i++) {
-            children->get(i)->collect(buffer);
+            children->get(i, 0)->collect(buffer);
         }
         return buffer;
     }
@@ -261,7 +261,7 @@ public:
         path->append(this->name);
         String msg(">>");
         for (int i = 0; i < path->len(); i++) {
-            msg << "/" << path->get(i);
+            msg << "/" << path->get(i, "");
         }
         msg << ":" << this->stage;
         log(msg);
@@ -271,7 +271,7 @@ public:
         Buffer<String> *path = context->getPath();
         String msg("<<");
         for (int i = 0; i < path->len(); i++) {
-            msg << "/" << path->get(i);
+            msg << "/" << path->get(i,"");
         }
         msg << ":" << this->stage;
         log(msg);
@@ -318,7 +318,7 @@ public:
         if (this->children != 0) {
             int count = this->children->length();
             for (int i = 0; i < count; i++) {
-                Component *com = children->get(i);
+                Component *com = children->get(i, 0);
                 com->stageTo(stage2, context);
                 if (context->isStop()) {
                     break;

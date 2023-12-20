@@ -1,9 +1,9 @@
 #pragma once
+#include "a8/util/Array.h"
 #include "a8/util/Assert.h"
 #include "a8/util/Callback3.h"
 #include "a8/util/Debug.h"
 #include "a8/util/Lang.h"
-#include "a8/util/Array.h"
 #include "a8/util/Math.h"
 #include "a8/util/defines.h"
 #include "debug.h"
@@ -70,6 +70,10 @@ public:
         return this->length_;
     }
 
+    int size() const {
+        return this->length_;
+    }
+
     T get(int idx, T def) const {
         if (this->hasIndex(idx)) {
             return this->buffer_[idx];
@@ -80,15 +84,7 @@ public:
     bool hasIndex(int idx) const {
         return idx >= 0 && idx < length_;
     }
-    // TODO remove this method.
-    T get(int idx) const {
-        if (this->hasIndex(idx)) {
-            return this->buffer_[idx];
-        }
-        Assert::illegalArgument("no such element.");
-        return this->buffer_[idx];
-    }
-
+    
     int tryGet(int idx, T &ele) const {
         if (idx < 0 || idx > this->length_ - 1) {
             return -1;
@@ -220,46 +216,81 @@ public:
         this->clear();
     }
 
+    void add(Buffer<T> *buf, int from, int len) {
+        this->add(buf->buffer_, from, len);
+    }
+
+    void add(const T &element) {
+        this->add(&element, 0, 1);
+    }
+
+    void add(const T *elements, int length_) {
+        add(elements, 0, length_);
+    }
+
+    template <typename S>
+    void add(const S &element, T (*convert)(const S &)) {
+        T ele = convert(element);
+        add(&ele, 0, 1);
+    }
+
+    void add(const Buffer<T> &buf) {
+        add(buf.buffer_, 0, buf.length_);
+    }
+
+    void add(const Buffer<T> *buf) {
+        add(buf->buffer_, 0, buf->length_);
+    }
+    void add(const T *elements, const int from, const int len) {
+
+#if A8_BUFFER_DEBUG == 1
+        A8_DEBUG4(">>Buffer::add,length_: ", this->length_, ",capacity_:", this->capacity_);
+#endif
+
+        Array::add<T>(this->buffer_, this->length_, this->capacity_,
+                      DELTA_BUF_CAP, 0,
+                      elements, from, len);
+#if A8_BUFFER_DEBUG == 1
+        A8_DEBUG("<<Buffer<T> *add(const T *elements, const int from, const int len)");
+#endif
+    }
+
     Buffer<T> *append(Buffer<T> *buf, int from, int len) {
-        return this->append(buf->buffer_, from, len);
+        this->add(buf, from, len);
+        return this;
     }
 
     Buffer<T> *append(const T &element) {
-        return append(&element, 0, 1);
+        add(element);
+        return this;
     }
 
     Buffer<T> *append(const T *elements, int length_) {
-        return append(elements, 0, length_);
+        append(elements, length_);
+        return this;
     }
 
     template <typename S>
     Buffer<T> *append(const S &element, T (*convert)(const S &)) {
-        T ele = convert(element);
-        return append(&ele, 0, 1);
+        add(element, convert);
+        return this;
     }
 
     Buffer<T> *append(const Buffer<T> &buf) {
-        return append(buf.buffer_, 0, buf.length_);
+        add(buf);
+        return this;
     }
 
     Buffer<T> *append(const Buffer<T> *buf) {
-        return append(buf->buffer_, 0, buf->length_);
+        add(buf);
+        return this;
     }
 
     Buffer<T> *append(const T *elements, const int from, const int len) {
-
-#if A8_BUFFER_DEBUG == 1
-        A8_DEBUG4(">>Buffer::append,length_: ", this->length_, ",capacity_:", this->capacity_);
-#endif
-
-        Array::append<T>(this->buffer_, this->length_, this->capacity_,
-                        DELTA_BUF_CAP, 0,
-                        elements, from, len);
-#if A8_BUFFER_DEBUG == 1
-        A8_DEBUG("<<Buffer<T> *append(const T *elements, const int from, const int len)");
-#endif
+        add(elements, from, len);
         return this;
     }
+
     bool setIfNeeded(int idx, T emptyValue, T element) {
         if (this->isEquals(idx, element)) {
             return false;
