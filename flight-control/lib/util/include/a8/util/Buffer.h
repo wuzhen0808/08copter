@@ -3,6 +3,7 @@
 #include "a8/util/Callback3.h"
 #include "a8/util/Debug.h"
 #include "a8/util/Lang.h"
+#include "a8/util/Array.h"
 #include "a8/util/Math.h"
 #include "a8/util/defines.h"
 #include "debug.h"
@@ -143,8 +144,8 @@ public:
         int leftLen = idx;
         int rightLen = this->length_ - idx - 1;
 
-        Lang::append(buf2, len2, cap2, DELTA_BUF_CAP, 0, this->buffer_, 0, leftLen);
-        Lang::append(buf2, len2, cap2, DELTA_BUF_CAP, 0, this->buffer_, idx + 1, rightLen);
+        Array::append(buf2, len2, cap2, DELTA_BUF_CAP, 0, this->buffer_, 0, leftLen);
+        Array::append(buf2, len2, cap2, DELTA_BUF_CAP, 0, this->buffer_, idx + 1, rightLen);
         this->reset(buf2, len2, cap2);
 
         return true;
@@ -186,17 +187,17 @@ public:
             return 0;
         }
         int len2 = Math::min(len, this->length_ - from1);
-        Lang::copy<T>(this->buffer_, from1, len2, buf);
+        Array::copy<T>(this->buffer_, from1, len2, buf);
         return len2;
     }
 
     void reverse() {
-        Lang::reverse<T>(this->buffer_, this->length_);
+        Array::reverse<T>(this->buffer_, this->length_);
     }
 
     int write(T *buf, int bLen) {
         int len = Math::min(this->length_, bLen);
-        Lang::copy(this->buffer_, 0, len, buf, 0);
+        Array::copy(this->buffer_, 0, len, buf, 0);
         return len;
     }
 
@@ -251,7 +252,7 @@ public:
         A8_DEBUG4(">>Buffer::append,length_: ", this->length_, ",capacity_:", this->capacity_);
 #endif
 
-        Lang::append<T>(this->buffer_, this->length_, this->capacity_,
+        Array::append<T>(this->buffer_, this->length_, this->capacity_,
                         DELTA_BUF_CAP, 0,
                         elements, from, len);
 #if A8_BUFFER_DEBUG == 1

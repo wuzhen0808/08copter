@@ -1,6 +1,7 @@
 #pragma once
 #include "a8/util/Format.h"
 #include "a8/util/Lang.h"
+#include "a8/util/Array.h"
 #include "a8/util/defines.h"
 #include "debug.h"
 #define PREFER_INT_WIDTH 1
@@ -29,7 +30,7 @@ public:
     }
 
     static String string(const char *str) {
-        return String(str, Lang::strLength(str));
+        return String(str, Array::strLength(str));
     }
 
     static int hashCode(String str, int fish) {
@@ -87,7 +88,7 @@ public:
 
     String &operator=(const char *buf) {
         this->clear();
-        append(buf, 0, Lang::strLength(buf));
+        append(buf, 0, Array::strLength(buf));
         return *this;
     }
 
@@ -116,7 +117,7 @@ public:
     }
 
     String(const char *buf) {
-        int len = Lang::strLength(buf);
+        int len = Array::strLength(buf);
         append(buf, 0, len);
     }
 
@@ -166,7 +167,7 @@ public:
         }
     }
     void append(const char *str) {
-        append(str, 0, Lang::strLength(str));
+        append(str, 0, Array::strLength(str));
     }
 
     void append(const char ch) {
@@ -182,7 +183,7 @@ public:
     }
 
     void append(const char *buf, int from, int len) {
-        Lang::appendStr(this->text_, this->length_, this->capacity_, DELTA_STR_CAP, buf, from, len);
+        Array::appendStr(this->text_, this->length_, this->capacity_, DELTA_STR_CAP, buf, from, len);
     }
 
     void append(const float fValue) {

@@ -26,7 +26,7 @@ public:
             return this->reader->read(buf, bufLen, res);
         }
         len = Math::min(bufLen, localLen);
-        Lang::copy<char>(buffer.buffer(), 0, len, buf, 0);
+        Array::copy<char>(buffer.buffer(), 0, len, buf, 0);
         this->buffer = this->buffer.subBuffer(len);
 
         return len;

@@ -41,29 +41,7 @@ public:
     String getLastError() override {
         return String() << this->lastStableCheckError << ";" << this->lastBalanceCheckError;
     }
-    void tick() override {
-        if (!this->setupOk_) {
-            A8_LOG_DEBUG(logger, "missing setup? or you need setup again.");
-            return; //
-        }
-        if (this->firstStableCheckedIsOk) {
-            return;
-        }
-
-        if (this->continueUpdateFailed > 1000) {
-            // do not check, mpu totally not available.
-            // TODO set a alarm.
-            // TODO stop timer
-            return;
-        }
-
-        Result res;
-        int ret = this->doCheckStable(false, res);
-        if (ret > 0) {
-            this->firstStableCheckedIsOk = true;
-        }
-    }
-
+    
     bool update() override {
 
         A8_LOG_DEBUG(logger, ">>EspRpy::update.");

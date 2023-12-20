@@ -17,7 +17,7 @@ public:
     StringReader() {
     }
     StringReader(const char *str) {
-        buffer.append(str, Lang::strLength(str));
+        buffer.append(str, Array::strLength(str));
     }
     StringReader(const String str) {
         buffer.append(str.text(), str.len());

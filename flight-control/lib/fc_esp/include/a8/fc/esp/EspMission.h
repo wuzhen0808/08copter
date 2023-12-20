@@ -7,7 +7,7 @@ using namespace a8::fc;
 class EspMission : public Mission {
 
 public:
-    EspMission(Config &config, Rpy *rpy, Propellers *propellers, LoggerFactory *logFac) : Mission(config, propellers, rpy, logFac) {
+    EspMission(System* sys,Config &config, Rpy *rpy, Propellers *propellers, LoggerFactory *logFac) : Mission(sys,config, propellers, rpy, logFac) {
     }
     ~EspMission() {
     }

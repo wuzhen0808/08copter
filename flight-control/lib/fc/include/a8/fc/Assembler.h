@@ -20,12 +20,11 @@ public:
         Component::populate(sc);
         this->pm = new PowerManage(sc->getSys(), 5, 21, loggerFactory);
     }
-    
+
     virtual void setup(StagingContext *sc) override {
-        this->pm->setup();        
+        this->pm->setup();
     }
     virtual void postShutdown(StagingContext *sc) override {
-       
     }
 
     virtual void start(StagingContext *sc) override {
@@ -45,7 +44,7 @@ public:
         });
     }
     void hz1(TickingContext *tc) {
-        this->rpy->tick();
+        // this->rpy->tick();
     }
     void hz500(TickingContext *tc) {
         long timeMs = tc->getSteadyTime();

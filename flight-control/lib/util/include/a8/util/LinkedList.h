@@ -188,7 +188,7 @@ public:
                 return p->finder_(p->context_, ele);
             }, //
             [](Params *p, Node<T> *node) {
-                Lang::append(p->toBeRemoved, p->len, p->cap, 16, 0, &node, 0, 1);
+                Array::append(p->toBeRemoved, p->len, p->cap, 16, 0, &node, 0, 1);
             } //
         );
 

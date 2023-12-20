@@ -22,7 +22,7 @@ public:
         if (len > bufLen) {
             len = bufLen;
         }
-        Lang::copy<char>(this->buffer(), from, len, buf);
+        Array::copy<char>(this->buffer(), from, len, buf);
         from += len;
         return len;
     };

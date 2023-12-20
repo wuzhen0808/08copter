@@ -37,7 +37,7 @@ public:
     }
 
     Mission *createMission(Config &config) override {
-        return new EspMission(config, rpy, propellers, loggerFactory);
+        return new EspMission(sys, config, rpy, propellers, loggerFactory);
     }
 
     void releaseMission(Mission *pilot) override {

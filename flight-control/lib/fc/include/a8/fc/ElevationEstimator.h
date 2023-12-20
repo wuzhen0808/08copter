@@ -1,6 +1,5 @@
 #pragma once
 #include "a8/fc/PowerManage.h"
-#include "a8/fc/Propellers.h"
 #include "a8/util.h"
 #define A8_PM_DEBUG (0)
 namespace a8::fc {

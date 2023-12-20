@@ -58,7 +58,7 @@ public:
             return localResult;
         }
         int len = Math::min(bufLen, localResult);
-        Lang::copy<char>(this->buf, this->localPointer, len, buf);
+        Array::copy<char>(this->buf, this->localPointer, len, buf);
         this->localPointer += len;
         this->localResult -= len;
         return len;

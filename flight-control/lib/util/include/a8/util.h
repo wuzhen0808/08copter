@@ -1,4 +1,5 @@
 #pragma once
+#include "a8/util/Array.h"
 #include "a8/util/AnalogInputPin.h"
 #include "a8/util/Assert.h"
 #include "a8/util/Attributes.h"

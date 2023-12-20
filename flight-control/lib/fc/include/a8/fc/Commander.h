@@ -23,47 +23,6 @@ public:
     ~Commander() {
     }
 
-    int doRun(long startTimeMs, Context &context, Config &config, Mission *pilot, Result res) {
-
-        int ret = pilot->start(context, res);
-        if (ret < 0) {
-            return ret;
-        }
-
-        // wait 3 secs.
-        sys->out->println(String() << "delay ... " << config.delayBeforeStartSec << " sec before start.");
-        sys->delay(config.delayBeforeStartSec * 1000);
-
-        bool landing = false;
-        long preTimeMs = startTimeMs;
-        while (true) {
-            Result res;
-            long timeMs = sys->getSteadyTime();
-            long remainMs = config.tickTimeMs - (timeMs - preTimeMs);
-            if (remainMs > 0) {
-                sys->delay(remainMs);
-            }
-            ret = pilot->update(&context, timeMs, res);
-
-            if (ret < 0) {
-                log(String() << "failed to update pilot, detail:" << res);
-            }
-
-            if (pilot->isLanded()) {
-                break;
-            }
-
-            if (!landing) { //
-                // check if need start landing.
-                if (timeMs - startTimeMs > config.flyingTimeLimitSec * 1000) {
-                    landing = true;
-                    pilot->landing(timeMs);
-                }
-            }
-            preTimeMs = timeMs;
-        }
-        return 1;
-    }
 
     virtual Rpy *getRpy() = 0;
     virtual Propellers *getPropellers() = 0;
@@ -73,13 +32,6 @@ public:
     virtual void setup() {
     }
 
-    int checkSafetyWhenIgnoreBalance(Config &config, Result &res) {
-        if (config.enablePropeller) {
-            res << "propeller is enabled,it's not safe to start the mission with un-balance rpy.";
-            return -1;
-        }
-        return 1;
-    }
 
     int run(Result &res) {
         PowerManage *pm = this->getPowerManage();
@@ -119,49 +71,11 @@ public:
             log("todo print all config items and confirm.");
             //
 
-            int ret = rpy->checkStable(config.stableCheckRetries, res);
-            if (ret < 0) {
-                log(String() << "cannot create mission, rpy is not stable after retries:" << config.stableCheckRetries);
-                continue;
-            }
-
-            ret = rpy->checkBalance(res);
-            if (ret < 0) {
-
-                if (config.unBalanceAction == UnBalanceAction::END_OF_MISSION) {
-                    log("cannot create mission, it is not allowed to start with a un-balanced-rpy.");
-                    continue;
-                } else if (config.unBalanceAction == UnBalanceAction::ASK) {
-                    bool ok = ConfigItems::confirm(cc, "Start mission with UN-balanced rpy?", false);
-                    if (!ok) {
-                        continue;
-                    } // ask to start.
-                } else if (config.unBalanceAction == UnBalanceAction::IGNORE) {
-
-                } else if (config.unBalanceAction == UnBalanceAction::IGNORE_IF_SAFE) {
-                    Result res;
-                    if (checkSafetyWhenIgnoreBalance(config, res) < 0) {
-                        log(res.errorMessage);
-                        continue;
-                    }
-                } else {
-                    log("cannot create mission, it is not allowed to start with a un-balanced-rpy.");
-                    continue;
-                }
-            }
-
             Mission *mission = this->createMission(config);
-            long startTimeMs = sys->getSteadyTime();
-            propellers->open(config.enablePropeller);
-            Context context(startTimeMs, propellers, his);
-            ret = this->doRun(startTimeMs, context, config, mission, res);
+            long startTimeMs = sys->getSteadyTime();            
+            ret = mission->run(cc, his, res);
             A8_LOG_DEBUG(cc.logger, "after doRun()");
-            propellers->printHistory(0, his);
-            A8_LOG_DEBUG(cc.logger, "after doRun()2");
             mission->printHistory(0, his);
-            A8_LOG_DEBUG(cc.logger, "after doRun()3");
-            propellers->close();
-            A8_LOG_DEBUG(cc.logger, "after doRun()5");
             releaseMission(mission);
             if (ret < 0) {
                 log(res.errorMessage);

@@ -47,7 +47,7 @@ public:
     Strings &operator=(Strings &strs) {
         char **content2 = new char *[strs.len_] { 0 };
         for (int i = 0; i < strs.len_; i++) {
-            Lang::appendStr(content2[i], strs.content_[i]);
+            Array::appendStr(content2[i], strs.content_[i]);
         }
         Lang::replace(this->content_, this->len_, content2, strs.len_, true);
         return *this;
@@ -59,7 +59,7 @@ public:
         char **content2 = new char *[buf.length()] {};
         for (int i = 0; i < buf.len(); i++) {
             String str = buf[i];
-            Lang::appendStr(content2[i], str.text(), 0, str.len());
+            Array::appendStr(content2[i], str.text(), 0, str.len());
         }
         Lang::replace(this->content_, this->len_, content2, buf.len(), true);
         return *this;

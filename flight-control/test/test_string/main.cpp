@@ -26,7 +26,7 @@ TEST(TestString, testFormat) {
 
 TEST(TestString, testEmpty) {
     String str0;
-    int len0 = Lang::strLength(str0.text());
+    int len0 = Array::strLength(str0.text());
     EXPECT_EQ(0, len0);
 }
 

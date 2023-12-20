@@ -1,6 +1,7 @@
 #pragma once
 #include "a8/util/Debug.h"
 #include "a8/util/Lang.h"
+#include "a8/util/Array.h"
 #include "a8/util/Math.h"
 
 #ifndef A8_FORMAT_DEBUG
@@ -109,9 +110,9 @@ private:
 
         if (lenRight + 1 > capRight) { // str truncate,
 
-            capacity = Lang::makeCapacity(capacity, deltaCap, lenLeft + lenRight + 1);
+            capacity = Array::makeCapacity(capacity, deltaCap, lenLeft + lenRight + 1);
             newBuf = new char[capacity];
-            Lang::copy<char>(buf, 0, lenLeft, newBuf);
+            Array::copy<char>(buf, 0, lenLeft, newBuf);
             delete[] buf;
             buf = newBuf;
 
@@ -125,7 +126,7 @@ private:
                 // exit(1);
             }
         } else { // move for leading space
-            Lang::shift<char>(bufRight, lenTail, leading);
+            Array::shift<char>(bufRight, lenTail, leading);
         }
         if (newBuf != 0) {
             bufRef = newBuf;   // write back new buf;
@@ -283,7 +284,7 @@ public:
         // shift the result to the most left of the buffer if has space.
         if (len < bufLen) {
             int space = bufLen - len;
-            Lang::shift(buf + space, len, -space);
+            Array::shift(buf + space, len, -space);
         } else {
             // buffer overflow, result is truncated, need shift to right?
             //
