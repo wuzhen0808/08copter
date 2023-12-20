@@ -74,7 +74,7 @@ public:
         this->throttle = pwm;
     }
 
-    void startUpdate() {
+    void beforeUpdate() {
         this->throttle = 0;
     }
 

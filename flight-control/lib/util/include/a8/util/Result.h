@@ -8,10 +8,15 @@ using a8::util::String;
  *
  */
 class Result {
+private:
+    Result(Result &);
+    Result &operator=(Result &);
 
 public:
+    Result() {
+    }
     String errorMessage;
-
+    
     int reset() {
         int ret = this->errorMessage.len();
         this->errorMessage.clear();

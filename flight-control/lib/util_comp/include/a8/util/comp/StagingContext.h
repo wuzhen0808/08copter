@@ -8,6 +8,9 @@ using namespace a8::util;
 using namespace a8::util::sched;
 
 class StagingContext {
+private:
+    StagingContext(const StagingContext &sc);
+    StagingContext &operator=(const StagingContext &sc);
 
 private:
     int lastError;

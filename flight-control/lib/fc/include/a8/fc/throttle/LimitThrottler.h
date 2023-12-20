@@ -23,7 +23,7 @@ public:
 
     void printHistory(int intend, History &his) override {
     }
-    int update(Context &ctx, Result &res) override {
+    int update(Throttle &ctx, Result &res) override {
         if (A8_THROTTLE_DEBUG) {
             A8_LOG_DEBUG(logger, ">>Limit.update.");
         }

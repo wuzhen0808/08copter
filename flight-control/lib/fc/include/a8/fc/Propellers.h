@@ -35,9 +35,9 @@ public:
             propeller->open();
         });
     }
-    void startUpdate() {
+    void beforeUpdate() {
         propellers.forEach<int>(0, [](int c, Propeller *propeller) {
-            propeller->startUpdate();
+            propeller->beforeUpdate();
         });
     }
     void commitUpdate() {

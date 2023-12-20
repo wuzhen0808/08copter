@@ -47,7 +47,7 @@ public:
     bool enableStart = true;
 
 public:
-    Config(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Logger *logger, History &his, Scheduler *sch) {
+    Config(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Logger *logger, Scheduler *sch) {
         this->reader = reader;
         this->out = out;
         this->sch = sch;
@@ -80,17 +80,6 @@ public:
             ConfigItems::add(ci, "enablePropeller", enablePropeller);
             ConfigItems::add(ci, "enableStart", this->enableStart);
         }
-
-        ci = this;
-        ci = ConfigItems::addReturn(ci, "Print-history");
-        {
-            ci->setAttribute(&his, [](void *) {});
-            ci->onEnter = [](ConfigContext &cc) {
-                History *his = cc.navigator->get()->getAttribute<History *>(0);
-                his->print(cc.out);
-            };
-        }
-
         ci = this;
         ci = ConfigItems::addReturn(ci, "Monitor-rpy");
         {

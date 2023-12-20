@@ -46,7 +46,7 @@ public:
         if (this->running) {
             return 1;
         }
-        rst = this->rst;
+        rst << rst.errorMessage;
         return -1;
     }
     void close() {
@@ -64,7 +64,7 @@ public:
             this->stubRelease_(stub_);
         }
         this->stubRelease_ = stubRelease;
-        B * stub = stubCreate(this->channel);
+        B *stub = stubCreate(this->channel);
         this->stub_ = Lang::cast<B *>(stub);
         return stub;
     }

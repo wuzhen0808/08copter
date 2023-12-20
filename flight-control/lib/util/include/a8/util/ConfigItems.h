@@ -74,6 +74,9 @@ public:
             String getTitle() {
                 return String() << ret << ":" << res.errorMessage;
             }
+            void reset(){
+                res.reset();
+            }
         } *c2 = new Context();
         c2->c = c;
         c2->action = action;
@@ -87,10 +90,8 @@ public:
         ci->onEnter = [](ConfigContext &cc) {
             ConfigItem *ci = cc.navigator->get()->getElement();
             Context *c2 = ci->getAttribute<Context *>(0);
-            Result res;
-            int ret = c2->action(c2->c, res);
-            c2->res = res;
-            c2->ret = ret;
+            c2->reset();
+            c2->ret = c2->action(c2->c, c2->res);
         };
         return ci;
     }

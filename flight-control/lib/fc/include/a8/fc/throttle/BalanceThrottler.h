@@ -49,7 +49,7 @@ public:
         this->pidPitch->config(kp, ki, kd, outputLimit, maxPidIntegralOutput);
     }
 
-    int update(Context &ctx, Result &res) override {
+    int update(Throttle &ctx, Result &res) override {
         A8_LOG_DEBUG(logger, ">>Bal.update.");
         bool ok = rpy->update();
         if (!ok) {
@@ -59,12 +59,10 @@ public:
         }
         float roll = rpy->getRoll();
         float pitch = rpy->getPitch();
-        float yaw = rpy->getYaw();
-        ctx << (String() << "rpy:(");
-        ctx << (String()<< roll << "," << pitch << "," << yaw << ")");
+        float yaw = rpy->getYaw();        
         // pid
-        pidRoll->update(ctx.timeMs_, roll, desiredRoll, ctx.message);
-        pidPitch->update(ctx.timeMs_, pitch, desiredPitch, ctx.message);
+        pidRoll->update(ctx.timeMs_, roll, desiredRoll);
+        pidPitch->update(ctx.timeMs_, pitch, desiredPitch);
         //
         float rollThrottle = pidRoll->getOutput();
         float pitchThrottle = pidPitch->getOutput();

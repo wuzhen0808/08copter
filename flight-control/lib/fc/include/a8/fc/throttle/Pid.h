@@ -92,7 +92,7 @@ public:
         this->updateHistoryMinMax(this->d, this->historyMinOutputD, this->historyMaxOutputD);
     }
 
-    void update(long timeMs, float actual, float desired, String &msg) {
+    void update(long timeMs, float actual, float desired) {
         A8_LOG_DEBUG(logger, String() << ">>update," << actual << "," << desired);
         if (lastTimeMs < 0) {
             lastTimeMs = timeMs;

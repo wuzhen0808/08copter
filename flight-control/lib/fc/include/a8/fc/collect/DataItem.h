@@ -1,7 +1,7 @@
 #pragma once
 #include "a8/util.h"
 
-namespace a8::fc::collector {
+namespace a8::fc::collect {
 using namespace a8::util;
 class DataItem {
 public:
@@ -9,11 +9,14 @@ public:
     DataItem(String name) {
         this->name = name;
     }
-    virtual float get();
+    String getName(){
+        return name;
+    }
+    virtual double get() = 0;
 };
 template <typename C>
 class FunctionalDataItem : public DataItem {
-    using getter = float (*)(C);
+    using getter = double (*)(C);
 
 public:
     C context;
@@ -22,7 +25,7 @@ public:
         this->context = context;
         this->getter_ = getter;
     }
-    float get() override {
+    double get() override {
         return this->getter_(this->context);
     }
 };

@@ -3,6 +3,7 @@
 #include "a8/util/Assert.h"
 #include "a8/util/Callback3.h"
 #include "a8/util/Debug.h"
+#include "a8/util/Iterator.h"
 #include "a8/util/Lang.h"
 #include "a8/util/Math.h"
 #include "a8/util/defines.h"
@@ -15,6 +16,24 @@ namespace a8::util {
 
 template <typename T>
 class Buffer {
+public:
+    template <typename X>
+    class Iterator : public a8::util::Iterator<X> {
+    public:
+        Buffer<X> *buffer;
+        int idx;
+        Iterator(Buffer<X> *buffer) {
+            this->buffer = buffer;
+            this->idx = 0;
+        }
+        bool hasNext() override {
+            return this->idx < this->buffer->len();
+        }
+
+        X next() {
+            return this->buffer->buffer_[idx++];
+        }
+    };
     using equals = bool (*)(T, T);
 
 private:
@@ -83,14 +102,6 @@ public:
 
     bool hasIndex(int idx) const {
         return idx >= 0 && idx < length_;
-    }
-    
-    int tryGet(int idx, T &ele) const {
-        if (idx < 0 || idx > this->length_ - 1) {
-            return -1;
-        }
-        ele = this->buffer_[idx];
-        return 1;
     }
 
     T getLast(T def) const {
@@ -361,6 +372,15 @@ public:
             T ele = this->buffer_[i];
             consumer(ele);
         }
+    }
+    template <typename C>
+    void forEach2(C c, void (*consumer)(C, int, T)) {
+        for (int i = 0; i < this->length_; i++) {
+            consumer(c, i, this->buffer_[i]);
+        }
+    }
+    Iterator<T> iterator() {
+        return Iterator<T>(this);
     }
 };
 

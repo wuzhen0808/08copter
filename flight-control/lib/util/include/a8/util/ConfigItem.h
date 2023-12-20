@@ -8,10 +8,17 @@ namespace a8::util {
 class ConfigItem;
 
 class ConfigContext : public InputContext {
+private:
+    ConfigContext(const ConfigContext &cc);
+    ConfigContext& operator=(const ConfigContext &cc);
+
 public:
     Result &res;
     DirectoryNavigator<ConfigContext &, ConfigItem *> *navigator = 0;
     ConfigContext(Reader *reader, Output *out, Logger *logger, Result &res) : res(res), InputContext(reader, out, logger) {
+    }
+    ~ConfigContext() {
+        A8_DEBUG("~ConfigContext");
     }
 };
 
@@ -191,7 +198,7 @@ public:
         }
         Buffer<Directory<ConfigItem *> *> list = this->dir->getChildren();
         for (int i = 0; i < list.len(); i++) {
-            Directory<ConfigItem *> *childTree = list.get(i,0);
+            Directory<ConfigItem *> *childTree = list.get(i, 0);
             ConfigItem *child = childTree->getElement();
             consumer(c, child);
             if (recursive) {

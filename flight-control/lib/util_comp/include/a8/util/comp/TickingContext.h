@@ -8,13 +8,18 @@ using namespace a8::util;
 using namespace a8::util::sched;
 
 class TickingContext {
+private:
+    TickingContext(const TickingContext &);
+    TickingContext operator=(const TickingContext &);
+
+private:
     StagingContext *staging;
     Rate rate;
     int group;
     long tickTimeMs;
     // for thead safe, attributes is used to store thread local variables.
     Buffer<void *> variables;
-    //    
+    //
 public:
     int ret;
 
@@ -26,14 +31,14 @@ public:
         this->group = group;
         this->ret = 0;
     }
-    System* getSys(){
+    System *getSys() {
         return this->staging->getSys();
     }
-    long getTickTimeMs(){
+    long getTickTimeMs() {
         return tickTimeMs;
     }
 
-    long getSteadyTime(){
+    long getSteadyTime() {
         return this->staging->getSys()->getSteadyTime();
     }
 

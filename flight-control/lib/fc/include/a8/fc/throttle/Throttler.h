@@ -1,5 +1,5 @@
 #pragma once
-#include "a8/fc/throttle/Context.h"
+#include "a8/fc/throttle/Throttle.h"
 #include "a8/util.h"
 #define A8_THROTTLE_DEBUG 0
 namespace a8::fc::throttle {
@@ -13,7 +13,7 @@ public:
     Throttler(LoggerFactory *logFac, String name) : FlyWeight(logFac, name) {
     }
 
-    virtual int update(Context &ctx, Result &res) = 0;
+    virtual int update(Throttle &ctx, Result &res) = 0;
 
     virtual void printHistory(int depth, History &his) = 0;
 

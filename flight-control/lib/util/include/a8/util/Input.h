@@ -8,6 +8,10 @@
 #define A8_INPUT_DEBUG (0)
 namespace a8::util {
 class InputContext {
+private:
+    InputContext(const InputContext &cc);
+    InputContext &operator=(const InputContext &cc);
+
     int minBoxWidth = 10;
     int maxInfoWidth = 80;
     int currentLineWidth = 0;
@@ -38,7 +42,7 @@ public:
         return line;
     }
 
-    int readChar(char &ch, Result res) {
+    int readChar(char &ch, Result& res) {
         return lines->read(&ch, 1, res);
     }
 
@@ -60,7 +64,7 @@ public:
         }
         return len;
     }
-    int readOneOfTheChar(Buffer<char> chs, char &ch, Result res) {
+    int readOneOfTheChar(Buffer<char> chs, char &ch, Result& res) {
         while (true) {
             char ch2;
             int ret = this->readChar(ch2, res);

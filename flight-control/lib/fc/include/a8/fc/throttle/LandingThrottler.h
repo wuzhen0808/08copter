@@ -36,7 +36,7 @@ public:
         return 1;
     }
 
-    int update(Context &ctx, Result &res) override {
+    int update(Throttle &ctx, Result &res) override {
         if (A8_THROTTLE_DEBUG) {
 
             A8_LOG_DEBUG(logger, ">>Landing.update.");

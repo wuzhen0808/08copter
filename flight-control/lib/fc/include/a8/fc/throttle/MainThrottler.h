@@ -1,7 +1,7 @@
 #pragma once
 #include "a8/fc/config/Config.h"
 #include "a8/fc/throttle/BalanceThrottler.h"
-#include "a8/fc/throttle/Context.h"
+#include "a8/fc/throttle/Throttle.h"
 #include "a8/fc/throttle/ElevatorThrottler.h"
 #include "a8/fc/throttle/LandingThrottler.h"
 #include "a8/fc/throttle/LimitThrottler.h"
@@ -26,7 +26,7 @@ class MainThrottler : public Throttler {
     a8::fc::Config &config;
 
 public:
-    MainThrottler(a8::fc::Config &config, Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, String("MainThrottle")), config(config) {
+    MainThrottler(a8::fc::Config &config, Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, String("MainThrottler")), config(config) {
 
         elevator = new ElevatorThrottler(logFac);
         elevator->setElevationThrottle(config.elevationThrottle);
@@ -46,11 +46,13 @@ public:
     }
 
     ~MainThrottler() {
+        A8_DEBUG(">>~MainThrottle()");
         this->throttlers.clear();
         delete this->balance;
         delete this->elevator;
         delete this->limit;
         delete this->landing;
+        A8_DEBUG("<<~MainThrottle()");
     }
     void getLimitInTheory(float &minSample, float &maxSample) override {
         for (int i = 0; i < throttlers.len(); i++) {
@@ -70,20 +72,15 @@ public:
         return this->landing->startLanding(timeMs);
     }
 
-    int update(Context &ctx, Result &res) {
-        int ret = -1;
+    int update(Throttle &ctx, Result &res) {
+        int ret = -1;        
         A8_M_THRO_DEBUG(logger, String() << ">>update.");
         int totalPropellers = ctx.propellers->getTotalPropellers();
         A8_M_THRO_DEBUG(logger, String() << ">>update.");
         for (int i = 0; i < throttlers.len(); i++) {
             Throttler *th = throttlers.get(i, 0);
 
-            ret = th->update(ctx, res);
-            ctx.message << this->name << ":(";
-            for (int j = 0; j < totalPropellers; j++) {
-                ctx.message << String() << ctx.propellers->getThrottle(j) << ",";
-            }
-            ctx.message << ")";
+            ret = th->update(ctx, res);            
             if (ret < 0) {
                 break;
             }
