@@ -1,12 +1,10 @@
 #pragma once
+#include "a8/util/Array.h"
 #include "a8/util/Format.h"
 #include "a8/util/Lang.h"
-#include "a8/util/Array.h"
 #include "a8/util/defines.h"
 #include "debug.h"
 #define PREFER_INT_WIDTH 1
-#define FORMAT_FLOAT32_PRECISION 6
-#define FORMAT_FLOAT64_PRECISION 6
 
 namespace a8::util {
 /**
@@ -23,6 +21,9 @@ private:
     int length_ = 0;
     char *text_ = 0;
     int capacity_ = 0;
+
+private:
+    const Format::Float * floatFormat = 0;
 
 public:
     static String *new_() {
@@ -74,6 +75,9 @@ public:
 
     String(const char ch) {
         append(&ch, 0, 1);
+    }
+    void setFloatFormat(const Format::Float* format){
+        this->floatFormat = format;
     }
 
     char get(int i) {
@@ -187,11 +191,11 @@ public:
     }
 
     void append(const float fValue) {
-        appendAsFloat<float>(0, ' ', fValue, FORMAT_FLOAT32_PRECISION);
+        appendAsFloat<float>(0, ' ', fValue);
     }
 
     void append(const double fValue) {
-        appendAsFloat<double>(0, ' ', fValue, FORMAT_FLOAT64_PRECISION);
+        appendAsFloat<double>(0, ' ', fValue);
     }
 
     void append(const int iValue, const int width, const char fill) {
@@ -199,17 +203,16 @@ public:
     }
 
     template <typename T>
-    void appendAsFloat(int width, char fill, T value, int precision) {
+    void appendAsFloat(int width, char fill, T value) {
 
         Format::appendNumberAsFloat<T>(this->text_, this->length_, this->capacity_, DELTA_STR_CAP,
-                                width, fill, value, precision, true);
+                                       width, fill, value, this->floatFormat, true);
     }
 
-    
     template <typename T>
     void appendAsInt(int width, char fill, T value) {
         Format::appendNumberAsInt<T>(this->text_, this->length_, this->capacity_, DELTA_STR_CAP,
-                                width, fill, value, true);
+                                     width, fill, value, true);
     }
 
     void append(const int iValue) {

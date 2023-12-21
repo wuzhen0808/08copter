@@ -5,9 +5,10 @@ namespace a8::fc::esp {
 using namespace a8::fc;
 
 class EspPropeller : public Propeller {
-    Servo servo;    
+    Servo servo;
+
 public:
-    EspPropeller(String name, PwmManage *pwmManage) : Propeller(name, pwmManage) {
+    EspPropeller(String name, int idx, PwmManage *pwmManage) : Propeller(name, idx, pwmManage) {
     }
 
     void hz(int hz) {

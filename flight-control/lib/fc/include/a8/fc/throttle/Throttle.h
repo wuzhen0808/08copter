@@ -1,5 +1,4 @@
 #pragma once
-#include "a8/fc/History.h"
 #include "a8/fc/Propellers.h"
 #include "a8/util.h"
 
@@ -26,7 +25,7 @@ public:
         this->timeMs_ = this->startTimeMs;
     }
 
-    void beforeUpdate(long timeMs) {
+    void preUpdate(long timeMs) {
         this->lastTimeMs_ = this->timeMs_;
         this->timeMs_ = timeMs;
         this->propellers->beforeUpdate();
@@ -40,8 +39,6 @@ public:
         propellers->commitUpdate();
     }
 
-    void discardUpdate() {
-    }
 };
 
 } // namespace a8::fc::throttle

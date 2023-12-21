@@ -8,7 +8,7 @@ using namespace a8::fc::collect;
 class Pid : public FlyWeight {
 
     float outputLimit = 0;
-    float integralOutputLimit = 0;
+    float outputLimitI = 0;
 
     // pid
     float output;
@@ -42,16 +42,19 @@ public:
         this->ki = ki;
         this->kd = kd;
         this->outputLimit = outputLimit;
-        this->integralOutputLimit = integralOutputLimit;
+        this->outputLimitI = integralOutputLimit;
     }
 
     void setup() {
     }
 
     void collectDataItems(Collector &collector) {
-        collector.add<Pid *>(String(this->name) << "-p", this, [](Pid *pid) { return (double)pid->getP(); });
-        collector.add<Pid *>(String(this->name) << "-i", this, [](Pid *pid) { return (double)pid->getI(); });
-        collector.add<Pid *>(String(this->name) << "-d", this, [](Pid *pid) { return (double)pid->getD(); });
+        collector.add<float>(String(this->name)<<"-lmt", this->outputLimit);
+        collector.add<float>(String(this->name)<<"-lmtI", this->outputLimitI);
+        collector.add<float>(String(this->name) << "-p", this->p);
+        collector.add<float>(String(this->name) << "-i", this->i);
+        collector.add<float>(String(this->name) << "-d", this->d);
+        collector.add<float>(String(this->name), this->output);
     }
 
     float getOutputLimit() {
@@ -69,7 +72,7 @@ public:
         float elapsedTimeSec = (timeMs - lastTimeMs) / 1000.0f;
         // if (-3 < error < 3) {
         i = i + (ki * error * elapsedTimeSec);
-        limit(i, -integralOutputLimit, integralOutputLimit);
+        limit(i, -outputLimitI, outputLimitI);
         // }
         d = 0;
         if (elapsedTimeSec > 0) {

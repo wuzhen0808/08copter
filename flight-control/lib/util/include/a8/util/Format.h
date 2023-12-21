@@ -1,23 +1,79 @@
 #pragma once
+#include "a8/util/Array.h"
 #include "a8/util/Debug.h"
 #include "a8/util/Lang.h"
-#include "a8/util/Array.h"
 #include "a8/util/Math.h"
 
 #ifndef A8_FORMAT_DEBUG
 #define A8_FORMAT_DEBUG (0)
 #endif
-#define AUTO_POINT_OFFSET (101)
+
+/**
+ * Know issue:
+ * If precision large than 9, the double 1000 will be formatted to '2147', 2000 is to '4294';
+ * so we limit it to 8;
+ */
+#define A8_MAX_PRECISION (8)
 
 namespace a8::util {
 
 class Format {
 public:
     class Float {
+    public:
+        static void get(int exp, const Float *this_, int &precision, int &pointOffset, int &tailPrecision) {
+            if (this_ == 0) {
+                precision = 6;
+                tailPrecision = 3;
+                int aExp = Math::abs(exp);
+                if (aExp > precision) {
+                    pointOffset = 1;
+                } else {
+                    pointOffset = exp;
+                }
+                return;
+            }
+            this_->get(exp, precision, pointOffset, tailPrecision);
+        }
+
+        virtual void get(int exp, int &precision, int &pointOffset, int &tailPrecision) const = 0;
+    };
+
+    class AutoOffsetFloat : public Float {
+        int precision = 6;
+        int tailPrecision = 3;
+
+    public:
+        AutoOffsetFloat(const int precision, const int tailPrecision) {
+            this->precision = precision;
+            this->tailPrecision = tailPrecision;
+            if (this->precision > A8_MAX_PRECISION) {
+                // avoid overflow.
+                // TODO:
+                // According to the type of the float, overflow boundary should be clear defined.
+                //
+                this->precision = A8_MAX_PRECISION;
+            }
+
+            if (this->tailPrecision > this->precision) {
+                this->tailPrecision = this->precision;
+            }
+        }
+        void get(int exp, int &precision, int &pointOffset, int &tailPrecision) const override {
+            precision = this->precision;
+            tailPrecision = this->tailPrecision;
+            int aExp = Math::abs(exp);
+            if (aExp > this->precision) {
+                pointOffset = 1;
+            } else {
+                pointOffset = exp;
+            }
+        }
     };
 
 private:
     // set may failed if no space for the buf to storage the ch..
+
     static bool copy(char *buf, int idx2, int idx1, int bufLen) {
         if (idx1 < bufLen) {
             return set(buf, idx2, buf[idx1], bufLen);
@@ -74,10 +130,10 @@ private:
     }
 
     template <typename T>
-    static int formatNumber(char *buf, int bufLen, T value, bool asFloat, int precision, int pointOffset, bool addEndOfStr) {
+    static int formatNumber(char *buf, int bufLen, T value, bool asFloat, const Format::Float *format, bool addEndOfStr) {
 
         if (asFloat) {
-            return formatAsFloat<T>(buf, bufLen, value, precision, pointOffset, addEndOfStr);
+            return formatAsFloat<T>(buf, bufLen, value, format, addEndOfStr);
         } else {
             return formatAsInt<T>(buf, bufLen, value, addEndOfStr);
         }
@@ -85,7 +141,7 @@ private:
 
     template <typename T>
     static void doAppendNumber(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
-                               int preferWidth, char fillLeading, T value, bool asFloat, int precision, int pointOffset, bool addEndOfStr) {
+                               int preferWidth, char fillLeading, T value, bool asFloat, const Format::Float *format, bool addEndOfStr) {
 
         char *buf = bufRef;
         int capacity = capRef;
@@ -100,7 +156,7 @@ private:
         int capRight = capacity - lenLeft; // remaining capacity
         char *bufRight = buf + lenLeft;    // give a offset to storage result.
         // try format first time, and then check the length.
-        int lenRight = formatNumber<T>(bufRight, capRight, value, asFloat, precision, pointOffset, false);
+        int lenRight = formatNumber<T>(bufRight, capRight, value, asFloat, format, false);
         int lenTail = lenRight; // the content
         int leading = 0;
         if (lenRight < preferWidth) {
@@ -119,7 +175,7 @@ private:
             capRight = capacity - lenLeft;
             bufRight = buf + lenLeft;
             // format again, with a larger capacity.
-            lenRight = formatNumber<T>(bufRight + leading, capRight - leading, value, asFloat, precision, pointOffset, false);
+            lenRight = formatNumber<T>(bufRight + leading, capRight - leading, value, asFloat, format, false);
 
             if (lenRight + 1 > capRight) {
                 // error processing?
@@ -152,20 +208,13 @@ public:
         return fValue > -1e-20 && fValue < 1e-20;
     }
 
-    static int formatAsFloat(char *buf, int bufLen, bool neg, float m, int exp, int precision, int pointOffset, bool addEndOfStr) {
+    static int formatAsFloat(char *buf, int bufLen, bool neg, float m, int exp, const Format::Float *format, bool addEndOfStr) {
 
 #if A8_FORMAT_DEBUG == 1
         A8_DEBUG6("formatAsFloat,", neg, m, exp, precision, pointOffset);
 #endif
-
-        if (pointOffset == AUTO_POINT_OFFSET) {
-            if (Math::abs(exp) <= 6) {
-                pointOffset = exp;
-            } else {
-                pointOffset = 1;
-            }
-        }
-
+        int precision, pointOffset, tailPrecision;
+        Format::Float::get(exp, format, precision, pointOffset, tailPrecision);
         int idx = 0;
 
         if (neg) {
@@ -173,20 +222,23 @@ public:
         }
         long power = Math::pow10<long>((long)precision);
         long number = long(m * power);
+        int pointIdx = -1;
         if (pointOffset <= 0) {
             // '0.00000'
             // if pointOffset <= 0, then moving number right, insert zero before number and after point.
             set(buf, idx++, '0', bufLen);
+            pointIdx = idx;
             set(buf, idx++, '.', bufLen);
             for (int i = 0; i > pointOffset; i--) {
                 set(buf, idx++, '0', bufLen);
             }
+        } else { // pointOffset > 0 : no zero before point.
+            // number, numberLen should = precision.
+            pointIdx = idx + pointOffset; // remember the point position for positive pointOffset.
         }
-        // number, numberLen should = precision.
-
-        int pointIdx = idx + pointOffset; // remember the point position for positive pointOffset.
 
         int numberLen = formatAsInt<long>(buf + idx, bufLen - idx, number, false);
+        // numberLen == precision, what if not equal?
         idx += numberLen;
 
         // find a position for point if offset > 0.
@@ -198,6 +250,7 @@ public:
                 idx++;
                 // got the point space and set it.
                 set(buf, pointIdx, '.', bufLen);
+
             } else {
                 // append 0 if number tail is negative.
                 for (int i = 0; i > tailNumberLen; i--) {
@@ -208,6 +261,20 @@ public:
                 set(buf, pointIdx, '0', bufLen);
             }
         }
+        // process tail precision,
+
+        if (tailPrecision == 0) {
+            idx = pointIdx;
+        } else if (tailPrecision > 0) {
+            int idx2 = pointIdx + 1 + tailPrecision;
+            for (int i = idx; i < idx2; i++) { // append 0 if need.
+                set(buf, i, '0', bufLen);
+            }
+            idx = idx2;
+        } else {
+            // let it be.
+        }
+        //
 
         int expTail = exp - pointOffset;
         // exp-part.
@@ -222,38 +289,55 @@ public:
     }
 
     template <typename T>
-    static int formatAsFloat(char *buf, int bufLen, T value, int precision, int pointOffset, bool addEndOfStr) {
-#if A8_FORMAT_DEBUG == 1
-        A8_DEBUG4("formatAsFloat,", value, precision, pointOffset);
-#endif
+    static int resolveFloat(float value, bool &neg, float &m, int &exp) {
         if (Math::isnan<T>(value)) {
-            return write(buf, 0, "nan", bufLen);
+            return -1;
         }
         if (Math::isinf<T>(value)) {
-            return write(buf, 0, "inf", bufLen);
+            return -2;
         }
         if (Math::isZero<T>(value)) {
-            return write(buf, 0, "0.0", bufLen);
+            m = 0.0f;
+            neg = false;
+            exp = 0;
+            return 0;
         }
-        bool neg = value < -0.0f;
+        neg = value < -0.0f;
         T aValue = neg ? (-value) : value; // convert to positive.
         T fExp = Math::log10<T>(aValue);
-        if (Math::isnan<T>(fExp)) {
-            return write(buf, 0, "e-nan", bufLen);
-        }
-        int exp = int(fExp);
+        exp = int(fExp);
 
         // float m = 123456;
-        float m = aValue / Math::pow10<T>(float(exp));
-        if (Math::isnan<float>(m)) {
-            // overflow?
-            return write(buf, 0, "m-nan", bufLen);
-        }
+        m = aValue / Math::pow10<T>(float(exp));
         if (m >= 1.0f) {
             m = m / 10;
             exp++;
         }
-        return formatAsFloat(buf, bufLen, neg, m, exp, precision, pointOffset, addEndOfStr);
+        return 1;
+    }
+
+    template <typename T>
+    static int formatAsFloat(char *buf, int bufLen, T value, const Format::Float *format, bool addEndOfStr) {
+#if A8_FORMAT_DEBUG == 1
+        A8_DEBUG4("formatAsFloat,", value, precision, pointOffset);
+#endif
+        bool neg;
+        float m;
+        int exp;
+
+        int ret = resolveFloat<T>(value, neg, m, exp);
+
+        if (ret < 0) {
+            if (ret == -1) {
+                return write(buf, 0, "nan", bufLen);
+            }
+            if (ret == -2) {
+                return write(buf, 0, "inf", bufLen);
+            }
+            return write(buf, 0, "?", bufLen);
+        }
+
+        return formatAsFloat(buf, bufLen, neg, m, exp, format, addEndOfStr);
     }
 
     template <typename T>
@@ -307,19 +391,13 @@ public:
     template <typename T>
     static void appendNumberAsInt(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
                                   int preferWidth, char fillLeading, T value, bool addEndOfStr) {
-        doAppendNumber(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, value, false, 0, 0, addEndOfStr);
+        doAppendNumber(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, value, false, 0, addEndOfStr);
     }
 
     template <typename T>
     static void appendNumberAsFloat(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
-                                    int preferWidth, char fillLeading, T value, int precision, int pointOffset, bool addEndOfStr) {
-        doAppendNumber(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, value, true, precision, pointOffset, addEndOfStr);
-    }
-
-    template <typename T>
-    static void appendNumberAsFloat(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
-                                    int preferWidth, char fillLeading, T value, int precision, bool addEndOfStr) {
-        doAppendNumber(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, value, true, precision, AUTO_POINT_OFFSET, addEndOfStr);
+                                    int preferWidth, char fillLeading, T value, const Format::Float *format, bool addEndOfStr) {
+        doAppendNumber(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, value, true, format, addEndOfStr);
     }
 };
 

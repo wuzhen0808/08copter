@@ -1,8 +1,10 @@
 #pragma once
 #include "a8/util.h"
+#include "a8/fc/collect/Collector.h"
 #define A8_PM_DEBUG (0)
 namespace a8::fc {
 using namespace a8::util;
+using namespace a8::fc::collect;
 
 class PowerManage : public FlyWeight {
     int voltagePin;
@@ -31,7 +33,9 @@ public:
         this->led->setup();
         this->led->start(sys->getSteadyTime());
     }
-
+    void collectDataItems(Collector &collector) {
+        collector.add<float>("voltage", this->voltage);
+    }
     void tick(long timeMs) {
 
         if (this->lastUpdateTimeMs + 1000 < timeMs) {

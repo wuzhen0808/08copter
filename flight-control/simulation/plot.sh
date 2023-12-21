@@ -6,7 +6,7 @@ foreach file (data_log/*.csv)
 
   echo "process file:$file"  
   set name = `basename $file`
-  set rpath = data_plot/${name}.r.xml
+  set rpath = data_plot/${name}.r2.xml
   if (-f $rpath) prep_plot $file --plot=$rpath | gnuplot    
   
 end

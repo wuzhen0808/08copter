@@ -17,21 +17,25 @@ using namespace a8::fc::collect;
 class Propellers : public FlyWeight {
 protected:
     Buffer<Propeller *> propellers;
+    PwmManage *pwmManage;
 
 public:
-    Propellers(LoggerFactory *logFac) : FlyWeight(logFac, "Propellers") {
+    Propellers(PowerManage *pm, LoggerFactory *logFac) : FlyWeight(logFac, "Propellers") {
+        this->pwmManage = new PwmManage(pm, logFac);
     }
     virtual void setup() {
+        this->pwmManage->setup();
     }
 
     void collectDataItems(Collector &collector) {
+        this->pwmManage->collectDataItems(collector);
         propellers.forEach<Collector &>(collector, [](Collector &collector, Propeller *p) {
             p->collectDataItems(collector);
         });
     }
 
     virtual int isReady(Result &res) {
-        return 1;
+        return this->pwmManage->isReady(res);
     }
     Propeller *get(int idx) {
         return propellers.get(idx, 0);

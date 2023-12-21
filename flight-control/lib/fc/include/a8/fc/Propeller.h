@@ -1,7 +1,7 @@
 #pragma once
 #include "a8/fc/PwmManage.h"
-#include "a8/util/Result.h"
 #include "a8/fc/collect/Collector.h"
+#include "a8/util/Result.h"
 #include "a8/util/comp.h"
 
 namespace a8::fc {
@@ -13,6 +13,7 @@ class Propeller {
 protected:
     float throttle;
     String name;
+    int idx;
     bool enable_ = true;
     float minInTheory = 0;
     float maxInTheory = 1000;
@@ -20,15 +21,18 @@ protected:
     long pwm;
 
 public:
-    Propeller(String name, PwmManage *pwmManage) {
+    Propeller(String name, int idx, PwmManage *pwmManage) {
         this->name = name;
+        this->idx = idx;
         this->pwmManage = pwmManage;
     }
 
     virtual void setup() = 0;
 
     void collectDataItems(Collector &collector) {
-        collector.add<Propeller *>(String("propeller-") << this->name, this, [](Propeller *this_) { return (double)this_->getPwm(); });
+        
+        collector.add(String("propeller") << this->idx << "-Throttle", this->throttle);
+        collector.add(String("propeller") << this->idx << "-Pwm", this->pwm);
     }
 
     void open() {
@@ -60,8 +64,8 @@ public:
         return this->throttle;
     }
 
-    void setThrottle(long pwm) {
-        this->throttle = pwm;
+    void setThrottle(float throttle) {
+        this->throttle = throttle;
     }
 
     void beforeUpdate() {
@@ -82,7 +86,7 @@ public:
         }
     }
     void commitUpdate() {
-        pwm = this->pwmManage->resolvePwmByThrottle(this->throttle);
+        pwm = this->pwmManage->updateThrottle(this->idx, this->throttle);
         if (this->enable_) {
             this->doApply(pwm);
         }

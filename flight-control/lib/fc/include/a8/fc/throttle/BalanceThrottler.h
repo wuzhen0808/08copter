@@ -54,20 +54,7 @@ public:
 
     int update(Throttle &ctx, Result &res) override {
         A8_LOG_DEBUG(logger, ">>Bal.update.");
-        int maxRetries = 10;
-        int retries = 0;
-        while (true) {
-            bool ok = rpy->update();
-            if (ok) {
-                break;
-            }
-            if (retries > maxRetries) {
-                res << "failed to update rpy after retries:" << retries;
-                return -1;
-            }
-            retries++;
-            A8_LOG_DEBUG(logger, "<<Bal.update.failed");
-        }
+        
         float roll = rpy->getRoll();
         float pitch = rpy->getPitch();
         float yaw = rpy->getYaw();

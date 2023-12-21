@@ -1,12 +1,19 @@
 #pragma once
+#include "a8/fc/collect/Collector.h"
 #include "a8/util.h"
 namespace a8::fc {
 using namespace a8::util;
-
+using namespace a8::fc::collect;
 class Rpy {
 public:
     virtual void setup() = 0;
     virtual bool update() = 0;
+    void collectDataItems(Collector &collector) {
+        collector.add<Rpy *>("Roll", this, [](Rpy *this_) { return (double)this_->getRoll(); });
+        collector.add<Rpy *>("Pitch", this, [](Rpy *this_) { return (double)this_->getPitch(); });
+        collector.add<Rpy *>("Yaw", this, [](Rpy *this_) { return (double)this_->getYaw(); });
+    }
+
     virtual float getRoll() = 0;
     virtual float getPitch() = 0;
     virtual float getYaw() = 0;
@@ -15,7 +22,7 @@ public:
     int checkStable(int retries, Result &res) {
         int ret = -1;
         for (int i = 0; i < retries && ret < 0; i++) {
-            ret = this->checkStable(res);            
+            ret = this->checkStable(res);
         }
         return ret;
     }

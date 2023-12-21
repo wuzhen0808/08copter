@@ -77,9 +77,14 @@ public:
             //
             Throttle throttle(propellers);
             OutputWriter writer(this->sys->out);
-            Collector collector(&writer);
+            Collector collector(&writer);            
             Mission::Context mc(collector, config, cc, throttle);
             Mission *mission = this->createMission(config);
+            mc.collectDataItems(collector); 
+            rpy->collectDataItems(collector);           
+            pm->collectDataItems(collector);
+            mission->collectDataItems(collector);
+            propellers->collectDataItems(collector);
             ret = mission->run(mc, res);
             delete mission;
             /*

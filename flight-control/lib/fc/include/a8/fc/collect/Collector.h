@@ -1,10 +1,17 @@
 #pragma once
 #include "a8/fc/collect/DataItem.h"
 #include "a8/util.h"
-
+#define DEFAULT_TAIL_PRECISION (2)
+#define DEFAULT_POINT_OFFSET (6)
 namespace a8::fc::collect {
+const Format::AutoOffsetFloat floatFormat(6, 3);
+const Format::AutoOffsetFloat boolFormat(1, 0);
+const Format::AutoOffsetFloat intFormat(8, 0);
+const Format::AutoOffsetFloat longFormat(8, 0);
+
 using namespace a8::util;
 class Collector {
+
     class DataItemEntry {
     public:
         DataItem *dataItem;
@@ -66,13 +73,51 @@ public:
 
     template <typename C>
     int add(String name, C c, double (*getter)(C)) {
-        DataItem *di = new FunctionalDataItem<C>(name, c, getter);
-
+        return add(name, c, getter, &floatFormat);
+    }
+    template <typename C>
+    int add(String name, C c, double (*getter)(C), const Format::Float *format) {
+        DataItem *di = new FunctionalDataItem<C>(name, c, getter, format);
         int ret = this->add(di, [](DataItem *di) { delete di; });
         if (ret < 0) {
             delete di;
         }
         return ret;
+    }
+
+    template <typename T>
+    int add(String name, T &var, const Format::Float *format) {
+        DataItem *di = new BindDataItem<T>(name, var, format);
+        int ret = this->add(di, [](DataItem *di) { delete di; });
+        if (ret < 0) {
+            delete di;
+        }
+        return ret;
+    }
+
+    template <typename T>
+    int add(String name, T &var) {
+        return add<T>(name, var, &floatFormat);
+    }
+
+    int add(String name, long &var) {
+        return add<long>(name, var, &longFormat);
+    }
+
+    int add(String name, int &var) {
+        return add<int>(name, var, &intFormat);
+    }
+
+    int add(String name, bool &var) {
+        return add<bool>(name, var, &boolFormat);
+    }
+
+    int add(String name, float &var) {
+        return add<float>(name, var, &floatFormat);
+    }
+
+    int add(String name, double &var) {
+        return add<double>(name, var, &floatFormat);
     }
 
     void writeHeader() {
@@ -84,12 +129,15 @@ public:
         writer->write("\n");
     }
     void update() {
-
+        String tmpStr;
         for (int i = 0; i < dataItems.len(); i++) {
             DataItem *di = this->get(i);
+            tmpStr.setFloatFormat(di->format);
             double v = di->get();
-            this->writer->write(String() << v);
+            tmpStr << v;
+            this->writer->write(tmpStr);
             this->writer->write(",");
+            tmpStr.clear();
         }
         writer->write("\n");
     }

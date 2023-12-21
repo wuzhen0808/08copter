@@ -45,6 +45,7 @@ public:
     double pidOutputLimit = 340.0; //
     double pidOutputLimitI = 100;
     bool enableStart = true;
+    int maxRpyUpdateRetries = 5;
 
 public:
     Config(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Logger *logger, Scheduler *sch) {

@@ -1,5 +1,4 @@
 #pragma once
-#include "a8/fc/History.h"
 #include "a8/fc/throttle/MainThrottler.h"
 #include "a8/util.h"
 
@@ -29,9 +28,14 @@ public:
 
         ~Context() {
         }
-        void beforeUpdate(long timeMs) {
+        void collectDataItems(Collector &collector) {
+            collector.add("timeMs", this->timeMs);
+            collector.add("Landing", this->landing);
+        }
+
+        void preUpdate(long timeMs) {
             this->timeMs = timeMs;
-            throttle.beforeUpdate(timeMs);
+            throttle.preUpdate(timeMs);
         }
     };
 
@@ -94,10 +98,10 @@ protected:
         }
         return 1;
     }
-    void checkLanding(Context &mc, long timeMs) {
+    void checkLanding(int updateRet, Context &mc, long timeMs) {
         if (!mc.landing) { //
             // check if need start landing.
-            if (timeMs - mc.startTimeMs > config.flyingTimeLimitSec * 1000) {
+            if (updateRet < 0 || timeMs - mc.startTimeMs > config.flyingTimeLimitSec * 1000) {
                 mc.landing = true;
                 this->landing(timeMs);
             }
@@ -128,15 +132,10 @@ public:
         this->throttler->setup();
     }
 
-    void collectDataItems(Collector &collector, Context &mc) {
-        collector.add<Context &>("timeMs", mc, [](Context &mc) {
-            return (double)mc.timeMs;
-        });
+    void collectDataItems(Collector &collector) {
         throttler->collectDataItems(collector);
-        propellers->collectDataItems(collector);
     }
     int run(Context &mc, Result &res) {
-
         int ret = this->beforeRun(mc, res);
         if (ret < 0) {
             return ret;
@@ -144,48 +143,70 @@ public:
         ret = this->run2(mc, res);
         return ret;
     }
+    int updateRpy(Context &mc, Result &res) {
+        int retries = 0;
+        while (true) {
+            bool ok = rpy->update();
+            if (ok) {
+                break;
+            }
+            if (retries >= mc.config.maxRpyUpdateRetries) {
+                res << "failed to update rpy after retries:" << retries;
+                return -1;
+            }
+            retries++;
+            A8_LOG_DEBUG(logger, "<<Bal.update.failed");
+        }
+        return 1;
+    }
+    int preUpdate(Context &mc, Result &res) {
+        int ret = updateRpy(mc, res);
+        if (ret < 0) {
+            return ret;
+        }
+
+        return ret;
+    }
+    int doUpdate(Context &mc, Result &res) {
+        int ret = this->throttler->update(mc.throttle, res);
+        if (ret < 0) {
+            return ret;
+        }
+        mc.throttle.commitUpdate();
+        return 1;
+    }
     int run2(Context &mc, Result &res) {
-        long timeMs = mc.startTimeMs;
         float minInTheory = 0;
         float maxInTheory = 0;
         throttler->getLimitInTheory(minInTheory, maxInTheory);
         this->propellers->setLimitInTheory(minInTheory, maxInTheory);
         propellers->open(config.enablePropeller);
-        // wait 3 secs.
         sys->out->println(String() << "running ... ");
-        mc.startTimeMs = sys->getSteadyTime();
         mc.throttle.reset(mc.startTimeMs);
-        this->collectDataItems(mc.collector, mc);
         mc.collector.writeHeader();
-        // m
+        long timeMs = sys->getSteadyTime();
+        mc.startTimeMs = timeMs; // m
         int ret = -1;
         while (true) {
-
-            mc.beforeUpdate(timeMs);
-
-            bool running = true;
             Result res;
-            ret = this->throttler->update(mc.throttle, res);
-            if (ret > 0) {
-                mc.throttle.commitUpdate();
-            } else {
-                mc.throttle.discardUpdate();
-                this->landing(timeMs);
-            }
-
+            ret = preUpdate(mc, res);
+            mc.preUpdate(timeMs);
+            bool running = true;
+            ret = this->doUpdate(mc, res);
 
             if (running && throttler->isLanded()) {
                 running = false;
             }
 
-            long now = sys->getSteadyTime();
-
             if (running && !mc.landing) {
-                this->checkLanding(mc, timeMs);
+                this->checkLanding(ret, mc, timeMs);
             }
-            mc.tickCostTimeMs = now - timeMs;
 
             mc.collector.update();
+
+            long now = sys->getSteadyTime();
+            mc.tickCostTimeMs = now - timeMs;
+
             // check if done of mission.
             if (!running) {
                 break;
