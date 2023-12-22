@@ -9,11 +9,47 @@
 #endif
 
 /**
- * Know issue:
- * If precision large than 9, the double 1000 will be formatted to '2147', 2000 is to '4294';
- * so we limit it to 8;
+ * Max precision(effective number length of the formatted result string):
+ *
+ *  long double : 18,
+ *  double : 16,
+ *  float : 8,
+ *
+ * If the precision argument is large than above, the result will overflow and the result to be a mess.
+ *
+ * Following example showing the max precision.
+ *
+ *
+ * Example long double format:
+ *      int len = 20;
+ *      char buf[len];
+ *      long double value = 123456789012345678;
+ *      Format::AutoOffsetFloat format(18,0);
+ *      int len2 = Format::formatAsFloat<long double,long long>(buf, len, value, &format, true);
+ *
+ * Example double format:
+ *  int len = 20;
+ *      char buf[len];
+ *      double value = 1234567890123456;
+ *      Format::AutoOffsetFloat format(16,0);
+ *      int len2 = Format::formatAsFloat<double,long long>(buf, len, value, &format, true);
+ *
+ * Example float format:
+ *      int len = 20;
+ *      char buf[len];
+ *      float value = 1234567.91;
+ *      Format::AutoOffsetFloat format(8,2);
+ *      int len2 = Format::formatAsFloat<float,long>(buf, len, value, &format, true);
+ *
+ * Example int format:
+ *      int len = 20;
+ *      char buf[len];
+ *      int value = 1234567890;
+ *      int len2 = Format::formatAsInt<int>(buf, len, value, true);
+ *
  */
-#define A8_MAX_PRECISION (8)
+// max precision to avoid too slow of useless for-loop, for example on power operation.
+#define A8_MAX_PRECISION (30)
 
 namespace a8::util {
 
@@ -70,6 +106,11 @@ public:
             }
         }
     };
+
+public:
+    const static Format::Float *defaultFloatFormat;
+    const static Format::Float *defaultDoubleFormat;
+    const static Format::Float *defaultLongDoubleFormat;
 
 private:
     // set may failed if no space for the buf to storage the ch..
@@ -129,19 +170,19 @@ private:
         return false;
     }
 
-    template <typename T>
-    static int formatNumber(char *buf, int bufLen, T value, bool asFloat, const Format::Float *format, bool addEndOfStr) {
+    template <typename I, typename F, typename P>
+    static int formatNumber(char *buf, int bufLen, bool isFloat, I iValue, F fValue, const Format::Float *format, bool addEndOfStr) {
 
-        if (asFloat) {
-            return formatAsFloat<T>(buf, bufLen, value, format, addEndOfStr);
+        if (isFloat) {
+            return formatAsFloat<F, P>(buf, bufLen, fValue, format, addEndOfStr);
         } else {
-            return formatAsInt<T>(buf, bufLen, value, addEndOfStr);
+            return formatAsInt<I>(buf, bufLen, iValue, addEndOfStr);
         }
     }
 
-    template <typename T>
+    template <typename I, typename F, typename P>
     static void doAppendNumber(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
-                               int preferWidth, char fillLeading, T value, bool asFloat, const Format::Float *format, bool addEndOfStr) {
+                               int preferWidth, char fillLeading, bool isFloat, I iValue, F fValue, const Format::Float *format, bool addEndOfStr) {
 
         char *buf = bufRef;
         int capacity = capRef;
@@ -156,7 +197,7 @@ private:
         int capRight = capacity - lenLeft; // remaining capacity
         char *bufRight = buf + lenLeft;    // give a offset to storage result.
         // try format first time, and then check the length.
-        int lenRight = formatNumber<T>(bufRight, capRight, value, asFloat, format, false);
+        int lenRight = formatNumber<I, F, P>(bufRight, capRight, isFloat, iValue, fValue, format, false);
         int lenTail = lenRight; // the content
         int leading = 0;
         if (lenRight < preferWidth) {
@@ -175,7 +216,7 @@ private:
             capRight = capacity - lenLeft;
             bufRight = buf + lenLeft;
             // format again, with a larger capacity.
-            lenRight = formatNumber<T>(bufRight + leading, capRight - leading, value, asFloat, format, false);
+            lenRight = formatNumber<I, F, P>(bufRight + leading, capRight - leading, isFloat, iValue, fValue, format, false);
 
             if (lenRight + 1 > capRight) {
                 // error processing?
@@ -196,22 +237,11 @@ private:
         }
     }
 
-public:
-    /**
-     * Return the length of the formatted string.
-     * The length may great than the provided buffer len, in this case the string will be truncated.
-     *
-     */
-
-    template <typename T>
-    static bool isZero(T fValue) {
-        return fValue > -1e-20 && fValue < 1e-20;
-    }
-
-    static int formatAsFloat(char *buf, int bufLen, bool neg, float m, int exp, const Format::Float *format, bool addEndOfStr) {
+    template <typename T, typename P>
+    static int formatResolvedFloat(char *buf, int bufLen, bool neg, T m, int exp, const Format::Float *format, bool addEndOfStr) {
 
 #if A8_FORMAT_DEBUG == 1
-        A8_DEBUG6("formatAsFloat,", neg, m, exp, precision, pointOffset);
+        A8_DEBUG6("formatResolvedFloat,", neg, m, exp, precision, pointOffset);
 #endif
         int precision, pointOffset, tailPrecision;
         Format::Float::get(exp, format, precision, pointOffset, tailPrecision);
@@ -220,8 +250,8 @@ public:
         if (neg) {
             set(buf, idx++, '-', bufLen);
         }
-        long power = Math::pow10<long>((long)precision);
-        long number = long(m * power);
+        P power = Math::pow10<P>((P)precision);
+        P number = P(m * power);
         int pointIdx = -1;
         if (pointOffset <= 0) {
             // '0.00000'
@@ -237,7 +267,7 @@ public:
             pointIdx = idx + pointOffset; // remember the point position for positive pointOffset.
         }
 
-        int numberLen = formatAsInt<long>(buf + idx, bufLen - idx, number, false);
+        int numberLen = formatAsInt<P>(buf + idx, bufLen - idx, number, false);
         // numberLen == precision, what if not equal?
         idx += numberLen;
 
@@ -289,7 +319,7 @@ public:
     }
 
     template <typename T>
-    static int resolveFloat(float value, bool &neg, float &m, int &exp) {
+    static int resolveFloat(T value, bool &neg, T &m, int &exp) {
         if (Math::isnan<T>(value)) {
             return -1;
         }
@@ -297,7 +327,7 @@ public:
             return -2;
         }
         if (Math::isZero<T>(value)) {
-            m = 0.0f;
+            m = 0.0;
             neg = false;
             exp = 0;
             return 0;
@@ -309,20 +339,32 @@ public:
 
         // float m = 123456;
         m = aValue / Math::pow10<T>(float(exp));
-        if (m >= 1.0f) {
+        if (m >= 1.0) {
             m = m / 10;
             exp++;
         }
         return 1;
     }
 
+public:
+    /**
+     * Return the length of the formatted string.
+     * The length may great than the provided buffer len, in this case the string will be truncated.
+     *
+     */
+
     template <typename T>
+    static bool isZero(T fValue) {
+        return fValue > -1e-20 && fValue < 1e-20;
+    }
+
+    template <typename T, typename P>
     static int formatAsFloat(char *buf, int bufLen, T value, const Format::Float *format, bool addEndOfStr) {
 #if A8_FORMAT_DEBUG == 1
         A8_DEBUG4("formatAsFloat,", value, precision, pointOffset);
 #endif
         bool neg;
-        float m;
+        T m;
         int exp;
 
         int ret = resolveFloat<T>(value, neg, m, exp);
@@ -337,26 +379,26 @@ public:
             return write(buf, 0, "?", bufLen);
         }
 
-        return formatAsFloat(buf, bufLen, neg, m, exp, format, addEndOfStr);
+        return formatResolvedFloat<T, P>(buf, bufLen, neg, m, exp, format, addEndOfStr);
     }
 
     template <typename T>
     static int formatAsInt(char *buf, int bufLen, T iValue, bool addEndOfStr) {
-        T rValue = iValue;
         int idx = bufLen - 1;
         bool neg = false;
-        if (rValue < -0.0f) {
-            rValue = -rValue;
+        if (iValue < 0) {
+            iValue = -iValue;
             neg = true;
         }
         for (;;) {
             // process reversely, from right to left.
             // at least print one zero.
-            int d = (int)Math::mod10<T>(rValue);
-            set(buf, idx--, '0' + d, bufLen);
-            rValue = rValue / 10;
 
-            if ((int)rValue == 0) {
+            T d = Math::mod10<T>(iValue);
+            set(buf, idx--, '0' + d, bufLen);
+            iValue = iValue / 10;
+
+            if (iValue == 0) {
                 break;
             }
         }
@@ -388,16 +430,32 @@ public:
      * The buffer must be a space created by new in heap or zero in which case a new one will be created.
      *
      */
-    template <typename T>
+    template <typename I>
     static void appendNumberAsInt(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
-                                  int preferWidth, char fillLeading, T value, bool addEndOfStr) {
-        doAppendNumber(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, value, false, 0, addEndOfStr);
+                                  int preferWidth, char fillLeading, I iValue, bool addEndOfStr) {
+        doAppendNumber<I, float, int>(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, false, iValue, 0.0f, 0, addEndOfStr);
     }
 
-    template <typename T>
+    template <typename F, typename P>
     static void appendNumberAsFloat(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
-                                    int preferWidth, char fillLeading, T value, const Format::Float *format, bool addEndOfStr) {
-        doAppendNumber(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, value, true, format, addEndOfStr);
+                                    int preferWidth, char fillLeading, F fValue, const Format::Float *format, bool addEndOfStr) {
+        doAppendNumber<int, F, P>(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, true, 0, fValue, format, addEndOfStr);
+    }
+
+    static void appendFloat(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
+                            int preferWidth, char fillLeading, float fValue, bool addEndOfStr) {
+        
+        appendNumberAsFloat<float, long>(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, fValue, defaultFloatFormat, addEndOfStr);
+    }
+    static void appendDouble(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
+                             int preferWidth, char fillLeading, double fValue, bool addEndOfStr) {
+        
+        appendNumberAsFloat<double, long long>(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, fValue, defaultDoubleFormat, addEndOfStr);
+    }
+    static void appendLongDouble(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
+                                 int preferWidth, char fillLeading, long double fValue, bool addEndOfStr) {
+        
+        appendNumberAsFloat<long double, long long>(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, fValue, defaultLongDoubleFormat, addEndOfStr);
     }
 };
 

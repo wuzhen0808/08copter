@@ -26,11 +26,7 @@ private:
 public:
     template <typename T>
     static T mod10(T value) {
-        if (sizeof(T) == sizeof(int)) {
-            return int(value) % 10;
-        } else {
-            return long(value) % 10;
-        }
+        return value % 10;
     }
     template <typename T>
     static T log10(T value) {

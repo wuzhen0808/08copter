@@ -23,7 +23,7 @@ private:
     int capacity_ = 0;
 
 private:
-    const Format::Float * floatFormat = 0;
+    const Format::Float *floatFormat = 0;
 
 public:
     static String *new_() {
@@ -76,7 +76,7 @@ public:
     String(const char ch) {
         append(&ch, 0, 1);
     }
-    void setFloatFormat(const Format::Float* format){
+    void setFloatFormat(const Format::Float *format) {
         this->floatFormat = format;
     }
 
@@ -191,28 +191,28 @@ public:
     }
 
     void append(const float fValue) {
-        appendAsFloat<float>(0, ' ', fValue);
+        appendAsFloat<float, unsigned long>(0, ' ', fValue);
     }
 
     void append(const double fValue) {
-        appendAsFloat<double>(0, ' ', fValue);
+        appendAsFloat<double, unsigned long long>(0, ' ', fValue);
     }
 
     void append(const int iValue, const int width, const char fill) {
         appendAsInt<int>(width, fill, iValue);
     }
 
-    template <typename T>
-    void appendAsFloat(int width, char fill, T value) {
+    template <typename F, typename P>
+    void appendAsFloat(int width, char fill, F fValue) {
 
-        Format::appendNumberAsFloat<T>(this->text_, this->length_, this->capacity_, DELTA_STR_CAP,
-                                       width, fill, value, this->floatFormat, true);
+        Format::appendNumberAsFloat<F, P>(this->text_, this->length_, this->capacity_, DELTA_STR_CAP,
+                                          width, fill, fValue, this->floatFormat, true);
     }
 
-    template <typename T>
-    void appendAsInt(int width, char fill, T value) {
-        Format::appendNumberAsInt<T>(this->text_, this->length_, this->capacity_, DELTA_STR_CAP,
-                                     width, fill, value, true);
+    template <typename I>
+    void appendAsInt(int width, char fill, I iValue) {
+        Format::appendNumberAsInt<I>(this->text_, this->length_, this->capacity_, DELTA_STR_CAP,
+                                     width, fill, iValue, true);
     }
 
     void append(const int iValue) {
