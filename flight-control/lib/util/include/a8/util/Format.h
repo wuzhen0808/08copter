@@ -11,8 +11,8 @@
 /**
  * Max precision(effective number length of the formatted result string):
  *
- *  long double : 18,
- *  double : 16,
+ *  long double : 16,
+ *  double : 15,
  *  float : 8,
  *
  * If the precision argument is large than above, the result will overflow and the result to be a mess.
@@ -73,6 +73,7 @@ public:
         }
 
         virtual void get(int exp, int &precision, int &pointOffset, int &tailPrecision) const = 0;
+        
     };
 
     class AutoOffsetFloat : public Float {
@@ -111,6 +112,9 @@ public:
     const static Format::Float *defaultFloatFormat;
     const static Format::Float *defaultDoubleFormat;
     const static Format::Float *defaultLongDoubleFormat;
+    const static Format::Float *defaultNoTailFloatFormat;
+    const static Format::Float *defaultNoTailDoubleFormat;
+    const static Format::Float *defaultNoTailLongDoubleFormat;        
 
 private:
     // set may failed if no space for the buf to storage the ch..
@@ -458,5 +462,6 @@ public:
         appendNumberAsFloat<long double, long long>(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, fValue, defaultLongDoubleFormat, addEndOfStr);
     }
 };
+
 
 } // namespace a8::util

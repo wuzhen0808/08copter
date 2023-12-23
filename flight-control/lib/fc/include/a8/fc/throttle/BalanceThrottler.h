@@ -22,11 +22,18 @@ class BalanceThrottler : public Throttler {
 
     float maxBalanceThrottle = 0;
 
+    int balanceMode;
+
+    float roll;
+    float pitch;
+    float yaw;
+
 public:
-    BalanceThrottler(Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
+    BalanceThrottler(Rpy *rpy, int bMode, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
         this->rpy = rpy;
         this->pidRoll = new Pid(logFac, "RollPid");
         this->pidPitch = new Pid(logFac, "PitchPid");
+        this->balanceMode = bMode;
     }
     ~BalanceThrottler() {
         delete this->pidRoll;
@@ -39,6 +46,10 @@ public:
     }
 
     void collectDataItems(Collector &collector) override {
+        collector.add<float>("roll", this->roll);
+        collector.add<float>("pitch", this->pitch);
+        collector.add<float>("yaw", this->yaw);
+
         this->pidRoll->collectDataItems(collector);
         this->pidPitch->collectDataItems(collector);
     }
@@ -54,10 +65,8 @@ public:
 
     int update(Throttle &ctx, Result &res) override {
         A8_LOG_DEBUG(logger, ">>Bal.update.");
-        
-        float roll = rpy->getRoll();
-        float pitch = rpy->getPitch();
-        float yaw = rpy->getYaw();
+
+        rpy->get(roll, pitch, yaw);
         // pid
         pidRoll->update(ctx.timeMs_, roll, desiredRoll);
         pidPitch->update(ctx.timeMs_, pitch, desiredPitch);
@@ -76,11 +85,17 @@ public:
         // 3)if you print the value with arduino's Serial.print, below output :
         //  (0.00,0.00,-7.51)
         //========================================================================================
+        if (balanceMode == BalanceMode::ROLL) {
+            pitchThrottle = 0;
+        } else if (balanceMode == BalanceMode::PITCH) {
+            rollThrottle = 0;
+        }
 
         float thLH = 0 + rollThrottle + pitchThrottle;
         float thRH = 0 - rollThrottle + pitchThrottle;
         float thLA = 0 + rollThrottle - pitchThrottle;
         float thRA = 0 - rollThrottle - pitchThrottle;
+
         A8_LOG_DEBUG(logger, ">>Bal.update.9");
         ctx.propellers->addThrottle(thLH, thRH, thLA, thRA);
         A8_LOG_DEBUG(logger, "<<Bal.update.2");

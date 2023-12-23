@@ -31,8 +31,8 @@ public:
 
     void collectDataItems(Collector &collector) {
         
-        collector.add(String("propeller") << this->idx << "-Throttle", this->throttle);
-        collector.add(String("propeller") << this->idx << "-Pwm", this->pwm);
+        collector.add(String("prop") << this->idx << "-throttle", this->throttle);
+        collector.add(String("prop") << this->idx << "-pwm", this->pwm);
     }
 
     void open() {

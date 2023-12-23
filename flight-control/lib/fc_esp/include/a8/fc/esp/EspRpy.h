@@ -41,7 +41,7 @@ public:
     String getLastError() override {
         return String() << this->lastStableCheckError << ";" << this->lastBalanceCheckError;
     }
-    
+
     bool update() override {
 
         A8_LOG_DEBUG(logger, ">>EspRpy::update.");
@@ -63,6 +63,11 @@ public:
     float getYaw() override {
         return mpu->getYaw();
     }
+    void get(float &roll, float &pitch, float &yaw) override {
+        roll = mpu->getRoll();
+        pitch = mpu->getPitch();
+        yaw = mpu->getYaw();
+    }
     int checkReady(Result &res) override {
 
         int ret = this->doCheckStable(false, res);
@@ -81,7 +86,7 @@ public:
         Result res;
         return this->checkBalance(res) > 0;
     }
-    
+
     int checkStable(Result &res) override {
         int ret = doCheckStable(false, res);
         if (ret < 0) {

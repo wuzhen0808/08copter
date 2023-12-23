@@ -191,11 +191,11 @@ public:
     }
 
     void append(const float fValue) {
-        appendAsFloat<float, unsigned long>(0, ' ', fValue);
+        appendAsFloat<float, long>(0, ' ', fValue);
     }
 
     void append(const double fValue) {
-        appendAsFloat<double, unsigned long long>(0, ' ', fValue);
+        appendAsFloat<double, long long>(0, ' ', fValue);
     }
 
     void append(const int iValue, const int width, const char fill) {

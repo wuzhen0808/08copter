@@ -22,13 +22,18 @@ class Pid : public FlyWeight {
     float d = 0;
     float lastError = 0;
     long lastTimeMs = -1;
-
+    //
+    float error = 0;
+    float elapsedTimeSec = 0;
+    float errorDiff = 0;
     //
 public:
     void limit(float &output, float min, float max) {
         if (output > max) {
             output = max;
-        } else if (output < min) {
+        }
+
+        if (output < min) {
             output = min;
         }
     }
@@ -37,24 +42,27 @@ public:
     Pid(LoggerFactory *logFac, String name) : FlyWeight(logFac, name) {
     }
 
-    void config(double kp, double ki, double kd, float outputLimit, float integralOutputLimit) {
+    void config(double kp, double ki, double kd, float outputLimit, float limitI) {
         this->kp = kp;
         this->ki = ki;
         this->kd = kd;
         this->outputLimit = outputLimit;
-        this->outputLimitI = integralOutputLimit;
+        this->outputLimitI = limitI;
     }
 
     void setup() {
     }
 
     void collectDataItems(Collector &collector) {
-        collector.add<float>(String(this->name)<<"-lmt", this->outputLimit);
-        collector.add<float>(String(this->name)<<"-lmtI", this->outputLimitI);
+        collector.add<float>(String(this->name) << "-err", error);
+        collector.add<float>(String(this->name) << "-errDiff", errorDiff);
+        collector.add<float>(String(this->name) << "-ets", this->elapsedTimeSec);
+        collector.add<float>(String(this->name) << "-lmt", this->outputLimit);
+        collector.add<float>(String(this->name) << "-lmtI", this->outputLimitI);
         collector.add<float>(String(this->name) << "-p", this->p);
         collector.add<float>(String(this->name) << "-i", this->i);
         collector.add<float>(String(this->name) << "-d", this->d);
-        collector.add<float>(String(this->name), this->output);
+        collector.add<float>(String(this->name << "-output"), this->output);
     }
 
     float getOutputLimit() {
@@ -67,16 +75,18 @@ public:
             lastTimeMs = timeMs;
         }
 
-        float error = desired - actual;
+        error = desired - actual;
         p = kp * error;
-        float elapsedTimeSec = (timeMs - lastTimeMs) / 1000.0f;
+        elapsedTimeSec = (timeMs - lastTimeMs) / 1000.0f;
         // if (-3 < error < 3) {
         i = i + (ki * error * elapsedTimeSec);
         limit(i, -outputLimitI, outputLimitI);
         // }
         d = 0;
+        errorDiff = error - lastError;
         if (elapsedTimeSec > 0) {
-            d = kd * ((error - lastError) / elapsedTimeSec);
+
+            d = kd * (errorDiff / elapsedTimeSec);
         }
         //
         output = p + i + d;
@@ -84,8 +94,18 @@ public:
 
         lastError = error;
         lastTimeMs = timeMs;
-        A8_LOG_DEBUG(logger, String() << "<<update," << p << "," << i << "," << d << ","
+        A8_LOG_DEBUG(logger, String() << "<<update(float):" << p << "," << i << "," << d << ","
                                       << "output:" << output);
+        A8_LOG_DEBUG(logger, String() << "<<update(double):" << (double)p << "," << (double)i << "," << (double)d << ","
+                                      << "output:" << (double)output);
+        Format::AutoOffsetFloat format(16, 3);
+        String msg;
+        msg.setFloatFormat(&format);
+        msg << "<<update(format,float):" << p << "," << i << "," << d << ","
+            << "output:" << output << "\n";
+        msg << "<<update(format,double):" << (double)p << "," << (double)i << "," << (double)d << ","
+            << "output:" << (double)output;
+        A8_LOG_DEBUG(logger, msg);
     }
 
     float getLastError() {

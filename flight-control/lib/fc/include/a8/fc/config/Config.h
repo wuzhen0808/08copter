@@ -15,6 +15,11 @@ enum UnBalanceAction {
     IGNORE_IF_SAFE = 2,
     END_OF_MISSION = 3
 };
+enum BalanceMode {
+    FULL = 0,
+    ROLL = 1,
+    PITCH = 2
+};
 
 /**
  * Test report:
@@ -33,8 +38,7 @@ class Config : public ConfigItem {
 public:
     long tickTimeMs = 2;
     float elevationThrottle = 210.0f; // 210
-    long flyingTimeLimitSec = 10;
-    long delayBeforeStartSec = 3;
+    long flyingTimeLimitSec = 10;    
     bool enablePropeller = false;
     int stableCheckRetries = 5;
     int unBalanceAction = UnBalanceAction::IGNORE_IF_SAFE;
@@ -46,6 +50,7 @@ public:
     double pidOutputLimitI = 100;
     bool enableStart = true;
     int maxRpyUpdateRetries = 5;
+    int balanceMode = BalanceMode::FULL;
 
 public:
     Config(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Logger *logger, Scheduler *sch) {
@@ -73,6 +78,22 @@ public:
                         break;
                     case 3:
                         option = "END_OF_MISSION";
+                        break;
+                    }
+                    return option;
+                });
+            ConfigItems::addSelectInput<Config *>(
+                ci, "balanceMode", balanceMode, this, 3, [](Config *this_, int idx) {
+                    String option;
+                    switch (idx) {
+                    case 0:
+                        option = "FULL";
+                        break;
+                    case 1:
+                        option = "ROLL";
+                        break;
+                    case 2:
+                        option = "PITCH";
                         break;
                     }
                     return option;
@@ -109,8 +130,7 @@ public:
         ci = this;
         ConfigItems::add(ci, "Power-manage", new PowerConfigItem(pm));
         ConfigItems::add(ci, "tickTimeMs", tickTimeMs);
-        ConfigItems::add(ci, "flyingTimeLimit(sec)", flyingTimeLimitSec);
-        ConfigItems::add(ci, "delayBeforeStartSec", delayBeforeStartSec);
+        ConfigItems::add(ci, "flyingTimeLimit(sec)", flyingTimeLimitSec);        
         ConfigItems::add(ci, "maxThrottle", maxThrottle);
         ConfigItems::add(ci, "Rpy-check", new RpyConfigItem(rpy));
         ci = ConfigItems::addReturn(ci, "Pid-arguments:");

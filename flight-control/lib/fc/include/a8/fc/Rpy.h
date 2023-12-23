@@ -13,7 +13,7 @@ public:
         collector.add<Rpy *>("Pitch", this, [](Rpy *this_) { return (double)this_->getPitch(); });
         collector.add<Rpy *>("Yaw", this, [](Rpy *this_) { return (double)this_->getYaw(); });
     }
-
+    virtual void get(float &roll, float &pitch, float &yaw) = 0;
     virtual float getRoll() = 0;
     virtual float getPitch() = 0;
     virtual float getYaw() = 0;

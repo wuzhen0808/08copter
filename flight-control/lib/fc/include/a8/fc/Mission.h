@@ -183,6 +183,7 @@ public:
         propellers->open(config.enablePropeller);
         sys->out->println(String() << "running ... ");
         mc.throttle.reset(mc.startTimeMs);
+        mc.collector.preWrite();
         mc.collector.writeHeader();
         long timeMs = sys->getSteadyTime();
         mc.startTimeMs = timeMs; // m

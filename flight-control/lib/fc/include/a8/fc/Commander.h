@@ -10,6 +10,7 @@ namespace a8::fc {
 using namespace a8::util;
 using namespace a8::fc::collect;
 using namespace a8::fc::throttle;
+
 class Commander : public FlyWeight {
 protected:
     System *sys;
@@ -18,7 +19,8 @@ protected:
     PowerManage *pm;
     Rpy *rpy;
     Collector *collector;
-    Throttler* throttler;
+    Throttler *throttler;
+    Buffer<String> names;
 
 public:
     Commander(PowerManage *pm, Rpy *rpy, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Executor") {
@@ -27,7 +29,34 @@ public:
         this->sch = sch;
         this->pm = pm;
         this->rpy = rpy;
-        
+
+        names.add("timeMs");
+        names.add("roll");
+        names.add("pitch");
+        names.add("yaw");
+
+        names.add("RollPid-error");
+        names.add("RollPid-errorDiff");
+        names.add("RollPid-ets");
+        names.add("RollPid-lmt");
+        names.add("RollPid-lmtI");        
+        names.add("RollPid-p");
+        names.add("RollPid-i");
+        names.add("RollPid-d");
+        names.add("RollPid-output");
+        names.add("PitchPid-ets");
+        names.add("PitchPid-err");
+        names.add("PitchPid-errDiff");
+        names.add("PitchPid-lmt");
+        names.add("PitchPid-lmtI");
+        names.add("PitchPid-p");
+        names.add("PitchPid-i");
+        names.add("PitchPid-d");
+        names.add("PitchPid-output");
+        names.add("prop0-pwm");
+        names.add("prop1-pwm");
+        names.add("prop2-pwm");
+        names.add("prop3-pwm");
     }
 
     ~Commander() {
@@ -35,8 +64,7 @@ public:
 
     virtual Propellers *getPropellers() = 0;
     virtual Mission *createMission(Config &config) = 0;
-    virtual void setup() {      
-        
+    virtual void setup() {
     }
 
     int run(Result &res) {
@@ -77,22 +105,27 @@ public:
             //
             Throttle throttle(propellers);
             OutputWriter writer(this->sys->out);
-            Collector collector(&writer);            
+            Collector collector(&writer);
             Mission::Context mc(collector, config, cc, throttle);
             Mission *mission = this->createMission(config);
-            mc.collectDataItems(collector); 
-            rpy->collectDataItems(collector);           
+            mc.collectDataItems(collector);
+            rpy->collectDataItems(collector);
             pm->collectDataItems(collector);
             mission->collectDataItems(collector);
             propellers->collectDataItems(collector);
+
+            collector.setDefaultEnable(false);
+
+            collector.enable(names, true);
+
             ret = mission->run(mc, res);
             delete mission;
             /*
             A8_LOG_DEBUG(cc.logger, "after run()");
+            */
             if (ret < 0) {
                 log(res.errorMessage);
             }
-            */
             log("done of mission.");
         } // end of while
         return 1;

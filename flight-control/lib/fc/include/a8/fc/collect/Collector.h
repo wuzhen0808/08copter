@@ -4,10 +4,10 @@
 #define DEFAULT_TAIL_PRECISION (2)
 #define DEFAULT_POINT_OFFSET (6)
 namespace a8::fc::collect {
-const Format::AutoOffsetFloat floatFormat(6, 3);
-const Format::AutoOffsetFloat boolFormat(1, 0);
-const Format::AutoOffsetFloat intFormat(8, 0);
-const Format::AutoOffsetFloat longFormat(8, 0);
+
+
+const Format::AutoOffsetFloat doubleFormat(15, 3);
+const Format::AutoOffsetFloat noTailDoubleFormat(15, 0);
 
 using namespace a8::util;
 class Collector {
@@ -16,7 +16,7 @@ class Collector {
     public:
         DataItem *dataItem;
         void (*release)(DataItem *);
-
+        bool enable = true;
         DataItemEntry(DataItem *di, void (*release)(DataItem *)) {
             this->dataItem = di;
             this->release = release;
@@ -24,14 +24,21 @@ class Collector {
         ~DataItemEntry() {
             this->release(dataItem);
         }
+        void setEnable(bool enable) {
+            this->enable = enable;
+        }
     };
 
 private:
     Collector(const Collector &);
     Collector &operator=(const Collector &);
 
-    Buffer<DataItemEntry *> dataItems;
+    Buffer<DataItemEntry *> dataItemEntries;
     HashTable<String, int> dataItemMap;
+    HashTable<String, bool> dataItemEnableStatus;
+    Buffer<DataItem *> enabledDataItems;
+
+    bool defaultEnable = true;
     Writer *writer;
 
 public:
@@ -39,13 +46,13 @@ public:
         this->writer = writer;
     }
     ~Collector() {
-        this->dataItems.clear([](DataItemEntry *de) {
+        this->dataItemEntries.clear([](DataItemEntry *de) {
             delete de;
         });
     }
 
     DataItem *get(int idx) {
-        DataItemEntry *de = dataItems.get(idx, 0);
+        DataItemEntry *de = dataItemEntries.get(idx, 0);
         return de->dataItem;
     }
 
@@ -54,8 +61,19 @@ public:
         if (idx == -1) {
             return 0;
         }
-        DataItemEntry *de = dataItems.get(idx, 0);
+        DataItemEntry *de = dataItemEntries.get(idx, 0);
         return de->dataItem;
+    }
+
+    void enable(Buffer<String> names, bool enable) {
+        for (int i = 0; i < names.len(); i++) {
+            String name = names.get(i, "");
+            dataItemEnableStatus.set(name, enable);
+        }
+    }
+
+    void setDefaultEnable(bool enable) {
+        this->defaultEnable = enable;
     }
 
     int add(DataItem *di, void (*release)(DataItem *)) {
@@ -64,16 +82,16 @@ public:
         if (idx > -1) {
             return -1;
         }
-        idx = dataItems.len();
+        idx = dataItemEntries.len();
         DataItemEntry *de = new DataItemEntry(di, release);
-        this->dataItems.append(de);
+        this->dataItemEntries.append(de);
         dataItemMap.set(name, idx);
         return idx;
     }
 
     template <typename C>
     int add(String name, C c, double (*getter)(C)) {
-        return add(name, c, getter, &floatFormat);
+        return add(name, c, getter, &doubleFormat);
     }
     template <typename C>
     int add(String name, C c, double (*getter)(C), const Format::Float *format) {
@@ -97,32 +115,43 @@ public:
 
     template <typename T>
     int add(String name, T &var) {
-        return add<T>(name, var, &floatFormat);
+        return add<T>(name, var, &doubleFormat);
     }
 
     int add(String name, long &var) {
-        return add<long>(name, var, &longFormat);
+        return add<long>(name, var, &noTailDoubleFormat);
     }
 
     int add(String name, int &var) {
-        return add<int>(name, var, &intFormat);
+        return add<int>(name, var, &noTailDoubleFormat);
     }
 
     int add(String name, bool &var) {
-        return add<bool>(name, var, &boolFormat);
+        return add<bool>(name, var, &noTailDoubleFormat);
     }
 
     int add(String name, float &var) {
-        return add<float>(name, var, &floatFormat);
+        return add<float>(name, var, &doubleFormat);
     }
 
     int add(String name, double &var) {
-        return add<double>(name, var, &floatFormat);
+        return add<double>(name, var, &doubleFormat);
     }
 
+    void preWrite() {
+        for (int i = 0; i < this->dataItemEntries.len(); i++) {
+            DataItemEntry *de = dataItemEntries.get(i, 0);
+            String name = de->dataItem->getName();
+            bool enable = dataItemEnableStatus.get(name, this->defaultEnable);
+            if (!enable) {
+                continue;
+            }
+            enabledDataItems.add(de->dataItem);
+        }
+    }
     void writeHeader() {
-        for (int i = 0; i < dataItems.len(); i++) {
-            DataItem *di = this->get(i);
+        for (int i = 0; i < enabledDataItems.len(); i++) {            
+            DataItem *di = this->enabledDataItems.get(i, 0);
             writer->write(di->getName());
             writer->write(",");
         }
@@ -130,8 +159,8 @@ public:
     }
     void update() {
         String tmpStr;
-        for (int i = 0; i < dataItems.len(); i++) {
-            DataItem *di = this->get(i);
+        for (int i = 0; i < enabledDataItems.len(); i++) {
+            DataItem *di = this->enabledDataItems.get(i, 0);
             tmpStr.setFloatFormat(di->format);
             double v = di->get();
             tmpStr << v;
