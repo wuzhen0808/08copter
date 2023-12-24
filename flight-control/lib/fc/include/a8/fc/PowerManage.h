@@ -1,6 +1,6 @@
 #pragma once
-#include "a8/util.h"
 #include "a8/fc/collect/Collector.h"
+#include "a8/util.h"
 #define A8_PM_DEBUG (0)
 namespace a8::fc {
 using namespace a8::util;
@@ -33,8 +33,8 @@ public:
         this->led->setup();
         this->led->start(sys->getSteadyTime());
     }
-    void collectDataItems(Collector &collector) {
-        collector.add<float>("voltage", this->voltage);
+    int collectDataItems(Collector &collector, Result &res) {
+        return collector.add<float>("voltage", this->voltage, res);
     }
     void tick(long timeMs) {
 

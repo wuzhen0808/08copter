@@ -8,10 +8,23 @@ class Rpy {
 public:
     virtual void setup() = 0;
     virtual bool update() = 0;
-    void collectDataItems(Collector &collector) {
-        collector.add<Rpy *>("Roll", this, [](Rpy *this_) { return (double)this_->getRoll(); });
-        collector.add<Rpy *>("Pitch", this, [](Rpy *this_) { return (double)this_->getPitch(); });
-        collector.add<Rpy *>("Yaw", this, [](Rpy *this_) { return (double)this_->getYaw(); });
+    int collectDataItems(Collector &collector, Result &res) {
+        int ret = collector.add<Rpy *>(
+            "Roll", this, [](Rpy *this_) { return (double)this_->getRoll(); }, res);
+        if (ret < 0) {
+            return ret;
+        }
+        collector.add<Rpy *>(
+            "Pitch", this, [](Rpy *this_) { return (double)this_->getPitch(); }, res);
+        if (ret < 0) {
+            return ret;
+        }
+        collector.add<Rpy *>(
+            "Yaw", this, [](Rpy *this_) { return (double)this_->getYaw(); }, res);
+        if (ret < 0) {
+            return ret;
+        }
+        return ret;
     }
     virtual void get(float &roll, float &pitch, float &yaw) = 0;
     virtual float getRoll() = 0;

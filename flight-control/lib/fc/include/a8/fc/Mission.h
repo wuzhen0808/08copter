@@ -28,9 +28,20 @@ public:
 
         ~Context() {
         }
-        void collectDataItems(Collector &collector) {
-            collector.add("timeMs", this->timeMs);
-            collector.add("Landing", this->landing);
+        int collectDataItems(Collector &collector, Result &res) {
+            int ret = collector.add("timeMs", this->timeMs, res);
+            if (ret < 0) {
+                return ret;
+            }
+            ret = collector.add("tickCostTimeMs", this->tickCostTimeMs, res);
+            if (ret < 0) {
+                return ret;
+            }
+            ret = collector.add("Landing", this->landing, res);
+            if (ret < 0) {
+                return ret;
+            }
+            return ret;
         }
 
         void preUpdate(long timeMs) {
@@ -132,8 +143,8 @@ public:
         this->throttler->setup();
     }
 
-    void collectDataItems(Collector &collector) {
-        throttler->collectDataItems(collector);
+    int collectDataItems(Collector &collector, Result &res) {
+        return throttler->collectDataItems(collector, res);
     }
     int run(Context &mc, Result &res) {
         int ret = this->beforeRun(mc, res);

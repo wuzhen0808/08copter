@@ -35,15 +35,32 @@ public:
         this->elevationEstimator->setup();
         this->setup_ = true;
     }
-    void collectDataItems(Collector &collector) {
-        collector.add<PwmManage *>("PwmM.basePwm", this, [](PwmManage *this_) { return (double)this_->basePwm; });                        
-        for (int i = 0; i < 4; i++) {
-
-            collector.add(String() << "propeller" << i << "-srcThrottle", throttles[i]);
-            collector.add(String() << "propeller" << i << "-srcElevation", elevations[i]);
-            collector.add(String() << "propeller" << i << "-srcPwm", pwmFromThrottles[i]);
-            collector.add(String() << "propeller" << i << "-srcPwm2", totalPwms[i]);
+    int collectDataItems(Collector &collector, Result &res) {
+        int ret = collector.add<PwmManage *>(
+            "PwmM.basePwm", this, [](PwmManage *this_) { return (double)this_->basePwm; }, res);
+        if (ret < 0) {
+            return ret;
         }
+
+        for (int i = 0; i < 4; i++) {
+            ret = collector.add(String() << "propeller" << i << "-srcThrottle", throttles[i], res);
+            if (ret < 0) {
+                break;
+            }
+            ret = collector.add(String() << "propeller" << i << "-srcElevation", elevations[i], res);
+            if (ret < 0) {
+                break;
+            }
+            ret = collector.add(String() << "propeller" << i << "-srcPwm", pwmFromThrottles[i], res);
+            if (ret < 0) {
+                break;
+            }
+            ret = collector.add(String() << "propeller" << i << "-srcPwm2", totalPwms[i], res);
+            if (ret < 0) {
+                break;
+            }
+        }
+        return ret;
     }
     int isReady(Result &res) {
         return this->setup_;
@@ -59,8 +76,8 @@ public:
         totalPwms[idx] = this->basePwm + pwmFromThrottles[idx];
 
         A8_LOG_DEBUG(logger, String()
-                                << "pwm1:" << pwmFromThrottles[idx]
-                                << "+basePwm:" << basePwm << "(double:" << ((double)basePwm) << ")=totalPwms:" << totalPwms[idx]);
+                                 << "pwm1:" << pwmFromThrottles[idx]
+                                 << "+basePwm:" << basePwm << "(double:" << ((double)basePwm) << ")=totalPwms:" << totalPwms[idx]);
 
         return totalPwms[idx];
     }

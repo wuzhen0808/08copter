@@ -14,7 +14,8 @@ public:
     }
     virtual void setup() = 0;
 
-    virtual void collectDataItems(Collector &collector) {
+    virtual int collectDataItems(Collector &collector, Result& res) {
+        return 1;
     }
 
     virtual int update(Throttle &ctx, Result &res) = 0;

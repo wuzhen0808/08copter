@@ -27,11 +27,13 @@ public:
         this->pwmManage->setup();
     }
 
-    void collectDataItems(Collector &collector) {
-        this->pwmManage->collectDataItems(collector);
-        propellers.forEach<Collector &>(collector, [](Collector &collector, Propeller *p) {
-            p->collectDataItems(collector);
-        });
+    int collectDataItems(Collector &collector, Result &res) {
+        int ret = this->pwmManage->collectDataItems(collector, res);
+        for (int i = 0; ret > 0 && i < this->propellers.len(); i++) {
+            Propeller *p = propellers.get(i, 0);
+            ret = p->collectDataItems(collector, res);
+        }
+        return ret;
     }
 
     virtual int isReady(Result &res) {

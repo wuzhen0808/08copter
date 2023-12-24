@@ -45,13 +45,21 @@ public:
         this->pidPitch->setup();
     }
 
-    void collectDataItems(Collector &collector) override {
-        collector.add<float>("roll", this->roll);
-        collector.add<float>("pitch", this->pitch);
-        collector.add<float>("yaw", this->yaw);
-
-        this->pidRoll->collectDataItems(collector);
-        this->pidPitch->collectDataItems(collector);
+    int collectDataItems(Collector &collector, Result &res) override {
+        int ret = collector.add<float>("roll", this->roll, res);
+        if (ret > 0) {
+            ret = collector.add<float>("pitch", this->pitch, res);
+        }
+        if (ret > 0) {
+            ret = collector.add<float>("yaw", this->yaw, res);
+        }
+        if (ret > 0) {
+            ret = this->pidRoll->collectDataItems(collector, res);
+        }
+        if (ret > 0) {
+            ret = this->pidPitch->collectDataItems(collector, res);
+        }
+        return ret;
     }
     void getLimitInTheory(float &minSample, float &maxSample) override {
         minSample = minSample - pidRoll->getOutputLimit() - pidPitch->getOutputLimit();

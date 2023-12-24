@@ -24,6 +24,7 @@ class MainThrottler : public Throttler {
     LandingThrottler *landing;
     LimitThrottler *limit;
     a8::fc::Config &config;
+
 public:
     MainThrottler(a8::fc::Config &config, Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, String("MainThrottler")), config(config) {
         elevator = new ElevatorThrottler(logFac);
@@ -58,12 +59,13 @@ public:
         }
     }
 
-    void collectDataItems(Collector& collector) override {
-        for (int i = 0; i < throttlers.len(); i++) {
+    int collectDataItems(Collector &collector, Result &res) override {
+        int ret = 1;
+        for (int i = 0; ret > 0 && i < throttlers.len(); i++) {
             Throttler *th = throttlers.get(i, 0);
-            th->collectDataItems(collector);
+            ret = th->collectDataItems(collector, res);
         }
-        
+        return ret;
     }
 
     void getLimitInTheory(float &minSample, float &maxSample) override {

@@ -29,10 +29,13 @@ public:
 
     virtual void setup() = 0;
 
-    void collectDataItems(Collector &collector) {
-        
-        collector.add(String("prop") << this->idx << "-throttle", this->throttle);
-        collector.add(String("prop") << this->idx << "-pwm", this->pwm);
+    int collectDataItems(Collector &collector, Result &res) {
+
+        int ret = collector.add(String("prop") << this->idx << "-throttle", this->throttle, res);
+        if (ret > 0) {
+            collector.add(String("prop") << this->idx << "-pwm", this->pwm, res);
+        }
+        return ret;
     }
 
     void open() {
