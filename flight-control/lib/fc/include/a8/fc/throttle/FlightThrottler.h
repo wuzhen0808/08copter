@@ -17,25 +17,25 @@
 namespace a8::fc::throttle {
 using namespace a8::util;
 
-class MainThrottler : public Throttler {
+class FlightThrottler : public Throttler {
     Buffer<throttle::Throttler *> throttlers;
     ElevatorThrottler *elevator;
     BalanceThrottler *balance;
     LandingThrottler *landing;
     LimitThrottler *limit;
-    a8::fc::Config &config;
+    a8::fc::FlightConfigItem *config;
 
 public:
-    MainThrottler(a8::fc::Config &config, Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, String("MainThrottler")), config(config) {
+    FlightThrottler(a8::fc::FlightConfigItem *config, Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, String("MainThrottler")), config(config) {
         elevator = new ElevatorThrottler(logFac);
-        elevator->setElevationThrottle(config.elevationThrottle);
+        elevator->setElevationThrottle(config->elevationThrottle);
         throttlers.append(elevator);
 
-        balance = new BalanceThrottler(rpy, config.balanceMode, logFac);
-        balance->setPidArgument(config.pidKp, config.pidKi, config.pidKd, config.pidOutputLimit, config.pidOutputLimitI);
+        balance = new BalanceThrottler(rpy, config->balanceMode, logFac);
+        balance->setPidArgument(config->pidKp, config->pidKi, config->pidKd, config->pidOutputLimit, config->pidOutputLimitI);
         throttlers.append(balance);
 
-        limit = new LimitThrottler(config.maxThrottle, logFac);
+        limit = new LimitThrottler(config->maxThrottle, logFac);
         throttlers.append(limit);
 
         landing = new LandingThrottler(logFac);
@@ -44,7 +44,7 @@ public:
         throttlers.append(limit);
     }
 
-    ~MainThrottler() {
+    ~FlightThrottler() {
         this->throttlers.clear();
         delete this->balance;
         delete this->elevator;

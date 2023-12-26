@@ -74,7 +74,7 @@ public:
             String getTitle() {
                 return String() << ret << ":" << res.errorMessage;
             }
-            void reset(){
+            void reset() {
                 res.reset();
             }
         } *c2 = new Context();
@@ -96,11 +96,32 @@ public:
         return ci;
     }
 
+    static ConfigItem *addSelectInput(ConfigItem *ci, String name, int &var, Buffer<String> options) {
+        struct Context {
+            Buffer<String> options;
+        };
+        Context *c = new Context();
+        c->options = options;
+        return add<int>(
+            ci, name, new SelectInput<Context *>(
+                          String() << "Please select " << name << ":", //
+                          c,                                           //
+                          Lang::delete_<Context>,
+                          options.len(), //
+                          [](Context *c, int idx) {
+                              return c->options.get(idx, "No-Such-Option");
+                          },           //
+                          var),        //
+            Lang::delete_<Input<int>>, //
+            var                        //
+        );
+    }
+
     template <typename C>
     static ConfigItem *addSelectInput(ConfigItem *ci, String name, int &var, C c, int len, String (*options)(C, int)) {
         return add<int>(
             ci, name, new SelectInput<C>(String() << "Please select " << name << ":", c, len, options, var), //
-            [](Input<int> *input) { delete input; },                                                         //
+            Lang::delete_<Input<int>>,                                                                       //
             var                                                                                              //
         );
     }

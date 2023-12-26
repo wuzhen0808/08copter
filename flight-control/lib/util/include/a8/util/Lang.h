@@ -146,6 +146,17 @@ public:
     static void release(void *v) {
         delete static_cast<T *>(v);
     }
+
+    template <typename T>
+    static void staticCastDelete(void * p){
+        delete static_cast<T*>(p);
+    }
+
+    template <typename T>
+    static void delete_(T * p){
+        delete p;
+    }
+    
 };
 
 } // namespace a8::util

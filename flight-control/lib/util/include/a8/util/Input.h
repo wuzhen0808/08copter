@@ -42,7 +42,7 @@ public:
         return line;
     }
 
-    int readChar(char &ch, Result& res) {
+    int readChar(char &ch, Result &res) {
         return lines->read(&ch, 1, res);
     }
 
@@ -64,7 +64,7 @@ public:
         }
         return len;
     }
-    int readOneOfTheChar(Buffer<char> chs, char &ch, Result& res) {
+    int readOneOfTheChar(Buffer<char> chs, char &ch, Result &res) {
         while (true) {
             char ch2;
             int ret = this->readChar(ch2, res);
@@ -213,20 +213,38 @@ public:
 };
 template <typename C>
 class SelectInput : public NumberInput<int> {
+
 public:
     using optionsF = String (*)(C, int);
+    using releaseContextF = void (*)(C);
 
 protected:
     C context;
     optionsF options_;
     int focused = 0;
     int len;
+    releaseContextF releaseContext;
 
 public:
     SelectInput(String prompt, C c, int len, optionsF options, int def) : NumberInput(prompt, def) {
+        this->init(c, len, options, 0);
+    }
+
+    SelectInput(String prompt, C c, releaseContextF rcf, int len, optionsF options, int def) : NumberInput(prompt, def) {
+        this->init(c, len, options, rcf);
+    }
+
+    void init(C c, int len, optionsF options, releaseContextF rcf) {
         this->context = c;
         this->len = len;
         this->options_ = options;
+        this->releaseContext = rcf;
+    }
+
+    ~SelectInput() {
+        if (this->releaseContext != 0) {
+            this->releaseContext(this->context);
+        }
     }
 
     void print(InputContext *ic) {

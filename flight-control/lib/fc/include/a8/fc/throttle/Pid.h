@@ -1,6 +1,10 @@
 #pragma once
 #include "a8/fc/collect/Collector.h"
 #include "a8/util.h"
+//More reference:
+// https://github.com/bitcraze/crazyflie-firmware.git
+// https://www.youtube.com/watch?v=NVLXCwc8HzM
+
 namespace a8::fc::throttle {
 using namespace a8::util;
 using namespace a8::fc::collect;

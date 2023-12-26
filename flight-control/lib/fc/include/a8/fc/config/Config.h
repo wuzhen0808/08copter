@@ -2,6 +2,7 @@
 #include "a8/fc/PowerManage.h"
 #include "a8/fc/Rpy.h"
 #include "a8/fc/RpyMonitor.h"
+#include "a8/fc/config/FlightConfigItem.h"
 #include "a8/fc/config/PowerConfigItem.h"
 #include "a8/fc/config/RpyConfigItem.h"
 #include "a8/fc/config/StartConfigItem.h"
@@ -9,17 +10,6 @@
 
 namespace a8::fc {
 using namespace a8::util;
-enum UnBalanceAction {
-    ASK = 0,
-    IGNORE = 1,
-    IGNORE_IF_SAFE = 2,
-    END_OF_MISSION = 3
-};
-enum BalanceMode {
-    FULL = 0,
-    ROLL = 1,
-    PITCH = 2
-};
 
 /**
  * Test report:
@@ -28,125 +18,68 @@ enum BalanceMode {
  *
  */
 class Config : public ConfigItem {
+public:
+    enum MissionType {
+        FLIGHT,
+        ESC_CALIBRATE
+    };
 
+public:
+    FlightConfigItem *flightConfigItem;
+    int missionSelect;
+    bool enableStart = true;
+    int propeller0;
+    int propeller1;
+    int propeller2;
+    int propeller3;
+
+private:
     Reader *reader;
     Output *out;
-    ConfigItem *startConfigItem;
     Scheduler *sch;
-    RpyMonitor *rpyMonitor;
+    ConfigItem *startConfigItem;
+    PowerManage *pm;
+    Rpy *rpy;
+
 
 public:
-    long tickTimeMs = 2;
-    float elevationThrottle = 210.0f; // 210
-    long flyingTimeLimitSec = 10;    
-    bool enablePropeller = false;
-    int stableCheckRetries = 5;
-    int unBalanceAction = UnBalanceAction::IGNORE_IF_SAFE;
-    float maxThrottle = 1000;
-    double pidKp = 5.2; //
-    double pidKi = 1.0;
-    double pidKd = 1.65;
-    double pidOutputLimit = 340.0; //
-    double pidOutputLimitI = 100;
-    bool enableStart = true;
-    int maxRpyUpdateRetries = 5;
-    int balanceMode = BalanceMode::FULL;
-
-public:
-    Config(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Logger *logger, Scheduler *sch) {
+    Config(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Scheduler *sch) {
         this->reader = reader;
         this->out = out;
         this->sch = sch;
-        this->rpyMonitor = new RpyMonitor(rpy, out, sch);
-        ConfigItem *ci = this;
+        this->pm = pm;
+        this->rpy = rpy;
         this->attach(new Directory<ConfigItem *>("Root", 0));
-        this->startConfigItem = ConfigItems::addReturn(ci, String() << "Start", new StartConfigItem(enableStart));
-        ci = this->startConfigItem;
-        {
-            ConfigItems::addSelectInput<Config *>(
-                ci, "unBalanceAction", unBalanceAction, this, 4, [](Config *this_, int idx) {
-                    String option;
-                    switch (idx) {
-                    case 0:
-                        option = "ASK";
-                        break;
-                    case 1:
-                        option = "IGNORE";
-                        break;
-                    case 2:
-                        option = "IGNORE_IF_SAFE";
-                        break;
-                    case 3:
-                        option = "END_OF_MISSION";
-                        break;
-                    }
-                    return option;
-                });
-            ConfigItems::addSelectInput<Config *>(
-                ci, "balanceMode", balanceMode, this, 3, [](Config *this_, int idx) {
-                    String option;
-                    switch (idx) {
-                    case 0:
-                        option = "FULL";
-                        break;
-                    case 1:
-                        option = "ROLL";
-                        break;
-                    case 2:
-                        option = "PITCH";
-                        break;
-                    }
-                    return option;
-                });
-            ConfigItems::add(ci, "stableCheckRetries", stableCheckRetries);
-            ConfigItems::add(ci, "enablePropeller", enablePropeller);
-            ConfigItems::add(ci, "enableStart", this->enableStart);
-        }
-        ci = this;
-        ci = ConfigItems::addReturn(ci, "Monitor-rpy");
-        {
-            ci->setAttribute(rpyMonitor, [](void *) {});
-            ci->onBuildTitle = [](TitleBuilder &title) {
-                RpyMonitor *rpyMonitor = title.configItem->getAttribute<RpyMonitor *>(0);
-                title.set<bool>("Running", rpyMonitor->isRunning());
-            };
-            ci->onEnter = [](ConfigContext &cc) {
-                RpyMonitor *rpyMonitor = cc.navigator->get()->getAttribute<RpyMonitor *>(0);
-                if (rpyMonitor->isRunning()) {
-                    rpyMonitor->close();
-                } else {
-                    rpyMonitor->open();
-                }
-            };
-            ConfigItems::add<RpyMonitor *, float>(
-                ci, "Set-rate", rpyMonitor,                                           //
-                [](RpyMonitor *rpyMonitor) { return rpyMonitor->getRate().Hz(); },    //
-                [](RpyMonitor *rpyMonitor, float rate) { rpyMonitor->setRate(rate); } //
-            );
-            {
-            }
-        }
-
-        ci = this;
-        ConfigItems::add(ci, "Power-manage", new PowerConfigItem(pm));
-        ConfigItems::add(ci, "tickTimeMs", tickTimeMs);
-        ConfigItems::add(ci, "flyingTimeLimit(sec)", flyingTimeLimitSec);        
-        ConfigItems::add(ci, "maxThrottle", maxThrottle);
-        ConfigItems::add(ci, "Rpy-check", new RpyConfigItem(rpy));
-        ci = ConfigItems::addReturn(ci, "Pid-arguments:");
-        {
-
-            ConfigItems::add(ci, "pidOutputLimit", pidOutputLimit);
-            ConfigItems::add(ci, "pidOutputLimitI", pidOutputLimitI);
-            ConfigItems::add(ci, "Kp", pidKp);
-            ConfigItems::add(ci, "Ki", pidKi);
-            ConfigItems::add(ci, "Kd", pidKd);
-        }
     }
     ~Config() {
-        delete this->rpyMonitor;
+    }
+    void onAttached() override {
+        ConfigItem *ci = this;
+        {
+            Buffer<String> missions;
+            missions.add("FlightMission");
+            missions.add("EscCalibrateMission");
+            ConfigItems::addSelectInput(ci, String() << "SelectMission", this->missionSelect, missions);
+        }
+        {
+            this->startConfigItem = ConfigItems::addReturn(ci, "Start", new StartConfigItem(enableStart));
+        }
+        {
+            this->flightConfigItem = new FlightConfigItem(reader, out, pm, rpy, sch);
+            ConfigItems::addReturn(ci, "FlightConfig", this->flightConfigItem);
+        }
     }
 
+    bool isValid() override {
+        if (this->missionSelect == MissionType::FLIGHT) {
+            return this->flightConfigItem->isValid();
+        } else if (this->missionSelect == MissionType::ESC_CALIBRATE) {
+            return true;
+        } else {
+            // no such mission type.
+            return false;
+        }
+    }
     void onLeftFailure(ConfigContext &cc) override {
         cc.navigator->to(this->startConfigItem->getDirectory());
     }

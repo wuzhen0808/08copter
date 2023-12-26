@@ -1,8 +1,10 @@
 #pragma once
-#include "a8/fc/Mission.h"
 #include "a8/fc/PowerManage.h"
 #include "a8/fc/collect/Collector.h"
 #include "a8/fc/config/Config.h"
+#include "a8/fc/mission/Context.h"
+#include "a8/fc/mission/EscCalibrateMission.h"
+#include "a8/fc/mission/FlightMission.h"
 #include "a8/util.h"
 #include "a8/util/sched.h"
 
@@ -10,7 +12,7 @@ namespace a8::fc {
 using namespace a8::util;
 using namespace a8::fc::collect;
 using namespace a8::fc::throttle;
-
+using namespace a8::fc::mission;
 class Commander : public FlyWeight {
 protected:
     System *sys;
@@ -75,7 +77,6 @@ public:
     }
 
     virtual Propellers *getPropellers() = 0;
-    virtual Mission *createMission(Config &config) = 0;
     virtual void setup() {
     }
 
@@ -92,23 +93,23 @@ public:
             return ret;
         }
         log(">>config");
-        Config config(reader, sys->out, pm, rpy, logger, sch);
+        Config *config = new Config(reader, sys->out, pm, rpy, sch);
 
-        log(">>config.2");
+        log(">>config->2");
         while (true) {
             Result res;
-            A8_LOG_DEBUG(logger, "start config.");
+            A8_LOG_DEBUG(logger, "start config->");
             ConfigContext cc(reader, sys->out, logger, res);
-            A8_LOG_DEBUG(logger, "start config.2.");
-            config.enter(cc);
-            A8_LOG_DEBUG(logger, "done of config.");
-            if (!config.isValid()) {
+            A8_LOG_DEBUG(logger, "start config->2.");
+            config->enter(cc);
+            A8_LOG_DEBUG(logger, "done of config->");
+            if (!config->isValid()) {
                 // print all the invalid ones.
                 log("not valid and config again.");
                 continue;
             }
 
-            if (!config.enableStart) {
+            if (!config->enableStart) {
                 log("cannot create mission, start is NOT enabled.");
                 continue;
             }
@@ -119,10 +120,8 @@ public:
             Throttle throttle(propellers);
             OutputWriter writer(this->sys->out);
             Collector collector(&writer);
-            Mission::Context mc(collector, config, cc, throttle);
-            Mission *mission = this->createMission(config);
-
-            ret = mc.collectDataItems(collector, res);
+            mission::Context mc(collector, cc, throttle);
+            ret = pm->collectDataItems(collector, res);
             if (ret < 0) {
                 log(res.errorMessage);
                 continue;
@@ -132,9 +131,21 @@ public:
                 log(res.errorMessage);
                 continue;
             }
-            ret = pm->collectDataItems(collector, res);
+            ret = propellers->collectDataItems(collector, res);
             if (ret < 0) {
                 log(res.errorMessage);
+                continue;
+            }
+
+            ret = mc.collectDataItems(collector, res);
+            if (ret < 0) {
+                log(res.errorMessage);
+                continue;
+            }
+            
+            Mission *mission = 0;
+            ret = this->buildMission(config, propellers, mission, res);
+            if (ret < 0) {
                 continue;
             }
             ret = mission->collectDataItems(collector, res);
@@ -142,11 +153,7 @@ public:
                 log(res.errorMessage);
                 continue;
             }
-            ret = propellers->collectDataItems(collector, res);
-            if (ret < 0) {
-                log(res.errorMessage);
-                continue;
-            }
+
             Buffer<String> names;
             ret = collector.addAllIfNotExists(nameWithExprs, names, res);
             if (ret < 0) {
@@ -172,6 +179,20 @@ public:
             }
             log("done of mission.");
         } // end of while
+
+        return 1;
+    }
+
+    int buildMission(Config *config, Propellers *propellers, Mission *&mission, Result &res) {
+        if (config->missionSelect == Config::MissionType::FLIGHT) {
+            mission = new FlightMission(config->flightConfigItem, rpy, propellers, sys, loggerFactory);
+
+        } else if (config->missionSelect == Config::MissionType::ESC_CALIBRATE) {
+            mission = new EscCalibrateMission(propellers, sys, loggerFactory);
+        } else {
+            res << String() << "no such mission with type:" << config->missionSelect;
+            return -1;
+        }
         return 1;
     }
 };
