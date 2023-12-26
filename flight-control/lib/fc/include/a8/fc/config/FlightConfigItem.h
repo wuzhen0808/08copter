@@ -4,7 +4,6 @@
 #include "a8/fc/RpyMonitor.h"
 #include "a8/fc/config/PowerConfigItem.h"
 #include "a8/fc/config/RpyConfigItem.h"
-#include "a8/fc/config/StartConfigItem.h"
 #include "a8/util.h"
 
 namespace a8::fc {

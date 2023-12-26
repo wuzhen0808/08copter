@@ -8,19 +8,19 @@ namespace a8::hal::esp {
 using namespace a8::util;
 using namespace a8::util::sched;
 
-class FreeRtosThread : public Thread {
+class FreeRtosTask : public Task {
 private:
     sched::run run_;
     void *context;
     TaskHandle_t handle;
 
 public:
-    FreeRtosThread(sched::run runF, void *contextF) {
+    FreeRtosTask(sched::run runF, void *contextF) {
         this->run_ = runF;
         this->context = contextF;
     }
 
-    ~FreeRtosThread() {
+    ~FreeRtosTask() {
     }
 
     void run() {

@@ -1,6 +1,7 @@
 #pragma once
 #include "a8/fc/Propeller.h"
 #include "a8/fc/collect/Collector.h"
+#include "a8/fc/pwm/PwmCalculator.h"
 #include "a8/util/Result.h"
 #include "a8/util/comp.h"
 #define A8_PROPELLER_COUNT (4)
@@ -17,18 +18,22 @@ using namespace a8::fc::collect;
 class Propellers : public FlyWeight {
 protected:
     Buffer<Propeller *> propellers;
-    PwmManage *pwmManage;
+    PwmCalculator *pwmCalculator;
 
 public:
     Propellers(PowerManage *pm, LoggerFactory *logFac) : FlyWeight(logFac, "Propellers") {
-        this->pwmManage = new PwmManage(pm, logFac);
+        this->pwmCalculator = 0;
     }
+
     virtual void setup() {
-        this->pwmManage->setup();
+    }
+
+    void setPwmCalculator(PwmCalculator *pwmCalculator) {
+        this->pwmCalculator = pwmCalculator;
     }
 
     int collectDataItems(Collector &collector, Result &res) {
-        int ret = this->pwmManage->collectDataItems(collector, res);
+        int ret = 1;
         for (int i = 0; ret > 0 && i < this->propellers.len(); i++) {
             Propeller *p = propellers.get(i, 0);
             ret = p->collectDataItems(collector, res);
@@ -37,7 +42,11 @@ public:
     }
 
     virtual int isReady(Result &res) {
-        return this->pwmManage->isReady(res);
+        if (pwmCalculator == 0) {
+            res << "pwmCalculator is 0.";
+            return -1;
+        }
+        return 1;
     }
     Propeller *get(int idx) {
         return propellers.get(idx, 0);
@@ -55,9 +64,17 @@ public:
         });
     }
     void commitUpdate() {
-        propellers.forEach<int>(0, [](int c, Propeller *propeller) {
-            propeller->commitUpdate();
-        });
+        for (int i = 0; i < propellers.len(); i++) {
+            Propeller *prop = this->propellers.get(i, 0);
+            prop->commitUpdate(this->pwmCalculator);
+        }
+    }
+    void commitUpdate(int idx) {
+        Propeller *prop = this->propellers.get(idx, 0);
+        if (prop == 0) {
+            return;
+        }
+        prop->commitUpdate(this->pwmCalculator);
     }
 
     void close() {

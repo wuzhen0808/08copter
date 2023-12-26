@@ -1,11 +1,11 @@
 #pragma once
 
 namespace a8::util::sched {
-class Thread {
+class Task {
 public:
-    Thread() {
+    Task() {
     }
-    ~Thread() {
+    ~Task() {
     }
     // TODO ThreadLocal.
 };

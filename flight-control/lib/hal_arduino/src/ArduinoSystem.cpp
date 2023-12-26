@@ -6,7 +6,7 @@
 namespace a8::hal::arduino_ {
 using namespace a8::util;
 ArduinoSystem::ArduinoSystem() {
-    out = new ArduinoOutput();
+    out = createOutput(0);
     input = new ArduinoInput();
 }
 

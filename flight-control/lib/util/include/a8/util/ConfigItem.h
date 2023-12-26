@@ -10,7 +10,7 @@ class ConfigItem;
 class ConfigContext : public InputContext {
 private:
     ConfigContext(const ConfigContext &cc);
-    ConfigContext& operator=(const ConfigContext &cc);
+    ConfigContext &operator=(const ConfigContext &cc);
 
 public:
     Result &res;
@@ -79,7 +79,9 @@ public:
     ConfigItem() {
         this->dir = 0;
     }
-
+    Directory<ConfigItem *> *getDir() {
+        return this->dir;
+    }
     void setAttribute(void *value, void (*release)(void *)) {
         this->setAttribute(0, value, release);
     }
@@ -98,6 +100,18 @@ public:
     }
     Directory<ConfigItem *> *getDirectory() {
         return this->dir;
+    }
+    template <typename T>
+    T *getRoot() {
+        ConfigItem *ci = this;
+        while (true) {
+            ConfigItem *p = ci->getParent<ConfigItem>();
+            if (p == 0) {
+                break;
+            }
+            ci = p;
+        }
+        return (T *)ci;
     }
     template <typename T>
     T *getParent() {

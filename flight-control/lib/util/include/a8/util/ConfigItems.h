@@ -159,6 +159,39 @@ public:
         logger->debug(String() << "<<read,bind:" << bind);
         return bind;
     }
+
+    static int runNav(Directory<ConfigItem *> *dir, ConfigContext &cc) {
+
+        cc.logger->debug(">>Config::config.");
+        DirectoryNavigator<ConfigContext &, ConfigItem *> nav(cc.reader, cc.out, dir);
+        cc.navigator = &nav;
+        nav.setEnterHandler([](ConfigContext &cc, DirectoryNavigator<ConfigContext &, ConfigItem *> *nav) {
+            cc.logger->debug("dir enter.");
+            Directory<ConfigItem *> *dir = nav->get();
+            if (dir->isRoot()) {
+                // ignore root,avoid recursive config.
+                return;
+            }
+            ConfigItem *ci = dir->getElement();
+            ci->enter(cc);
+        });
+        nav.setLeftHandler([](ConfigContext &cc, DirectoryNavigator<ConfigContext &, ConfigItem *> *nav) {
+            bool changed = nav->left();
+            if (!changed) {
+                // go to start config item if at root node & press left key.
+                Directory<ConfigItem *> *dir = nav->get();
+                ConfigItem *ci = dir->getElement();
+                ci->onLeftFailure(cc);
+            }
+        });
+
+        cc.logger->debug(String() << "run...");
+
+        int ret = nav.run(cc); // blocked here until stop nav.
+
+        cc.logger->debug(String() << "<<Config::config,ret:" << ret);
+        return ret;
+    }
 };
 
 } // namespace a8::util

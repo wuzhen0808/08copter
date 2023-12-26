@@ -157,8 +157,12 @@ public:
 
 #ifndef A8_DEBUG2
 #if A8_LOG_DEBUG_ENABLED
-#define A8_DEBUG2(exp1, exp2) \
-    a8::util::Debug::debug(exp1, exp2);
+#define A8_DEBUG2(exp1, exp2)         \
+    {                                 \
+        a8::util::Debug::print(exp1); \
+        a8::util::Debug::print(exp2); \
+        a8::util::Debug::println();   \
+    }
 #else
 #define A8_DEBUG2(exp1, exp2)
 #endif
@@ -197,13 +201,13 @@ public:
 #ifndef A8_DEBUG5
 #if A8_LOG_DEBUG_ENABLED
 #define A8_DEBUG5(exp1, exp2, exp3, exp4, exp5) \
-    {                                     \
-        a8::util::Debug::print(exp1);     \
-        a8::util::Debug::print(exp2);     \
-        a8::util::Debug::print(exp3);     \
-        a8::util::Debug::print(exp4);     \
-        a8::util::Debug::print(exp5);     \
-        a8::util::Debug::println();       \
+    {                                           \
+        a8::util::Debug::print(exp1);           \
+        a8::util::Debug::print(exp2);           \
+        a8::util::Debug::print(exp3);           \
+        a8::util::Debug::print(exp4);           \
+        a8::util::Debug::print(exp5);           \
+        a8::util::Debug::println();             \
     }
 
 #else
@@ -214,97 +218,91 @@ public:
 #ifndef A8_DEBUG6
 #if A8_LOG_DEBUG_ENABLED
 #define A8_DEBUG6(exp1, exp2, exp3, exp4, exp5, exp6) \
-    {                                     \
-        a8::util::Debug::print(exp1);     \
-        a8::util::Debug::print(exp2);     \
-        a8::util::Debug::print(exp3);     \
-        a8::util::Debug::print(exp4);     \
-        a8::util::Debug::print(exp5);     \
-        a8::util::Debug::print(exp6);     \
-        a8::util::Debug::println();       \
+    {                                                 \
+        a8::util::Debug::print(exp1);                 \
+        a8::util::Debug::print(exp2);                 \
+        a8::util::Debug::print(exp3);                 \
+        a8::util::Debug::print(exp4);                 \
+        a8::util::Debug::print(exp5);                 \
+        a8::util::Debug::print(exp6);                 \
+        a8::util::Debug::println();                   \
     }
 #else
 #define A8_DEBUG6(exp1, exp2, exp3, exp4, exp5, exp6)
 #endif
 #endif
 
-
 #ifndef A8_DEBUG7
 #if A8_LOG_DEBUG_ENABLED
 #define A8_DEBUG7(exp1, exp2, exp3, exp4, exp5, exp6, exp7) \
-    {                                     \
-        a8::util::Debug::print(exp1);     \
-        a8::util::Debug::print(exp2);     \
-        a8::util::Debug::print(exp3);     \
-        a8::util::Debug::print(exp4);     \
-        a8::util::Debug::print(exp5);     \
-        a8::util::Debug::print(exp6);     \
-        a8::util::Debug::print(exp7);     \
-        a8::util::Debug::println();       \
+    {                                                       \
+        a8::util::Debug::print(exp1);                       \
+        a8::util::Debug::print(exp2);                       \
+        a8::util::Debug::print(exp3);                       \
+        a8::util::Debug::print(exp4);                       \
+        a8::util::Debug::print(exp5);                       \
+        a8::util::Debug::print(exp6);                       \
+        a8::util::Debug::print(exp7);                       \
+        a8::util::Debug::println();                         \
     }
 #else
 #define A8_DEBUG7(exp1, exp2, exp3, exp4, exp5, exp6, exp7)
 #endif
 #endif
 
-
 #ifndef A8_DEBUG8
 #if A8_LOG_DEBUG_ENABLED
 #define A8_DEBUG8(exp1, exp2, exp3, exp4, exp5, exp6, exp7, exp8) \
-    {                                     \
-        a8::util::Debug::print(exp1);     \
-        a8::util::Debug::print(exp2);     \
-        a8::util::Debug::print(exp3);     \
-        a8::util::Debug::print(exp4);     \
-        a8::util::Debug::print(exp5);     \
-        a8::util::Debug::print(exp6);     \
-        a8::util::Debug::print(exp7);     \
-        a8::util::Debug::print(exp8);     \
-        a8::util::Debug::println();       \
+    {                                                             \
+        a8::util::Debug::print(exp1);                             \
+        a8::util::Debug::print(exp2);                             \
+        a8::util::Debug::print(exp3);                             \
+        a8::util::Debug::print(exp4);                             \
+        a8::util::Debug::print(exp5);                             \
+        a8::util::Debug::print(exp6);                             \
+        a8::util::Debug::print(exp7);                             \
+        a8::util::Debug::print(exp8);                             \
+        a8::util::Debug::println();                               \
     }
 #else
 #define A8_DEBUG8(exp1, exp2, exp3, exp4, exp5, exp6, exp7, exp8)
 #endif
 #endif
 
-
-
 #ifndef A8_DEBUG9
 #if A8_LOG_DEBUG_ENABLED
 #define A8_DEBUG9(exp1, exp2, exp3, exp4, exp5, exp6, exp7, exp8, exp9) \
-    {                                     \
-        a8::util::Debug::print(exp1);     \
-        a8::util::Debug::print(exp2);     \
-        a8::util::Debug::print(exp3);     \
-        a8::util::Debug::print(exp4);     \
-        a8::util::Debug::print(exp5);     \
-        a8::util::Debug::print(exp6);     \
-        a8::util::Debug::print(exp7);     \
-        a8::util::Debug::print(exp8);     \
-        a8::util::Debug::print(exp9);     \
-        a8::util::Debug::println();       \
+    {                                                                   \
+        a8::util::Debug::print(exp1);                                   \
+        a8::util::Debug::print(exp2);                                   \
+        a8::util::Debug::print(exp3);                                   \
+        a8::util::Debug::print(exp4);                                   \
+        a8::util::Debug::print(exp5);                                   \
+        a8::util::Debug::print(exp6);                                   \
+        a8::util::Debug::print(exp7);                                   \
+        a8::util::Debug::print(exp8);                                   \
+        a8::util::Debug::print(exp9);                                   \
+        a8::util::Debug::println();                                     \
     }
 #else
 #define A8_DEBUG9(exp1, exp2, exp3, exp4, exp5, exp6, exp7, exp8, exp9)
 #endif
 #endif
 
-
-
 #ifndef A8_DEBUG10
 #if A8_LOG_DEBUG_ENABLED
 #define A8_DEBUG10(exp1, exp2, exp3, exp4, exp5, exp6, exp7, exp8, exp9, exp10) \
-    {                                     \
-        a8::util::Debug::print(exp1);     \
-        a8::util::Debug::print(exp2);     \
-        a8::util::Debug::print(exp3);     \
-        a8::util::Debug::print(exp4);     \
-        a8::util::Debug::print(exp5);     \
-        a8::util::Debug::print(exp6);     \
-        a8::util::Debug::print(exp7);     \
-        a8::util::Debug::print(exp8);     \
-        a8::util::Debug::print(exp9);     \
-        a8::util::Debug::println();       \
+    {                                                                           \
+        a8::util::Debug::print(exp1);                                           \
+        a8::util::Debug::print(exp2);                                           \
+        a8::util::Debug::print(exp3);                                           \
+        a8::util::Debug::print(exp4);                                           \
+        a8::util::Debug::print(exp5);                                           \
+        a8::util::Debug::print(exp6);                                           \
+        a8::util::Debug::print(exp7);                                           \
+        a8::util::Debug::print(exp8);                                           \
+        a8::util::Debug::print(exp9);                                           \
+        a8::util::Debug::println();                                             \
     }
 #else
 #define A8_DEBUG10(exp1, exp2, exp3, exp4, exp5, exp6, exp7, exp8, exp9, exp10)
@@ -312,4 +310,24 @@ public:
 #endif
 
 
+#ifndef A8_TRACE
+#if A8_LOG_TRACE_ENABLED
+#define A8_TRACE(exp) \
+    a8::util::Debug::debug(exp);
+#else
+#define A8_TRACE(exp)
+#endif
+#endif
 
+#ifndef A8_TRACE2
+#if A8_LOG_TRACE_ENABLED
+#define A8_TRACE2(exp1, exp2)         \
+    {                                 \
+        a8::util::Debug::print(exp1); \
+        a8::util::Debug::print(exp2); \
+        a8::util::Debug::println();   \
+    }
+#else
+#define A8_TRACE2(exp1, exp2)
+#endif
+#endif

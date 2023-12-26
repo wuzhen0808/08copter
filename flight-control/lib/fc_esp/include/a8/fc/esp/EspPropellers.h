@@ -19,7 +19,6 @@ public:
         this->propellers.clear([](Propeller *prop) {
             delete prop;
         });
-        delete this->pwmManage;
     }
 
     void setup() override {
@@ -32,7 +31,7 @@ public:
     
     void addPropeller(String name, int pin, int hz) {
 
-        EspPropeller *prop = new EspPropeller(name, this->propellers.len(), pwmManage);
+        EspPropeller *prop = new EspPropeller(name, this->propellers.len());
         prop->hz(hz);
         int channel = prop->attach(pin);
         prop->setup();

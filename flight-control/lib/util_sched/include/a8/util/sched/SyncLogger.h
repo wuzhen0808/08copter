@@ -1,4 +1,5 @@
 #pragma once
+#include "a8/util/Debug.h"
 #include "a8/util/Logger.h"
 #include "a8/util/sched/Lock.h"
 #include "a8/util/sched/Scheduler.h"
@@ -21,9 +22,11 @@ public:
     }
 
     void log(Logger::Level level, const String &msg) override {
+        A8_DEBUG(">>SyncLogger::log()");
         lock->lock();
         logger->log(level, msg);
         lock->unLock();
+        A8_DEBUG("<<SyncLogger::log()3");
     };
 };
 

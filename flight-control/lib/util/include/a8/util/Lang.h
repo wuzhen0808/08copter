@@ -20,6 +20,9 @@ private:
 
 public:
     static const char END_OF_STR = '\0';
+    template <typename T>
+    static void empty(T) {
+    }
 
     template <typename T>
     static int getBit(T value, int idx) {
@@ -148,15 +151,14 @@ public:
     }
 
     template <typename T>
-    static void staticCastDelete(void * p){
-        delete static_cast<T*>(p);
+    static void staticCastDelete(void *p) {
+        delete static_cast<T *>(p);
     }
 
     template <typename T>
-    static void delete_(T * p){
+    static void delete_(T *p) {
         delete p;
     }
-    
 };
 
 } // namespace a8::util

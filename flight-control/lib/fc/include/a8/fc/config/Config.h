@@ -5,7 +5,6 @@
 #include "a8/fc/config/FlightConfigItem.h"
 #include "a8/fc/config/PowerConfigItem.h"
 #include "a8/fc/config/RpyConfigItem.h"
-#include "a8/fc/config/StartConfigItem.h"
 #include "a8/util.h"
 
 namespace a8::fc {
@@ -41,7 +40,6 @@ private:
     PowerManage *pm;
     Rpy *rpy;
 
-
 public:
     Config(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Scheduler *sch) {
         this->reader = reader;
@@ -49,21 +47,45 @@ public:
         this->sch = sch;
         this->pm = pm;
         this->rpy = rpy;
-        this->attach(new Directory<ConfigItem *>("Root", 0));
+        this->missionSelect = MissionType::FLIGHT;
     }
     ~Config() {
     }
     void onAttached() override {
         ConfigItem *ci = this;
         {
-            Buffer<String> missions;
-            missions.add("FlightMission");
-            missions.add("EscCalibrateMission");
-            ConfigItems::addSelectInput(ci, String() << "SelectMission", this->missionSelect, missions);
+            ci = ConfigItems::addReturn(ci, "Start");
+            ci->onEnter = [](ConfigContext &cc) {
+                cc.navigator->stop(1);
+            };
+            ci->onBuildTitle = [](TitleBuilder &title) {
+                Config *this_ = title.configItem->getRoot<Config>();
+
+                if (this_->missionSelect == MissionType::FLIGHT) {
+                    title.set<String>("mission", "Flight");
+                } else if (this_->missionSelect == MissionType::ESC_CALIBRATE) {
+                    title.set<String>("mission", "EscCalibrate");
+                } else {
+                    title.set<String>("mission", "<Please-select>");
+                }
+            };
+            {
+
+                ConfigItem *ci2 = 0;
+                ci2 = ConfigItems::addReturn(ci, "Flight-Mission");
+                ci2->onEnter = [](ConfigContext &cc) {                    
+                    Config *this_ = cc.navigator->get()->getElement()->getRoot<Config>();
+                    this_->missionSelect = MissionType::FLIGHT;
+                };
+                ci2 = ConfigItems::addReturn(ci, "EscCalibrate-Mission");
+                ci2->onEnter = [](ConfigContext &cc) {
+                    Config *this_ = cc.navigator->get()->getElement()->getRoot<Config>();
+                    this_->missionSelect = MissionType::ESC_CALIBRATE;
+                };
+            }
         }
-        {
-            this->startConfigItem = ConfigItems::addReturn(ci, "Start", new StartConfigItem(enableStart));
-        }
+
+        ci = this;
         {
             this->flightConfigItem = new FlightConfigItem(reader, out, pm, rpy, sch);
             ConfigItems::addReturn(ci, "FlightConfig", this->flightConfigItem);
@@ -85,35 +107,7 @@ public:
     }
 
     void enter(ConfigContext &cc) override {
-
-        cc.logger->debug(">>Config::config.");
-        DirectoryNavigator<ConfigContext &, ConfigItem *> nav(cc.reader, cc.out, this->dir);
-        cc.navigator = &nav;
-        nav.setEnterHandler([](ConfigContext &cc, DirectoryNavigator<ConfigContext &, ConfigItem *> *nav) {
-            cc.logger->debug("dir enter.");
-            Directory<ConfigItem *> *dir = nav->get();
-            if (dir->isRoot()) {
-                // ignore root,avoid recursive config.
-                return;
-            }
-            ConfigItem *ci = dir->getElement();
-            ci->enter(cc);
-        });
-        nav.setLeftHandler([](ConfigContext &cc, DirectoryNavigator<ConfigContext &, ConfigItem *> *nav) {
-            bool changed = nav->left();
-            if (!changed) {
-                // go to start config item if at root node & press left key.
-                Directory<ConfigItem *> *dir = nav->get();
-                ConfigItem *ci = dir->getElement();
-                ci->onLeftFailure(cc);
-            }
-        });
-
-        cc.logger->debug(String() << "run...");
-
-        int ret = nav.run(cc); // blocked here until stop nav.
-
-        cc.logger->debug(String() << "<<Config::config,ret:" << ret);
+        ConfigItems::runNav(this->dir, cc);
     }
 };
 } // namespace a8::fc

@@ -8,7 +8,7 @@ class EspPropeller : public Propeller {
     Servo servo;
 
 public:
-    EspPropeller(String name, int idx, PwmManage *pwmManage) : Propeller(name, idx, pwmManage) {
+    EspPropeller(String name, int idx) : Propeller(name, idx) {
     }
 
     void hz(int hz) {

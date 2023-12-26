@@ -26,7 +26,7 @@ public:
         // vTaskEndScheduler();
     }
 
-    Thread *createTask(const String name, void *context, sched::run run) override;
+    Task *createTask(const String name, void *context, sched::run run) override;
 
     Timer *createTimer(const String name, const Rate &rate, void *context, sched::run run) override;
 

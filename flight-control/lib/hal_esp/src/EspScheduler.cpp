@@ -1,7 +1,7 @@
 #include "a8/hal/esp/EspScheduler.h"
 #include "a8/hal/esp/FreeRtosSemaphore.h"
 #include "a8/hal/esp/FreeRtosSyncQueue.h"
-#include "a8/hal/esp/FreeRtosThread.h"
+#include "a8/hal/esp/FreeRtosTask.h"
 
 #include <esp32-hal.h>
 #include <freertos/FreeRTOS.h>
@@ -10,7 +10,7 @@
 namespace a8::hal::esp {
 
 void taskCallback(void *pvParameters) {
-    FreeRtosThread *thread = static_cast<FreeRtosThread *>(pvParameters);
+    FreeRtosTask *thread = static_cast<FreeRtosTask *>(pvParameters);
     thread->run();
     vTaskDelete(thread->getHandle());
 }
@@ -28,8 +28,8 @@ void timerCallback(TimerHandle_t handle) {
  * After changed the creation method to xTaskCreatePinnedToCore(or xTaskCreateUniversal which is declared by header esp32-hal.h) the error disappeared.
  *
  */
-Thread *EspScheduler::createTask(const String name, void *context, sched::run run) {
-    FreeRtosThread *thread = new FreeRtosThread(run, context);
+Task *EspScheduler::createTask(const String name, void *context, sched::run run) {
+    FreeRtosTask *thread = new FreeRtosTask(run, context);
     TaskHandle_t handle = 0;
 
     BaseType_t result =

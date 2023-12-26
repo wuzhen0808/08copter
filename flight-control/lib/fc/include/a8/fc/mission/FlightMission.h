@@ -2,6 +2,7 @@
 #include "a8/fc/config/FlightConfigItem.h"
 #include "a8/fc/mission/Context.h"
 #include "a8/fc/mission/Mission.h"
+#include "a8/fc/pwm/VoltageCompensatePwmCalculator.h"
 #include "a8/fc/throttle/FlightThrottler.h"
 #include "a8/util.h"
 
@@ -14,25 +15,31 @@ class FlightMission : public Mission {
     FlightThrottler *throttler;
     Propellers *propellers;
     Rpy *rpy;
+    PwmCalculator *pwmCalculator;
 
 public:
-    FlightMission(FlightConfigItem *config, Rpy *rpy, Propellers *propellers, System *sys, LoggerFactory *logFac) : Mission(sys, logFac, "FlightMission") {
+    FlightMission(FlightConfigItem *config, PowerManage *pm, Rpy *rpy, Propellers *propellers, System *sys, LoggerFactory *logFac) : Mission(sys, logFac, "FlightMission") {
         this->config = config;
         this->rpy = rpy;
         this->propellers = propellers;
         this->throttler = new throttle::FlightThrottler(config, rpy, logFac);
+        this->pwmCalculator = new VoltageCompensatePwmCalculator(pm, logFac);
     }
 
     ~FlightMission() {
+        delete this->pwmCalculator;
         delete this->throttler;
     }
 
     int setup(Result &res) override {
         throttler->setup();
+        pwmCalculator->setup();
+        this->propellers->setPwmCalculator(this->pwmCalculator);
         return 1;
     }
     int collectDataItems(Collector &collector, Result &res) override {
-        return 1;
+        int ret = pwmCalculator->collectDataItems(collector, res);
+        return ret;
     }
     int run(Context &mc, Result &res) override {
         int ret = this->beforeRun(mc, res);
@@ -129,6 +136,10 @@ public:
 protected:
     int beforeRun(Context &mc, Result &res) {
         int ret = checkRpy(mc.configContext, res);
+        if (ret < 0) {
+            return ret;
+        }
+        ret = propellers->isReady(res);
         if (ret < 0) {
             return ret;
         }

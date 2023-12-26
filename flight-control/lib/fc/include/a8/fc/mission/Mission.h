@@ -22,8 +22,15 @@ public:
 
     ~Mission() {
     }
-    virtual int setup(Result &res) = 0;
-    virtual int collectDataItems(Collector &collector, Result &res) = 0;
+    virtual int setup(Result &res) {
+        return 0;
+    }
+    virtual int collectDataItems(Collector &collector, Result &res) {
+        return 1;
+    }
+    virtual ConfigItem *getForeground() {
+        return 0;
+    }
     virtual int run(Context &mc, Result &res) = 0;
 };
 

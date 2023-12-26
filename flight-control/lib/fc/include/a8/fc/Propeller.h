@@ -1,5 +1,5 @@
 #pragma once
-#include "a8/fc/PwmManage.h"
+#include "a8/fc/pwm/PwmCalculator.h"
 #include "a8/fc/collect/Collector.h"
 #include "a8/util/Result.h"
 #include "a8/util/comp.h"
@@ -17,14 +17,12 @@ protected:
     bool enable_ = true;
     float minInTheory = 0;
     float maxInTheory = 1000;
-    PwmManage *pwmManage;
     long pwm;
 
 public:
-    Propeller(String name, int idx, PwmManage *pwmManage) {
+    Propeller(String name, int idx) {
         this->name = name;
         this->idx = idx;
-        this->pwmManage = pwmManage;
     }
 
     virtual void setup() = 0;
@@ -88,8 +86,8 @@ public:
             max = value;
         }
     }
-    void commitUpdate() {
-        pwm = this->pwmManage->updateThrottle(this->idx, this->throttle);
+    void commitUpdate(PwmCalculator * pwmCalculator) {
+        pwm = pwmCalculator->calculate(this->idx, this->throttle);
         if (this->enable_) {
             this->doApply(pwm);
         }

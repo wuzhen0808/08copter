@@ -1,12 +1,10 @@
 #pragma once
-#include "a8/util/Writer.h"
 #include "a8/util/Logger.h"
 #include "a8/util/System.h"
-
+#include "a8/util/Writer.h"
 
 namespace a8::util {
 using namespace a8::util;
-
 
 class WriterLogger : public Logger {
 protected:
@@ -28,13 +26,15 @@ public:
     }
 
     void log(Logger::Level level, const String &msg) override {
+        A8_DEBUG(">>WriterLogger::log()");
         long long stime = sys->getSysTime();
         String formatTime;
         sys->formatTime(stime, &formatTime);
         String msg2;
-        msg2 << "[" << formatTime << "] [" << level << "] " << msg;        
+        msg2 << "[" << formatTime << "] [" << level << "] " << msg;
         writer->write(msg2.text(), msg2.length());
         writer->write("\n", 1);
+        A8_DEBUG("<<WriterLogger::log()");
     };
 };
 

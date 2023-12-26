@@ -1,12 +1,19 @@
+
+
 #include "a8/hal/arduino/ArduinoOutput.h"
-#include <Arduino.h>
-
 namespace a8::hal::arduino_ {
-using a8::util::Output;
-using a8::util::String;
 
-void ArduinoOutput::print(const String msg) {
-    Serial.print(msg.text());
+// functions
+Output *createOutput(int serial) {
+    if (serial == 1) {
+        return new ArduinoOutput1();
+    } else {
+        return new ArduinoOutput();
+    }
 }
 
-} // namespace a8::hal::native
+Output *createOutput() {
+    return createOutput(0);
+}
+
+} // namespace a8::hal::arduino_

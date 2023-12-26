@@ -5,7 +5,7 @@
 #include "a8/util/sched/Lock.h"
 #include "a8/util/sched/Semaphore.h"
 #include "a8/util/sched/SyncQueue.h"
-#include "a8/util/sched/Thread.h"
+#include "a8/util/sched/Task.h"
 #include "a8/util/sched/Timer.h"
 
 #include "a8/util/sched/defines.h"
@@ -63,13 +63,15 @@ public:
     virtual void endSchedule() = 0;
 
     template <typename T>
-    Thread *createTask(String name, T context, void (*run)(T)) {
+    Task *createTask(String name, T context, void (*run)(T)) {
         struct Params {
             T context_;
             void (*run_)(T);
+            Params(T c):context_(c){
+
+            }
         };
-        Params *p = new Params();
-        p->context_ = context;
+        Params *p = new Params(context);
         p->run_ = run;
         return createTask(name, p, [](void *vp) {
             Params *pp = static_cast<Params *>(vp);
@@ -78,8 +80,8 @@ public:
         });
     }
 
-    virtual Thread *createTask(const String name, void *context, sched::run run) = 0;
-    virtual Timer *createTimer(const String name, const Rate &rate, void *context, sched::run run) ;
+    virtual Task *createTask(const String name, void *context, sched::run run) = 0;
+    virtual Timer *createTimer(const String name, const Rate &rate, void *context, sched::run run) = 0;
 
     template <typename T>
     Timer *createTimer(const String name, const Rate &rate, T c, void (*run)(T c)) {
@@ -95,7 +97,7 @@ public:
             pp->run_(pp->context_);
         });
     }
-    
+
     template <typename T>
     SyncQueue<T> *createSyncQueue(int cap) {
         SyncQueue<void *> *wrap = this->doCreateSyncQueue(cap, sizeof(T));

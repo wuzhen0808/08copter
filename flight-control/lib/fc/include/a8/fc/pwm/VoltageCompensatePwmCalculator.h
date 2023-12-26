@@ -1,12 +1,13 @@
 #pragma once
 #include "a8/fc/ElevationEstimator.h"
 #include "a8/fc/PowerManage.h"
+#include "a8/fc/pwm/PwmCalculator.h"
 #include "a8/util.h"
 #define A8_PM_DEBUG (0)
 namespace a8::fc {
 using namespace a8::util;
 
-class PwmManage : public FlyWeight {
+class VoltageCompensatePwmCalculator : public PwmCalculator, public FlyWeight {
 private:
     long basePwm;
     long maxPwm;
@@ -22,22 +23,22 @@ public:
     long pwmFromThrottles[4];
     long totalPwms[4];
 
-    PwmManage(PowerManage *pm, LoggerFactory *logFac) : FlyWeight(logFac) {
+    VoltageCompensatePwmCalculator(PowerManage *pm, LoggerFactory *logFac) : FlyWeight(logFac) {
         this->elevationEstimator = new ElevationEstimator(pm, logFac);
         this->basePwm = 1000;
         this->maxPwm = 2000;
         A8_LOG_WARN(logger, String() << "PwmManage.basePwm:" << basePwm << ",(double:" << ((double)basePwm) << "),max:" << maxPwm);
     }
-    ~PwmManage() {
+    ~VoltageCompensatePwmCalculator() {
         delete this->elevationEstimator;
     }
     virtual void setup() {
         this->elevationEstimator->setup();
         this->setup_ = true;
     }
-    int collectDataItems(Collector &collector, Result &res) {
-        int ret = collector.add<PwmManage *>(
-            "PwmM.basePwm", this, [](PwmManage *this_) { return (double)this_->basePwm; }, res);
+    int collectDataItems(Collector &collector, Result &res) override {
+        int ret = collector.add<VoltageCompensatePwmCalculator *>(
+            "PwmM.basePwm", this, [](VoltageCompensatePwmCalculator *this_) { return (double)this_->basePwm; }, res);
         if (ret < 0) {
             return ret;
         }
@@ -66,7 +67,7 @@ public:
         return this->setup_;
     }
 
-    long updateThrottle(int idx, float throttle) {
+    long calculate(int idx, float throttle) override {
         // map throttle to desired elevation.
         throttles[idx] = throttle;
         elevations[idx] = Math::map<float>(throttle, 0.0f, maxThrottle, 0.0f, maxElevation);

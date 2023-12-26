@@ -14,7 +14,7 @@ class TickRunner : public FlyWeight {
     using tickHandle = void (*)(TickingContext *, void *, void *); // ticking, component, handle
 
     Timer *timer;
-    Thread *thread;
+    Task *thread;
     Buffer<Component::TickEntry *> *entries;
     TickingContext *ticking;
     long lastLogTime = 0;
