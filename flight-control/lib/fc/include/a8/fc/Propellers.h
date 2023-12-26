@@ -26,8 +26,11 @@ public:
     }
 
     virtual void setup() {
+        
     }
-
+    PwmCalculator *getPwmCalculator() {
+        return this->pwmCalculator;
+    }
     void setPwmCalculator(PwmCalculator *pwmCalculator) {
         this->pwmCalculator = pwmCalculator;
     }

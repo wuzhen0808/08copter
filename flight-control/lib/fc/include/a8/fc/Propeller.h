@@ -86,11 +86,13 @@ public:
             max = value;
         }
     }
+    
     void commitUpdate(PwmCalculator * pwmCalculator) {
         pwm = pwmCalculator->calculate(this->idx, this->throttle);
         if (this->enable_) {
             this->doApply(pwm);
         }
+
     }
 
     virtual void doApply(long pwm) = 0;

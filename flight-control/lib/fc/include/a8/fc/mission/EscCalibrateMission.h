@@ -12,16 +12,11 @@ class EscCalibrateMission : public Mission {
     class PropellerStatus {
     public:
         long pwm = 1000;
-        bool enable = true;
-        void plus() {
-            long pwm = this->pwm + 50;
+        void add(long step) {
+            long pwm = this->pwm + step;
             if (pwm > 2000) {
                 pwm = 2000;
             }
-            this->pwm = pwm;
-        }
-        void minus() {
-            long pwm = this->pwm - 50;
             if (pwm < 1000) {
                 pwm = 1000;
             }
@@ -90,6 +85,7 @@ class EscCalibrateMission : public Mission {
                 "+", onBuildTitle, [](ConfigContext &, EscCalibrateMission *mission) {
                     mission->plus();
                 });
+
             this->addAction(
                 "-", onBuildTitle, [](ConfigContext &, EscCalibrateMission *mission) {
                     mission->minus();
@@ -102,6 +98,14 @@ class EscCalibrateMission : public Mission {
                 "Min(1000)", onBuildTitle, [](ConfigContext &, EscCalibrateMission *mission) {
                     mission->min();
                 });
+
+            {
+                ConfigItem *ci = ConfigItems::addReturn(this, "recentMessage");
+                ci->onBuildTitle = [](TitleBuilder &title) {
+                    Foreground *fg = title.configItem->getRoot<Foreground>();
+                    title.set<String>("message", fg->mission->message);
+                };
+            }
 
             this->addAction(
                 "Exit", [](TitleBuilder &title, EscCalibrateMission *mission) { //
@@ -124,9 +128,13 @@ protected:
 
     Buffer<PropellerStatus *> pss;
 
+    long step = 5;
+
     int propeller;
 
     bool running = true;
+
+    String message;
 
 public:
     EscCalibrateMission(Propellers *propellers, System *sys, LoggerFactory *logFac) : Mission(sys, logFac, "EscCalibrateMission") {
@@ -146,6 +154,7 @@ public:
         delete this->pwmCalculator;
         delete this->fg;
     }
+
     void exit() {
         this->running = false;
     }
@@ -167,28 +176,29 @@ public:
         }
     }
 
-    void forEachPs(void (*consumer)(PropellerStatus *)) {
+    template <typename C>
+    void forEachPs(C c, void (*consumer)(C, PropellerStatus *)) {
         if (this->propeller < 0 || this->propeller >= pss.len()) { // ALL.
             for (int i = 0; i < pss.len(); i++) {
                 PropellerStatus *ps = pss.get(i, 0);
-                consumer(ps);
+                consumer(c, ps);
             }
         } else {
             PropellerStatus *ps = pss.get(this->propeller, 0);
-            consumer(ps);
+            consumer(c, ps);
         }
     }
     void plus() {
-        forEachPs([](PropellerStatus *ps) { ps->plus(); });
+        forEachPs<EscCalibrateMission *>(this, [](EscCalibrateMission *mission, PropellerStatus *ps) { ps->add(mission->step); });
     }
     void minus() {
-        forEachPs([](PropellerStatus *ps) { ps->minus(); });
+        forEachPs<EscCalibrateMission *>(this, [](EscCalibrateMission *mission, PropellerStatus *ps) { ps->add(-mission->step); });
     }
     void max() {
-        forEachPs([](PropellerStatus *ps) { ps->max(); });
+        forEachPs<EscCalibrateMission *>(this, [](EscCalibrateMission *mission, PropellerStatus *ps) { ps->max(); });
     }
     void min() {
-        forEachPs([](PropellerStatus *ps) { ps->min(); });
+        forEachPs<EscCalibrateMission *>(this, [](EscCalibrateMission *mission, PropellerStatus *ps) { ps->min(); });
     }
     int run(Context &mc, Result &res) override {
         propellers->setPwmCalculator(this->pwmCalculator);
@@ -197,13 +207,19 @@ public:
             this->running = false;
             return ret;
         }
+
         while (this->running) {
+            this->message.clear();
             for (int i = 0; i < pss.len(); i++) {
                 PropellerStatus *ps = pss.get(i, 0);
-                if (ps->enable) {
-                    propellers->get(i)->setThrottle(ps->pwm);
-                    propellers->commitUpdate(i);
+                Propeller *prop = propellers->get(i);
+                bool enabled = prop->isEnabled();
+                if (enabled) {
+                    prop->setThrottle(ps->pwm);
+                    prop->commitUpdate(propellers->getPwmCalculator());
                 }
+                this->message << "prop" << i << ":" << (enabled ? "enabled " : "disabled ") //
+                              << ",pwm:" << ps->pwm << "=>" << prop->getPwm() << ";";
             }
             this->sys->delay(6); // delay 2ms,2000us
         }
