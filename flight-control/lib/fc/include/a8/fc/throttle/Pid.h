@@ -57,25 +57,25 @@ public:
     void setup() {
     }
 
-    int collectDataItems(Collector &collector, Result &res) {
-        int ret = collector.add<float>(String(this->name) << "-err", error, res);
+    int collectDataItems(Collector *collector, Result &res) {
+        int ret = collector->add<float>(String(this->name) << "-err", error, res);
         String etsName = String(this->name) << "-ets";
         if (ret > 0)
-            ret = collector.add<float>(etsName, this->elapsedTimeSec, res);
+            ret = collector->add<float>(etsName, this->elapsedTimeSec, res);
         if (ret > 0)
-            ret = collector.add(String(etsName) << "*1000", etsName, 1000.0f, res);
+            ret = collector->add(String(etsName) << "*1000", etsName, 1000.0f, res);
         if (ret > 0)
-            ret = collector.add<float>(String(this->name) << "-lmt", this->outputLimit, res);
+            ret = collector->add<float>(String(this->name) << "-lmt", this->outputLimit, res);
         if (ret > 0)
-            ret = collector.add<float>(String(this->name) << "-lmtI", this->outputLimitI, res);
+            ret = collector->add<float>(String(this->name) << "-lmtI", this->outputLimitI, res);
         if (ret > 0)
-            ret = collector.add<float>(String(this->name) << "-p", this->p, res);
+            ret = collector->add<float>(String(this->name) << "-p", this->p, res);
         if (ret > 0)
-            ret = collector.add<float>(String(this->name) << "-i", this->i, res);
+            ret = collector->add<float>(String(this->name) << "-i", this->i, res);
         if (ret > 0)
-            ret = collector.add<float>(String(this->name) << "-d", this->d, res);
+            ret = collector->add<float>(String(this->name) << "-d", this->d, res);
         if (ret > 0)
-            ret = collector.add<float>(String(this->name << "-output"), this->output, res);
+            ret = collector->add<float>(String(this->name << "-output"), this->output, res);
         return ret;
     }
 

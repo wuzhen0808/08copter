@@ -2,17 +2,30 @@
 #include "a8/fc/PowerManage.h"
 #include "a8/fc/collect/Collector.h"
 #include "a8/fc/config/Config.h"
-#include "a8/fc/mission/Context.h"
 #include "a8/fc/mission/EscCalibrateMission.h"
 #include "a8/fc/mission/FlightMission.h"
 #include "a8/util.h"
 #include "a8/util/sched.h"
+#include "a8/fc/CollectorSetup.h"
 
 namespace a8::fc {
 using namespace a8::util;
 using namespace a8::fc::collect;
 using namespace a8::fc::throttle;
 using namespace a8::fc::mission;
+class MissionEntry {
+public:
+    Mission *mission;
+    Result *res;
+    int ret;
+    MissionEntry(Mission *mission) {
+        this->mission = mission;
+        this->res = new Result();
+    }
+    ~MissionEntry() {
+        delete this->res;
+    }
+};
 class Commander : public FlyWeight {
 protected:
     System *sys;
@@ -22,7 +35,10 @@ protected:
     Rpy *rpy;
     Collector *collector;
     Throttler *throttler;
-    Buffer<String> nameWithExprs;
+
+    SyncQueue<MissionEntry *> *missionInQueue;
+    SyncQueue<MissionEntry *> *missionOutQueue;
+    bool running = true;
 
 public:
     Commander(PowerManage *pm, Rpy *rpy, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Executor") {
@@ -31,46 +47,8 @@ public:
         this->sch = sch;
         this->pm = pm;
         this->rpy = rpy;
-
-        nameWithExprs.add("timeMs");
-        nameWithExprs.add("tickCostTimeMs");
-        nameWithExprs.add("tickCostTimeMsAvg[avg(tickCostTimeMs)]");
-        nameWithExprs.add("rowNum[rowNum()]");
-        nameWithExprs.add("maxPwm[maxOf(prop0-pwm,prop1-pwm,prop2-pwm,prop3-pwm)]");
-        nameWithExprs.add("avgMaxPwm[avg(maxPwm)]");
-        /*
-        names.add("timeMs[diff]");
-        names.add("roll");
-        names.add("roll[diff]");
-        names.add("pitch");
-        names.add("pitch[diff]");
-        names.add("yaw");
-        names.add("yaw[diff]");
-        names.add("RollPid-err");
-        names.add("RollPid-err[diff]");
-        names.add("RollPid-ets");
-        names.add("RollPid-ets[*1000]");
-        names.add("RollPid-lmt");
-        names.add("RollPid-lmtI");
-        names.add("RollPid-p");
-        names.add("RollPid-i");
-        names.add("RollPid-d");
-        names.add("RollPid-output");
-        names.add("PitchPid-ets");
-        names.add("PitchPid-ets*1000");
-        names.add("PitchPid-err");
-        names.add("PitchPid-err[diff]");
-        names.add("PitchPid-lmt");
-        names.add("PitchPid-lmtI");
-        names.add("PitchPid-p");
-        names.add("PitchPid-i");
-        names.add("PitchPid-d");
-        names.add("PitchPid-output");
-        names.add("prop0-pwm");
-        names.add("prop1-pwm");
-        names.add("prop2-pwm");
-        names.add("prop3-pwm");
-        */
+        this->missionInQueue = this->sch->createSyncQueue<MissionEntry *>(1);
+        this->missionOutQueue = this->sch->createSyncQueue<MissionEntry *>(1);
     }
 
     ~Commander() {
@@ -78,6 +56,86 @@ public:
 
     virtual Propellers *getPropellers() = 0;
     virtual void setup() {
+    }
+
+    Mission *buildNextMission(Config *config, Propellers *propellers, Throttle &throttle, OutputWriter &writer, Collector *collector) {
+        Mission *mission;
+        while (true) {
+            Result res;
+            int ret = buildNextMission(config, propellers, throttle, writer, collector, mission, res);
+            if (ret < 0) {
+                continue;
+            }
+            break;
+        }
+        return mission;
+    }
+
+    int buildNextMission(Config *config, Propellers *propellers, Throttle &throttle, OutputWriter &writer, Collector *collector, Mission *&mission, Result &res) {
+        ConfigContext cc(reader, sys->out, logger, res);
+        config->enter(cc);
+        if (!config->isValid()) {
+            // print all the invalid ones.
+            log("not valid and config again.");
+            return -1;
+        }
+        // todo print and confirm again.
+        log("todo print all config items and confirm.");
+        //
+
+        int ret = 0;
+        ret = pm->collectDataItems(collector, res);
+        if (ret < 0) {
+            log(res.errorMessage);
+            return ret;
+        }
+        ret = rpy->collectDataItems(collector, res);
+        if (ret < 0) {
+            log(res.errorMessage);
+            return ret;
+        }
+        ret = propellers->collectDataItems(collector, res);
+        if (ret < 0) {
+            return ret;
+        }
+
+        if (config->missionSelect == Config::MissionType::FLIGHT) {
+            mission = new FlightMission(config->flightConfigItem, pm, rpy, propellers, collector, cc, throttle, sys, loggerFactory);
+
+        } else if (config->missionSelect == Config::MissionType::ESC_CALIBRATE) {
+            mission = new EscCalibrateMission(propellers, collector, cc, throttle, sys, loggerFactory);
+        } else {
+            res << String() << "no such mission with type:" << config->missionSelect;
+            return -1;
+        }
+
+        ret = postBuildMission(mission, collector, res);
+        if (ret < 0) {
+            delete mission;
+            mission = 0;
+        }
+        return ret;
+    }
+    int postBuildMission(Mission *mission, Collector *collector, Result &res) {
+        int ret = 0;
+        ret = mission->setup(res);
+        if (ret > 0)
+            ret = mission->collectDataItems(collector, res);
+        if (ret > 0)
+            ret = CollectorSetup::setup(collector, res);
+        return ret;
+    }
+
+    void missionLoop() {
+        while (this->running) {
+            MissionEntry *me;
+            int ret = this->missionInQueue->take(me, 200);
+            if (ret < 0) {
+                continue;
+            }
+            me->ret = me->mission->run(*me->res);
+            this->missionOutQueue->offer(me);
+        }
     }
 
     int run(Result &res) {
@@ -88,113 +146,28 @@ public:
             return ret;
         }
         A8_TRACE(">>Commander::run()1");
-        Propellers *propellers = this->getPropellers();        
+        Propellers *propellers = this->getPropellers();
         A8_TRACE(">>Commander::run()2");
-        A8_TRACE(">>config");
+        Directory<ConfigItem *> *root = new Directory<ConfigItem *>("Root", 0);
         Config *config = new Config(reader, sys->out, pm, rpy, sch);
-        config->attach(new Directory<ConfigItem *>("Root", 0));
+        config->attach(root);
         A8_TRACE(">>config->2");
-        SyncQueue<int> *missionDoneSignal = this->sch->createSyncQueue<int>(1);
-        A8_DEBUG(">>Commander::run()3");
+        this->sch->createTask<Commander *>("MissionQueueRunner", this, [](Commander *this_) {
+            this_->missionLoop();
+        });
         while (true) {
-            A8_TRACE(">>Commander::run()5");
-            Result res;
-            A8_TRACE("start config->");
-            ConfigContext cc(reader, sys->out, logger, res);
-            A8_TRACE("start config->2.");
-            config->enter(cc);
-            A8_TRACE("done of config->");
-            if (!config->isValid()) {
-                // print all the invalid ones.
-                log("not valid and config again.");
-                continue;
-            }
-
-            if (!config->enableStart) {
-                log("cannot create mission, start is NOT enabled.");
-                continue;
-            }
-
-            // todo print and confirm again.
-            log("todo print all config items and confirm.");
-            //
             Throttle throttle(propellers);
             OutputWriter writer(this->sys->out);
             Collector collector(&writer);
-            mission::Context mc(collector, cc, throttle);
-            ret = pm->collectDataItems(collector, res);
-            if (ret < 0) {
-                log(res.errorMessage);
-                continue;
-            }
-            ret = rpy->collectDataItems(collector, res);
-            if (ret < 0) {
-                log(res.errorMessage);
-                continue;
-            }
-            ret = propellers->collectDataItems(collector, res);
-            if (ret < 0) {
-                log(res.errorMessage);
-                continue;
-            }
-
-            ret = mc.collectDataItems(collector, res);
-            if (ret < 0) {
-                log(res.errorMessage);
-                continue;
-            }
-
-            Mission *mission = 0;
-            ret = this->buildMission(config, propellers, mission, res);
-            if (ret < 0) {
-                continue;
-            }
-            ret = mission->collectDataItems(collector, res);
-            if (ret < 0) {
-                log(res.errorMessage);
-                continue;
-            }
-
-            Buffer<String> names;
-            ret = collector.addAllIfNotExists(nameWithExprs, names, res);
-            if (ret < 0) {
-                log(String() << ret << ":" << res.errorMessage);
-                continue;
-            }
-            ret = collector.setup(res);
-            if (ret < 0) {
-                log(String() << "collector error:" << res.errorMessage);
-                continue;
-            }
-            collector.setDefaultEnable(false);
-            collector.enable(nameWithExprs, true);
-            collector.enable(names, true);
-            struct MissionParams {
-                Mission *mission;
-                mission::Context &mc;
-
-                Result &res;
-                int ret;
-                SyncQueue<int> *missionDoneSignal;
-                MissionParams(mission::Context &mc, Result &res) : mc(mc), res(res) {
-                }
-            } p(mc, res);
-            p.mission = mission;
-            p.missionDoneSignal = missionDoneSignal;
+            Mission *mission = this->buildNextMission(config, propellers, throttle, writer, &collector);
             ConfigItem *fg = mission->getForeground();
+            MissionEntry *me = new MissionEntry(mission);
+            this->missionInQueue->offer(me);
             Directory<ConfigItem *> *fgDir;
             if (fg != 0) {
                 fgDir = new Directory<ConfigItem *>("Foreground", 0);
                 fg->attach(fgDir);
-            }
-
-            //
-            this->sch->createTask<MissionParams &>("Mission", p, [](MissionParams &p) {
-                p.ret = p.mission->run(p.mc, p.res);
-                p.missionDoneSignal->offer(1);
-            });
-            // run foreground.
-            if (fg != 0) {
+                ConfigContext cc(reader, sys->out, logger, res);
                 fg->enter(cc);
                 delete fg;
                 delete fgDir;
@@ -202,31 +175,21 @@ public:
 
             // waiting mission done.
             log(String() << "waiting mission done.");
-            int done = missionDoneSignal->take();
-
-            delete mission;
+            me = missionOutQueue->take();
             /*
             A8_LOG_DEBUG(cc.logger, "after run()");
             */
-            if (ret < 0) {
-                log(res.errorMessage);
+            if (me->ret < 0) {
+                log(String() << "fail of mission, detail:" << me->res->errorMessage);
+            } else {
+                log("done of mission.");
             }
-            log("done of mission.");
-        } // end of while
-
-        return 1;
-    }
-
-    int buildMission(Config *config, Propellers *propellers, Mission *&mission, Result &res) {
-        if (config->missionSelect == Config::MissionType::FLIGHT) {
-            mission = new FlightMission(config->flightConfigItem, pm, rpy, propellers, sys, loggerFactory);
-
-        } else if (config->missionSelect == Config::MissionType::ESC_CALIBRATE) {
-            mission = new EscCalibrateMission(propellers, sys, loggerFactory);
-        } else {
-            res << String() << "no such mission with type:" << config->missionSelect;
-            return -1;
-        }
+            delete me->mission;
+            delete me;
+        }                      // end of while
+        this->running = false; // no more mission to run.
+        delete config;
+        delete root;
         return 1;
     }
 };

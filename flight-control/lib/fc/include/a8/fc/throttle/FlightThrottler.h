@@ -59,7 +59,7 @@ public:
         }
     }
 
-    int collectDataItems(Collector &collector, Result &res) override {
+    int collectDataItems(Collector *collector, Result &res) override {
         int ret = 1;
         for (int i = 0; ret > 0 && i < throttlers.len(); i++) {
             Throttler *th = throttlers.get(i, 0);

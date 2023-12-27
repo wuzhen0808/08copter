@@ -14,7 +14,7 @@ public:
     }
     virtual void setup() = 0;
 
-    virtual int collectDataItems(Collector &collector, Result& res) {
+    virtual int collectDataItems(Collector *collector, Result& res) {
         return 1;
     }
 

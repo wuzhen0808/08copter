@@ -1,6 +1,5 @@
 #pragma once
 #include "a8/fc/config/FlightConfigItem.h"
-#include "a8/fc/mission/Context.h"
 #include "a8/fc/mission/Mission.h"
 #include "a8/fc/pwm/VoltageCompensatePwmCalculator.h"
 #include "a8/fc/throttle/FlightThrottler.h"
@@ -16,14 +15,22 @@ class FlightMission : public Mission {
     Propellers *propellers;
     Rpy *rpy;
     PwmCalculator *pwmCalculator;
+    bool landing;
+    long startTimeMs;
+    long tickCostTimeMs;
+    long timeMs;
+    Collector *collector;
 
 public:
-    FlightMission(FlightConfigItem *config, PowerManage *pm, Rpy *rpy, Propellers *propellers, System *sys, LoggerFactory *logFac) : Mission(sys, logFac, "FlightMission") {
+    FlightMission(FlightConfigItem *config, PowerManage *pm, Rpy *rpy, Propellers *propellers, Collector *collector, ConfigContext &configContext, Throttle &throttle, System *sys, LoggerFactory *logFac)
+        : Mission(configContext, throttle, sys, logFac, "FlightMission") {
         this->config = config;
         this->rpy = rpy;
+        this->collector = collector;
         this->propellers = propellers;
         this->throttler = new throttle::FlightThrottler(config, rpy, logFac);
         this->pwmCalculator = new VoltageCompensatePwmCalculator(pm, logFac);
+        this->landing = false;
     }
 
     ~FlightMission() {
@@ -37,19 +44,31 @@ public:
         this->propellers->setPwmCalculator(this->pwmCalculator);
         return 1;
     }
-    int collectDataItems(Collector &collector, Result &res) override {
+    int collectDataItems(Collector *collector, Result &res) override {
         int ret = pwmCalculator->collectDataItems(collector, res);
+        if (ret > 0)
+            ret = collector->add("timeMs", this->timeMs, res);
+        if (ret > 0)
+            ret = collector->add("tickCostTimeMs", this->tickCostTimeMs, res);
+        if (ret > 0)
+            ret = collector->add("Landing", this->landing, res);
+
+
         return ret;
     }
-    int run(Context &mc, Result &res) override {
-        int ret = this->beforeRun(mc, res);
+    int run(Result &res) override {
+        int ret = checkRpy(configContext, res);
         if (ret < 0) {
             return ret;
         }
-        ret = this->run2(mc, res);
+        ret = propellers->isReady(res);
+        if (ret < 0) {
+            return ret;
+        }
+        ret = this->run2(res);
         return ret;
     }
-    int updateRpy(Context &mc, Result &res) {
+    int updateRpy(Result &res) {
         int retries = 0;
         while (true) {
             bool ok = rpy->update();
@@ -65,54 +84,56 @@ public:
         }
         return 1;
     }
-    int preUpdate(Context &mc, Result &res) {
-        int ret = updateRpy(mc, res);
+    int preUpdate(Result &res) {
+        throttle.preUpdate(timeMs);
+
+        int ret = updateRpy(res);
+
         if (ret < 0) {
             return ret;
         }
 
         return ret;
     }
-    int doUpdate(Context &mc, Result &res) {
-        int ret = this->throttler->update(mc.throttle, res);
+    int doUpdate(Result &res) {
+        int ret = this->throttler->update(throttle, res);
         if (ret < 0) {
             return ret;
         }
-        mc.throttle.commitUpdate();
+        throttle.commitUpdate();
         return 1;
     }
-    int run2(Context &mc, Result &res) {
+    int run2(Result &res) {
         float minInTheory = 0;
         float maxInTheory = 0;
-        throttler->getLimitInTheory(minInTheory, maxInTheory);
+        this->throttler->getLimitInTheory(minInTheory, maxInTheory);
         this->propellers->setLimitInTheory(minInTheory, maxInTheory);
-        propellers->open(config->enablePropeller);
-        sys->out->println(String() << "running ... ");
-        mc.throttle.reset(mc.startTimeMs);
-        mc.collector.preWrite();
-        mc.collector.writeHeader();
-        long timeMs = sys->getSteadyTime();
-        mc.startTimeMs = timeMs; // m
+        this->propellers->open(config->enablePropeller);
+        this->sys->out->println(String() << "running ... ");
+        this->throttle.reset(startTimeMs);
+        this->collector->preWrite();
+        this->collector->writeHeader();
+        this->timeMs = sys->getSteadyTime();
+        this->startTimeMs = timeMs; // m
         int ret = -1;
         while (true) {
             Result res;
-            ret = preUpdate(mc, res);
-            mc.preUpdate(timeMs);
+            ret = this->preUpdate(res);
             bool running = true;
-            ret = this->doUpdate(mc, res);
+            ret = this->doUpdate(res);
 
             if (running && throttler->isLanded()) {
                 running = false;
             }
 
-            if (running && !mc.landing) {
-                this->checkLanding(ret, mc, timeMs);
+            if (running && !landing) {
+                this->checkLanding(ret, timeMs);
             }
 
-            mc.collector.update();
+            collector->update();
 
             long now = sys->getSteadyTime();
-            mc.tickCostTimeMs = now - timeMs;
+            tickCostTimeMs = now - timeMs;
 
             // check if done of mission.
             if (!running) {
@@ -120,7 +141,7 @@ public:
             }
 
             // calculate next tick time.
-            long remain = config->tickTimeMs - mc.tickCostTimeMs;
+            long remain = config->tickTimeMs - tickCostTimeMs;
             if (remain > 0) {
                 sys->delay(remain);
                 timeMs = now + remain;
@@ -134,18 +155,6 @@ public:
     }
 
 protected:
-    int beforeRun(Context &mc, Result &res) {
-        int ret = checkRpy(mc.configContext, res);
-        if (ret < 0) {
-            return ret;
-        }
-        ret = propellers->isReady(res);
-        if (ret < 0) {
-            return ret;
-        }
-        return ret;
-    }
-
     int checkRpy(ConfigContext &cc, Result &res) {
         int ret = rpy->checkStable(config->stableCheckRetries, res);
         if (ret < 0) {
@@ -190,18 +199,14 @@ protected:
         }
         return 1;
     }
-    void checkLanding(int updateRet, Context &mc, long timeMs) {
-        if (!mc.landing) { //
+    void checkLanding(int updateRet, long timeMs) {
+        if (!landing) { //
             // check if need start landing.
-            if (updateRet < 0 || timeMs - mc.startTimeMs > config->flyingTimeLimitSec * 1000) {
-                mc.landing = true;
-                this->landing(timeMs);
+            if (updateRet < 0 || timeMs - startTimeMs > config->flyingTimeLimitSec * 1000) {
+                landing = true;
+                this->throttler->startLanding(timeMs);
             }
         }
-    }
-
-    int landing(long timeMs) {
-        return this->throttler->startLanding(timeMs);
     }
 
     bool isLanded() {

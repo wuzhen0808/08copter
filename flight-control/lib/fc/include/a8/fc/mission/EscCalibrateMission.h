@@ -135,11 +135,14 @@ protected:
     bool running = true;
 
     String message;
+    Collector *collector;
 
 public:
-    EscCalibrateMission(Propellers *propellers, System *sys, LoggerFactory *logFac) : Mission(sys, logFac, "EscCalibrateMission") {
+    EscCalibrateMission(Propellers *propellers, Collector *collector, ConfigContext &cc, Throttle &throttle, System *sys, LoggerFactory *logFac) : Mission(cc, throttle, sys, logFac, "EscCalibrateMission") {
         this->propellers = propellers;
+        this->collector = collector;
         this->fg = new Foreground(this);
+
         this->propeller = -1;
         this->pss.add(new PropellerStatus());
         this->pss.add(new PropellerStatus());
@@ -159,9 +162,10 @@ public:
         this->running = false;
     }
     int setup(Result &res) override {
+        propellers->setPwmCalculator(this->pwmCalculator);
         return 1;
     }
-    int collectDataItems(Collector &collector, Result &res) override {
+    int collectDataItems(Collector *collector, Result &res) override {
         return 1;
     }
     ConfigItem *getForeground() override {
@@ -200,8 +204,8 @@ public:
     void min() {
         forEachPs<EscCalibrateMission *>(this, [](EscCalibrateMission *mission, PropellerStatus *ps) { ps->min(); });
     }
-    int run(Context &mc, Result &res) override {
-        propellers->setPwmCalculator(this->pwmCalculator);
+    int run(Result &res) override {
+        
         int ret = propellers->isReady(res);
         if (ret < 0) {
             this->running = false;

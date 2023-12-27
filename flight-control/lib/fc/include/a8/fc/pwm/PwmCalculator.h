@@ -10,7 +10,7 @@ class PwmCalculator {
 public:
     virtual void setup() {
     }
-    virtual int collectDataItems(Collector &collector, Result &res) {
+    virtual int collectDataItems(Collector *collector, Result &res) {
         return 1;
     }
     virtual long calculate(int idx, float throttle) = 0;

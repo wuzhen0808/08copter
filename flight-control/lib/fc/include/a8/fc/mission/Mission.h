@@ -1,6 +1,7 @@
 #pragma once
 #include "a8/fc/Propellers.h"
 #include "a8/fc/Rpy.h"
+#include "a8/fc/throttle/Throttle.h"
 #include "a8/fc/collect/Collector.h"
 #include "a8/util.h"
 namespace a8::fc::mission {
@@ -14,9 +15,12 @@ private:
 
 protected:
     System *sys;
+    ConfigContext &configContext;
+    Throttle &throttle;
 
 public:
-    Mission(System *sys, LoggerFactory *logFac, String name) : FlyWeight(logFac, name) {
+    Mission(ConfigContext &configContext, Throttle &throttle, System *sys, LoggerFactory *logFac, String name)
+        : FlyWeight(logFac, name), configContext(configContext), throttle(throttle) {
         this->sys = sys;
     }
 
@@ -25,13 +29,13 @@ public:
     virtual int setup(Result &res) {
         return 0;
     }
-    virtual int collectDataItems(Collector &collector, Result &res) {
+    virtual int collectDataItems(Collector *collector, Result &res) {
         return 1;
     }
     virtual ConfigItem *getForeground() {
         return 0;
     }
-    virtual int run(Context &mc, Result &res) = 0;
+    virtual int run(Result &res) = 0;
 };
 
 } // namespace a8::fc::mission

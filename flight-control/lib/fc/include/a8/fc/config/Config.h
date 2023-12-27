@@ -26,7 +26,6 @@ public:
 public:
     FlightConfigItem *flightConfigItem;
     int missionSelect;
-    bool enableStart = true;
     int propeller0;
     int propeller1;
     int propeller2;

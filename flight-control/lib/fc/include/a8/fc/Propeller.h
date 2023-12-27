@@ -27,11 +27,11 @@ public:
 
     virtual void setup() = 0;
 
-    int collectDataItems(Collector &collector, Result &res) {
+    int collectDataItems(Collector *collector, Result &res) {
 
-        int ret = collector.add(String("prop") << this->idx << "-throttle", this->throttle, res);
+        int ret = collector->add(String("prop") << this->idx << "-throttle", this->throttle, res);
         if (ret > 0) {
-            collector.add(String("prop") << this->idx << "-pwm", this->pwm, res);
+            collector->add(String("prop") << this->idx << "-pwm", this->pwm, res);
         }
         return ret;
     }

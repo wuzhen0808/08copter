@@ -36,27 +36,27 @@ public:
         this->elevationEstimator->setup();
         this->setup_ = true;
     }
-    int collectDataItems(Collector &collector, Result &res) override {
-        int ret = collector.add<VoltageCompensatePwmCalculator *>(
+    int collectDataItems(Collector *collector, Result &res) override {
+        int ret = collector->add<VoltageCompensatePwmCalculator *>(
             "PwmM.basePwm", this, [](VoltageCompensatePwmCalculator *this_) { return (double)this_->basePwm; }, res);
         if (ret < 0) {
             return ret;
         }
 
         for (int i = 0; i < 4; i++) {
-            ret = collector.add(String() << "propeller" << i << "-srcThrottle", throttles[i], res);
+            ret = collector->add(String() << "propeller" << i << "-srcThrottle", throttles[i], res);
             if (ret < 0) {
                 break;
             }
-            ret = collector.add(String() << "propeller" << i << "-srcElevation", elevations[i], res);
+            ret = collector->add(String() << "propeller" << i << "-srcElevation", elevations[i], res);
             if (ret < 0) {
                 break;
             }
-            ret = collector.add(String() << "propeller" << i << "-srcPwm", pwmFromThrottles[i], res);
+            ret = collector->add(String() << "propeller" << i << "-srcPwm", pwmFromThrottles[i], res);
             if (ret < 0) {
                 break;
             }
-            ret = collector.add(String() << "propeller" << i << "-srcPwm2", totalPwms[i], res);
+            ret = collector->add(String() << "propeller" << i << "-srcPwm2", totalPwms[i], res);
             if (ret < 0) {
                 break;
             }

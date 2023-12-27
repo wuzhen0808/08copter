@@ -35,7 +35,7 @@ public:
         this->pwmCalculator = pwmCalculator;
     }
 
-    int collectDataItems(Collector &collector, Result &res) {
+    int collectDataItems(Collector *collector, Result &res) {
         int ret = 1;
         for (int i = 0; ret > 0 && i < this->propellers.len(); i++) {
             Propeller *p = propellers.get(i, 0);
