@@ -26,6 +26,39 @@ class FlightMission : public Mission {
             A8_DEBUG("Foreground::onAttached.1");
 
             ConfigItem *ci = this;
+            
+            ConfigItems::add<FlightMission *>(ci, "Continue-the-mission & Exit(foreground)", this->mission, [](FlightMission *mission, ConfigContext &cc) {
+                int ok = mission->signalQueue->offer(A8_SIGNAL_CONTINUE, 200);
+                if (ok < 0) {
+                    cc.println("failed to offer signal to mission.");
+                }
+                // todo:remove this line and allow mission open more navigator;
+                // solution:use dispatcher instead of reader for nav of dir.
+                cc.navigator->stop(1);
+            });
+
+            ConfigItems::add<FlightMission *>(ci, "Give-up(mission) & Exit(foreground)", this->mission, [](FlightMission *mission, ConfigContext &cc) {
+                if (mission->running) {
+
+                    int ok = mission->signalQueue->offer(A8_SIGNAL_GIVE_UP, 200);
+                    if (ok < 0) {
+                        cc.println("failed to offer signal to mission.");
+                        return;
+                    }
+                }
+                cc.navigator->stop(1);
+            });
+
+            ConfigItems::add<FlightMission *>(ci, "Notify mission & Exit(foreground)", this->mission, [](FlightMission *mission, ConfigContext &cc) {
+                if (mission->running) {
+                    int ok = mission->signalQueue->offer(A8_SIGNAL_FG_EXIT, 200);
+                    if (ok < 0) {
+                        cc.println("failed to offer signal to mission.");
+                        return;
+                    }
+                }
+                cc.navigator->stop(1);
+            });
             ci = ConfigItems::addReturn(ci, "Collector");
             {
                 ConfigItems::add<FlightMission *>(ci, "Print-active-dataItems", this->mission, [](FlightMission *mission, ConfigContext &cc) {
@@ -38,44 +71,11 @@ class FlightMission : public Mission {
 
                 ci = this;
             }
-            ConfigItems::add<FlightMission *>(ci, "Continue-the-mission.", this->mission, [](FlightMission *mission, ConfigContext &cc) {
-                int ok = mission->signalQueue->offer(A8_SIGNAL_CONTINUE, 200);
-                if (ok < 0) {
-                    cc.println("failed to offer signal to mission.");
-                }
-                //todo:remove this line and allow mission open more navigator;
-                //solution:use dispatcher instead of reader for nav of dir.
-                cc.navigator->stop(1);
-            });
-
-            ConfigItems::add<FlightMission *>(ci, "Give-up(mission)&Exit(foreground)", this->mission, [](FlightMission *mission, ConfigContext &cc) {
-                if (mission->running) {
-
-                    int ok = mission->signalQueue->offer(A8_SIGNAL_GIVE_UP, 200);
-                    if (ok < 0) {
-                        cc.println("failed to offer signal to mission.");
-                        return;
-                    }
-                }
-                cc.navigator->stop(1);
-            });
-
-            ConfigItems::add<FlightMission *>(ci, "Exit(foreground)&waiting mission done.", this->mission, [](FlightMission *mission, ConfigContext &cc) {
-                if (mission->running) {
-                    int ok = mission->signalQueue->offer(A8_SIGNAL_FG_EXIT, 200);
-                    if (ok < 0) {
-                        cc.println("failed to offer signal to mission.");
-                        return;
-                    }
-                }
-                cc.navigator->stop(1);
-            });
             A8_DEBUG("Foreground::onAttached.2");
         }
         void enter(ConfigContext &cc) override {
             ConfigItems::runNav(this->dir, cc);
         }
-        
 
     }; // end of Foreground.
 
@@ -126,10 +126,10 @@ public:
         }
         return 1;
     }
-    int collectDataItems(Collector* collector, Result &res) {
+    int collectDataItems(Collector *collector, Result &res) {
         int ret = 1;
         ret = pwmCalculator->collectDataItems(collector, res);
-        if(ret>0)
+        if (ret > 0)
             throttler->collectDataItems(collector, res);
         if (ret > 0)
             ret = collector->add("timeMs", this->timeMs, res);
@@ -215,10 +215,10 @@ public:
         this->timeMs = sys->getSteadyTime();
         this->startTimeMs = timeMs; // m
         int ret = -1;
-        while (this->running) {
+
+        for (int ticks = 0; this->running; ticks++) {
             Result res;
             ret = this->preUpdate(res);
-
             ret = this->doUpdate(res);
 
             if (running && throttler->isLanded()) {
@@ -232,7 +232,9 @@ public:
             long now = sys->getSteadyTime();
             tickCostTimeMs = now - timeMs;
             //
-            collector->update();
+            if (ticks % config->collectEveryTicks == 0) {
+                collector->update();
+            }
 
             // check if done of mission.
             if (!running) {
@@ -269,20 +271,20 @@ protected:
                 log("cannot create mission, it is not allowed to start with a un-balanced-rpy.");
                 return -1;
             } else if (config->unBalanceAction == UnBalanceAction::ASK) {
-                
+
                 bool ok = ConfigItems::confirm(cc, "Start mission with UN-balanced rpy?", true);
-                if (!ok) {                
+                if (!ok) {
                     return -1;
-                } // ask to start.                
+                } // ask to start.
             } else if (config->unBalanceAction == UnBalanceAction::IGNORE) {
 
             } else if (config->unBalanceAction == UnBalanceAction::IGNORE_IF_SAFE) {
                 Result res;
                 if (checkSafetyWhenIgnoreBalance(config, res) < 0) {
-                    
-                    bool ok = ConfigItems::confirm(cc, "Start mission with UN-balanced rpy?", false);
+
+                    bool ok = ConfigItems::confirm(cc, "Start mission with UN-balanced rpy?", true);
                     if (!ok) {
-                        log(res.errorMessage);                    
+                        log(res.errorMessage);
                         return -1;
                     } // ask to start.
                 }

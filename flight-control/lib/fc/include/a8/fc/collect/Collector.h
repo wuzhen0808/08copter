@@ -32,7 +32,7 @@ private:
 
     Buffer<DataItemEntry *> dataItemEntries;
     HashTable<String, int> dataItemMap;
-    HashTable<String, bool> dataItemEnableStatus;
+    HashTable<String, bool> dataItemActiveStatus;
     Buffer<DataItem *> enabledDataItems;
 
     bool defaultEnable = true;
@@ -50,29 +50,33 @@ public:
     }
 
     void printActiveDataItems(Output *out) {
-        for (int i = 0; i < enabledDataItems.len(); i++) {
-            DataItem *di = BufferUtil::get<DataItem>(enabledDataItems, i);
-            doPrint(i, di, out);
-        }
+        printDataItems(out, false, true);
     }
-    
+
     void printAllDataItems(Output *out) {
+        printDataItems(out, true, false);
+    }
+
+    void printDataItems(Output *out, bool all, bool onlyActive) {
         for (int i = 0; i < dataItemEntries.len(); i++) {
             DataItem *di = BufferUtil::get<DataItemEntry>(dataItemEntries, i)->dataItem;
-            doPrint(i, di, out);
+            bool enabled = isEnabled(di->getName());
+            if (all || onlyActive && enabled) {
+                doPrint(i, di, enabled, out);
+            }
         }
     }
-    void doPrint(int idx, DataItem *di, Output *out) {
+    void doPrint(int idx, DataItem *di, bool enabled, Output *out) {
         out->print(idx);
         out->print(",");
         out->print(di->getName());
         out->print(",");
-        out->print<bool>(isEnabled(di->getName()));
+        out->print<bool>(enabled);
         out->println();
     }
 
     bool isEnabled(String name) {
-        return dataItemEnableStatus.get(name, false);
+        return dataItemActiveStatus.get(name, false);
     }
     DataItem *get(int idx) {
         DataItemEntry *de = dataItemEntries.get(idx, 0);
@@ -91,7 +95,7 @@ public:
     void enable(Buffer<String> names, bool enable) {
         for (int i = 0; i < names.len(); i++) {
             String name = names.get(i, "");
-            dataItemEnableStatus.set(name, enable);
+            dataItemActiveStatus.set(name, enable);
         }
     }
 
@@ -282,7 +286,7 @@ public:
         for (int i = 0; i < this->dataItemEntries.len(); i++) {
             DataItemEntry *de = dataItemEntries.get(i, 0);
             String name = de->dataItem->getName();
-            bool enable = dataItemEnableStatus.get(name, this->defaultEnable);
+            bool enable = dataItemActiveStatus.get(name, this->defaultEnable);
             if (!enable) {
                 continue;
             }

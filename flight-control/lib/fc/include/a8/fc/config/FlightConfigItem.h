@@ -61,6 +61,7 @@ public:
     bool enableStart = true;
     int maxRpyUpdateRetries = 5;
     int balanceMode = BalanceMode::FULL;
+    int collectEveryTicks = 10;
 
 public:
     FlightConfigItem(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Scheduler *sch) {
@@ -133,6 +134,11 @@ public:
         }
         ci = ConfigItems::addReturn(ci, "Rpy:");
         {
+            ConfigItems::add(ci, "collectEveryTicks", collectEveryTicks);
+            ci = this;
+        }
+        ci = ConfigItems::addReturn(ci, "Rpy:");
+        {
             ConfigItems::add(ci, "Rpy-check", new RpyConfigItem(rpy));
             ci = ConfigItems::addReturn(ci, "Monitor-rpy");
             {
@@ -160,7 +166,7 @@ public:
 
         ConfigItems::add(ci, "Power-manage", new PowerConfigItem(pm));
         ConfigItems::add(ci, "Propellers", new PropellersConfigItem(activeThrottle0, activeThrottle1, activeThrottle2, activeThrottle3));
-        
+
         ci = ConfigItems::addReturn(ci, "Pid-arguments:");
         {
 
@@ -172,6 +178,5 @@ public:
             ci = this;
         }
     }
-        
 };
 } // namespace a8::fc
