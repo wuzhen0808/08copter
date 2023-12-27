@@ -44,9 +44,9 @@ public:
 
     bool update() override {
 
-        A8_LOG_DEBUG(logger, ">>EspRpy::update.");
+        A8_TRACE(">>EspRpy::update.");
         bool ret = mpu->update();
-        A8_LOG_DEBUG(logger, String() << "<<EspRpy::update,ret:" << ret);
+        A8_TRACE((String() << "<<EspRpy::update,ret:" << ret).text());
         if (ret) {
             this->continueUpdateFailed = 0;
         } else {
@@ -74,7 +74,7 @@ public:
         if (ret < 0) {
             return ret;
         }
-        ret = this->checkBalance(res);
+        ret = this->checkBalance(false, res);
         if (ret < 0) {
             return ret;
         }
@@ -82,9 +82,9 @@ public:
         return ret;
     }
 
-    bool isBalance() override {
+    bool isBalance(bool silence) override {
         Result res;
-        return this->checkBalance(res) > 0;
+        return this->checkBalance(silence, res) > 0;
     }
 
     int checkStable(Result &res) override {
@@ -97,9 +97,9 @@ public:
         return ret;
     }
 
-    int doCheckStable(bool background, Result &res) {
+    int doCheckStable(bool silence, Result &res) {
 
-        if (!background) {
+        if (!silence) {
             log("checking rpy if stable ...");
         }
 
@@ -116,7 +116,7 @@ public:
             }
             float roll = -this->getRoll();
             float pitch = -this->getPitch();
-            if (!background) {
+            if (!silence) {
                 log(String() << "roll:" << roll << ",pitch:" << pitch);
             }
 
@@ -146,22 +146,24 @@ public:
             res << "rpy is not stable,rollAvg:" << rollAvg << ",rollMin:" << rollMin << ",rollMax" << rollMax;
             return -1;
         }
-        if (!background) {
+        if (!silence) {
             log("done of rpy stable check.");
         }
 
         return 1;
     }
-    int checkBalance(Result &res) {
-        int ret = this->doCheckBalance(res);
+    int checkBalance(bool silence, Result &res) {
+        A8_LOG_DEBUG(logger, String() << ">>checkBalance.");
+        int ret = this->doCheckBalance(silence, res);
         if (ret < 0) {
             this->lastBalanceCheckError = String() << ret << ":" << res.errorMessage;
         } else {
             this->lastBalanceCheckError.clear();
         }
+        A8_LOG_DEBUG(logger, String() << "<<checkBalance.");
         return ret;
     }
-    int doCheckBalance(Result &res) {
+    int doCheckBalance(bool silence, Result &res) {
         float roll = this->getRoll();
         float pitch = this->getPitch();
         A8_LOG_DEBUG(logger, String() << "check rpy if balance, roll:" << roll << ",pitch:" << pitch);
@@ -174,7 +176,9 @@ public:
             res << "rpy is not balance, pitch(" << pitch << ") value showing the attitude of the drone is not in a balance position, please adjust and try again.";
             return -2;
         }
-        A8_LOG_DEBUG(logger, "done of rpy balance check.");
+        if (!silence) {
+            log("done of rpy balance check.");
+        }
         return 1;
     }
 };

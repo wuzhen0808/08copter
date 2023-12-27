@@ -1,11 +1,11 @@
 #pragma once
 
 #include "a8/util/Buffer.h"
-#include "a8/util/Stack.h"
 #include "a8/util/Debug.h"
 #include "a8/util/Directory.h"
 #include "a8/util/HashTable.h"
 #include "a8/util/Reader.h"
+#include "a8/util/Stack.h"
 #include "a8/util/String.h"
 
 #define A8_DIRECTORY_DEBUG (0)
@@ -57,8 +57,10 @@ public:
         this->marks.push(this->tree);
     }
     bool unMark() {
-        Directory<T> *top = this->marks.pop(0);
-        if (top == 0) {
+
+        Directory<T> *top;
+        int ret = this->marks.pop(top);
+        if (ret < 0) {
             return false;
         }
         to(top);
@@ -328,7 +330,7 @@ public:
         if (expand) {
             // print child if need expand.
             for (int i = 0; i < list.len(); i++) {
-                print(depth + 1, i, list.get(i,0), path);
+                print(depth + 1, i, list.get(i, 0), path);
             }
         }
     }

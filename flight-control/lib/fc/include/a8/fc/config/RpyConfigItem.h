@@ -14,17 +14,17 @@ public:
     }
 
     void buildTitle(ConfigItem::TitleBuilder &title) override {
-        title.set<bool>("balance", rpy->isBalance());
+        title.set<bool>("balance", rpy->isBalance(true));
     }
 
     void onAttached() override {
 
-        ConfigItems::addReturn<RpyConfigItem *>(this, "Check balance.", this, [](RpyConfigItem *this_, Result &res) {
+        ConfigItems::addReturn<RpyConfigItem *>(this, "Check stable.", this, [](RpyConfigItem *this_, Result &res) {
             return this_->rpy->checkStable(res);
         });
 
         ConfigItems::addReturn<RpyConfigItem *>(this, "Check balance.", this, [](RpyConfigItem *this_, Result &res) {
-            return this_->rpy->checkBalance(res);
+            return this_->rpy->checkBalance(false, res);
         });
     }
 

@@ -36,6 +36,17 @@ public:
     };
     using equals = bool (*)(T, T);
 
+public:
+    template <typename X>
+    static X *get(Buffer<X *> *buffer, int idx, X *def) {
+        return buffer->get(idx, def);
+    }
+
+    template <typename X>
+    static X *get(Buffer<X *> *buffer, int idx) {
+        return buffer->get(idx, 0);
+    }
+
 private:
     int capacity_;
     int length_;
@@ -80,6 +91,14 @@ public:
         }
         return *this;
     }
+    int removeLast(T &last) {
+        if (this->length_ == 0) {
+            return -1;
+        }
+        this->length_--;
+        last = this->buffer_[this->length_];
+        return 1;
+    }
 
     int length() const {
         return this->length_;
@@ -104,12 +123,20 @@ public:
         return idx >= 0 && idx < length_;
     }
 
-    T getLast(T def) const {
-        return this->get(this->length_ - 1, def);
+    int getLast(T &ele) const {
+        if (this->length_ == 0) {
+            return -1;
+        }
+        ele = this->buffer_[this->length_ - 1];
+        return 1;
     }
 
-    T getFirst(T def) const {
-        return this->get(0, def);
+    int getFirst(T &ele) const {
+        if (this->length_ == 0) {
+            return -1;
+        }
+        ele = this->buffer_[0];
+        return 1;
     }
 
     T *buffer() const {
@@ -225,6 +252,14 @@ public:
     void clear(void (*release)(T)) {
         this->forEach(release);
         this->clear();
+    }
+
+    bool addIfNotExists(T ele){
+        if(this->contains(ele)){
+            return false;
+        }
+        this->add(ele);
+        return true;
     }
 
     void add(Buffer<T> *buf, int from, int len) {

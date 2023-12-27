@@ -20,6 +20,10 @@ public:
     ~ConfigContext() {
         A8_DEBUG("~ConfigContext");
     }
+
+    ConfigItem *getConfigItem() {
+        return this->navigator->get()->getElement();
+    }
 };
 
 class ConfigItem {
@@ -30,6 +34,7 @@ public:
     class TitleBuilder : HashTable<String, String> {
     public:
         ConfigItem *configItem;
+        Buffer<String> sortedKeyBuffer;
         TitleBuilder(ConfigItem *configItem) {
             this->configItem = configItem;
         }
@@ -40,6 +45,7 @@ public:
         template <typename T>
         void set(String key, T value) {
             HashTable<String, String>::set(key, String() << value);
+            sortedKeyBuffer.addIfNotExists(key);
         }
 
         template <typename T>
@@ -56,9 +62,11 @@ public:
             title << configItem->getName();
 
             title << "(";
-            this->forEach<String &>(title, [](String &title, String key, String value) {
+            for (int i = 0; i < sortedKeyBuffer.len(); i++) {
+                String key = sortedKeyBuffer.get(i, "");
+                String value = this->get(key, "");
                 title << key << ":" << value << ",";
-            });
+            }
             title << ")";
             return title;
         }

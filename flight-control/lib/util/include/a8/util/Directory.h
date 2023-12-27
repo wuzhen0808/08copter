@@ -131,11 +131,15 @@ public:
         return name;
     }
     Directory<T> *getFirstChild() {
-        return this->children.getFirst(0);
+        Directory<T> * ele = 0;
+        this->children.getFirst(ele);
+        return ele;        
     }
 
     Directory<T> *getLastChild() {
-        return this->children.getLast(0);
+        Directory<T> * ele = 0;
+        this->children.getLast(ele);
+        return ele;        
     }
 
     Buffer<Directory<T> *> getChildren() {

@@ -13,6 +13,11 @@ public:
         print(String() << ch);
     }
 
+    template <typename T>
+    void print(const T ele) {
+        print(String() << ele);
+    }
+
     void print(const char *buf, int len) {
         print(String(buf, len));
     }

@@ -8,15 +8,14 @@
 namespace a8::fc::throttle {
 using namespace a8::util;
 
-class LimitThrottler : public Throttler {
-
+class MaxLimitThrottler : public Throttler {    
     float maxThrottle;
 
 public:
-    LimitThrottler(float max, LoggerFactory *logFac) : Throttler(logFac, "LimitThrottler") {
+    MaxLimitThrottler(                   float max, LoggerFactory *logFac) : Throttler(logFac, "LimitThrottler") {
         this->maxThrottle = max;
     }
-void setup()override{}
+    void setup() override {}
     void getLimitInTheory(float &minSample, float &maxSample) override {
         limitThrottle(maxSample, 0, maxThrottle);
     }
@@ -29,11 +28,11 @@ void setup()override{}
         float thRH = ctx.propellers->getThrottle(1);
         float thLA = ctx.propellers->getThrottle(2);
         float thRA = ctx.propellers->getThrottle(3);
-
-        limitThrottle(thLH, 0, maxThrottle);
-        limitThrottle(thRH, 0, maxThrottle);
-        limitThrottle(thLA, 0, maxThrottle);
-        limitThrottle(thRA, 0, maxThrottle);
+        
+        thLH = limitThrottle(thLH, 0, maxThrottle);
+        thRH = limitThrottle(thRH, 0, maxThrottle);
+        thLA = limitThrottle(thLA, 0, maxThrottle);
+        thRA = limitThrottle(thRA, 0, maxThrottle);
 
         ctx.propellers->setThrottle(thLH, thRH, thLA, thRA);
         if (A8_THROTTLE_DEBUG) {
@@ -42,13 +41,14 @@ void setup()override{}
         return 1;
     }
 
-    void limitThrottle(float &throttle, float min, float max) {
+    float limitThrottle(float throttle, float min, float max) {
         if (min >= 0 && throttle < min) {
             throttle = min;
         }
         if (max >= 0 && throttle > max) {
             throttle = max;
         }
+        return throttle;
     }
 };
 } // namespace a8::fc::throttle

@@ -49,6 +49,31 @@ public:
         });
     }
 
+    void printActiveDataItems(Output *out) {
+        for (int i = 0; i < enabledDataItems.len(); i++) {
+            DataItem *di = BufferUtil::get<DataItem>(enabledDataItems, i);
+            doPrint(i, di, out);
+        }
+    }
+    
+    void printAllDataItems(Output *out) {
+        for (int i = 0; i < dataItemEntries.len(); i++) {
+            DataItem *di = BufferUtil::get<DataItemEntry>(dataItemEntries, i)->dataItem;
+            doPrint(i, di, out);
+        }
+    }
+    void doPrint(int idx, DataItem *di, Output *out) {
+        out->print(idx);
+        out->print(",");
+        out->print(di->getName());
+        out->print(",");
+        out->print<bool>(isEnabled(di->getName()));
+        out->println();
+    }
+
+    bool isEnabled(String name) {
+        return dataItemEnableStatus.get(name, false);
+    }
     DataItem *get(int idx) {
         DataItemEntry *de = dataItemEntries.get(idx, 0);
         return de->dataItem;
@@ -231,10 +256,10 @@ public:
             if (this->contains(nameWithExpr)) {
                 continue; // ignore if exists.
             }
-            DataItem* di;
+            DataItem *di;
             ret = this->addNameWithExpr(nameWithExpr, di, res);
             if (ret < 0) {
-                res << ";failed to add nameWithExpr:" << nameWithExpr;
+                res << ";no such dataItem or not a expr:" << nameWithExpr << "";
                 break;
             }
             names.add(di->getName());

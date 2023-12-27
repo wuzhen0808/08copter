@@ -34,7 +34,8 @@ public:
     void runReceiver() {
         int i;
         while (true) {
-            i = queue->take(1000, -1);
+            i = -1;            
+            queue->take(i, 1000);
             if (i == -1) {
                 logger->info("timeout to take message from queue, retrying.");
                 continue;

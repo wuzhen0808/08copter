@@ -39,8 +39,8 @@ public:
         }
         return ret;
     }
-    virtual int checkBalance(Result &res) = 0;
-    virtual bool isBalance() = 0;
+    virtual int checkBalance(bool silence, Result &res) = 0;
+    virtual bool isBalance(bool silence) = 0;
     virtual String getLastError() = 0;
 };
 } // namespace a8::fc

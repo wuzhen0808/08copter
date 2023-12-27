@@ -9,8 +9,8 @@ using namespace a8::util;
 
 class VoltageCompensatePwmCalculator : public PwmCalculator, public FlyWeight {
 private:
-    long basePwm;
     long maxPwm;
+    long minPwm;
 
 public:
     ElevationEstimator *elevationEstimator;
@@ -21,13 +21,13 @@ public:
     float throttles[4];
     float elevations[4];
     long pwmFromThrottles[4];
-    long totalPwms[4];
+    long totalPwmA[4];
 
-    VoltageCompensatePwmCalculator(PowerManage *pm, LoggerFactory *logFac) : FlyWeight(logFac) {
+    VoltageCompensatePwmCalculator(PowerManage *pm,
+                                   LoggerFactory *logFac) : FlyWeight(logFac) {
         this->elevationEstimator = new ElevationEstimator(pm, logFac);
-        this->basePwm = 1000;
+        this->minPwm = 1000;
         this->maxPwm = 2000;
-        A8_LOG_WARN(logger, String() << "PwmManage.basePwm:" << basePwm << ",(double:" << ((double)basePwm) << "),max:" << maxPwm);
     }
     ~VoltageCompensatePwmCalculator() {
         delete this->elevationEstimator;
@@ -37,12 +37,7 @@ public:
         this->setup_ = true;
     }
     int collectDataItems(Collector *collector, Result &res) override {
-        int ret = collector->add<VoltageCompensatePwmCalculator *>(
-            "PwmM.basePwm", this, [](VoltageCompensatePwmCalculator *this_) { return (double)this_->basePwm; }, res);
-        if (ret < 0) {
-            return ret;
-        }
-
+        int ret = 1;
         for (int i = 0; i < 4; i++) {
             ret = collector->add(String() << "propeller" << i << "-srcThrottle", throttles[i], res);
             if (ret < 0) {
@@ -56,7 +51,7 @@ public:
             if (ret < 0) {
                 break;
             }
-            ret = collector->add(String() << "propeller" << i << "-srcPwm2", totalPwms[i], res);
+            ret = collector->add(String() << "propeller" << i << "-srcPwm2", totalPwmA[i], res);
             if (ret < 0) {
                 break;
             }
@@ -73,14 +68,10 @@ public:
         elevations[idx] = Math::map<float>(throttle, 0.0f, maxThrottle, 0.0f, maxElevation);
         // map elevation to pwm, note the max elevation is changing with the voltage.
         maxElevation = this->elevationEstimator->getMaxEstimated();
-        pwmFromThrottles[idx] = Math::map<float>(elevations[idx], 0, maxElevation, 0, maxPwm - basePwm);
-        totalPwms[idx] = this->basePwm + pwmFromThrottles[idx];
+        pwmFromThrottles[idx] = Math::map<float>(elevations[idx], 0, maxElevation, 0, maxPwm - minPwm);
+        totalPwmA[idx] = minPwm + pwmFromThrottles[idx];
 
-        A8_LOG_DEBUG(logger, String()
-                                 << "pwm1:" << pwmFromThrottles[idx]
-                                 << "+basePwm:" << basePwm << "(double:" << ((double)basePwm) << ")=totalPwms:" << totalPwms[idx]);
-
-        return totalPwms[idx];
+        return totalPwmA[idx];
     }
 };
 } // namespace a8::fc

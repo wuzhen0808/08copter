@@ -31,6 +31,24 @@ public:
         return addNumberInput<int>(ci, name, var);
     }
     template <typename C>
+    static ConfigItem *add(ConfigItem *ci1, String name, C c, void (*action)(C, ConfigContext &)) {
+        ConfigItem *ci2 = ConfigItems::addReturn(ci1, name);
+        struct ActionAttribute {
+            C c;
+            void (*action)(C, ConfigContext &);
+            ActionAttribute(C c) : c(c) {
+            }
+        } *aa = new ActionAttribute(c);
+        aa->action = action;
+        ci2->setAttribute(0, aa, Lang::staticCastDelete<ActionAttribute>);
+        ci2->onEnter = [](ConfigContext &cc) {
+            ConfigItem *ci3 = cc.getConfigItem();
+            ActionAttribute *aa = ci3->getAttribute<ActionAttribute *>(0, 0);
+            aa->action(aa->c, cc);
+        };
+        return ci1;
+    }
+    template <typename C>
     static ConfigItem *add(ConfigItem *ci, String name, int &var, C c, int len, String (*options)(C, int)) {
         return addSelectInput<C>(ci, name, var, c, len, options);
     }

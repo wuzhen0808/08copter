@@ -1,15 +1,84 @@
 #pragma once
+#include "a8/fc/CollectorSetup.h"
 #include "a8/fc/config/FlightConfigItem.h"
 #include "a8/fc/mission/Mission.h"
 #include "a8/fc/pwm/VoltageCompensatePwmCalculator.h"
 #include "a8/fc/throttle/FlightThrottler.h"
 #include "a8/util.h"
-
+#define A8_SIGNAL_CONTINUE (1)
+#define A8_SIGNAL_GIVE_UP (2)
+#define A8_SIGNAL_FG_EXIT (3)
 namespace a8::fc::mission {
 using namespace a8::util;
 using namespace a8::fc::throttle;
+using namespace a8::fc::collect;
 
 class FlightMission : public Mission {
+    class Foreground : public ConfigItem {
+        FlightMission *mission;
+
+    public:
+        Foreground(FlightMission *mission) {
+            this->mission = mission;
+        }
+
+        void onAttached() override {
+            A8_DEBUG("Foreground::onAttached.1");
+
+            ConfigItem *ci = this;
+            ci = ConfigItems::addReturn(ci, "Collector");
+            {
+                ConfigItems::add<FlightMission *>(ci, "Print-active-dataItems", this->mission, [](FlightMission *mission, ConfigContext &cc) {
+                    mission->collector->printActiveDataItems(cc.out);
+                });
+
+                ConfigItems::add<FlightMission *>(ci, "Print-all-dataItems", this->mission, [](FlightMission *mission, ConfigContext &cc) {
+                    mission->collector->printAllDataItems(cc.out);
+                });
+
+                ci = this;
+            }
+            ConfigItems::add<FlightMission *>(ci, "Continue-the-mission.", this->mission, [](FlightMission *mission, ConfigContext &cc) {
+                int ok = mission->signalQueue->offer(A8_SIGNAL_CONTINUE, 200);
+                if (ok < 0) {
+                    cc.println("failed to offer signal to mission.");
+                }
+                //todo:remove this line and allow mission open more navigator;
+                //solution:use dispatcher instead of reader for nav of dir.
+                cc.navigator->stop(1);
+            });
+
+            ConfigItems::add<FlightMission *>(ci, "Give-up(mission)&Exit(foreground)", this->mission, [](FlightMission *mission, ConfigContext &cc) {
+                if (mission->running) {
+
+                    int ok = mission->signalQueue->offer(A8_SIGNAL_GIVE_UP, 200);
+                    if (ok < 0) {
+                        cc.println("failed to offer signal to mission.");
+                        return;
+                    }
+                }
+                cc.navigator->stop(1);
+            });
+
+            ConfigItems::add<FlightMission *>(ci, "Exit(foreground)&waiting mission done.", this->mission, [](FlightMission *mission, ConfigContext &cc) {
+                if (mission->running) {
+                    int ok = mission->signalQueue->offer(A8_SIGNAL_FG_EXIT, 200);
+                    if (ok < 0) {
+                        cc.println("failed to offer signal to mission.");
+                        return;
+                    }
+                }
+                cc.navigator->stop(1);
+            });
+            A8_DEBUG("Foreground::onAttached.2");
+        }
+        void enter(ConfigContext &cc) override {
+            ConfigItems::runNav(this->dir, cc);
+        }
+        
+
+    }; // end of Foreground.
+
     FlightConfigItem *config;
     FlightThrottler *throttler;
     Propellers *propellers;
@@ -20,32 +89,48 @@ class FlightMission : public Mission {
     long tickCostTimeMs;
     long timeMs;
     Collector *collector;
+    Foreground *fg;
+    bool running = true;
 
 public:
-    FlightMission(FlightConfigItem *config, PowerManage *pm, Rpy *rpy, Propellers *propellers, Collector *collector, ConfigContext &configContext, Throttle &throttle, System *sys, LoggerFactory *logFac)
-        : Mission(configContext, throttle, sys, logFac, "FlightMission") {
+    FlightMission(FlightConfigItem *config, PowerManage *pm, Rpy *rpy, Propellers *propellers, Collector *collector, ConfigContext &configContext, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac)
+        : Mission(configContext, throttle, signalQueue, sys, logFac, "FlightMission") {
         this->config = config;
         this->rpy = rpy;
         this->collector = collector;
         this->propellers = propellers;
         this->throttler = new throttle::FlightThrottler(config, rpy, logFac);
         this->pwmCalculator = new VoltageCompensatePwmCalculator(pm, logFac);
+        this->fg = new Foreground(this);
         this->landing = false;
+        this->tickCostTimeMs = 0;
     }
 
     ~FlightMission() {
         delete this->pwmCalculator;
         delete this->throttler;
+        delete this->fg;
+    }
+
+    ConfigItem *getForeground() override {
+        return fg;
     }
 
     int setup(Result &res) override {
         throttler->setup();
         pwmCalculator->setup();
         this->propellers->setPwmCalculator(this->pwmCalculator);
+        int ret = this->collectDataItems(this->collector, res);
+        if (ret > 0) {
+            ret = CollectorSetup::setupFlight(collector, res);
+        }
         return 1;
     }
-    int collectDataItems(Collector *collector, Result &res) override {
-        int ret = pwmCalculator->collectDataItems(collector, res);
+    int collectDataItems(Collector* collector, Result &res) {
+        int ret = 1;
+        ret = pwmCalculator->collectDataItems(collector, res);
+        if(ret>0)
+            throttler->collectDataItems(collector, res);
         if (ret > 0)
             ret = collector->add("timeMs", this->timeMs, res);
         if (ret > 0)
@@ -53,10 +138,24 @@ public:
         if (ret > 0)
             ret = collector->add("Landing", this->landing, res);
 
-
         return ret;
     }
     int run(Result &res) override {
+        // wait the signal from foreground.
+        int signal = signalQueue->take();
+        if (signal == A8_SIGNAL_CONTINUE) {
+            // continue;
+        } else if (signal == A8_SIGNAL_GIVE_UP) {
+            res << "mission give up by signal of give-up.";
+            return -1;
+        } else if (signal == A8_SIGNAL_FG_EXIT) {
+            res << "mission give up by signal of fg-exit.";
+            return -1;
+        } else {
+            res << "unknown signal:" << signal;
+            return -1;
+        }
+
         int ret = checkRpy(configContext, res);
         if (ret < 0) {
             return ret;
@@ -116,10 +215,10 @@ public:
         this->timeMs = sys->getSteadyTime();
         this->startTimeMs = timeMs; // m
         int ret = -1;
-        while (true) {
+        while (this->running) {
             Result res;
             ret = this->preUpdate(res);
-            bool running = true;
+
             ret = this->doUpdate(res);
 
             if (running && throttler->isLanded()) {
@@ -130,10 +229,10 @@ public:
                 this->checkLanding(ret, timeMs);
             }
 
-            collector->update();
-
             long now = sys->getSteadyTime();
             tickCostTimeMs = now - timeMs;
+            //
+            collector->update();
 
             // check if done of mission.
             if (!running) {
@@ -161,26 +260,29 @@ protected:
             res << (String() << "cannot create mission, rpy is not stable after retries:" << config->stableCheckRetries);
             return -1;
         }
-
-        ret = rpy->checkBalance(res);
+        A8_LOG_DEBUG(logger, String() << "checkRpy.1");
+        ret = rpy->checkBalance(false, res);
+        A8_LOG_DEBUG(logger, String() << "checkRpy.2");
         if (ret < 0) {
 
             if (config->unBalanceAction == UnBalanceAction::END_OF_MISSION) {
                 log("cannot create mission, it is not allowed to start with a un-balanced-rpy.");
                 return -1;
             } else if (config->unBalanceAction == UnBalanceAction::ASK) {
-                bool ok = ConfigItems::confirm(cc, "Start mission with UN-balanced rpy?", false);
-                if (!ok) {
+                
+                bool ok = ConfigItems::confirm(cc, "Start mission with UN-balanced rpy?", true);
+                if (!ok) {                
                     return -1;
-                } // ask to start.
+                } // ask to start.                
             } else if (config->unBalanceAction == UnBalanceAction::IGNORE) {
 
             } else if (config->unBalanceAction == UnBalanceAction::IGNORE_IF_SAFE) {
                 Result res;
                 if (checkSafetyWhenIgnoreBalance(config, res) < 0) {
+                    
                     bool ok = ConfigItems::confirm(cc, "Start mission with UN-balanced rpy?", false);
                     if (!ok) {
-                        log(res.errorMessage);
+                        log(res.errorMessage);                    
                         return -1;
                     } // ask to start.
                 }
@@ -193,6 +295,7 @@ protected:
     }
 
     int checkSafetyWhenIgnoreBalance(FlightConfigItem *config, Result &res) {
+
         if (config->enablePropeller) {
             res << "propeller is enabled,it's not safe to start the mission with un-balance rpy.";
             return -1;

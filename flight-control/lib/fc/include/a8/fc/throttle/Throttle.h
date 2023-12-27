@@ -11,6 +11,7 @@ public:
     long timeMs_;
     long lastTimeMs_;
     Propellers *propellers;
+    bool active = true;
 
     Throttle(Propellers *propellers) {
         this->propellers = propellers;

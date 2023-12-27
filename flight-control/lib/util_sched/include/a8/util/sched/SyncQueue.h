@@ -24,26 +24,19 @@ public:
         return rt;
     }
 
-    T take(long timeout, T def) {
-        T rt;
-        int ret = take(rt, timeout);
-        if (ret < 0) {
-            return def;
-        }
-        return rt;
-    }
-    T peek(long timeout, T def) {
-        T rt;
-        int ret = peek(rt, timeout);
-        if (ret < 0) {
-            return def;
-        }
-        return rt;
-    }
     void offer(T ele) {
         while (true) {
             int ret = this->offer(ele, 10 * 1000);
             if (ret < 0) {
+                continue;
+            }
+            break;
+        }
+    }
+    void clear() {
+        T tmp;
+        while (true) {
+            if (this->take(tmp, 0) > 0) {
                 continue;
             }
             break;

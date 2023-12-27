@@ -1,9 +1,10 @@
 #pragma once
 #include "a8/fc/config/Config.h"
+#include "a8/fc/throttle/ActiveLimitThrottler.h"
 #include "a8/fc/throttle/BalanceThrottler.h"
 #include "a8/fc/throttle/ElevatorThrottler.h"
 #include "a8/fc/throttle/LandingThrottler.h"
-#include "a8/fc/throttle/LimitThrottler.h"
+#include "a8/fc/throttle/MaxLimitThrottler.h"
 #include "a8/fc/throttle/Throttle.h"
 #include "a8/fc/throttle/Throttler.h"
 #include "a8/util.h"
@@ -22,34 +23,36 @@ class FlightThrottler : public Throttler {
     ElevatorThrottler *elevator;
     BalanceThrottler *balance;
     LandingThrottler *landing;
-    LimitThrottler *limit;
+    ActiveLimitThrottler *active;
+    MaxLimitThrottler *max;
     a8::fc::FlightConfigItem *config;
 
 public:
     FlightThrottler(a8::fc::FlightConfigItem *config, Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, String("MainThrottler")), config(config) {
-        elevator = new ElevatorThrottler(logFac);
-        elevator->setElevationThrottle(config->elevationThrottle);
+        elevator = new ElevatorThrottler(config->elevationThrottle, logFac);
         throttlers.append(elevator);
 
         balance = new BalanceThrottler(rpy, config->balanceMode, logFac);
         balance->setPidArgument(config->pidKp, config->pidKi, config->pidKd, config->pidOutputLimit, config->pidOutputLimitI);
         throttlers.append(balance);
 
-        limit = new LimitThrottler(config->maxThrottle, logFac);
-        throttlers.append(limit);
+        active = new ActiveLimitThrottler(config->activeThrottle0, config->activeThrottle1, config->activeThrottle2, config->activeThrottle3, logFac);
+        throttlers.append(active);
 
         landing = new LandingThrottler(logFac);
         throttlers.append(landing);
 
-        throttlers.append(limit);
+        max = new MaxLimitThrottler(config->maxThrottle, logFac);
+        throttlers.append(max);
     }
 
     ~FlightThrottler() {
         this->throttlers.clear();
         delete this->balance;
         delete this->elevator;
-        delete this->limit;
+        delete this->active;
         delete this->landing;
+        delete this->max;
     }
     void setup() override {
 

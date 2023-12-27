@@ -9,16 +9,17 @@ namespace a8::fc::throttle {
 using namespace a8::util;
 
 class ElevatorThrottler : public Throttler {
-    float elevationThrottle = 0;
+    float &elevationThrottle;
 
 public:
-    ElevatorThrottler(LoggerFactory *logFac) : Throttler(logFac, "ElevatorThrottler") {
+    ElevatorThrottler(float &throttle, LoggerFactory *logFac) : Throttler(logFac, "ElevatorThrottler"),
+                                                                elevationThrottle(throttle) {
     }
     void getLimitInTheory(float &minSample, float &maxSample) override {
         minSample += this->elevationThrottle;
         maxSample += this->elevationThrottle;
     }
-    void setup()override{}
+    void setup() override {}
     void setElevationThrottle(float pwm) {
         this->elevationThrottle = pwm;
     }
@@ -27,7 +28,6 @@ public:
         if (A8_THROTTLE_DEBUG) {
             A8_LOG_DEBUG(logger, String() << ">>Ele.update.");
         }
-
         ctx.propellers->addThrottle(elevationThrottle);
         if (A8_THROTTLE_DEBUG) {
             A8_LOG_DEBUG(logger, String() << "<<Ele.update.");

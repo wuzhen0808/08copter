@@ -26,7 +26,7 @@ public:
     }
 
     void log(Logger::Level level, const String &msg) override {
-        A8_DEBUG(">>WriterLogger::log()");
+        A8_TRACE(">>WriterLogger::log()");
         long long stime = sys->getSysTime();
         String formatTime;
         sys->formatTime(stime, &formatTime);
@@ -34,7 +34,7 @@ public:
         msg2 << "[" << formatTime << "] [" << level << "] " << msg;
         writer->write(msg2.text(), msg2.length());
         writer->write("\n", 1);
-        A8_DEBUG("<<WriterLogger::log()");
+        A8_TRACE("<<WriterLogger::log()");
     };
 };
 

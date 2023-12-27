@@ -82,7 +82,8 @@ public:
         }
 
         Mode *add(Light *light) {
-            Light *preLight = this->lights.getLast(0);
+            Light *preLight = 0;
+            this->lights.getLast(preLight);
             this->lights.append(light);
             light->startTimeMs = preLight == 0 ? 0 : preLight->endTimeMs;
             light->endTimeMs = light->startTimeMs + light->timeMs;
@@ -98,7 +99,8 @@ public:
                 log(String() << "timeMs:" << timeMs << ",startTimeMs:" << startTimeMs << ",elapsed:" << elapsed);
             }
 
-            Light *last = lights.getLast(0);
+            Light *last = 0;
+            lights.getLast(last);
             if (last == 0) { // no light;
                 if (A8_LED_DEBUG) {
                     log(String() << "no light");

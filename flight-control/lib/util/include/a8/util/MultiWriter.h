@@ -10,14 +10,14 @@ class MultiWriter : public Writer {
     Buffer<Writer *> writers;
 
     int write(const char *buf, int bufLen, Result &res) override {
-        A8_DEBUG(">>MultiWriter::write");
+        A8_TRACE(">>MultiWriter::write");
         for (int i = 0; i < writers.len(); i++) {
             int ret = writers[i]->write(buf, bufLen);
             if (ret < 0) {
                 return ret;
             }
         }
-        A8_DEBUG("<<MultiWriter::write");
+        A8_TRACE("<<MultiWriter::write");
         return bufLen;
     }
 

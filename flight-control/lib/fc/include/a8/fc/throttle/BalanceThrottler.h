@@ -31,8 +31,8 @@ class BalanceThrottler : public Throttler {
 public:
     BalanceThrottler(Rpy *rpy, int bMode, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
         this->rpy = rpy;
-        this->pidRoll = new Pid(logFac, "RollPid");
-        this->pidPitch = new Pid(logFac, "PitchPid");
+        this->pidRoll = new Pid(logFac, "PidR");
+        this->pidPitch = new Pid(logFac, "PidP");
         this->balanceMode = bMode;
     }
     ~BalanceThrottler() {

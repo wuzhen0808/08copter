@@ -6,7 +6,6 @@
 #include "a8/fc/mission/FlightMission.h"
 #include "a8/util.h"
 #include "a8/util/sched.h"
-#include "a8/fc/CollectorSetup.h"
 
 namespace a8::fc {
 using namespace a8::util;
@@ -39,6 +38,7 @@ protected:
     SyncQueue<MissionEntry *> *missionInQueue;
     SyncQueue<MissionEntry *> *missionOutQueue;
     bool running = true;
+    SyncQueue<int> *signalQueue;
 
 public:
     Commander(PowerManage *pm, Rpy *rpy, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Executor") {
@@ -49,30 +49,21 @@ public:
         this->rpy = rpy;
         this->missionInQueue = this->sch->createSyncQueue<MissionEntry *>(1);
         this->missionOutQueue = this->sch->createSyncQueue<MissionEntry *>(1);
+        this->signalQueue = this->sch->createSyncQueue<int>(1);
     }
 
     ~Commander() {
+        delete this->missionInQueue;
+        delete this->missionOutQueue;
+        delete this->signalQueue;
     }
 
     virtual Propellers *getPropellers() = 0;
     virtual void setup() {
     }
 
-    Mission *buildNextMission(Config *config, Propellers *propellers, Throttle &throttle, OutputWriter &writer, Collector *collector) {
-        Mission *mission;
-        while (true) {
-            Result res;
-            int ret = buildNextMission(config, propellers, throttle, writer, collector, mission, res);
-            if (ret < 0) {
-                continue;
-            }
-            break;
-        }
-        return mission;
-    }
+    int buildNextMission(Config *config, ConfigContext &cc, Propellers *propellers, Throttle &throttle, OutputWriter &writer, Collector *collector, Mission *&mission, Result &res) {
 
-    int buildNextMission(Config *config, Propellers *propellers, Throttle &throttle, OutputWriter &writer, Collector *collector, Mission *&mission, Result &res) {
-        ConfigContext cc(reader, sys->out, logger, res);
         config->enter(cc);
         if (!config->isValid()) {
             // print all the invalid ones.
@@ -98,34 +89,27 @@ public:
         if (ret < 0) {
             return ret;
         }
-
+        A8_DEBUG("buildNextMission.2");
         if (config->missionSelect == Config::MissionType::FLIGHT) {
-            mission = new FlightMission(config->flightConfigItem, pm, rpy, propellers, collector, cc, throttle, sys, loggerFactory);
-
+            mission = new FlightMission(config->flightConfigItem, pm, rpy, propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
         } else if (config->missionSelect == Config::MissionType::ESC_CALIBRATE) {
-            mission = new EscCalibrateMission(propellers, collector, cc, throttle, sys, loggerFactory);
+            mission = new EscCalibrateMission(propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
         } else {
             res << String() << "no such mission with type:" << config->missionSelect;
             return -1;
         }
-
-        ret = postBuildMission(mission, collector, res);
+        A8_DEBUG("buildNextMission.3");
+        // clear signal queue.
+        signalQueue->clear();
+        A8_DEBUG("buildNextMission.4");
+        ret = mission->setup(res);
         if (ret < 0) {
             delete mission;
             mission = 0;
         }
+        A8_DEBUG("buildNextMission.5");
         return ret;
     }
-    int postBuildMission(Mission *mission, Collector *collector, Result &res) {
-        int ret = 0;
-        ret = mission->setup(res);
-        if (ret > 0)
-            ret = mission->collectDataItems(collector, res);
-        if (ret > 0)
-            ret = CollectorSetup::setup(collector, res);
-        return ret;
-    }
-
     void missionLoop() {
         while (this->running) {
             MissionEntry *me;
@@ -159,13 +143,20 @@ public:
             Throttle throttle(propellers);
             OutputWriter writer(this->sys->out);
             Collector collector(&writer);
-            Mission *mission = this->buildNextMission(config, propellers, throttle, writer, &collector);
+            ConfigContext cc(reader, sys->out, logger, res);
+            Mission *mission = 0;
+            Result res;
+            int ret = this->buildNextMission(config, cc, propellers, throttle, writer, &collector, mission, res);
+            if (ret < 0) {
+                log(res.errorMessage);
+                continue;
+            }
             ConfigItem *fg = mission->getForeground();
             MissionEntry *me = new MissionEntry(mission);
             this->missionInQueue->offer(me);
             Directory<ConfigItem *> *fgDir;
             if (fg != 0) {
-                fgDir = new Directory<ConfigItem *>("Foreground", 0);
+                fgDir = new Directory<ConfigItem *>(String() << "Foreground(" << mission->getName() << ")", 0);
                 fg->attach(fgDir);
                 ConfigContext cc(reader, sys->out, logger, res);
                 fg->enter(cc);

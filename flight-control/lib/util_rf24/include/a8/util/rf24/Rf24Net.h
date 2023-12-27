@@ -113,7 +113,8 @@ public:
     }
 
     int doReceiving(long loops, long timeout) {
-        Rf24NetData *data = this->localDataQueue->take(timeout, 0);
+        Rf24NetData *data = 0;
+        this->localDataQueue->take(data, timeout);
         if (data == 0) {
             data = this->syncNetOp<Rf24Net *, Rf24NetData *>(this, [](Rf24Net *this_) {
                 return this_->doReceiveRadioNet();

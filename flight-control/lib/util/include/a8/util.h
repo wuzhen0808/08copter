@@ -4,6 +4,7 @@
 #include "a8/util/Assert.h"
 #include "a8/util/Attributes.h"
 #include "a8/util/Buffer.h"
+#include "a8/util/BufferUtil.h"
 #include "a8/util/Circle.h"
 #include "a8/util/BufferLineReader.h"
 #include "a8/util/BufferReader.h"

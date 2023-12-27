@@ -22,11 +22,11 @@ public:
     }
 
     void log(Logger::Level level, const String &msg) override {
-        A8_DEBUG(">>SyncLogger::log()");
+        A8_TRACE(">>SyncLogger::log()");
         lock->lock();
         logger->log(level, msg);
         lock->unLock();
-        A8_DEBUG("<<SyncLogger::log()3");
+        A8_TRACE("<<SyncLogger::log()3");
     };
 };
 

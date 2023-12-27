@@ -79,8 +79,9 @@ class EscCalibrateMission : public Mission {
             options.add("propeller2");
             options.add("propeller3");
             options.add("All");
-            ConfigItems::addSelectInput(this, "Select-Propeller", this->mission->propeller, options);
 
+            ConfigItems::addSelectInput(this, "Select-Propeller", this->mission->propeller, options);
+            ConfigItems::add(this, "Step", this->mission->step);
             this->addAction(
                 "+", onBuildTitle, [](ConfigContext &, EscCalibrateMission *mission) {
                     mission->plus();
@@ -119,7 +120,7 @@ class EscCalibrateMission : public Mission {
         void enter(ConfigContext &cc) override {
             ConfigItems::runNav(this->dir, cc);
         }
-    };
+    }; // end of Foreground.
 
 protected:
     Propellers *propellers;
@@ -138,7 +139,7 @@ protected:
     Collector *collector;
 
 public:
-    EscCalibrateMission(Propellers *propellers, Collector *collector, ConfigContext &cc, Throttle &throttle, System *sys, LoggerFactory *logFac) : Mission(cc, throttle, sys, logFac, "EscCalibrateMission") {
+    EscCalibrateMission(Propellers *propellers, Collector *collector, ConfigContext &cc, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac) : Mission(cc, throttle, signalQueue, sys, logFac, "EscCalibrateMission") {
         this->propellers = propellers;
         this->collector = collector;
         this->fg = new Foreground(this);
@@ -165,9 +166,7 @@ public:
         propellers->setPwmCalculator(this->pwmCalculator);
         return 1;
     }
-    int collectDataItems(Collector *collector, Result &res) override {
-        return 1;
-    }
+
     ConfigItem *getForeground() override {
         return this->fg;
     }
@@ -205,7 +204,7 @@ public:
         forEachPs<EscCalibrateMission *>(this, [](EscCalibrateMission *mission, PropellerStatus *ps) { ps->min(); });
     }
     int run(Result &res) override {
-        
+
         int ret = propellers->isReady(res);
         if (ret < 0) {
             this->running = false;

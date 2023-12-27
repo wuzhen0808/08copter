@@ -54,6 +54,7 @@ public:
         ConfigItem *ci = this;
         {
             ci = ConfigItems::addReturn(ci, "Start");
+            this->startConfigItem = ci;
             ci->onEnter = [](ConfigContext &cc) {
                 cc.navigator->stop(1);
             };

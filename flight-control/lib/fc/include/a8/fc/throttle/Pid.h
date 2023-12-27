@@ -75,7 +75,7 @@ public:
         if (ret > 0)
             ret = collector->add<float>(String(this->name) << "-d", this->d, res);
         if (ret > 0)
-            ret = collector->add<float>(String(this->name << "-output"), this->output, res);
+            ret = collector->add<float>(String(this->name << "-o"), this->output, res);
         return ret;
     }
 

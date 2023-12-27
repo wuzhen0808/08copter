@@ -50,7 +50,8 @@ protected:
             return;
         }
         while (true) {
-            T *ele = queue2->take(0, 0);
+            T *ele = 0;
+            queue2->take(ele, 0);
             if (ele == 0) {
                 break;
             }
@@ -252,7 +253,8 @@ public:
                 if (timeout2 < 0) {
                     timeout2 = 0;
                 }
-                req = this->reqQueue->take(timeout2, 0);
+
+                this->reqQueue->take(req, timeout2);
 
                 if (req != 0 && req->data->type != type) {
                     delete req; // consume here.
@@ -279,7 +281,7 @@ public:
         log(String() << ">>takeByTypeNoTimeout:" << type);
         Rf24NetRequest *req = 0;
         while (req == 0) {
-            req = this->reqQueue->take(10000, 0);
+            this->reqQueue->take(req, 10000);
             if (req == 0) {
                 continue;
             }

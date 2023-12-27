@@ -1,5 +1,6 @@
 #pragma once
 #include "a8/util/Assert.h"
+#include "a8/util/Buffer.h"
 #include "a8/util/Callback3.h"
 #include "a8/util/Debug.h"
 #include "a8/util/Lang.h"
@@ -18,8 +19,17 @@ public:
         this->append(ele);
     }
 
-    T pop(T def) {
-        return Buffer<T>::getLast(def);
+    int peek(T &ele) {        
+        return this->getLast(ele);
+    }
+
+    int pop() {
+        T ele;
+        return this->pop(ele);
+    }
+
+    int pop(T &ele) {
+        return this->removeLast(ele);
     }
 };
 

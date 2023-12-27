@@ -8,14 +8,22 @@ using namespace a8::fc::collect;
 class CollectorSetup {
 
 public:
-    static int setup(Collector *collector, Result &res) {
+    static int setupFlight(Collector *collector, Result &res) {
         Buffer<String> nameWithExprs;
         nameWithExprs.add("timeMs");
         nameWithExprs.add("tickCostTimeMs");
         nameWithExprs.add("tickCostTimeMsAvg[avg(tickCostTimeMs)]");
         nameWithExprs.add("rowNum[rowNum()]");
-        nameWithExprs.add("maxPwm[maxOf(prop0-pwm,prop1-pwm,prop2-pwm,prop3-pwm)]");
-        nameWithExprs.add("avgMaxPwm[avg(maxPwm)]");
+        // nameWithExprs.add("maxPwm[maxOf(prop0-pwm,prop1-pwm,prop2-pwm,prop3-pwm)]");
+        // nameWithExprs.add("avgMaxPwm[avg(maxPwm)]");        
+        nameWithExprs.add("PidR-p");
+        nameWithExprs.add("PidR-i");
+        nameWithExprs.add("PidR-d");
+        nameWithExprs.add("PidR-o");
+        nameWithExprs.add("PidP-p");
+        nameWithExprs.add("PidP-i");
+        nameWithExprs.add("PidP-d");
+        nameWithExprs.add("PidP-o");
         /*
         names.add("timeMs[diff]");
         names.add("roll");
