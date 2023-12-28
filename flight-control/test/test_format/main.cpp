@@ -230,7 +230,8 @@ TEST(TestFormat, testStringLongDouble) {
     EXPECT_EQ(len2, 18);
 }
 
-TEST(TestFormat, testMore) {
+TEST(TestFormat, testFormatAsIntOverflow) {
+    //todo.
 }
 
 int main(int argc, char **argv) {

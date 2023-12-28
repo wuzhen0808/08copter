@@ -46,12 +46,12 @@ public:
     }
 
     int collectDataItems(Collector *collector, Result &res) override {
-        int ret = collector->add<float>("roll", this->roll, res);
+        int ret = collector->add("roll", this->roll, res);
         if (ret > 0) {
-            ret = collector->add<float>("pitch", this->pitch, res);
+            ret = collector->add("pitch", this->pitch, res);
         }
         if (ret > 0) {
-            ret = collector->add<float>("yaw", this->yaw, res);
+            ret = collector->add("yaw", this->yaw, res);
         }
         if (ret > 0) {
             ret = this->pidRoll->collectDataItems(collector, res);

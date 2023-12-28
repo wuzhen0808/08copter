@@ -73,7 +73,6 @@ public:
         }
 
         virtual void get(int exp, int &precision, int &pointOffset, int &tailPrecision) const = 0;
-        
     };
 
     class AutoOffsetFloat : public Float {
@@ -114,7 +113,7 @@ public:
     const static Format::Float *defaultLongDoubleFormat;
     const static Format::Float *defaultNoTailFloatFormat;
     const static Format::Float *defaultNoTailDoubleFormat;
-    const static Format::Float *defaultNoTailLongDoubleFormat;        
+    const static Format::Float *defaultNoTailLongDoubleFormat;
 
 private:
     // set may failed if no space for the buf to storage the ch..
@@ -272,6 +271,7 @@ private:
         }
 
         int numberLen = formatAsInt<P>(buf + idx, bufLen - idx, number, false);
+
         // numberLen == precision, what if not equal?
         idx += numberLen;
 
@@ -350,6 +350,45 @@ private:
         return 1;
     }
 
+    template <typename T>
+    static int doFormatAsInt(char *buf, int bufLen, T iValue, bool addEndOfStr) {
+        int idx = bufLen - 1;
+        bool neg = false;
+        if (iValue < 0) {
+            iValue = -iValue;
+            neg = true;
+        }
+        for (;;) {
+            // process reversely, from right to left.
+            // at least print one zero.
+
+            T d = Math::mod10<T>(iValue);
+            set(buf, idx--, '0' + d, bufLen);
+            iValue = iValue / 10;
+
+            if (iValue == 0) {
+                break;
+            }
+        }
+        if (neg) {
+            set(buf, idx--, '-', bufLen);
+        }
+        int len = bufLen - 1 - idx;
+
+        // shift the result to the most left of the buffer if has space.
+        if (len < bufLen) {
+            int space = bufLen - len;
+            Array::shift(buf + space, len, -space);
+        } else {
+            // buffer overflow.
+        }
+
+        if (addEndOfStr) {
+            set(buf, len, '\0', bufLen);
+        }
+        return len;
+    }
+
 public:
     /**
      * Return the length of the formatted string.
@@ -388,41 +427,19 @@ public:
 
     template <typename T>
     static int formatAsInt(char *buf, int bufLen, T iValue, bool addEndOfStr) {
-        int idx = bufLen - 1;
-        bool neg = false;
-        if (iValue < 0) {
-            iValue = -iValue;
-            neg = true;
-        }
-        for (;;) {
-            // process reversely, from right to left.
-            // at least print one zero.
-
-            T d = Math::mod10<T>(iValue);
-            set(buf, idx--, '0' + d, bufLen);
-            iValue = iValue / 10;
-
-            if (iValue == 0) {
-                break;
+        int len = doFormatAsInt<T>(buf, bufLen, iValue, addEndOfStr);
+        if (len > bufLen) {
+            // overflow left, head number and sign lost.
+            // So ,do format again , and truncate the tail numbers.
+            char buf2[len];
+            int len2 = doFormatAsInt<T>(buf2, len, iValue, addEndOfStr);
+            if (len2 != len) {
+                // impossible.
+            } else {
+                Array::copy(buf2, 0, bufLen, buf);
             }
         }
-        if (neg) {
-            set(buf, idx--, '-', bufLen);
-        }
-        int len = bufLen - 1 - idx;
 
-        // shift the result to the most left of the buffer if has space.
-        if (len < bufLen) {
-            int space = bufLen - len;
-            Array::shift(buf + space, len, -space);
-        } else {
-            // buffer overflow, result is truncated, need shift to right?
-            //
-        }
-
-        if (addEndOfStr) {
-            set(buf, len, '\0', bufLen);
-        }
         return len;
     }
 
@@ -448,20 +465,19 @@ public:
 
     static void appendFloat(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
                             int preferWidth, char fillLeading, float fValue, bool addEndOfStr) {
-        
+
         appendNumberAsFloat<float, long>(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, fValue, defaultFloatFormat, addEndOfStr);
     }
     static void appendDouble(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
                              int preferWidth, char fillLeading, double fValue, bool addEndOfStr) {
-        
+
         appendNumberAsFloat<double, long long>(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, fValue, defaultDoubleFormat, addEndOfStr);
     }
     static void appendLongDouble(char *&bufRef, int &lenRef, int &capRef, int deltaCap, //
                                  int preferWidth, char fillLeading, long double fValue, bool addEndOfStr) {
-        
+
         appendNumberAsFloat<long double, long long>(bufRef, lenRef, capRef, deltaCap, preferWidth, fillLeading, fValue, defaultLongDoubleFormat, addEndOfStr);
     }
 };
-
 
 } // namespace a8::util

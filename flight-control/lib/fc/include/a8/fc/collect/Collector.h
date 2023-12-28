@@ -164,38 +164,24 @@ public:
         return ret;
     }
 
-    template <typename T>
-    int add(String name, T &var, Result &res) {
-        return add<T>(name, var, &doubleFormat, res);
-    }
-
     int add(String name, long &var, Result &res) {
-        return add<long>(name, var, &noTailDoubleFormat, res);
+        return add<long>(name, var, &longFormat, res);
     }
 
     int add(String name, int &var, Result &res) {
-        return add<int>(name, var, &noTailDoubleFormat, res);
+        return add<int>(name, var, &intFormat, res);
     }
 
     int add(String name, bool &var, Result &res) {
-        return add<bool>(name, var, &noTailDoubleFormat, res);
+        return add<bool>(name, var, &boolFormat, res);
     }
 
     int add(String name, float &var, Result &res) {
-        return add<float>(name, var, &doubleFormat, res);
+        return add<float>(name, var, &floatFormat, res);
     }
 
     int add(String name, double &var, Result &res) {
         return add<double>(name, var, &doubleFormat, res);
-    }
-
-    int add(String name, String diName, double factor, const Format::Float *format, Result &res) {
-        return add(
-            new MultipleDataItem(name, diName, factor, format), [](DataItem *di) { delete di; }, res);
-    }
-
-    int add(String name, String diName, double factor, Result &res) {
-        return add(name, diName, factor, &doubleFormat, res);
     }
 
     int add(NamedExpr namedExpr, DataItem *&di, Result &res) {

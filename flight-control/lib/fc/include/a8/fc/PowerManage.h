@@ -34,7 +34,7 @@ public:
         this->led->start(sys->getSteadyTime());
     }
     int collectDataItems(Collector *collector, Result &res) {
-        return collector->add<float>("voltage", this->voltage, res);
+        return collector->add("voltage", this->voltage, res);
     }
     void tick(long timeMs) {
 

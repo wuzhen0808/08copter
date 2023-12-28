@@ -11,16 +11,21 @@ class CollectorSetup {
 public:
     static int setupFlight(Collector *collector, Result &res) {
         Buffer<String> nameWithExprs;
+        nameWithExprs.add("rowNum[rowNum()]");
         nameWithExprs.add("timeMs");
         nameWithExprs.add("tickCostTimeMs");
         nameWithExprs.add("tickCostTimeMsAvg[avg(tickCostTimeMs)]");
-        nameWithExprs.add("rowNum[rowNum()]");
         // nameWithExprs.add("maxPwm[maxOf(prop0-pwm,prop1-pwm,prop2-pwm,prop3-pwm)]");
         // nameWithExprs.add("avgMaxPwm[avg(maxPwm)]");
+        nameWithExprs.add("PidR-ets");
+        nameWithExprs.add("PidR-etMs[*(PidR-ets,1000)]");
         nameWithExprs.add("PidR-p");
         nameWithExprs.add("PidR-i");
         nameWithExprs.add("PidR-d");
         nameWithExprs.add("PidR-o");
+
+        nameWithExprs.add("PidP-ets");
+        nameWithExprs.add("PidP-etMs[*(PidP-ets,1000)]");
         nameWithExprs.add("PidP-p");
         nameWithExprs.add("PidP-i");
         nameWithExprs.add("PidP-d");

@@ -73,12 +73,20 @@ public:
                 return -5;
             }
             di = new DiffDataItem(name, args.get(0, ""), &doubleFormat);
-        } else if (func == "*1000") {
-            if (args.isEmpty()) {
-                res << "multiple arg was wrong.";
+        } else if (func == "*") {
+            if (args.len() != 2) {
+                res << "multiple arg was wrong,example:*(diName2,1000)";
                 return -6;
             }
-            di = new MultipleDataItem(name, args.get(0, ""), 1000, &doubleFormat);
+            float factor;
+            String factorS = args.get(1, "1");
+            int ret = Float::parseFloat<float>(factorS, factor, 0);
+            if (ret < 0) {
+                res << "failed to parse float:" << factorS;
+                return ret;
+            }
+            String diName2 = args.get(0, "");
+            di = new MultipleDataItem(name, diName2, factor, &doubleFormat);
         } else if (func == "avg") {
             if (args.isEmpty()) {
                 res << "avg arg was wrong.";
