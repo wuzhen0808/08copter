@@ -2,6 +2,7 @@
 #include "a8/fc/Propeller.h"
 #include "a8/fc/collect/Collector.h"
 #include "a8/fc/pwm/PwmCalculator.h"
+#include "a8/fc/Factory.h"
 #include "a8/util/Result.h"
 #include "a8/util/comp.h"
 #define A8_PROPELLER_COUNT (4)
@@ -19,15 +20,40 @@ class Propellers : public FlyWeight {
 protected:
     Buffer<Propeller *> propellers;
     PwmCalculator *pwmCalculator;
-
+    int pins[4];
+    Factory * fac;
 public:
-    Propellers(PowerManage *pm, LoggerFactory *logFac) : FlyWeight(logFac, "Propellers") {
+    Propellers(Factory * fac, int pinLH, int pinRH, int pinLA, int pinRA, LoggerFactory *logFac) : FlyWeight(logFac, "Propellers") {
+        this->fac = fac;
+        this->pins[0] = pinLH;
+        this->pins[1] = pinRH;
+        this->pins[2] = pinLA;
+        this->pins[3] = pinRA;
         this->pwmCalculator = 0;
     }
-
-    virtual void setup() {
-        
+    ~Propellers(){
+        this->propellers.clear([](Propeller *prop) {
+            delete prop;
+        });
     }
+    void setup() {
+        addPropeller("LH", pins[0], 50);
+        addPropeller("RH", pins[1], 50);
+        addPropeller("LA", pins[2], 100);
+        addPropeller("RA", pins[3], 100);
+    }
+    
+    void addPropeller(String name, int pin, int hz) {
+
+        Propeller *prop = fac->newPropeller(name, this->propellers.len());
+        prop->hz(hz);
+        int channel = prop->attach(pin);
+        log(String() << "propeller pin:" << pin << ",hz:" << hz << ",channel:" << channel);
+
+        prop->setup();
+        this->propellers.append(prop);
+    }
+
     PwmCalculator *getPwmCalculator() {
         return this->pwmCalculator;
     }

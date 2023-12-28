@@ -61,7 +61,8 @@ public:
     bool enableStart = true;
     int maxRpyUpdateRetries = 5;
     int balanceMode = BalanceMode::FULL;
-    int collectEveryTicks = 10;
+    int collectEveryTicks = 10; 
+    bool ignorePowerWarning = false;   
 
 public:
     FlightConfigItem(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Scheduler *sch) {
@@ -164,7 +165,8 @@ public:
             ci = this;
         }
 
-        ConfigItems::add(ci, "Power-manage", new PowerConfigItem(pm));
+        ConfigItems::add(ci, "Power-manage", new PowerConfigItem(pm,this->ignorePowerWarning));
+
         ConfigItems::add(ci, "Propellers", new PropellersConfigItem(activeThrottle0, activeThrottle1, activeThrottle2, activeThrottle3));
 
         ci = ConfigItems::addReturn(ci, "Pid-arguments:");

@@ -1,6 +1,6 @@
 #pragma once
-#include "a8/fc/pwm/PwmCalculator.h"
 #include "a8/fc/collect/Collector.h"
+#include "a8/fc/pwm/PwmCalculator.h"
 #include "a8/util/Result.h"
 #include "a8/util/comp.h"
 
@@ -24,7 +24,9 @@ public:
         this->name = name;
         this->idx = idx;
     }
+    virtual void hz(int hz) = 0;
 
+    virtual int attach(int pin) = 0;
     virtual void setup() = 0;
 
     int collectDataItems(Collector *collector, Result &res) {
@@ -86,13 +88,12 @@ public:
             max = value;
         }
     }
-    
-    void commitUpdate(PwmCalculator * pwmCalculator) {
+
+    void commitUpdate(PwmCalculator *pwmCalculator) {
         pwm = pwmCalculator->calculate(this->idx, this->throttle);
         if (this->enable_) {
             this->doApply(pwm);
         }
-
     }
 
     virtual void doApply(long pwm) = 0;

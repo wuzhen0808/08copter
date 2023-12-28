@@ -1,4 +1,5 @@
 #pragma once
+#include "a8/fc/Factory.h"
 #include "a8/fc/PowerManage.h"
 #include "a8/fc/collect/Collector.h"
 #include "a8/fc/config/Config.h"
@@ -30,6 +31,7 @@ protected:
     System *sys;
     Reader *reader;
     Scheduler *sch;
+    Propellers *propellers;
     PowerManage *pm;
     Rpy *rpy;
     Collector *collector;
@@ -40,26 +42,41 @@ protected:
     bool running = true;
     SyncQueue<int> *signalQueue;
 
+    SyncQueue<Collector *> *collectorInQueue;
+    SyncQueue<Collector *> *collectorOutQueue;
+
+    SyncQueue<double *> *collectQueue;
+    Factory *fac;
+
 public:
-    Commander(PowerManage *pm, Rpy *rpy, System *sys, Scheduler *sch, LoggerFactory *logFac) : FlyWeight(logFac, "Executor") {
+    Commander(Factory *fac, PowerManage *pm, Rpy *rpy, Scheduler *sch, System *sys, LoggerFactory *logFac) : FlyWeight(logFac, "Commander") {
+        this->fac = fac;
         this->sys = sys;
         this->reader = sys->input;
         this->sch = sch;
         this->pm = pm;
         this->rpy = rpy;
+        this->propellers = new Propellers(fac, 17, 18, 19, 20, loggerFactory);
         this->missionInQueue = this->sch->createSyncQueue<MissionEntry *>(1);
         this->missionOutQueue = this->sch->createSyncQueue<MissionEntry *>(1);
         this->signalQueue = this->sch->createSyncQueue<int>(1);
+        this->collectQueue = this->sch->createSyncQueue<double *>(1024);
+        this->collectorInQueue = this->sch->createSyncQueue<Collector *>(1);
+        this->collectorOutQueue = this->sch->createSyncQueue<Collector *>(1);
     }
 
     ~Commander() {
         delete this->missionInQueue;
         delete this->missionOutQueue;
         delete this->signalQueue;
+        delete this->collectQueue;
+        delete this->collectorInQueue;
+        delete this->collectorOutQueue;
+        delete this->propellers;
     }
 
-    virtual Propellers *getPropellers() = 0;
-    virtual void setup() {
+    void setup() {
+        this->propellers->setup();
     }
 
     int buildNextMission(Config *config, ConfigContext &cc, Propellers *propellers, Throttle &throttle, OutputWriter &writer, Collector *collector, Mission *&mission, Result &res) {
@@ -110,6 +127,7 @@ public:
         A8_DEBUG("buildNextMission.5");
         return ret;
     }
+
     void missionLoop() {
         while (this->running) {
             MissionEntry *me;
@@ -117,8 +135,33 @@ public:
             if (ret < 0) {
                 continue;
             }
+            Collector *collector = me->mission->getCollector();
+            this->collectorInQueue->offer(collector);
+            // run mission.
             me->ret = me->mission->run(*me->res);
+            // close collector.
+            collector->close();
+            // waiting collector done.
+            this->collectorOutQueue->take();
+            // notify mission done.
             this->missionOutQueue->offer(me);
+        }
+    }
+
+    void collectorLoop() {
+        while (this->running) {
+            Result res;
+            Collector *col;
+            int ret = this->collectorInQueue->take(col, 200);
+            if (ret < 0) {
+                continue;
+            }
+            ret = col->run(res);
+            if (ret < 0) {
+                log(String() << "failed to run collector,detail:" << res.errorMessage);
+            }
+            // notify collector done.
+            collectorOutQueue->offer(col);
         }
     }
 
@@ -127,11 +170,13 @@ public:
         int ret = pm->isReady(res);
         if (ret < 0) {
             log(res.errorMessage);
-            return ret;
+
+            if (!ConfigItems::confirm(this->reader, this->sys->out, "Power is not ready, continue or break the commander?", false, this->logger)) {
+                
+                return ret;
+            }
         }
         A8_TRACE(">>Commander::run()1");
-        Propellers *propellers = this->getPropellers();
-        A8_TRACE(">>Commander::run()2");
         Directory<ConfigItem *> *root = new Directory<ConfigItem *>("Root", 0);
         Config *config = new Config(reader, sys->out, pm, rpy, sch);
         config->attach(root);
@@ -139,10 +184,16 @@ public:
         this->sch->createTask<Commander *>("MissionQueueRunner", this, [](Commander *this_) {
             this_->missionLoop();
         });
+
+        this->sch->createTask<Commander *>("CollectorRunner", this, [](Commander *this_) {
+            this_->collectorLoop();
+        });
+
         while (true) {
             Throttle throttle(propellers);
             OutputWriter writer(this->sys->out);
-            Collector collector(&writer);
+            Collector collector(collectQueue, &writer);
+
             ConfigContext cc(reader, sys->out, logger, res);
             Mission *mission = 0;
             Result res;
@@ -154,6 +205,7 @@ public:
             ConfigItem *fg = mission->getForeground();
             MissionEntry *me = new MissionEntry(mission);
             this->missionInQueue->offer(me);
+
             Directory<ConfigItem *> *fgDir;
             if (fg != 0) {
                 fgDir = new Directory<ConfigItem *>(String() << "Foreground(" << mission->getName() << ")", 0);

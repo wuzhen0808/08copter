@@ -136,12 +136,10 @@ protected:
     bool running = true;
 
     String message;
-    Collector *collector;
 
 public:
-    EscCalibrateMission(Propellers *propellers, Collector *collector, ConfigContext &cc, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac) : Mission(cc, throttle, signalQueue, sys, logFac, "EscCalibrateMission") {
+    EscCalibrateMission(Propellers *propellers, Collector *collector, ConfigContext &cc, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac) : Mission(cc, throttle, signalQueue, collector, sys, logFac, "EscCalibrateMission") {
         this->propellers = propellers;
-        this->collector = collector;
         this->fg = new Foreground(this);
 
         this->propeller = -1;

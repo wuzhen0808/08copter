@@ -61,13 +61,13 @@ public:
         Buffer<String> names;
         int ret = collector->addAllIfNotExists(nameWithExprs, names, res);
 
-        if (ret > 0)
-            ret = collector->setup(res);
         if (ret > 0) {
             collector->setDefaultEnable(false);
             collector->enable(nameWithExprs, true);
             collector->enable(names, true);
         }
+        if (ret > 0)
+            ret = collector->setup(res);
         return ret;
     }
 };

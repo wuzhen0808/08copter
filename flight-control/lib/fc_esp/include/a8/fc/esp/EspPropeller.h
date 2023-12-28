@@ -11,11 +11,11 @@ public:
     EspPropeller(String name, int idx) : Propeller(name, idx) {
     }
 
-    void hz(int hz) {
+    void hz(int hz) override {
         servo.setPeriodHertz(hz);
     }
 
-    int attach(int pin) {
+    int attach(int pin) override {
         return servo.attach(pin);
     }
     void setup() override {

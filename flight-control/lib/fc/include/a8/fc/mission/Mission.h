@@ -18,15 +18,20 @@ protected:
     ConfigContext &configContext;
     Throttle &throttle;
     SyncQueue<int> *signalQueue;
+    Collector *collector;
 
 public:
-    Mission(ConfigContext &configContext, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac, String name)
+    Mission(ConfigContext &configContext, Throttle &throttle, SyncQueue<int> *signalQueue, Collector *collector, System *sys, LoggerFactory *logFac, String name)
         : FlyWeight(logFac, name), configContext(configContext), throttle(throttle) {
         this->sys = sys;
         this->signalQueue = signalQueue;
+        this->collector = collector;
     }
 
     ~Mission() {
+    }
+    Collector *getCollector() {
+        return this->collector;
     }
     virtual int setup(Result &res) {
         return 0;

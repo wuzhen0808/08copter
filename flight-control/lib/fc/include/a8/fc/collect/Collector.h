@@ -2,11 +2,14 @@
 #include "a8/fc/collect/Collect.h"
 #include "a8/fc/collect/DataItems.h"
 #include "a8/util.h"
+#include "a8/util/sched.h"
 #define DEFAULT_TAIL_PRECISION (2)
 #define DEFAULT_POINT_OFFSET (6)
 namespace a8::fc::collect {
 
 using namespace a8::util;
+using namespace a8::util::sched;
+
 class Collector : public Collect {
 
     class DataItemEntry {
@@ -37,16 +40,28 @@ private:
 
     bool defaultEnable = true;
     Writer *writer;
-    bool writeName = false;
+
+    SyncQueue<double *> *queue;
+
+    bool running = true;
+
+    long lost = 0;
+
+    int rowWidth = -1;
 
 public:
-    Collector(Writer *writer) {
+    Collector(SyncQueue<double *> *queue, Writer *writer) {
+        this->queue = queue;
         this->writer = writer;
     }
     ~Collector() {
         this->dataItemEntries.clear([](DataItemEntry *de) {
             delete de;
         });
+    }
+
+    void close() {
+        this->running = false;
     }
 
     void printActiveDataItems(Output *out) {
@@ -58,16 +73,19 @@ public:
     }
 
     void printDataItems(Output *out, bool all, bool onlyActive) {
+        int counter = 0;
         for (int i = 0; i < dataItemEntries.len(); i++) {
             DataItem *di = BufferUtil::get<DataItemEntry>(dataItemEntries, i)->dataItem;
             bool enabled = isEnabled(di->getName());
             if (all || onlyActive && enabled) {
-                doPrint(i, di, enabled, out);
+                doPrint(counter++, i, di, enabled, out);
             }
         }
     }
-    void doPrint(int idx, DataItem *di, bool enabled, Output *out) {
+    void doPrint(int idx, int idx2, DataItem *di, bool enabled, Output *out) {
         out->print(idx);
+        out->print(",");
+        out->print(idx2);
         out->print(",");
         out->print(di->getName());
         out->print(",");
@@ -270,7 +288,16 @@ public:
         }
         return ret;
     }
+    /**
+     * Do not add or modify data item after setup.
+     */
     int setup(Result &res) {
+
+        if (rowWidth >= 0) {
+            res << "cannot setup twice.";
+            return -1;
+        }
+
         int ret = -1;
         for (int i = 0; i < this->dataItemEntries.len(); i++) {
             DataItem *di = this->get(i);
@@ -279,10 +306,9 @@ public:
                 break;
             }
         }
-
-        return ret;
-    }
-    void preWrite() {
+        if (ret < 0) {
+            return ret;
+        }
         for (int i = 0; i < this->dataItemEntries.len(); i++) {
             DataItemEntry *de = dataItemEntries.get(i, 0);
             String name = de->dataItem->getName();
@@ -293,36 +319,61 @@ public:
             enabledDataItems.add(de->dataItem);
         }
         this->rowNum = 0;
+        this->rowWidth = enabledDataItems.len();
+        this->queue->clear();
+        return ret;
     }
-    void writeHeader() {
-        for (int i = 0; i < enabledDataItems.len(); i++) {
-            DataItem *di = this->enabledDataItems.get(i, 0);
-            if (this->writeName) {
-                writer->write(di->getName());
-                writer->write("-Name,");
-            }
-            writer->write(di->getName());
-            writer->write(",");
-        }
-        writer->write("\n");
-    }
+
     void update() {
         this->rowNum++;
-        String tmpStr;
-        for (int i = 0; i < enabledDataItems.len(); i++) {
+        double *row = new double[rowWidth]; // delete at run();
+        for (int i = 0; i < rowWidth; i++) {
             DataItem *di = this->enabledDataItems.get(i, 0);
-            if (this->writeName) {
-                tmpStr << di->getName();
-                tmpStr << ",";
-            }
-            tmpStr.setFloatFormat(di->format);
-            double v = di->get(this);
-            tmpStr << v;
-            this->writer->write(tmpStr);
-            this->writer->write(",");
-            tmpStr.clear();
+            row[i] = di->get(this);
         }
-        writer->write("\n");
+
+        int ok = this->queue->offer(row, 0);
+        if (ok < 0) {
+            lost++;
+        }
+    }
+
+    int run(Result &res) {
+        if (rowWidth < 0) {
+            res << "please setup() before run().";
+            return -1;
+        }
+
+        String cells[rowWidth];
+
+        int counter = 0;
+        while (this->running) {
+            double *row;
+            int got = queue->take(row, 200);
+            if (got < 0) {
+                continue;
+            }
+            if (counter == 0) {
+                for (int i = 0; i < rowWidth; i++) {
+                    DataItem *di = this->enabledDataItems.get(i, 0);
+                    cells[i].setFloatFormat(di->format);
+                    writer->write(di->getName());
+                    writer->write(",");
+                }
+                writer->write("\n");
+            }
+            counter++;
+            for (int i = 0; i < rowWidth; i++) {
+                String &cell = cells[i];
+                cell << row[i];
+                this->writer->write(cell);
+                this->writer->write(",");
+                cell.clear();
+            }
+            writer->write("\n");
+            delete[] row; // delete here, create at update();
+        }
+        return 1;
     }
 };
 } // namespace a8::fc::collect

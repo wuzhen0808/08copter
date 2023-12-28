@@ -88,16 +88,14 @@ class FlightMission : public Mission {
     long startTimeMs;
     long tickCostTimeMs;
     long timeMs;
-    Collector *collector;
     Foreground *fg;
     bool running = true;
 
 public:
     FlightMission(FlightConfigItem *config, PowerManage *pm, Rpy *rpy, Propellers *propellers, Collector *collector, ConfigContext &configContext, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac)
-        : Mission(configContext, throttle, signalQueue, sys, logFac, "FlightMission") {
+        : Mission(configContext, throttle, signalQueue, collector, sys, logFac, "FlightMission") {
         this->config = config;
         this->rpy = rpy;
-        this->collector = collector;
         this->propellers = propellers;
         this->throttler = new throttle::FlightThrottler(config, rpy, logFac);
         this->pwmCalculator = new VoltageCompensatePwmCalculator(pm, logFac);
@@ -209,9 +207,7 @@ public:
         this->propellers->setLimitInTheory(minInTheory, maxInTheory);
         this->propellers->open(config->enablePropeller);
         this->sys->out->println(String() << "running ... ");
-        this->throttle.reset(startTimeMs);
-        this->collector->preWrite();
-        this->collector->writeHeader();
+        this->throttle.reset(startTimeMs);        
         this->timeMs = sys->getSteadyTime();
         this->startTimeMs = timeMs; // m
         int ret = -1;

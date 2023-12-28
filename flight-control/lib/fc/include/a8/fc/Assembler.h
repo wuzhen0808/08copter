@@ -1,5 +1,6 @@
 #pragma once
 #include "a8/fc/Commander.h"
+#include "a8/fc/Factory.h"
 #include "a8/fc/PowerManage.h"
 #include "a8/fc/Rpy.h"
 #include "a8/util/comp.h"
@@ -8,34 +9,42 @@ namespace a8::fc {
 class Assembler : public Component {
 
 protected:
-    Commander *commander = 0;
-    Rpy *rpy = 0;
+    Commander *commander;
+    Rpy *rpy;
     PowerManage *pm;
+    Factory *fac;
 
 public:
-    Assembler() : Component("Assembler") {
+    Assembler(Factory *fac) : Component("Assembler") {
+        this->fac = fac;
     }
 
     virtual void populate(StagingContext *sc) override {
+        log(">>populate.");
         Component::populate(sc);
+        fac->populate(sc);
         this->pm = new PowerManage(sc->getSys(), 5, 21, loggerFactory);
+        this->rpy = fac->newRpy();
+        this->commander = new Commander(fac, pm, rpy, sc->scheduler, sc->getSys(), loggerFactory);
+        log("<<populate.");
     }
 
     virtual void setup(StagingContext *sc) override {
+        log(">>setup...");
+        this->fac->setupWire();
+        log(">>setup pm.");
         this->pm->setup();
-        if (this->commander == 0) {
-            sc->stop("commander is 0.");
-            return;
-        }
-        if (this->rpy == 0) {
-            sc->stop("rpy is 0.");
-            return;
-        }
+        log(">>setup rpy.");
+        this->rpy->setup();
+        log(">>setup commander.");
+        this->commander->setup();
+        log("<<setup done.");
     }
     virtual void postShutdown(StagingContext *sc) override {
     }
 
     virtual void start(StagingContext *sc) override {
+        log(">>start.");
         Scheduler *sch = sc->scheduler;
         Component::scheduleHz1<Assembler>([](TickingContext *tc, Assembler *this_) {
             this_->hz1(tc);
@@ -50,6 +59,7 @@ public:
         Component::schedule<Assembler>([](TickingContext *tc, Assembler *this_) {
             this_->run(tc);
         });
+        log("<<start.");
     }
     void hz1(TickingContext *tc) {
         // this->rpy->tick();
@@ -66,18 +76,7 @@ public:
 
     void run(TickingContext *tc) {
         System *sys = tc->getSys();
-        while (true) {
-            while (true) {
-                Result res;
-                int ret = pm->isReady(res);
-                if (ret < 0) {
-                    log(res.errorMessage);
-                    sys->delay(1000);
-                    continue;
-                }
-                break;
-            }
-            log("calling executor to run.");
+        while (true) {            
             Result res;
             int ret = this->commander->run(res);
             if (ret < 0) {

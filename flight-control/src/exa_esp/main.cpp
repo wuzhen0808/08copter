@@ -9,7 +9,8 @@ using namespace a8::fc::esp;
 using namespace a8::hal::esp;
 void setup() {
     a8::hal::esp::EspUtil::setupSerial();
-    EspAssembler *exa = new EspAssembler();
+    Factory* fac = new EspFactory();
+    Assembler *exa = new Assembler(fac);
     Serial.println("setupApp");
     Result res;
     int ret = EspUtil::start("fc", exa, res);

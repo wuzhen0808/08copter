@@ -12,7 +12,7 @@ class PowerManage : public FlyWeight {
     System *sys;
     float voltage;
     float remindVoltage = 11.0f;
-    float dangerVoltage = -10.0f;
+    float dangerVoltage = 10.5f;
 
     long lastUpdateTimeMs = -1;
     long lastLedSetTimeMs = -1;
