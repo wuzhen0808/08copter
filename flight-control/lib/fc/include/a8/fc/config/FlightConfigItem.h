@@ -61,7 +61,7 @@ public:
     bool enableStart = true;
     int maxRpyUpdateRetries = 5;
     int balanceMode = BalanceMode::FULL;
-    int collectEveryTicks = 10; 
+    int collectEveryTicks = 1; 
     bool ignorePowerWarning = false;   
 
 public:
@@ -125,15 +125,14 @@ public:
                     }
                     return option;
                 });
-            ConfigItems::add(ci, "stableCheckRetries", stableCheckRetries);
-            ConfigItems::add(ci, "enablePropeller", enablePropeller);
+            ConfigItems::add(ci, "stableCheckRetries", stableCheckRetries);            
             ConfigItems::add(ci, "enableStart", this->enableStart);
             ConfigItems::add(ci, "tickTimeMs", tickTimeMs);
             ConfigItems::add(ci, "flyingTimeLimit(sec)", flyingTimeLimitSec);
             ConfigItems::add(ci, "maxThrottle", maxThrottle);
             ci = this;
         }
-        ci = ConfigItems::addReturn(ci, "Rpy:");
+        ci = ConfigItems::addReturn(ci, "Collector");
         {
             ConfigItems::add(ci, "collectEveryTicks", collectEveryTicks);
             ci = this;
@@ -167,8 +166,8 @@ public:
 
         ConfigItems::add(ci, "Power-manage", new PowerConfigItem(pm,this->ignorePowerWarning));
 
-        ConfigItems::add(ci, "Propellers", new PropellersConfigItem(activeThrottle0, activeThrottle1, activeThrottle2, activeThrottle3));
-
+        ConfigItems::add(ci, "Propellers", new PropellersConfigItem(enablePropeller, activeThrottle0, activeThrottle1, activeThrottle2, activeThrottle3));
+        
         ci = ConfigItems::addReturn(ci, "Pid-arguments:");
         {
 

@@ -195,4 +195,6 @@ public:
         //
     }
 };
+
+
 } // namespace a8::fc::collect

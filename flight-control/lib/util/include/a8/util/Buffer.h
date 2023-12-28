@@ -73,7 +73,28 @@ public:
         this->init();
         this->append(buf, len);
     }
+    template <typename C>
+    void sort(C c, int (*compare)(C, T, T)) {
+        for (int i = 0; i < this->length_; i++) {
+            for (int j = i + 1; j < this->length_; j++) {
+                if (compare(c, this->buffer_[j], this->buffer_[i]) < 0) {
+                    // switch
+                    T ele = this->buffer_[i];
+                    this->buffer_[i] = this->buffer_[j];
+                    this->buffer_[j] = ele;
+                }
+            }
+        }
+    }
 
+    template <typename X>
+    Buffer<X> transform(X (*converter)(T)) {
+        Buffer<X> buf;
+        for (int i = 0; i < this->length_; i++) {
+            buf.add(converter(this->buffer_[i]));
+        }
+        return buf;
+    }
     void operator=(const Buffer<T> &buf) { // assign operator
         this->clear();
         this->append(buf.buffer_, 0, buf.length_);
@@ -254,8 +275,8 @@ public:
         this->clear();
     }
 
-    bool addIfNotExists(T ele){
-        if(this->contains(ele)){
+    bool addIfNotExists(T ele) {
+        if (this->contains(ele)) {
             return false;
         }
         this->add(ele);

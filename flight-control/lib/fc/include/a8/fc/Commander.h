@@ -48,6 +48,9 @@ protected:
     SyncQueue<double *> *collectQueue;
     Factory *fac;
 
+    int missionTaskPriority = 10;
+    int collectorTaskPriority = 1;
+
 public:
     Commander(Factory *fac, PowerManage *pm, Rpy *rpy, Scheduler *sch, System *sys, LoggerFactory *logFac) : FlyWeight(logFac, "Commander") {
         this->fac = fac;
@@ -172,7 +175,7 @@ public:
             log(res.errorMessage);
 
             if (!ConfigItems::confirm(this->reader, this->sys->out, "Power is not ready, continue or break the commander?", false, this->logger)) {
-                
+
                 return ret;
             }
         }
@@ -181,11 +184,11 @@ public:
         Config *config = new Config(reader, sys->out, pm, rpy, sch);
         config->attach(root);
         A8_TRACE(">>config->2");
-        this->sch->createTask<Commander *>("MissionQueueRunner", this, [](Commander *this_) {
+        this->sch->createTask<Commander *>("MissionQueueRunner", missionTaskPriority, this, [](Commander *this_) {
             this_->missionLoop();
         });
 
-        this->sch->createTask<Commander *>("CollectorRunner", this, [](Commander *this_) {
+        this->sch->createTask<Commander *>("CollectorRunner", collectorTaskPriority, this, [](Commander *this_) {
             this_->collectorLoop();
         });
 

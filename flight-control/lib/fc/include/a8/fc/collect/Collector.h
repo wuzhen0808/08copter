@@ -1,6 +1,7 @@
 #pragma once
 #include "a8/fc/collect/Collect.h"
 #include "a8/fc/collect/DataItems.h"
+#include "a8/fc/collect/NamedExpr.h"
 #include "a8/util.h"
 #include "a8/util/sched.h"
 #define DEFAULT_TAIL_PRECISION (2)
@@ -36,6 +37,7 @@ private:
     Buffer<DataItemEntry *> dataItemEntries;
     HashTable<String, int> dataItemMap;
     HashTable<String, bool> dataItemActiveStatus;
+    HashTable<String, int> sort;
     Buffer<DataItem *> enabledDataItems;
 
     bool defaultEnable = true;
@@ -114,6 +116,7 @@ public:
         for (int i = 0; i < names.len(); i++) {
             String name = names.get(i, "");
             dataItemActiveStatus.set(name, enable);
+            sort.set(name, i);
         }
     }
 
@@ -195,74 +198,12 @@ public:
         return add(name, diName, factor, &doubleFormat, res);
     }
 
-    int addNameWithExpr(String nameWithExpr, DataItem *&di, Result &res) {
-
-        int idx = nameWithExpr.indexOf('[');
-        if (idx < 0) {
-            res << "not a nameWithExpr:" << nameWithExpr;
-            return -2;
+    int add(NamedExpr namedExpr, DataItem *&di, Result &res) {
+        int ret = namedExpr.buildDataItem(di, res);
+        if (ret < 0) {
+            return ret;
         }
-        if (!nameWithExpr.endWith(']')) {
-            res << "nameWithExpr must end with ']', nameWithExpr?:" << nameWithExpr;
-            return -3;
-        }
-        String name = nameWithExpr.subStr(0, idx);
-        String expr = nameWithExpr.subStr(idx + 1, nameWithExpr.len() - idx - 2);
-        String func;
-        Buffer<String> args;
-        idx = expr.indexOf('(');
-        if (idx > 0) {
-            if (!expr.endWith(')')) {
-                res << "expr must end with ')',expr:" << expr;
-                return -4;
-            }
-            func = expr.subStr(0, idx);
-            String argListS = expr.subStr(idx + 1, expr.len() - idx - 2);
-            args = StringUtil::split(argListS, ',');
-        } else {
-            func = expr;
-        }
-
-        if (func == "rowNum") {
-            di = new RowNumDataItem(name, &noTailDoubleFormat);
-        } else if (func == "diff") {
-            if (args.isEmpty()) {
-                res << "diff arg was wrong.";
-                return -5;
-            }
-            di = new DiffDataItem(name, args.get(0, ""), &doubleFormat);
-        } else if (func == "*1000") {
-            if (args.isEmpty()) {
-                res << "multiple arg was wrong.";
-                return -6;
-            }
-            di = new MultipleDataItem(name, args.get(0, ""), 1000, &doubleFormat);
-        } else if (func == "avg") {
-            if (args.isEmpty()) {
-                res << "avg arg was wrong.";
-                return -7;
-            }
-            di = new AvgDataItem(name, args.get(0, ""), &doubleFormat);
-        } else if (func == "max") {
-            if (args.isEmpty()) {
-                res << "max arg was wrong.";
-                return -8;
-            }
-            di = new MaxDataItem(name, args.get(0, ""), &doubleFormat);
-        } else if (func == "min") {
-            if (args.isEmpty()) {
-                res << "min arg was wrong.";
-                return -9;
-            }
-            di = new MinDataItem(name, args.get(0, ""), &doubleFormat);
-        } else if (func == "maxOf") {
-            di = new MaxOfDataItem(name, args, &doubleFormat);
-        } else {
-            res << "no such func:" << func;
-            return -10;
-        }
-
-        int ret = this->add(
+        ret = this->add(
             di, [](DataItem *di) { delete di; }, res);
         return ret;
     }
@@ -271,20 +212,23 @@ public:
         return di != 0;
     }
 
-    int addAllIfNotExists(Buffer<String> nameWithExprs, Buffer<String> &names, Result &res) {
+    int addAllIfNotExists(Buffer<NamedExpr> nExprs, Result &res) {
         int ret = 1;
-        for (int i = 0; i < nameWithExprs.len(); i++) {
-            String nameWithExpr = nameWithExprs.get(i, "");
-            if (this->contains(nameWithExpr)) {
+        for (int i = 0; i < nExprs.len(); i++) {
+            NamedExpr nExpr = nExprs.get(i, NamedExpr());
+            if (this->contains(nExpr.name)) {
                 continue; // ignore if exists.
             }
             DataItem *di;
-            ret = this->addNameWithExpr(nameWithExpr, di, res);
+            ret = nExpr.buildDataItem(di, res);
             if (ret < 0) {
-                res << ";no such dataItem or not a expr:" << nameWithExpr << "";
                 break;
             }
-            names.add(di->getName());
+            ret = this->add(di, Lang::delete_<DataItem>, res);
+            if (ret < 0) {
+                res << (String() << ";no such dataItem or not a expr:" << nExpr);
+                break;
+            }
         }
         return ret;
     }
@@ -309,6 +253,7 @@ public:
         if (ret < 0) {
             return ret;
         }
+
         for (int i = 0; i < this->dataItemEntries.len(); i++) {
             DataItemEntry *de = dataItemEntries.get(i, 0);
             String name = de->dataItem->getName();
@@ -318,6 +263,12 @@ public:
             }
             enabledDataItems.add(de->dataItem);
         }
+        enabledDataItems.sort<Collector *>(this, [](Collector *this_, DataItem *di1, DataItem *di2) {
+            int s1 = this_->sort.get(di1->name, 0);
+            int s2 = this_->sort.get(di2->name, 0);
+            return s1 - s2;
+        });
+
         this->rowNum = 0;
         this->rowWidth = enabledDataItems.len();
         this->queue->clear();

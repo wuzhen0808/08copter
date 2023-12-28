@@ -102,6 +102,13 @@ public:
         str.append(buf.buffer(), buf.len());
         return str;
     }
+    
+    friend String &operator<<(String &str, const Buffer<String> &buf) {
+        for (int i = 0; i < buf.len(); i++) {
+            str << buf.get(i, "") << ",";
+        }
+        return str;
+    }
 };
 
 } // namespace a8::util

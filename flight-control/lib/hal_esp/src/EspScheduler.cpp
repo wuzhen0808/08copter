@@ -28,17 +28,17 @@ void timerCallback(TimerHandle_t handle) {
  * After changed the creation method to xTaskCreatePinnedToCore(or xTaskCreateUniversal which is declared by header esp32-hal.h) the error disappeared.
  *
  */
-Task *EspScheduler::createTask(const String name, void *context, sched::run run) {
+Task *EspScheduler::createTask(const String name, int priority, void *context, sched::run run) {
     FreeRtosTask *thread = new FreeRtosTask(run, context);
     TaskHandle_t handle = 0;
-
+    
     BaseType_t result =
         xTaskCreatePinnedToCore(
             taskCallback,
             name.text(),
             8192,
             thread,
-            1,
+            priority,
             &handle,
             ARDUINO_RUNNING_CORE);
 

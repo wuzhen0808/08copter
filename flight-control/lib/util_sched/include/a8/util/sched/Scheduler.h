@@ -64,23 +64,30 @@ public:
 
     template <typename T>
     Task *createTask(String name, T context, void (*run)(T)) {
+        return createTask<T>(name, 1, context, run);
+    }
+    template <typename T>
+    Task *createTask(String name, int priority, T context, void (*run)(T)) {
         struct Params {
             T context_;
             void (*run_)(T);
-            Params(T c):context_(c){
-
+            Params(T c) : context_(c) {
             }
         };
         Params *p = new Params(context);
         p->run_ = run;
-        return createTask(name, p, [](void *vp) {
+        return createTask(name, priority, p, [](void *vp) {
             Params *pp = static_cast<Params *>(vp);
             pp->run_(pp->context_);
             delete pp;
         });
     }
 
-    virtual Task *createTask(const String name, void *context, sched::run run) = 0;
+    Task *createTask(const String name, void *context, sched::run run) {
+        return createTask(name, 1, context, run);
+    }
+
+    virtual Task *createTask(const String name, int priority, void *context, sched::run run) = 0;
     virtual Timer *createTimer(const String name, const Rate &rate, void *context, sched::run run) = 0;
 
     template <typename T>

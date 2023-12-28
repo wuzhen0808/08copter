@@ -1,5 +1,6 @@
 #pragma once
 #include "a8/fc/collect/Collector.h"
+#include "a8/fc/collect/NamedExpr.h"
 #include "a8/util.h"
 namespace a8::fc {
 using namespace a8::util;
@@ -15,7 +16,7 @@ public:
         nameWithExprs.add("tickCostTimeMsAvg[avg(tickCostTimeMs)]");
         nameWithExprs.add("rowNum[rowNum()]");
         // nameWithExprs.add("maxPwm[maxOf(prop0-pwm,prop1-pwm,prop2-pwm,prop3-pwm)]");
-        // nameWithExprs.add("avgMaxPwm[avg(maxPwm)]");        
+        // nameWithExprs.add("avgMaxPwm[avg(maxPwm)]");
         nameWithExprs.add("PidR-p");
         nameWithExprs.add("PidR-i");
         nameWithExprs.add("PidR-d");
@@ -58,13 +59,15 @@ public:
         names.add("prop3-pwm");
         */
 
-        Buffer<String> names;
-        int ret = collector->addAllIfNotExists(nameWithExprs, names, res);
+        Buffer<NamedExpr> nameExprs;
+        int ret = NamedExpr::parseAll(nameWithExprs, &nameExprs, res);
+        if (ret > 0) {
+            ret = collector->addAllIfNotExists(nameExprs, res);
+        }
 
         if (ret > 0) {
             collector->setDefaultEnable(false);
-            collector->enable(nameWithExprs, true);
-            collector->enable(names, true);
+            collector->enable(nameExprs.transform<String>([](NamedExpr nExpr) { return nExpr.name; }), true);
         }
         if (ret > 0)
             ret = collector->setup(res);
