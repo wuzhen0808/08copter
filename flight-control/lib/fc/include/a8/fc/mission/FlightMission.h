@@ -1,5 +1,5 @@
 #pragma once
-#include "a8/fc/CollectorSetup.h"
+#include "a8/fc/collect/CollectorSetup.h"
 #include "a8/fc/config/FlightConfigItem.h"
 #include "a8/fc/mission/Mission.h"
 #include "a8/fc/pwm/VoltageCompensatePwmCalculator.h"
@@ -26,7 +26,7 @@ class FlightMission : public Mission {
             A8_DEBUG("Foreground::onAttached.1");
 
             ConfigItem *ci = this;
-            
+
             ConfigItems::add<FlightMission *>(ci, "Continue-the-mission & Exit(foreground)", this->mission, [](FlightMission *mission, ConfigContext &cc) {
                 int ok = mission->signalQueue->offer(A8_SIGNAL_CONTINUE, 200);
                 if (ok < 0) {
@@ -72,6 +72,9 @@ class FlightMission : public Mission {
                 ci = this;
             }
             A8_DEBUG("Foreground::onAttached.2");
+        }
+        void onLeftFailure(ConfigContext &cc) override {
+            cc.navigator->right();
         }
         void enter(ConfigContext &cc) override {
             ConfigItems::runNav(this->dir, cc);
@@ -122,13 +125,13 @@ public:
         if (ret > 0) {
             ret = CollectorSetup::setupFlight(collector, res);
         }
-        return 1;
+        return ret;
     }
     int collectDataItems(Collector *collector, Result &res) {
         int ret = 1;
         ret = pwmCalculator->collectDataItems(collector, res);
         if (ret > 0)
-            throttler->collectDataItems(collector, res);
+            ret = throttler->collectDataItems(collector, res);
         if (ret > 0)
             ret = collector->add("timeMs", this->timeMs, res);
         if (ret > 0)
@@ -207,7 +210,7 @@ public:
         this->propellers->setLimitInTheory(minInTheory, maxInTheory);
         this->propellers->open(config->enablePropeller);
         this->sys->out->println(String() << "running ... ");
-        this->throttle.reset(startTimeMs);        
+        this->throttle.reset(startTimeMs);
         this->timeMs = sys->getSteadyTime();
         this->startTimeMs = timeMs; // m
         int ret = -1;

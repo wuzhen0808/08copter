@@ -15,21 +15,32 @@ public:
         nameWithExprs.add("timeMs");
         nameWithExprs.add("tickCostTimeMs");
         nameWithExprs.add("tickCostTimeMsAvg[avg(tickCostTimeMs)]");
-        // nameWithExprs.add("maxPwm[maxOf(prop0-pwm,prop1-pwm,prop2-pwm,prop3-pwm)]");
-        // nameWithExprs.add("avgMaxPwm[avg(maxPwm)]");
-        nameWithExprs.add("PidR-ets");
-        nameWithExprs.add("PidR-etMs[*(PidR-ets,1000)]");
-        nameWithExprs.add("PidR-p");
-        nameWithExprs.add("PidR-i");
-        nameWithExprs.add("PidR-d");
-        nameWithExprs.add("PidR-o");
+        nameWithExprs.add("roll");
+        nameWithExprs.add("pitch");
+        nameWithExprs.add("yaw");
+        nameWithExprs.add("rollDiff[diff(roll)]");
+        nameWithExprs.add("pitchDiff[diff(pitch)]");
+        nameWithExprs.add("yawDiff[diff(yaw)]");
+        nameWithExprs.add("maxPwm[maxOf(prop0-pwm,prop1-pwm,prop2-pwm,prop3-pwm)]");
+        nameWithExprs.add("avgMaxPwm[avg(maxPwm)]");
+        nameWithExprs.add("RollPid-err");
+        nameWithExprs.add("RollPid-errDiff");
+        nameWithExprs.add("RollPid-ets");
+        nameWithExprs.add("RollPid-etMs[*(RollPid-ets,1000)]");
+        nameWithExprs.add("RollPid-p");
+        nameWithExprs.add("RollPid-i");
+        nameWithExprs.add("RollPid-d");
+        nameWithExprs.add("RollPid-o");
+        //
+        nameWithExprs.add("PitchPid-err");
+        nameWithExprs.add("PitchPid-errDiff");
+        nameWithExprs.add("PitchPid-ets");
+        nameWithExprs.add("PitchPid-etMs[*(PitchPid-ets,1000)]");
+        nameWithExprs.add("PitchPid-p");
+        nameWithExprs.add("PitchPid-i");
+        nameWithExprs.add("PitchPid-d");
+        nameWithExprs.add("PitchPid-o");
 
-        nameWithExprs.add("PidP-ets");
-        nameWithExprs.add("PidP-etMs[*(PidP-ets,1000)]");
-        nameWithExprs.add("PidP-p");
-        nameWithExprs.add("PidP-i");
-        nameWithExprs.add("PidP-d");
-        nameWithExprs.add("PidP-o");
         /*
         names.add("timeMs[diff]");
         names.add("roll");

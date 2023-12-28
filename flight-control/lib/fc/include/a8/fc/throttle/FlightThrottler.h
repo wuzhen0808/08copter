@@ -67,6 +67,9 @@ public:
         for (int i = 0; ret > 0 && i < throttlers.len(); i++) {
             Throttler *th = throttlers.get(i, 0);
             ret = th->collectDataItems(collector, res);
+            if (ret < 0) {
+                break;
+            }
         }
         return ret;
     }

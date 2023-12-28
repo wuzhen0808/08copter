@@ -1,9 +1,9 @@
 #pragma once
 #include "a8/fc/collect/Collector.h"
 #include "a8/util.h"
-//More reference:
-// https://github.com/bitcraze/crazyflie-firmware.git
-// https://www.youtube.com/watch?v=NVLXCwc8HzM
+// More reference:
+//  https://github.com/bitcraze/crazyflie-firmware.git
+//  https://www.youtube.com/watch?v=NVLXCwc8HzM
 
 namespace a8::fc::throttle {
 using namespace a8::util;
@@ -31,6 +31,8 @@ class Pid : public FlyWeight {
     float elapsedTimeSec = 0;
     float errorDiff = 0;
     //
+    long ticks = 0;
+
 public:
     void limit(float &output, float min, float max) {
         if (output > max) {
@@ -58,10 +60,14 @@ public:
     }
 
     int collectDataItems(Collector *collector, Result &res) {
-        int ret = collector->add(String(this->name) << "-err", error, res);
+        int ret = 1;
+        if (ret > 0)
+            ret = collector->add(String(this->name) << "-err", error, res);
+        if (ret > 0)
+            ret = collector->add(String(this->name) << "-errDiff", errorDiff, res);
         String etsName = String(this->name) << "-ets";
         if (ret > 0)
-            ret = collector->add(etsName, this->elapsedTimeSec, res);       
+            ret = collector->add(etsName, this->elapsedTimeSec, res);
         if (ret > 0)
             ret = collector->add(String(this->name) << "-lmt", this->outputLimit, res);
         if (ret > 0)
@@ -95,6 +101,9 @@ public:
         limit(i, -outputLimitI, outputLimitI);
         // }
         d = 0;
+        if (ticks == 0) {
+            lastError = error;
+        }
         errorDiff = error - lastError;
         if (elapsedTimeSec > 0) {
 
@@ -114,6 +123,7 @@ public:
 
         lastTimeMs = timeMs;
         lastError = error;
+        ticks++;
     }
 
     float getLastError() {

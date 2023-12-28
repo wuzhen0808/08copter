@@ -16,7 +16,7 @@ class EspRpy : public Rpy, public FlyWeight {
     int setupMpu9250() {
         mpu->setup(0x68);
         mpu->selectFilter(QuatFilterSel::MADGWICK);
-        mpu->setFilterIterations(1);
+        mpu->setFilterIterations(5);
         log("success of setupMpu9250.");
         return 1;
     }

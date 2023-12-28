@@ -31,8 +31,8 @@ class BalanceThrottler : public Throttler {
 public:
     BalanceThrottler(Rpy *rpy, int bMode, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
         this->rpy = rpy;
-        this->pidRoll = new Pid(logFac, "PidR");
-        this->pidPitch = new Pid(logFac, "PidP");
+        this->pidRoll = new Pid(logFac, "RollPid");
+        this->pidPitch = new Pid(logFac, "PitchPid");
         this->balanceMode = bMode;
     }
     ~BalanceThrottler() {
@@ -46,7 +46,9 @@ public:
     }
 
     int collectDataItems(Collector *collector, Result &res) override {
-        int ret = collector->add("roll", this->roll, res);
+        int ret = 1;
+        if (ret > 0)
+            ret = collector->add("roll", this->roll, res);
         if (ret > 0) {
             ret = collector->add("pitch", this->pitch, res);
         }
