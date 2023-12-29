@@ -51,6 +51,8 @@ protected:
     int missionTaskPriority = 10;
     int collectorTaskPriority = 1;
 
+    long missionId = 0;
+
 public:
     Commander(Factory *fac, PowerManage *pm, Rpy *rpy, Scheduler *sch, System *sys, LoggerFactory *logFac) : FlyWeight(logFac, "Commander") {
         this->fac = fac;
@@ -111,9 +113,9 @@ public:
         }
         A8_DEBUG("buildNextMission.2");
         if (config->missionSelect == Config::MissionType::FLIGHT) {
-            mission = new FlightMission(config->flightConfigItem, pm, rpy, propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
+            mission = new FlightMission(missionId++, config->flightConfigItem, pm, rpy, propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
         } else if (config->missionSelect == Config::MissionType::ESC_CALIBRATE) {
-            mission = new EscCalibrateMission(propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
+            mission = new EscCalibrateMission(missionId++, propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
         } else {
             res << String() << "no such mission with type:" << config->missionSelect;
             return -1;
@@ -140,7 +142,7 @@ public:
             }
             Collector *collector = me->mission->getCollector();
             this->collectorInQueue->offer(collector);
-            // run mission.
+            // run mission.            
             me->ret = me->mission->run(*me->res);
             // close collector.
             collector->close();

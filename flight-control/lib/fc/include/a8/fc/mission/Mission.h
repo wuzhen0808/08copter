@@ -19,10 +19,12 @@ protected:
     Throttle &throttle;
     SyncQueue<int> *signalQueue;
     Collector *collector;
+    long id;
 
 public:
-    Mission(ConfigContext &configContext, Throttle &throttle, SyncQueue<int> *signalQueue, Collector *collector, System *sys, LoggerFactory *logFac, String name)
+    Mission(long id, ConfigContext &configContext, Throttle &throttle, SyncQueue<int> *signalQueue, Collector *collector, System *sys, LoggerFactory *logFac, String name)
         : FlyWeight(logFac, name), configContext(configContext), throttle(throttle) {
+        this->id = id;
         this->sys = sys;
         this->signalQueue = signalQueue;
         this->collector = collector;
@@ -30,8 +32,14 @@ public:
 
     ~Mission() {
     }
+    long getId() {
+        return id;
+    }
     Collector *getCollector() {
         return this->collector;
+    }
+    virtual long getPreStartDelaySec() {
+        return 0;
     }
     virtual int setup(Result &res) {
         return 0;

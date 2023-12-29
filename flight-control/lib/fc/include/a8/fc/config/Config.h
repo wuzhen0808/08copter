@@ -72,24 +72,22 @@ public:
             {
 
                 ConfigItem *ci2 = 0;
-                ci2 = ConfigItems::addReturn(ci, "Flight-Mission");
+                this->flightConfigItem = new FlightConfigItem(reader, out, pm, rpy, sch);
+                ci2 = ConfigItems::addReturn(ci, "Flight-Mission", this->flightConfigItem);
                 ci2->onEnter = [](ConfigContext &cc) {                    
                     Config *this_ = cc.navigator->get()->getElement()->getRoot<Config>();
                     this_->missionSelect = MissionType::FLIGHT;
+                    cc.navigator->stop(1);
                 };
                 ci2 = ConfigItems::addReturn(ci, "EscCalibrate-Mission");
                 ci2->onEnter = [](ConfigContext &cc) {
                     Config *this_ = cc.navigator->get()->getElement()->getRoot<Config>();
                     this_->missionSelect = MissionType::ESC_CALIBRATE;
+                    cc.navigator->stop(1);
                 };
             }
         }
 
-        ci = this;
-        {
-            this->flightConfigItem = new FlightConfigItem(reader, out, pm, rpy, sch);
-            ConfigItems::addReturn(ci, "FlightConfig", this->flightConfigItem);
-        }
     }
 
     bool isValid() override {

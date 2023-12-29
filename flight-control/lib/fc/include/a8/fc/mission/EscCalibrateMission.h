@@ -138,7 +138,8 @@ protected:
     String message;
 
 public:
-    EscCalibrateMission(Propellers *propellers, Collector *collector, ConfigContext &cc, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac) : Mission(cc, throttle, signalQueue, collector, sys, logFac, "EscCalibrateMission") {
+    EscCalibrateMission(long id, Propellers *propellers, Collector *collector, ConfigContext &cc, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac)
+        : Mission(id, cc, throttle, signalQueue, collector, sys, logFac, "EscCalibrateMission") {
         this->propellers = propellers;
         this->fg = new Foreground(this);
 

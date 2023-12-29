@@ -95,14 +95,18 @@ class FlightMission : public Mission {
     bool running = true;
 
 public:
-    FlightMission(FlightConfigItem *config, PowerManage *pm, Rpy *rpy, Propellers *propellers, Collector *collector, ConfigContext &configContext, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac)
-        : Mission(configContext, throttle, signalQueue, collector, sys, logFac, "FlightMission") {
+    FlightMission(long id, FlightConfigItem *config, PowerManage *pm, Rpy *rpy, Propellers *propellers, Collector *collector, ConfigContext &configContext, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac)
+        : Mission(id, configContext, throttle, signalQueue, collector, sys, logFac, "FlightMission") {
         this->config = config;
         this->rpy = rpy;
         this->propellers = propellers;
         this->throttler = new throttle::FlightThrottler(config, rpy, logFac);
         this->pwmCalculator = new VoltageCompensatePwmCalculator(pm, logFac);
-        this->fg = new Foreground(this);
+        if (config->enableForeground) {
+            this->fg = new Foreground(this);
+        } else {
+            fg = 0;
+        }
         this->landing = false;
         this->tickCostTimeMs = 0;
     }
@@ -110,7 +114,13 @@ public:
     ~FlightMission() {
         delete this->pwmCalculator;
         delete this->throttler;
-        delete this->fg;
+        if (fg != 0) {
+            delete this->fg;
+        }
+    }
+
+    long getPreStartDelaySec() override {
+        return config->preStartCountDown;
     }
 
     ConfigItem *getForeground() override {
@@ -141,11 +151,15 @@ public:
 
         return ret;
     }
-    int run(Result &res) override {
-        // wait the signal from foreground.
+    int checkFg(Result &res) {
+        if (fg == 0) {
+            return 1;
+        }
+
+        log(String() << "wait signal to continue.");
         int signal = signalQueue->take();
         if (signal == A8_SIGNAL_CONTINUE) {
-            // continue;
+            return 1;
         } else if (signal == A8_SIGNAL_GIVE_UP) {
             res << "mission give up by signal of give-up.";
             return -1;
@@ -156,16 +170,29 @@ public:
             res << "unknown signal:" << signal;
             return -1;
         }
+        return 1;
+    }
+    int run(Result &res) override {
+        // wait the signal from foreground.
 
-        int ret = checkRpy(configContext, res);
-        if (ret < 0) {
-            return ret;
+        int ret = 1;
+        ret = checkFg(res);
+
+        if (ret > 0) {
+
+            for (int i = config->preStartCountDown; i > 0; i--) {
+                sys->delay(1000);
+                log(String() << "Pre-start count down:" << i);
+            }
+
+            ret = checkRpy(configContext, res);
         }
-        ret = propellers->isReady(res);
-        if (ret < 0) {
-            return ret;
+        if (ret > 0) {
+            ret = propellers->isReady(res);
         }
-        ret = this->run2(res);
+        if (ret > 0) {
+            ret = this->run2(res);
+        }
         return ret;
     }
     int updateRpy(Result &res) {
