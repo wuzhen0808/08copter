@@ -50,12 +50,13 @@ public:
     }
 
     void tick() {
-        bool ok = rpy->update();
+        Imu * imu=rpy->getImu();
+        bool ok = imu->update();
         if (!ok) {
             this->out->println("update failed.");    
             return;
         }
-        this->out->println(String("(") << rpy->getRoll() << "," << rpy->getPitch() << "," << rpy->getYaw() << ")");
+        this->out->println(String("(") << imu->getRoll() << "," << imu->getPitch() << "," << imu->getYaw() << ")");
     }
 };
 } // namespace a8::fc

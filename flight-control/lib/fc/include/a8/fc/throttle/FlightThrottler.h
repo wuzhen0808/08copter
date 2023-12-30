@@ -32,7 +32,7 @@ public:
         elevator = new ElevatorThrottler(config->elevationThrottle, logFac);
         throttlers.append(elevator);
 
-        balance = new BalanceThrottler(rpy, config->balanceMode, logFac);
+        balance = new BalanceThrottler(rpy, config->balanceMode, config->pidErrorDiffMAWidth, logFac);
         balance->setPidArgument(config->pidKp, config->pidKi, config->pidKd, config->pidOutputLimit, config->pidOutputLimitI);
         throttlers.append(balance);
 

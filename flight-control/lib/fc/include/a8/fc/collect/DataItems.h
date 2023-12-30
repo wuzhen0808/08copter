@@ -64,6 +64,11 @@ public:
         this->diNames.add(diName);
     }
 
+    RefDataItem(String name, String diName1, String diName2, const Format::Float *format) : DataItem(name, format) {
+        this->diNames.add(diName1);
+        this->diNames.add(diName2);
+    }
+
     RefDataItem(String name, Buffer<String> diNames, const Format::Float *format) : DataItem(name, format) {
         this->diNames.add(diNames);
     }
@@ -116,6 +121,19 @@ public:
 
     void update(double &value, long rNum, double *diValues, int len) override {
         value = diValues[0] * this->factor;
+    }
+};
+
+class CompareDataItem : public RefDataItem {
+    double value = 0; // cached value.
+    long rowNum = -1;
+    double diPreviousValue = 0;
+
+public:
+    CompareDataItem(String name, String diName1, String diName2, const Format::Float *format) : RefDataItem(name, diName1, diName2, format) {
+    }
+    void update(double &value, long rNum, double *diValues, int len) override {
+        value = diValues[0] - diValues[1];
     }
 };
 
@@ -195,6 +213,5 @@ public:
         //
     }
 };
-
 
 } // namespace a8::fc::collect

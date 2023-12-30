@@ -5,6 +5,7 @@
 #include "a8/fc/config/FlightConfigItem.h"
 #include "a8/fc/config/PowerConfigItem.h"
 #include "a8/fc/config/RpyConfigItem.h"
+#include "a8/fc/GlobalVars.h"
 #include "a8/util.h"
 
 namespace a8::fc {
@@ -38,9 +39,9 @@ private:
     ConfigItem *startConfigItem;
     PowerManage *pm;
     Rpy *rpy;
-
+    GlobalVars& vars;
 public:
-    Config(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Scheduler *sch) {
+    Config(GlobalVars &vars, Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Scheduler *sch):vars(vars) {
         this->reader = reader;
         this->out = out;
         this->sch = sch;
@@ -72,7 +73,7 @@ public:
             {
 
                 ConfigItem *ci2 = 0;
-                this->flightConfigItem = new FlightConfigItem(reader, out, pm, rpy, sch);
+                this->flightConfigItem = new FlightConfigItem(vars, reader, out, pm, rpy, sch);
                 ci2 = ConfigItems::addReturn(ci, "Flight-Mission", this->flightConfigItem);
                 ci2->onEnter = [](ConfigContext &cc) {                    
                     Config *this_ = cc.navigator->get()->getElement()->getRoot<Config>();

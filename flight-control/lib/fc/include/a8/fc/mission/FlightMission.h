@@ -101,7 +101,12 @@ public:
         this->rpy = rpy;
         this->propellers = propellers;
         this->throttler = new throttle::FlightThrottler(config, rpy, logFac);
-        this->pwmCalculator = new VoltageCompensatePwmCalculator(pm, logFac);
+        this->pwmCalculator = 0;
+        if (config->enableVoltageCompensate) {
+            this->pwmCalculator = new VoltageCompensatePwmCalculator(pm, config->minVoltForPwmCompensate, config->maxVoltForPwmCompensate, logFac);
+        } else {
+            this->pwmCalculator = new EmptyPwmCalculator(pm, logFac);
+        }
         if (config->enableForeground) {
             this->fg = new Foreground(this);
         } else {
@@ -133,7 +138,7 @@ public:
         this->propellers->setPwmCalculator(this->pwmCalculator);
         int ret = this->collectDataItems(this->collector, res);
         if (ret > 0) {
-            ret = CollectorSetup::setupFlight(collector, res);
+            ret = CollectorSetup::setupFlight(config, collector, res);
         }
         return ret;
     }
@@ -148,6 +153,9 @@ public:
             ret = collector->add("tickCostTimeMs", this->tickCostTimeMs, res);
         if (ret > 0)
             ret = collector->add("Landing", this->landing, res);
+        if (ret > 0) {
+            ret = collector->add("missionId", this->id, res);
+        }
 
         return ret;
     }
@@ -195,33 +203,7 @@ public:
         }
         return ret;
     }
-    int updateRpy(Result &res) {
-        int retries = 0;
-        while (true) {
-            bool ok = rpy->update();
-            if (ok) {
-                break;
-            }
-            if (retries >= config->maxRpyUpdateRetries) {
-                res << "failed to update rpy after retries:" << retries;
-                return -1;
-            }
-            retries++;
-            A8_LOG_DEBUG(logger, "<<Bal.update.failed");
-        }
-        return 1;
-    }
-    int preUpdate(Result &res) {
-        throttle.preUpdate(timeMs);
 
-        int ret = updateRpy(res);
-
-        if (ret < 0) {
-            return ret;
-        }
-
-        return ret;
-    }
     int doUpdate(Result &res) {
         int ret = this->throttler->update(throttle, res);
         if (ret < 0) {
@@ -236,23 +218,26 @@ public:
         this->throttler->getLimitInTheory(minInTheory, maxInTheory);
         this->propellers->setLimitInTheory(minInTheory, maxInTheory);
         this->propellers->open(config->enablePropeller);
-        this->sys->out->println(String() << "running ... ");
+        this->sys->out->println(String() << "running ... " << this->id);
+        this->rpy->reset();
         this->throttle.reset(startTimeMs);
         this->timeMs = sys->getSteadyTime();
         this->startTimeMs = timeMs; // m
-        int ret = -1;
+        int ret = 1;
 
         for (int ticks = 0; this->running; ticks++) {
             Result res;
-            ret = this->preUpdate(res);
-            ret = this->doUpdate(res);
+            throttle.preUpdate(timeMs);
+            int rpyUpdateRet = rpy->update(config->maxRpyUpdateRetries, res);
+
+            int updateRet = this->doUpdate(res);
 
             if (running && throttler->isLanded()) {
                 running = false;
             }
 
             if (running && !landing) {
-                this->checkLanding(ret, timeMs);
+                this->checkLanding(rpyUpdateRet, updateRet, timeMs);
             }
 
             long now = sys->getSteadyTime();
@@ -283,21 +268,24 @@ public:
 
 protected:
     int checkRpy(ConfigContext &cc, Result &res) {
-        int ret = rpy->checkStable(config->stableCheckRetries, res);
+        int ret = rpy->getImu()->checkStable(config->stableCheckRetries, res);
         if (ret < 0) {
             res << (String() << "cannot create mission, rpy is not stable after retries:" << config->stableCheckRetries);
             return -1;
         }
         A8_LOG_DEBUG(logger, String() << "checkRpy.1");
-        ret = rpy->checkBalance(false, res);
-        A8_LOG_DEBUG(logger, String() << "checkRpy.2");
-        if (ret < 0) {
+        float deg;
+        ret = rpy->getImu()->checkBalance(false, config->unBalanceDegLimit, deg, res);
+        if (ret < 0) { //
+            if (deg > config->unBalanceDegUpLimit && config->enablePropeller) {
+                res << String() << "cannot create mission, rpy un-balance degree(" << deg << ") exceed the up limit(" << config->unBalanceDegUpLimit << ") and the propellers are enabled.";
+                return -1;
+            }
 
             if (config->unBalanceAction == UnBalanceAction::END_OF_MISSION) {
-                log("cannot create mission, it is not allowed to start with a un-balanced-rpy.");
+                res << "cannot create mission, config saying it is not allowed to start with a un-balanced-rpy.";
                 return -1;
             } else if (config->unBalanceAction == UnBalanceAction::ASK) {
-
                 bool ok = ConfigItems::confirm(cc, "Start mission with UN-balanced rpy?", true);
                 if (!ok) {
                     return -1;
@@ -315,7 +303,7 @@ protected:
                     } // ask to start.
                 }
             } else {
-                log("cannot create mission, it is not allowed to start with a un-balanced-rpy.");
+                res << "cannot create mission, it is not allowed to start with a un-balanced-rpy.";
                 return -1;
             }
         }
@@ -330,10 +318,10 @@ protected:
         }
         return 1;
     }
-    void checkLanding(int updateRet, long timeMs) {
+    void checkLanding(int rpyUpdateRet, int updateRet, long timeMs) {
         if (!landing) { //
             // check if need start landing.
-            if (updateRet < 0 || timeMs - startTimeMs > config->flyingTimeLimitSec * 1000) {
+            if (rpyUpdateRet < 0 || updateRet < 0 || timeMs - startTimeMs > config->flyingTimeLimitSec * 1000) {
                 landing = true;
                 this->throttler->startLanding(timeMs);
             }

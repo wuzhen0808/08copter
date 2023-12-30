@@ -1,6 +1,7 @@
 #pragma once
+#include "a8/fc/GlobalVars.h"
+#include "a8/fc/Imu.h"
 #include "a8/fc/PowerManage.h"
-#include "a8/fc/Rpy.h"
 #include "a8/fc/RpyMonitor.h"
 #include "a8/fc/config/PowerConfigItem.h"
 #include "a8/fc/config/PropellersConfigItem.h"
@@ -47,18 +48,22 @@ public:
 
     long flyingTimeLimitSec = 15;
     bool enablePropeller = true;
-    int stableCheckRetries = 5;
+    int stableCheckRetries = 10;
     int unBalanceAction = UnBalanceAction::IGNORE_IF_SAFE;
+    float unBalanceDegUpLimit = 10.0f;
+    float unBalanceDegLimit = 5.0f;
     float maxThrottle = 1000;
     // 18.75,0,4.5,volt@11.2
     // 19.5,0,3.5,volt@11.2 **
     // 19.5,5,3.9,volt@12.2 *
+    // 19.5,6.5,4.25,volt@11.0 *
 
     double pidKp = 19.5; // volt@11.2
-    double pidKi = 5.0;
-    double pidKd = 3.9;
-    double pidOutputLimit = 400.0; //
-    double pidOutputLimitI = 200;
+    double pidKi = 6.5;
+    double pidKd = 4.25;
+    double pidOutputLimit = 500.0; //
+    double pidOutputLimitI = 500;
+    int pidErrorDiffMAWidth = 1;
     bool enableStart = true;
     int maxRpyUpdateRetries = 5;
     int balanceMode = BalanceMode::FULL;
@@ -68,8 +73,14 @@ public:
     long preStartCountDown = 10;
     bool enableForeground = false;
 
+    bool enableVoltageCompensate = true;
+    float maxVoltForPwmCompensate = 12.5f;
+    float minVoltForPwmCompensate = 7.0f;
+
+    GlobalVars &vars;
+
 public:
-    FlightConfigItem(Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Scheduler *sch) {
+    FlightConfigItem(GlobalVars &vars, Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Scheduler *sch) : vars(vars) {
         this->reader = reader;
         this->out = out;
         this->sch = sch;
@@ -120,6 +131,8 @@ public:
             ConfigItems::add(ci, "enableStart", this->enableStart);
             ConfigItems::add(ci, "tickTimeMs", tickTimeMs);
             ConfigItems::add(ci, "flyingTimeLimit(sec)", flyingTimeLimitSec);
+            ConfigItems::add(ci, "unBalanceDegDownLimit", unBalanceDegLimit);
+            ConfigItems::add(ci, "unBalanceDegUpLimit", unBalanceDegUpLimit);
 
             ci = this;
         }
@@ -137,7 +150,8 @@ public:
         }
         ci = ConfigItems::addReturn(ci, "Rpy");
         {
-            ConfigItems::add(ci, "Rpy-check", new RpyConfigItem(rpy));
+            ConfigItems::add(ci, "Rpy-check", new RpyConfigItem(rpy, this->unBalanceDegLimit));
+            ConfigItems::add(ci, "rpyMovingAvgWindowWidth", vars.rpyMovingAvgWindowWidth);
             ci = ConfigItems::addReturn(ci, "Monitor-rpy");
             {
                 ci->setAttribute(rpyMonitor, [](void *) {});
@@ -162,7 +176,13 @@ public:
             ci = this;
         }
 
-        ConfigItems::add(ci, "Power-manage", new PowerConfigItem(pm, this->ignorePowerWarning));
+        ci = ConfigItems::addReturn(ci, "Power-manage", new PowerConfigItem(pm, this->ignorePowerWarning));
+        {
+
+            ConfigItems::add(ci, "maxVoltForPwmCompensate", maxVoltForPwmCompensate);
+            ConfigItems::add(ci, "minVoltForPwmCompensate", minVoltForPwmCompensate);
+            ci = this;
+        }
 
         ConfigItems::add(ci, "Propellers", new PropellersConfigItem(enablePropeller, activeThrottle0, activeThrottle1, activeThrottle2, activeThrottle3));
 
@@ -171,6 +191,7 @@ public:
 
             ConfigItems::add(ci, "pidOutputLimit", pidOutputLimit);
             ConfigItems::add(ci, "pidOutputLimitI", pidOutputLimitI);
+            ConfigItems::add(ci, "pidErrorDiffMAWidth", pidErrorDiffMAWidth);
             ConfigItems::add(ci, "Kp", pidKp);
             ConfigItems::add(ci, "Ki", pidKi);
             ConfigItems::add(ci, "Kd", pidKd);

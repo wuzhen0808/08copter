@@ -52,9 +52,11 @@ protected:
     int collectorTaskPriority = 1;
 
     long missionId = 0;
-
+    
+    Config* config;
 public:
-    Commander(Factory *fac, PowerManage *pm, Rpy *rpy, Scheduler *sch, System *sys, LoggerFactory *logFac) : FlyWeight(logFac, "Commander") {
+    Commander(Config* config, Factory *fac, PowerManage *pm, Rpy *rpy, Scheduler *sch, System *sys, LoggerFactory *logFac) : FlyWeight(logFac, "Commander") {
+        this->config = config;
         this->fac = fac;
         this->sys = sys;
         this->reader = sys->input;
@@ -115,21 +117,21 @@ public:
         if (config->missionSelect == Config::MissionType::FLIGHT) {
             mission = new FlightMission(missionId++, config->flightConfigItem, pm, rpy, propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
         } else if (config->missionSelect == Config::MissionType::ESC_CALIBRATE) {
-            mission = new EscCalibrateMission(missionId++, propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
+            mission = new EscCalibrateMission(missionId++, pm, propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
         } else {
             res << String() << "no such mission with type:" << config->missionSelect;
             return -1;
         }
-        A8_DEBUG("buildNextMission.3");
+        A8_DEBUG2("buildNextMission.3", ret);
         // clear signal queue.
         signalQueue->clear();
-        A8_DEBUG("buildNextMission.4");
+        A8_DEBUG2("buildNextMission.4", ret);
         ret = mission->setup(res);
         if (ret < 0) {
             delete mission;
             mission = 0;
         }
-        A8_DEBUG("buildNextMission.5");
+        A8_DEBUG2("buildNextMission.5", ret);
         return ret;
     }
 
@@ -182,9 +184,7 @@ public:
             }
         }
         A8_TRACE(">>Commander::run()1");
-        Directory<ConfigItem *> *root = new Directory<ConfigItem *>("Root", 0);
-        Config *config = new Config(reader, sys->out, pm, rpy, sch);
-        config->attach(root);
+        
         A8_TRACE(">>config->2");
         this->sch->createTask<Commander *>("MissionQueueRunner", missionTaskPriority, this, [](Commander *this_) {
             this_->missionLoop();
@@ -204,7 +204,8 @@ public:
             Result res;
             int ret = this->buildNextMission(config, cc, propellers, throttle, writer, &collector, mission, res);
             if (ret < 0) {
-                log(res.errorMessage);
+                //failed to build mission, build next .                
+                sys->out->println(res.errorMessage);
                 continue;
             }
             ConfigItem *fg = mission->getForeground();
@@ -236,8 +237,6 @@ public:
             delete me;
         }                      // end of while
         this->running = false; // no more mission to run.
-        delete config;
-        delete root;
         return 1;
     }
 };

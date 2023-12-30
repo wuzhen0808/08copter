@@ -90,7 +90,7 @@ public:
     }
 
     void commitUpdate(PwmCalculator *pwmCalculator) {
-        pwm = pwmCalculator->calculate(this->idx, this->throttle);
+        pwm = 1000 + pwmCalculator->calculate(this->idx, this->throttle);
         if (this->enable_) {
             this->doApply(pwm);
         }

@@ -7,24 +7,26 @@ namespace a8::fc {
 using namespace a8::util;
 class RpyConfigItem : public ConfigItem {
     Rpy *rpy;
+    float &unBalanceLimit;
+    float deg;
 
 public:
-    RpyConfigItem(Rpy *rpy) {
+    RpyConfigItem(Rpy *rpy, float &unBalanceLimit) : unBalanceLimit(unBalanceLimit) {
         this->rpy = rpy;
     }
 
     void buildTitle(ConfigItem::TitleBuilder &title) override {
-        title.set<bool>("balance", rpy->isBalance(true));
+        title.set<bool>("balance", rpy->getImu()->isBalance(unBalanceLimit, true));
     }
 
     void onAttached() override {
 
         ConfigItems::addReturn<RpyConfigItem *>(this, "Check stable.", this, [](RpyConfigItem *this_, Result &res) {
-            return this_->rpy->checkStable(res);
+            return this_->rpy->getImu()->checkStable(res);
         });
 
         ConfigItems::addReturn<RpyConfigItem *>(this, "Check balance.", this, [](RpyConfigItem *this_, Result &res) {
-            return this_->rpy->checkBalance(false, res);
+            return this_->rpy->getImu()->checkBalance(false, this_->unBalanceLimit, this_->deg, res);
         });
     }
 

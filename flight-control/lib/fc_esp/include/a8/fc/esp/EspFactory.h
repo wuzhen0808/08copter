@@ -1,7 +1,7 @@
 #pragma once
 #include "a8/fc/Factory.h"
 #include "a8/fc/esp/EspPropeller.h"
-#include "a8/fc/esp/EspRpy.h"
+#include "a8/fc/esp/EspImu.h"
 #include "a8/hal/esp.h"
 
 namespace a8::fc::esp {
@@ -12,8 +12,8 @@ public:
     EspFactory() {
     }
 
-    Rpy *newRpy() override {
-        return new EspRpy(logFac);
+    Imu *newImu() override {
+        return new EspImu(logFac);
     }
 
     void setupWire() override {

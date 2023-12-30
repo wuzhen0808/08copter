@@ -29,10 +29,10 @@ class BalanceThrottler : public Throttler {
     float yaw;
 
 public:
-    BalanceThrottler(Rpy *rpy, int bMode, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
+    BalanceThrottler(Rpy *rpy, int bMode, int errDiffMaWidth, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
         this->rpy = rpy;
-        this->pidRoll = new Pid(logFac, "RollPid");
-        this->pidPitch = new Pid(logFac, "PitchPid");
+        this->pidRoll = new Pid(logFac, "RollPid", errDiffMaWidth);
+        this->pidPitch = new Pid(logFac, "PitchPid", errDiffMaWidth);
         this->balanceMode = bMode;
     }
     ~BalanceThrottler() {
@@ -83,18 +83,7 @@ public:
         //
         float rollThrottle = pidRoll->getOutput();
         float pitchThrottle = pidPitch->getOutput();
-        // pwmRoll /= 2;
-        // pwmPitch /= 2;
 
-        //========================================================================================
-        // TODO there is a wired problem:
-        // 1) if you uncomment the following line.
-        //  log("abc")
-        // 2) you will see the MPU9250 stop working with the roll,pitch is printed as below:
-        //  (0.2147483687e--2147483687,0.2147483687e--2147483687,-0.751e1)
-        // 3)if you print the value with arduino's Serial.print, below output :
-        //  (0.00,0.00,-7.51)
-        //========================================================================================
         if (balanceMode == BalanceMode::ROLL) {
             pitchThrottle = 0;
         } else if (balanceMode == BalanceMode::PITCH) {

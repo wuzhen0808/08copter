@@ -17,7 +17,7 @@ public:
         this->sch = sc->scheduler;
         this->logFac = sc->loggerFactory;
     }
-    virtual Rpy *newRpy() = 0;
+    virtual Imu *newImu() = 0;
     virtual void setupWire() = 0;
     virtual Propeller *newPropeller(String name, int idx) = 0;
 };

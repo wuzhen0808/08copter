@@ -9,12 +9,28 @@ using namespace a8::fc::collect;
 class CollectorSetup {
 
 public:
-    static int setupFlight(Collector *collector, Result &res) {
+    static int setupFlight(FlightConfigItem *config, Collector *collector, Result &res) {
         Buffer<String> nameWithExprs;
         nameWithExprs.add("rowNum[rowNum()]");
+        nameWithExprs.add("missionId");
         nameWithExprs.add("timeMs");
         nameWithExprs.add("tickCostTimeMs");
         nameWithExprs.add("tickCostTimeMsAvg[avg(tickCostTimeMs)]");
+        nameWithExprs.add("voltage");
+
+        nameWithExprs.add("prop0-pwmC");
+        nameWithExprs.add("prop1-pwmC");
+        nameWithExprs.add("prop2-pwmC");
+        nameWithExprs.add("prop3-pwmC");
+
+        nameWithExprs.add("prop0-pwmT");
+        nameWithExprs.add("prop1-pwmT");
+        nameWithExprs.add("prop2-pwmT");
+        nameWithExprs.add("prop3-pwmT");
+
+        nameWithExprs.add("rawRoll");
+        nameWithExprs.add("rawPitch");
+        nameWithExprs.add("rawYaw");
         nameWithExprs.add("roll");
         nameWithExprs.add("pitch");
         nameWithExprs.add("yaw");
@@ -24,6 +40,7 @@ public:
         nameWithExprs.add("maxPwm[maxOf(prop0-pwm,prop1-pwm,prop2-pwm,prop3-pwm)]");
         nameWithExprs.add("avgMaxPwm[avg(maxPwm)]");
         nameWithExprs.add("RollPid-err");
+        nameWithExprs.add("RollPid-rawErrDiff");
         nameWithExprs.add("RollPid-errDiff");
         nameWithExprs.add("RollPid-ets");
         nameWithExprs.add("RollPid-etMs[*(RollPid-ets,1000)]");
@@ -34,6 +51,7 @@ public:
         //
         nameWithExprs.add("PitchPid-err");
         nameWithExprs.add("PitchPid-errDiff");
+        nameWithExprs.add("PitchPid-rawErrDiff");
         nameWithExprs.add("PitchPid-ets");
         nameWithExprs.add("PitchPid-etMs[*(PitchPid-ets,1000)]");
         nameWithExprs.add("PitchPid-p");

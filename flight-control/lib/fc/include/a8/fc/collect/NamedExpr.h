@@ -67,6 +67,12 @@ public:
 
         if (func == "rowNum") {
             di = new RowNumDataItem(name, &noTailDoubleFormat);
+        } else if (func == "compare") {    
+            if(args.len() != 2){
+                res<<"compare args was wrong.";
+                return -3;
+            }
+            di = new CompareDataItem(name, args.get(0,""), args.get(1,""), &doubleFormat);
         } else if (func == "diff") {
             if (args.isEmpty()) {
                 res << "diff arg was wrong.";

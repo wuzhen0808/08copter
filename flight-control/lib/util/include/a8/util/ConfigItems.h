@@ -203,11 +203,11 @@ public:
             }
         });
 
-        cc.logger->debug(String() << "run...");
+        cc.logger->debug(String() << "run nav...");
 
         int ret = nav.run(cc); // blocked here until stop nav.
 
-        cc.logger->debug(String() << "<<Config::config,ret:" << ret);
+        cc.logger->debug(String() << "done of nav." << ret);
         return ret;
     }
 };

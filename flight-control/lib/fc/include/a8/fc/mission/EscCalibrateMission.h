@@ -138,7 +138,7 @@ protected:
     String message;
 
 public:
-    EscCalibrateMission(long id, Propellers *propellers, Collector *collector, ConfigContext &cc, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac)
+    EscCalibrateMission(long id, PowerManage * pm, Propellers *propellers, Collector *collector, ConfigContext &cc, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac)
         : Mission(id, cc, throttle, signalQueue, collector, sys, logFac, "EscCalibrateMission") {
         this->propellers = propellers;
         this->fg = new Foreground(this);
@@ -149,7 +149,7 @@ public:
         this->pss.add(new PropellerStatus());
         this->pss.add(new PropellerStatus());
 
-        this->pwmCalculator = new EmptyPwmCalculator();
+        this->pwmCalculator = new EmptyPwmCalculator(pm, logFac);
     }
 
     ~EscCalibrateMission() {

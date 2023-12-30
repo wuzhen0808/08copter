@@ -27,6 +27,7 @@
 #include "a8/util/LoggerFactory.h"
 #include "a8/util/Math.h"
 #include "a8/util/MovePtr.h"
+#include "a8/util/MovingAvg.h"
 #include "a8/util/MultiWriter.h"
 #include "a8/util/Output.h"
 #include "a8/util/OutputWriter.h"

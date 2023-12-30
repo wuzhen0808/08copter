@@ -29,9 +29,11 @@ class Pid : public FlyWeight {
     //
     float error = 0;
     float elapsedTimeSec = 0;
+    float rawErrorDiff = 0;
     float errorDiff = 0;
     //
     long ticks = 0;
+    MovingAvg<float> *errorDiffMA;
 
 public:
     void limit(float &output, float min, float max) {
@@ -45,7 +47,11 @@ public:
     }
 
 public:
-    Pid(LoggerFactory *logFac, String name) : FlyWeight(logFac, name) {
+    Pid(LoggerFactory *logFac, String name, int errorDiffMAWidth) : FlyWeight(logFac, name) {
+        this->errorDiffMA = new MovingAvg<float>(errorDiffMAWidth);
+    }
+    ~Pid() {
+        delete this->errorDiffMA;
     }
 
     void config(double kp, double ki, double kd, float outputLimit, float limitI) {
@@ -64,7 +70,9 @@ public:
         if (ret > 0)
             ret = collector->add(String(this->name) << "-err", error, res);
         if (ret > 0)
-            ret = collector->add(String(this->name) << "-errDiff", errorDiff, res);
+            ret = collector->add(String(this->name) << "-rawErrDiff", rawErrorDiff, res);
+        if (ret > 0)
+            ret = collector->add(String(this->name) << "-errDiff", errorDiff, res);            
         String etsName = String(this->name) << "-ets";
         if (ret > 0)
             ret = collector->add(etsName, this->elapsedTimeSec, res);
@@ -104,7 +112,9 @@ public:
         if (ticks == 0) {
             lastError = error;
         }
-        errorDiff = error - lastError;
+        rawErrorDiff = error - lastError;        
+        errorDiff = errorDiffMA->update(rawErrorDiff);
+
         if (elapsedTimeSec > 0) {
 
             d = kd * (errorDiff / elapsedTimeSec);
@@ -114,11 +124,11 @@ public:
         limit(output, -outputLimit, outputLimit);
 
         A8_LOG_DEBUG(logger, String(name) << "timeMs(" << timeMs << ")-lastTimeMs(" << lastTimeMs << ")/1000=elapsedTimeSec?(" << elapsedTimeSec << ")");
-        A8_LOG_DEBUG(logger, String(name) << "error(" << error << ")-lastError(" << lastError << ")=errorDiff(" << errorDiff << ")/elapsedTimeSec(" << elapsedTimeSec << ")=?" << d);
+        A8_LOG_DEBUG(logger, String(name) << "error(" << error << ")-lastError(" << lastError << ")=rawErrorDiff(" << rawErrorDiff << ")/elapsedTimeSec(" << elapsedTimeSec << ")=?" << d);
         A8_LOG_DEBUG(logger, String(name) << ">>update,p:" << p << ",i:" << i << ",d:" << d << ","
                                           << "output:" << output);
         A8_DEBUG7("timeMs(", timeMs, ")-lastTimeMs(", lastTimeMs, ")/1000=elapsedTimeSec?(", elapsedTimeSec, ")");
-        A8_DEBUG10("error(", error, ")-lastError(", lastError, ")=errorDiff(", errorDiff, ")/elapsedTimeSec(", elapsedTimeSec, ")=?", d);
+        A8_DEBUG10("error(", error, ")-lastError(", lastError, ")=rawErrorDiff(", rawErrorDiff, ")/elapsedTimeSec(", elapsedTimeSec, ")=?", d);
         A8_DEBUG8(">>update,p:", p, ",i:", i, ",d:", d, ",output:", output);
 
         lastTimeMs = timeMs;

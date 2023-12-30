@@ -1,15 +1,17 @@
 #pragma once
-#include "a8/util.h"
 #include "a8/fc/pwm/PwmCalculator.h"
+#include "a8/util.h"
 namespace a8::fc {
 using namespace a8::util;
 
 class EmptyPwmCalculator : public PwmCalculator {
 
 public:
-    long calculate(int idx, float throttle) override {
-        return throttle;
+    EmptyPwmCalculator(PowerManage *pm, LoggerFactory *logFac) : PwmCalculator(pm, logFac) {
     }
+    ~EmptyPwmCalculator() {
+    }
+    
 };
 
 } // namespace a8::fc
