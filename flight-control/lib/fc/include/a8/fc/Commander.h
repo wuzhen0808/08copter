@@ -116,7 +116,7 @@ public:
         }
         A8_DEBUG("buildNextMission.2");
         if (config->missionSelect == Config::MissionType::FLIGHT) {
-            mission = new FlightMission(missionId++, config->flightConfigItem, pm, rpy, propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
+            mission = new FlightMission(missionId++, config->flightConfigItem, fac, pm, rpy, propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
         } else if (config->missionSelect == Config::MissionType::ESC_CALIBRATE) {
             mission = new EscCalibrateMission(missionId++, pm, propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
         } else {

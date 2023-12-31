@@ -1,6 +1,8 @@
 #pragma once
+#include "a8/fc/Factory.h"
 #include "a8/fc/Propeller.h"
 #include "a8/fc/Rpy.h"
+#include "a8/fc/config/FlightConfigItem.h"
 #include "a8/fc/throttle/Pid.h"
 #include "a8/fc/throttle/Throttler.h"
 #include "a8/util.h"
@@ -23,17 +25,25 @@ class BalanceThrottler : public Throttler {
 
     float maxBalanceThrottle = 0;
 
-    int balanceMode;
-
     float rpy_[3];
 
+    FlightConfigItem *config;
+
 public:
-    BalanceThrottler(Rpy *rpy, int bMode, int errDiffMaWidth, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
+    BalanceThrottler(FlightConfigItem *config, Factory *fac, Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
+        this->config = config;
         this->rpy = rpy;
-        this->rollPid = new Pid(logFac, "RollPid", errDiffMaWidth);
-        this->pitchPid = new Pid(logFac, "PitchPid", errDiffMaWidth);
-        this->yawPid = new Pid(logFac, "YawPid", errDiffMaWidth);
-        this->balanceMode = bMode;
+        this->rollPid = new Pid(logFac, "RollPid");
+        this->pitchPid = new Pid(logFac, "PitchPid");
+        this->yawPid = new Pid(logFac, "YawPid");
+
+        if (config->pidEnableErrorDiffFilter) {
+            Rate tickRate = Rate::ms(config->tickTimeMs);
+            int order = config->pidErrorDiffFilterOrder;
+            this->rollPid->setErrorDiffFilter(fac->newLowPassFilter(config->pidErrorDiffFilterCutOffRate, tickRate,order), Lang::delete_<Filter>);
+            this->pitchPid->setErrorDiffFilter(fac->newLowPassFilter(config->pidErrorDiffFilterCutOffRate, tickRate,order), Lang::delete_<Filter>);
+            this->yawPid->setErrorDiffFilter(fac->newLowPassFilter(config->pidErrorDiffFilterCutOffRate, tickRate,order), Lang::delete_<Filter>);
+        }
     }
     ~BalanceThrottler() {
         delete this->rollPid;
@@ -74,7 +84,6 @@ public:
         this->rollPid->config(kp, ki, kd, outputLimit, maxPidIntegralOutput);
         this->pitchPid->config(kp, ki, kd, outputLimit, maxPidIntegralOutput);
     }
-
     void setYawPidArgument(double kp, double ki, double kd, float outputLimit, float maxPidIntegralOutput) {
         this->yawPid->config(kp, ki, kd, outputLimit, maxPidIntegralOutput);
     }
@@ -91,13 +100,13 @@ public:
         float rollThrottle = rollPid->getOutput();
         float pitchThrottle = pitchPid->getOutput();
         float yawThrottle = yawPid->getOutput();
-        if (balanceMode == BalanceMode::ROLL) {
+        if (config->balanceMode == BalanceMode::ROLL) {
             pitchThrottle = 0;
             yawThrottle = 0;
-        } else if (balanceMode == BalanceMode::PITCH) {
+        } else if (config->balanceMode == BalanceMode::PITCH) {
             rollThrottle = 0;
             yawThrottle = 0;
-        } else if (balanceMode == BalanceMode::YAW) {
+        } else if (config->balanceMode == BalanceMode::YAW) {
             rollThrottle = 0;
             pitchThrottle = 0;
         }

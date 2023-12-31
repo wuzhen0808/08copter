@@ -67,12 +67,12 @@ public:
 
         if (func == "rowNum") {
             di = new RowNumDataItem(name, &noTailDoubleFormat);
-        } else if (func == "compare") {    
-            if(args.len() != 2){
-                res<<"compare args was wrong.";
+        } else if (func == "compare") {
+            if (args.len() != 2) {
+                res << "compare args was wrong.";
                 return -3;
             }
-            di = new CompareDataItem(name, args.get(0,""), args.get(1,""), &doubleFormat);
+            di = new CompareDataItem(name, args.get(0, ""), args.get(1, ""), &doubleFormat);
         } else if (func == "diff") {
             if (args.isEmpty()) {
                 res << "diff arg was wrong.";
@@ -114,7 +114,8 @@ public:
         } else if (func == "maxOf") {
             di = new MaxOfDataItem(name, args, &doubleFormat);
         } else {
-            res << "no such func:" << func;
+            res << "cannot parse expr(name:" << this->name << ","
+                << "), no such func:" << func;
             return -10;
         }
         return 1;

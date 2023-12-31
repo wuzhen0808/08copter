@@ -20,5 +20,6 @@ public:
     virtual Imu *newImu() = 0;
     virtual void setupWire() = 0;
     virtual Propeller *newPropeller(String name, int idx) = 0;
+    virtual Filter *newLowPassFilter(Rate cutOffRate, Rate samplingRate, int order);
 };
 } // namespace a8::fc

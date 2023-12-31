@@ -95,12 +95,12 @@ class FlightMission : public Mission {
     bool running = true;
 
 public:
-    FlightMission(long id, FlightConfigItem *config, PowerManage *pm, Rpy *rpy, Propellers *propellers, Collector *collector, ConfigContext &configContext, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac)
+    FlightMission(long id, FlightConfigItem *config, Factory * fac, PowerManage *pm, Rpy *rpy, Propellers *propellers, Collector *collector, ConfigContext &configContext, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac)
         : Mission(id, configContext, throttle, signalQueue, collector, sys, logFac, "FlightMission") {
         this->config = config;
         this->rpy = rpy;
         this->propellers = propellers;
-        this->throttler = new throttle::FlightThrottler(config, rpy, logFac);
+        this->throttler = new throttle::FlightThrottler(config,fac, rpy, logFac);
         this->pwmCalculator = 0;
         if (config->enableVoltageCompensate) {
             this->pwmCalculator = new VoltageCompensatePwmCalculator(pm, config->minVoltForPwmCompensate, config->maxVoltForPwmCompensate, logFac);

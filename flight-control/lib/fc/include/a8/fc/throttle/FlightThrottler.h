@@ -28,11 +28,11 @@ class FlightThrottler : public Throttler {
     a8::fc::FlightConfigItem *config;
 
 public:
-    FlightThrottler(a8::fc::FlightConfigItem *config, Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, String("MainThrottler")), config(config) {
+    FlightThrottler(a8::fc::FlightConfigItem *config, Factory *fac, Rpy *rpy, LoggerFactory *logFac) : Throttler(logFac, String("MainThrottler")), config(config) {
         elevator = new ElevatorThrottler(config->elevationThrottle, logFac);
         throttlers.append(elevator);
 
-        balance = new BalanceThrottler(rpy, config->balanceMode, config->pidErrorDiffMAWidth, logFac);
+        balance = new BalanceThrottler(config, fac, rpy, logFac);
         balance->setPidArgument(config->pidKp, config->pidKi, config->pidKd, config->pidOutputLimit, config->pidOutputLimitI);
         balance->setYawPidArgument(config->yawPidKp, config->yawPidKi, config->yawPidKd, config->yawPidOutputLimit, config->yawPidOutputLimitI);
         throttlers.append(balance);

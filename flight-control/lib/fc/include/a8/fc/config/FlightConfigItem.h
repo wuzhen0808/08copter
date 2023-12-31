@@ -61,11 +61,13 @@ public:
     // 18,16.5,4.1,volt@11.3
 
     double pidKp = 19.5; // volt@11.2
-    double pidKi = 6.5;
-    double pidKd = 4.25;
+    double pidKi = 5.0;
+    double pidKd = 3.9;
     double pidOutputLimit = 500.0; //
     double pidOutputLimitI = 500.0;
-    int pidErrorDiffMAWidth = 1;
+    bool pidEnableErrorDiffFilter = true;
+    float pidErrorDiffFilterCutOffRate = 15.0f;
+    int pidErrorDiffFilterOrder = 2;
 
     double yawPidKp = 9.5;
     double yawPidKi = 3.5;
@@ -189,7 +191,6 @@ public:
 
                 ConfigItems::add(ci, "pidOutputLimit", pidOutputLimit);
                 ConfigItems::add(ci, "pidOutputLimitI", pidOutputLimitI);
-                ConfigItems::add(ci, "pidErrorDiffMAWidth", pidErrorDiffMAWidth);
                 ConfigItems::add(ci, "Kp", pidKp);
                 ConfigItems::add(ci, "Ki", pidKi);
                 ConfigItems::add(ci, "Kd", pidKd);
@@ -208,6 +209,12 @@ public:
 
                 ci = ci->getParent<ConfigItem>();
             } // end of pid.
+            
+            ConfigItems::add(ci, "pidEnableErrorDiffFilter", pidEnableErrorDiffFilter);
+            ConfigItems::add(ci, "pidErrorDiffFilterCutOffRate", pidErrorDiffFilterCutOffRate);
+            ConfigItems::add(ci, "pidErrorDiffFilterOrder", pidErrorDiffFilterOrder);
+            
+
             ci = ci->getParent<ConfigItem>();
         }
 

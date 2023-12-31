@@ -208,6 +208,7 @@ public:
             DataItem *di;
             ret = nExpr.buildDataItem(di, res);
             if (ret < 0) {
+                res << ";no such di(" << nExpr.name << ") or cannot parse as expr.";
                 break;
             }
             ret = this->add(di, Lang::delete_<DataItem>, res);

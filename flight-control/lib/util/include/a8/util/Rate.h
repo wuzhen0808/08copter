@@ -10,6 +10,10 @@ class Rate {
 public:
     static Rate RUN;
 
+    static Rate ms(long ms) {
+        return 1000.0f / (float)ms;
+    }
+
     Rate() {
         this->hz = 0.0f;
     }
@@ -64,7 +68,7 @@ public:
         }
         return 1.0e3 * sec();
     }
-        
+
     /**
      * Zero means no frequency.
      * Do not schedule zero rate.

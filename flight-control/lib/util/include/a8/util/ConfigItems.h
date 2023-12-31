@@ -30,6 +30,7 @@ public:
     static ConfigItem *add(ConfigItem *ci, String name, int &var) {
         return addNumberInput<int>(ci, name, var);
     }
+    
     template <typename C>
     static ConfigItem *add(ConfigItem *ci1, String name, C c, void (*action)(C, ConfigContext &)) {
         ConfigItem *ci2 = ConfigItems::addReturn(ci1, name);
