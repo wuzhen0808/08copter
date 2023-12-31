@@ -19,7 +19,8 @@ enum UnBalanceAction {
 enum BalanceMode {
     FULL = 0,
     ROLL = 1,
-    PITCH = 2
+    PITCH = 2,
+    YAW = 3,
 };
 
 /**
@@ -63,10 +64,17 @@ public:
     double pidKi = 6.5;
     double pidKd = 4.25;
     double pidOutputLimit = 500.0; //
-    double pidOutputLimitI = 500;
+    double pidOutputLimitI = 500.0;
     int pidErrorDiffMAWidth = 1;
+
+    double yawPidKp = 9.5;
+    double yawPidKi = 3.5;
+    double yawPidKd = 2.25;
+    double yawPidOutputLimit = 150.0; //
+    double yawPidOutputLimitI = 150.0;
+    int yawPidErrorDiffMAWidth = 1;
+
     bool enableStart = true;
-    int maxRpyUpdateRetries = 5;
     int balanceMode = BalanceMode::FULL;
     int collectEveryTicks = 1;
     bool ignorePowerWarning = false;
@@ -108,26 +116,12 @@ public:
         {
             ConfigItems::add(ci, "preStartDelaySec", this->preStartCountDown);
             ConfigItems::add(ci, "enableForeground", this->enableForeground);
-            ConfigItems::addSelectInput<FlightConfigItem *>(
-                ci, "unBalanceAction", unBalanceAction, this, 4, [](FlightConfigItem *this_, int idx) {
-                    String option;
-                    switch (idx) {
-                    case 0:
-                        option = "ASK";
-                        break;
-                    case 1:
-                        option = "IGNORE";
-                        break;
-                    case 2:
-                        option = "IGNORE_IF_SAFE";
-                        break;
-                    case 3:
-                        option = "END_OF_MISSION";
-                        break;
-                    }
-                    return option;
-                });
-
+            Buffer<String> options;
+            options.add("ASK");
+            options.add("IGNORE");
+            options.add("IGNORE_IF_SAFE");
+            options.add("END_MISSION");
+            ConfigItems::addSelectInput(ci, "unBalanceAction", unBalanceAction, options);
             ConfigItems::add(ci, "stableCheckRetries", stableCheckRetries);
             ConfigItems::add(ci, "enableStart", this->enableStart);
             ConfigItems::add(ci, "tickTimeMs", tickTimeMs);
@@ -153,6 +147,7 @@ public:
         {
             ConfigItems::add(ci, "Rpy-check", new RpyConfigItem(rpy, this->unBalanceDegLimit));
             ConfigItems::add(ci, "rpyMovingAvgWindowWidth", vars.rpyMovingAvgWindowWidth);
+            ConfigItems::add(ci, "maxRpyUpdateRetries", vars.maxRpyUpdateRetries);
             ci = ConfigItems::addReturn(ci, "Monitor-rpy");
             {
                 ci->setAttribute(rpyMonitor, [](void *) {});
@@ -186,37 +181,44 @@ public:
         }
 
         ConfigItems::add(ci, "Propellers", new PropellersConfigItem(lockPropellers, activeThrottle0, activeThrottle1, activeThrottle2, activeThrottle3));
-
-        ci = ConfigItems::addReturn(ci, "Balance-pid");
+        ci = ConfigItems::addReturn(ci, "Pid-arguments");
         {
 
-            ConfigItems::add(ci, "pidOutputLimit", pidOutputLimit);
-            ConfigItems::add(ci, "pidOutputLimitI", pidOutputLimitI);
-            ConfigItems::add(ci, "pidErrorDiffMAWidth", pidErrorDiffMAWidth);
-            ConfigItems::add(ci, "Kp", pidKp);
-            ConfigItems::add(ci, "Ki", pidKi);
-            ConfigItems::add(ci, "Kd", pidKd);
+            ci = ConfigItems::addReturn(ci, "Roll/Pitch-pid");
+            {
 
-            ci = this;
-        } // end of pid.
+                ConfigItems::add(ci, "pidOutputLimit", pidOutputLimit);
+                ConfigItems::add(ci, "pidOutputLimitI", pidOutputLimitI);
+                ConfigItems::add(ci, "pidErrorDiffMAWidth", pidErrorDiffMAWidth);
+                ConfigItems::add(ci, "Kp", pidKp);
+                ConfigItems::add(ci, "Ki", pidKi);
+                ConfigItems::add(ci, "Kd", pidKd);
+
+                ci = ci->getParent<ConfigItem>();
+            } // end of pid.
+            ci = ConfigItems::addReturn(ci, "Yaw-pid");
+            {
+
+                ConfigItems::add(ci, "pidOutputLimit", yawPidOutputLimit);
+                ConfigItems::add(ci, "pidOutputLimitI", yawPidOutputLimitI);
+                ConfigItems::add(ci, "pidErrorDiffMAWidth", yawPidErrorDiffMAWidth);
+                ConfigItems::add(ci, "Kp", yawPidKp);
+                ConfigItems::add(ci, "Ki", yawPidKi);
+                ConfigItems::add(ci, "Kd", yawPidKd);
+
+                ci = ci->getParent<ConfigItem>();
+            } // end of pid.
+            ci = ci->getParent<ConfigItem>();
+        }
+
         ci = ConfigItems::addReturn(ci, "Test-options");
         {
-            ConfigItems::addSelectInput<FlightConfigItem *>(
-                ci, "balanceMode", balanceMode, this, 3, [](FlightConfigItem *this_, int idx) {
-                    String option;
-                    switch (idx) {
-                    case 0:
-                        option = "FULL";
-                        break;
-                    case 1:
-                        option = "ROLL";
-                        break;
-                    case 2:
-                        option = "PITCH";
-                        break;
-                    }
-                    return option;
-                }); // end of balanceMode.
+            Buffer<String> options;
+            options.add("FULL");
+            options.add("ROLL");
+            options.add("PITCH");
+            options.add("YAW");
+            ConfigItems::addSelectInput(ci, "balanceMode", balanceMode, options); // end of balanceMode.
             ci = this;
         }
     }

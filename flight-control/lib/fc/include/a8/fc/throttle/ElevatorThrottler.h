@@ -15,10 +15,6 @@ public:
     ElevatorThrottler(float &throttle, LoggerFactory *logFac) : Throttler(logFac, "ElevatorThrottler"),
                                                                 elevationThrottle(throttle) {
     }
-    void getLimitInTheory(float &minSample, float &maxSample) override {
-        minSample += this->elevationThrottle;
-        maxSample += this->elevationThrottle;
-    }
     void setup() override {}
     void setElevationThrottle(float pwm) {
         this->elevationThrottle = pwm;

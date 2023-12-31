@@ -20,7 +20,6 @@ public:
 
     virtual int update(Throttle &ctx, Result &res) = 0;
 
-    virtual void getLimitInTheory(float &minBase, float &maxBase) = 0;
 };
 
 } // namespace a8::fc::throttle

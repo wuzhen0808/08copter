@@ -26,10 +26,7 @@ public:
                                                   activeThrottle3(activeThrottle3) {
     }
     void setup() override {}
-    void getLimitInTheory(float &minSample, float &maxSample) override {
-        limitThrottle(maxSample, 0);
-    }
-
+   
     int update(Throttle &ctx, Result &res) override {
         if (A8_THROTTLE_DEBUG) {
             A8_LOG_DEBUG(logger, ">>Limit.update.");

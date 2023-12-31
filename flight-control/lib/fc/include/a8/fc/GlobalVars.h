@@ -41,5 +41,6 @@ public:
     static constexpr float MIN_THROTTLE = 0;
 
     int rpyMovingAvgWindowWidth = 1;
+    int maxRpyUpdateRetries = 5;
 };
 } // namespace a8::fc

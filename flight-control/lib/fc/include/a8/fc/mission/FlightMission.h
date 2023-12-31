@@ -187,14 +187,27 @@ public:
         ret = checkFg(res);
 
         if (ret > 0) {
+            // rpy and count down.
+            this->rpy->reset();
 
             for (int i = config->preStartCountDown; i > 0; i--) {
-                sys->delay(1000);
-                log(String() << "Pre-start count down:" << i);
+                ret = this->rpy->continueUpdate(sys, 1000, 4, res);
+                if (ret < 0) {
+                    break;
+                }
+                float buf[3];
+                rpy->get(buf);
+                log(String() << "Pre-start count down:" << i << ",roll:" << buf[0] << ",pitch:" << buf[1] << ",yaw:" << buf[2]);
             }
 
             ret = checkRpy(configContext, res);
+
+            if (ret > 0) {
+
+                ret = this->rpy->calibrateYaw(res);
+            }
         }
+
         if (ret > 0) {
             ret = propellers->isReady(res);
         }
@@ -212,7 +225,7 @@ public:
         throttle.commitUpdate();
         return 1;
     }
-    int run2(Result &res) {        
+    int run2(Result &res) {
         if (config->lockPropellers) {
             this->propellers->lockAll();
         } else {
@@ -221,7 +234,6 @@ public:
 
         this->propellers->open();
         this->sys->out->println(String() << "running ... " << this->id);
-        this->rpy->reset();
         this->throttle.reset(startTimeMs);
         this->timeMs = sys->getSteadyTime();
         this->startTimeMs = timeMs; // m
@@ -230,7 +242,7 @@ public:
         for (int ticks = 0; this->running; ticks++) {
             Result res;
             throttle.preUpdate(timeMs);
-            int rpyUpdateRet = rpy->update(config->maxRpyUpdateRetries, res);
+            int rpyUpdateRet = rpy->update(res);
 
             int updateRet = this->doUpdate(res);
 

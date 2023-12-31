@@ -101,7 +101,7 @@ public:
             lastTimeMs = timeMs;
         }
 
-        error = desired - actual;
+        error = actual - desired;
         p = kp * error;
         elapsedTimeSec = (timeMs - lastTimeMs) / 1000.0f;
         // if (-3 < error < 3) {

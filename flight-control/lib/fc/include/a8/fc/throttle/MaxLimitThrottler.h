@@ -8,17 +8,14 @@
 namespace a8::fc::throttle {
 using namespace a8::util;
 
-class MaxLimitThrottler : public Throttler {    
+class MaxLimitThrottler : public Throttler {
     float maxThrottle;
 
 public:
-    MaxLimitThrottler(                   float max, LoggerFactory *logFac) : Throttler(logFac, "LimitThrottler") {
+    MaxLimitThrottler(float max, LoggerFactory *logFac) : Throttler(logFac, "MaxLimitThrottler") {
         this->maxThrottle = max;
     }
     void setup() override {}
-    void getLimitInTheory(float &minSample, float &maxSample) override {
-        limitThrottle(maxSample, 0, maxThrottle);
-    }
 
     int update(Throttle &ctx, Result &res) override {
         if (A8_THROTTLE_DEBUG) {
@@ -28,7 +25,7 @@ public:
         float thRH = ctx.propellers->getThrottle(1);
         float thLA = ctx.propellers->getThrottle(2);
         float thRA = ctx.propellers->getThrottle(3);
-        
+
         thLH = limitThrottle(thLH, 0, maxThrottle);
         thRH = limitThrottle(thRH, 0, maxThrottle);
         thLA = limitThrottle(thLA, 0, maxThrottle);

@@ -34,6 +34,7 @@ public:
 
         balance = new BalanceThrottler(rpy, config->balanceMode, config->pidErrorDiffMAWidth, logFac);
         balance->setPidArgument(config->pidKp, config->pidKi, config->pidKd, config->pidOutputLimit, config->pidOutputLimitI);
+        balance->setYawPidArgument(config->yawPidKp, config->yawPidKi, config->yawPidKd, config->yawPidOutputLimit, config->yawPidOutputLimitI);
         throttlers.append(balance);
 
         active = new ActiveLimitThrottler(config->activeThrottle0, config->activeThrottle1, config->activeThrottle2, config->activeThrottle3, logFac);
@@ -72,12 +73,6 @@ public:
             }
         }
         return ret;
-    }
-
-    void getLimitInTheory(float &minSample, float &maxSample) override {
-        for (int i = 0; i < throttlers.len(); i++) {
-            throttlers.get(i, 0)->getLimitInTheory(minSample, maxSample);
-        }
     }
 
     bool isLanded() {

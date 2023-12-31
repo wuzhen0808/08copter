@@ -63,10 +63,10 @@ public:
     float getYaw() override {
         return mpu->getYaw();
     }
-    void get(float &roll, float &pitch, float &yaw) override {
-        roll = mpu->getRoll();
-        pitch = mpu->getPitch();
-        yaw = mpu->getYaw();
+    void get(float *rpy) override {
+        rpy[0] = mpu->getRoll();
+        rpy[1] = mpu->getPitch();
+        rpy[2] = mpu->getYaw();
     }
     int checkReady(float limit, Result &res) override {
 
@@ -116,10 +116,11 @@ public:
                 delay(5);
                 continue;
             }
-            float roll = -this->getRoll();
-            float pitch = -this->getPitch();
+            float roll = this->getRoll();
+            float pitch = this->getPitch();
+            float yaw = this->getYaw();
             if (!silence) {
-                log(String() << "roll:" << roll << ",pitch:" << pitch);
+                log(String() << "roll:" << roll << ",pitch:" << pitch << ",yaw:" << yaw);
             }
 
             rollAvg = (rollAvg * i + roll) / (i + 1);
@@ -135,6 +136,7 @@ public:
             }
             delay(5);
         }
+
         if (continueUpdateFailed >= 100) {
             res << "cannot check stable, rpy is not available, all update are failed.";
             return -1;
@@ -168,7 +170,8 @@ public:
     int doCheckBalance(bool silence, float limit, float &deg, Result &res) {
         float roll = this->getRoll();
         float pitch = this->getPitch();
-        A8_LOG_DEBUG(logger, String() << "check rpy if balance, roll:" << roll << ",pitch:" << pitch);
+        float yaw = this->getYaw();
+        A8_LOG_DEBUG(logger, String() << "check rpy if balance, roll:" << roll << ",pitch:" << pitch << ",yaw:" << yaw);
 
         float aPitch = Math::abs<float>(pitch);
         float aRoll = Math::abs<float>(roll);

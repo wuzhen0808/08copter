@@ -11,8 +11,9 @@ using namespace a8::util;
 class BalanceThrottler : public Throttler {
 
     Rpy *rpy;
-    Pid *pidRoll;
-    Pid *pidPitch;
+    Pid *rollPid;
+    Pid *pitchPid;
+    Pid *yawPid;
 
     float desiredRoll = .0f;
     float desiredPitch = .0f;
@@ -24,76 +25,87 @@ class BalanceThrottler : public Throttler {
 
     int balanceMode;
 
-    float roll;
-    float pitch;
-    float yaw;
+    float rpy_[3];
 
 public:
     BalanceThrottler(Rpy *rpy, int bMode, int errDiffMaWidth, LoggerFactory *logFac) : Throttler(logFac, "BalanceThrottler") {
         this->rpy = rpy;
-        this->pidRoll = new Pid(logFac, "RollPid", errDiffMaWidth);
-        this->pidPitch = new Pid(logFac, "PitchPid", errDiffMaWidth);
+        this->rollPid = new Pid(logFac, "RollPid", errDiffMaWidth);
+        this->pitchPid = new Pid(logFac, "PitchPid", errDiffMaWidth);
+        this->yawPid = new Pid(logFac, "YawPid", errDiffMaWidth);
         this->balanceMode = bMode;
     }
     ~BalanceThrottler() {
-        delete this->pidRoll;
-        delete this->pidPitch;
+        delete this->rollPid;
+        delete this->pitchPid;
+        delete this->yawPid;
     }
 
     void setup() override {
-        this->pidRoll->setup();
-        this->pidPitch->setup();
+        this->rollPid->setup();
+        this->pitchPid->setup();
+        this->yawPid->setup();
     }
 
     int collectDataItems(Collector *collector, Result &res) override {
         int ret = 1;
         if (ret > 0)
-            ret = collector->add("roll", this->roll, res);
+            ret = collector->add("roll", this->rpy_[0], res);
         if (ret > 0) {
-            ret = collector->add("pitch", this->pitch, res);
+            ret = collector->add("pitch", this->rpy_[1], res);
         }
         if (ret > 0) {
-            ret = collector->add("yaw", this->yaw, res);
+            ret = collector->add("yaw", this->rpy_[2], res);
         }
         if (ret > 0) {
-            ret = this->pidRoll->collectDataItems(collector, res);
+            ret = this->rollPid->collectDataItems(collector, res);
         }
         if (ret > 0) {
-            ret = this->pidPitch->collectDataItems(collector, res);
+            ret = this->pitchPid->collectDataItems(collector, res);
         }
+        if (ret > 0) {
+            ret = this->yawPid->collectDataItems(collector, res);
+        }
+
         return ret;
-    }
-    void getLimitInTheory(float &minSample, float &maxSample) override {
-        minSample = minSample - pidRoll->getOutputLimit() - pidPitch->getOutputLimit();
-        maxSample = maxSample + pidRoll->getOutputLimit() + pidPitch->getOutputLimit();
     }
 
     void setPidArgument(double kp, double ki, double kd, float outputLimit, float maxPidIntegralOutput) {
-        this->pidRoll->config(kp, ki, kd, outputLimit, maxPidIntegralOutput);
-        this->pidPitch->config(kp, ki, kd, outputLimit, maxPidIntegralOutput);
+        this->rollPid->config(kp, ki, kd, outputLimit, maxPidIntegralOutput);
+        this->pitchPid->config(kp, ki, kd, outputLimit, maxPidIntegralOutput);
+    }
+
+    void setYawPidArgument(double kp, double ki, double kd, float outputLimit, float maxPidIntegralOutput) {
+        this->yawPid->config(kp, ki, kd, outputLimit, maxPidIntegralOutput);
     }
 
     int update(Throttle &ctx, Result &res) override {
         A8_LOG_DEBUG(logger, ">>Bal.update.");
 
-        rpy->get(roll, pitch, yaw);
+        rpy->get(rpy_);
         // pid
-        pidRoll->update(ctx.timeMs_, roll, desiredRoll);
-        pidPitch->update(ctx.timeMs_, pitch, desiredPitch);
+        rollPid->update(ctx.timeMs_, rpy_[0], desiredRoll);
+        pitchPid->update(ctx.timeMs_, rpy_[1], desiredPitch);
+        yawPid->update(ctx.timeMs_, rpy_[2], desiredYaw);
         //
-        float rollThrottle = pidRoll->getOutput();
-        float pitchThrottle = pidPitch->getOutput();
-
+        float rollThrottle = rollPid->getOutput();
+        float pitchThrottle = pitchPid->getOutput();
+        float yawThrottle = yawPid->getOutput();
         if (balanceMode == BalanceMode::ROLL) {
             pitchThrottle = 0;
+            yawThrottle = 0;
         } else if (balanceMode == BalanceMode::PITCH) {
             rollThrottle = 0;
+            yawThrottle = 0;
+        } else if (balanceMode == BalanceMode::YAW) {
+            rollThrottle = 0;
+            pitchThrottle = 0;
         }
 
-        float thLH = 0 + rollThrottle + pitchThrottle;
-        float thRH = 0 - rollThrottle + pitchThrottle;
-        float thLA = 0 + rollThrottle - pitchThrottle;
-        float thRA = 0 - rollThrottle - pitchThrottle;
+        float thLH = yawThrottle - rollThrottle - pitchThrottle;
+        float thRH = -yawThrottle + rollThrottle - pitchThrottle;
+        float thLA = -yawThrottle - rollThrottle + pitchThrottle;
+        float thRA = yawThrottle + rollThrottle + pitchThrottle;
 
         A8_LOG_DEBUG(logger, ">>Bal.update.9");
         ctx.propellers->addThrottle(thLH, thRH, thLA, thRA);

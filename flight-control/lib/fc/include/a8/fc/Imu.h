@@ -11,7 +11,7 @@ public:
     int collectDataItems(Collector *collector, Result &res) {
         return 1;
     }
-    virtual void get(float &roll, float &pitch, float &yaw) = 0;
+    virtual void get(float *rpy) = 0;
     virtual float getRoll() = 0;
     virtual float getPitch() = 0;
     virtual float getYaw() = 0;

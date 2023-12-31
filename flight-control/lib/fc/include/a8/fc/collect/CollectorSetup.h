@@ -17,16 +17,8 @@ public:
         nameWithExprs.add("tickCostTimeMs");
         nameWithExprs.add("tickCostTimeMsAvg[avg(tickCostTimeMs)]");
         nameWithExprs.add("voltage");
-
-        nameWithExprs.add("prop0-pwmC");
-        nameWithExprs.add("prop1-pwmC");
-        nameWithExprs.add("prop2-pwmC");
-        nameWithExprs.add("prop3-pwmC");
-
-        nameWithExprs.add("prop0-pwmT");
-        nameWithExprs.add("prop1-pwmT");
-        nameWithExprs.add("prop2-pwmT");
-        nameWithExprs.add("prop3-pwmT");
+        nameWithExprs.add("maxPwmC[maxOf(prop0-pwmC,prop1-pwmC,prop2-pwmC,prop3-pwmC)]");
+        nameWithExprs.add("maxPwmT[maxOf(prop0-pwmT,prop1-pwmT,prop2-pwmT,prop3-pwmT)]");
 
         nameWithExprs.add("rawRoll");
         nameWithExprs.add("rawPitch");
@@ -58,6 +50,20 @@ public:
         nameWithExprs.add("PitchPid-i");
         nameWithExprs.add("PitchPid-d");
         nameWithExprs.add("PitchPid-o");
+        //
+        nameWithExprs.add("YawPid-err");
+        nameWithExprs.add("YawPid-errDiff");
+        nameWithExprs.add("YawPid-rawErrDiff");        
+        nameWithExprs.add("YawPid-etMs[*(YawPid-ets,1000)]");
+        nameWithExprs.add("YawPid-p");
+        nameWithExprs.add("YawPid-i");
+        nameWithExprs.add("YawPid-d");
+        nameWithExprs.add("YawPid-o");
+
+        nameWithExprs.add("prop0-pwm");
+        nameWithExprs.add("prop1-pwm");
+        nameWithExprs.add("prop2-pwm");
+        nameWithExprs.add("prop3-pwm");
 
         /*
         names.add("timeMs[diff]");

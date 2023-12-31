@@ -31,7 +31,7 @@ public:
         System* sys = sc->getSys();        
         this->pm = new PowerManage(sys, 5, 21, loggerFactory);
         Imu * imu= fac->newImu();
-        this->rpy = new Rpy(imu, vars.rpyMovingAvgWindowWidth);
+        this->rpy = new Rpy(imu, vars.maxRpyUpdateRetries, vars.rpyMovingAvgWindowWidth);
         config = new Config(vars, sys->input, sys->out, pm, rpy, sc->scheduler);
         root = new Directory<ConfigItem *>("Root", 0);        
         config->attach(root);
