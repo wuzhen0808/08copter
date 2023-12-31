@@ -37,7 +37,7 @@ public:
     }
 
     void commitUpdate() {
-        propellers->commitUpdate();
+        propellers->commitThrottle();
     }
 
 };

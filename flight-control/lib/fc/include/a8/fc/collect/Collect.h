@@ -13,8 +13,8 @@ const Format::AutoOffsetFloat boolFormat(1, 0); // only  for faster format than 
 class DataItem;
 class Collect {
 private:
-    Collect(const Collect &);
-    Collect &operator=(const Collect &);
+    Collect(const Collect &) = delete;
+    Collect &operator=(const Collect &) = delete;
 
 protected:
     // first row num is 1, not 0;

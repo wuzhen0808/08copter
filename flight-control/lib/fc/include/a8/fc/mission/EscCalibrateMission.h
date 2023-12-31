@@ -8,27 +8,19 @@ namespace a8::fc::mission {
 using namespace a8::util;
 using namespace a8::fc::throttle;
 
+const int S_OPEN = 1;
+const int S_CLOSE = 2;
+const int S_LOCK = 3;
+const int S_UNLOCK = 4;
+const int S_PWM_SET = 5;
+const int S_PWM_MIN = 6;
+const int S_PWM_MAX = 7;
+const int S_PWM_INCREASE = 8;
+const int S_PWM_DECREASE = 9;
+const int S_COMMIT = 10;
+
 class EscCalibrateMission : public Mission {
-    class PropellerStatus {
-    public:
-        long pwm = 1000;
-        void add(long step) {
-            long pwm = this->pwm + step;
-            if (pwm > 2000) {
-                pwm = 2000;
-            }
-            if (pwm < 1000) {
-                pwm = 1000;
-            }
-            this->pwm = pwm;
-        }
-        void max() {
-            this->pwm = 2000;
-        }
-        void min() {
-            this->pwm = 1000;
-        }
-    };
+
     class MissionConfigItem : public ConfigItem {
 
         void onAttached() {
@@ -73,31 +65,83 @@ class EscCalibrateMission : public Mission {
             void (*onBuildTitle)(TitleBuilder &, EscCalibrateMission *) = [](TitleBuilder &title, EscCalibrateMission *mission) {
                 mission->buildTitle(title);
             };
-            Buffer<String> options;
-            options.add("propeller0");
-            options.add("propeller1");
-            options.add("propeller2");
-            options.add("propeller3");
-            options.add("All");
+            ConfigItem *ci = this;
+            ci = ConfigItems::addReturn(ci, "Select-Propeller");
+            {
+                ci->setAttribute(0, mission, Lang::empty<void *>);
+                ci->onBuildTitle = [](TitleBuilder &title) {
+                    EscCalibrateMission *mission = title.configItem->getAttribute<EscCalibrateMission *>(0, 0);
+                    String selected;
+                    String unselected;
+                    for (int i = 0; i < 4; i++) {
+                        if (mission->isSelected(i)) {
+                            selected << i << ",";
+                        } else {
+                            unselected << i << ",";
+                        }
+                    }
+                    title.set<String>("selected", selected);
+                    title.set<String>("unselected", unselected);
+                };
+                for (int i = 0; i < 4; i++) {
+                    ConfigItem *cii = ConfigItems::addReturn(ci, String() << "Prop" << i);
+                    cii->setAttribute(0, mission, Lang::empty<void *>);
+                    cii->setAttribute(1, mission->propellers->get(i), Lang::empty<void *>);
+                    cii->onBuildTitle = [](TitleBuilder &title) {
+                        EscCalibrateMission *mission = title.configItem->getAttribute<EscCalibrateMission *>(0, 0);
+                        Propeller *propI = title.configItem->getAttribute<Propeller *>(1, 0);
+                        title.set<bool>("lock", propI->isLocked());
+                        title.set<bool>("open", propI->isOpen());
+                        title.set<long>("pwm", propI->getPwm());
+                        title.set<bool>("selected:", mission->isSelected(propI->getIndex()));
+                    };
+                    cii->onEnter = [](ConfigContext &cc) {
+                        EscCalibrateMission *mission = cc.getConfigItem()->getAttribute<EscCalibrateMission *>(0, 0);
+                        Propeller *propI = cc.getConfigItem()->getAttribute<Propeller *>(1, 0);
+                        mission->changeSelect(propI->getIndex());
+                    };
+                }
 
-            ConfigItems::addSelectInput(this, "Select-Propeller", this->mission->propeller, options);
-            ConfigItems::add(this, "Step", this->mission->step);
+                ci = this;
+            }
+
+            ConfigItems::add(ci, "Step", this->mission->step);
             this->addAction(
                 "+", onBuildTitle, [](ConfigContext &, EscCalibrateMission *mission) {
-                    mission->plus();
+                    mission->signal(S_PWM_INCREASE);
+                    mission->signal(S_COMMIT);
                 });
 
             this->addAction(
                 "-", onBuildTitle, [](ConfigContext &, EscCalibrateMission *mission) {
-                    mission->minus();
+                    mission->signal(S_PWM_DECREASE);
+                    mission->signal(S_COMMIT);
                 });
             this->addAction(
-                "Max(2000)", onBuildTitle, [](ConfigContext &, EscCalibrateMission *mission) {
-                    mission->max();
+                String() << "Max(" << GlobalVars::MAX_PWM << ")", onBuildTitle, [](ConfigContext &, EscCalibrateMission *mission) {
+                    mission->signal(S_PWM_MAX);
+                    mission->signal(S_COMMIT);
                 });
             this->addAction(
-                "Min(1000)", onBuildTitle, [](ConfigContext &, EscCalibrateMission *mission) {
-                    mission->min();
+                String() << "Min(" << GlobalVars::MIN_PWM << ")", onBuildTitle, [](ConfigContext &, EscCalibrateMission *mission) {
+                    mission->signal(S_PWM_MIN);
+                    mission->signal(S_COMMIT);
+                });
+            this->addAction(
+                "Lock", onBuildTitle, [](ConfigContext &, EscCalibrateMission *mission) {
+                    mission->signal(S_LOCK);
+                });
+            this->addAction(
+                "UnLock", onBuildTitle, [](ConfigContext &, EscCalibrateMission *mission) {
+                    mission->signal(S_UNLOCK);
+                });
+            this->addAction(
+                "Open", onBuildTitle, [](ConfigContext &, EscCalibrateMission *mission) {
+                    mission->signal(S_OPEN);
+                });
+            this->addAction(
+                "Close", onBuildTitle, [](ConfigContext &, EscCalibrateMission *mission) {
+                    mission->signal(S_CLOSE);
                 });
 
             {
@@ -127,35 +171,33 @@ protected:
     Foreground *fg;
     PwmCalculator *pwmCalculator;
 
-    Buffer<PropellerStatus *> pss;
-
     long step = 5;
 
-    int propeller;
+    bool propellerSelect[4] = {true, true, true, true};
 
     bool running = true;
 
     String message;
 
 public:
-    EscCalibrateMission(long id, PowerManage * pm, Propellers *propellers, Collector *collector, ConfigContext &cc, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac)
+    EscCalibrateMission(long id, PowerManage *pm, Propellers *propellers, Collector *collector, ConfigContext &cc, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac)
         : Mission(id, cc, throttle, signalQueue, collector, sys, logFac, "EscCalibrateMission") {
         this->propellers = propellers;
         this->fg = new Foreground(this);
-
-        this->propeller = -1;
-        this->pss.add(new PropellerStatus());
-        this->pss.add(new PropellerStatus());
-        this->pss.add(new PropellerStatus());
-        this->pss.add(new PropellerStatus());
 
         this->pwmCalculator = new EmptyPwmCalculator(pm, logFac);
     }
 
     ~EscCalibrateMission() {
-        pss.clear(Lang::delete_<PropellerStatus>);
         delete this->pwmCalculator;
         delete this->fg;
+    }
+    bool isSelected(int idx) {
+        return propellerSelect[idx];
+    }
+    void changeSelect(int idx) {
+        bool select = isSelected(idx);
+        propellerSelect[idx] = !select;
     }
 
     void exit() {
@@ -171,37 +213,22 @@ public:
     }
 
     void buildTitle(ConfigItem::TitleBuilder &title) {
-
-        for (int i = 0; i < pss.len(); i++) {
-            PropellerStatus *ps = pss.get(i, 0);
-            title.set<long>(String() << "prop" << i, ps->pwm);
+        Buffer<Propeller *> ps = propellers->getAll();
+        for (int i = 0; i < ps.len(); i++) {
+            title.set<long>(String() << "prop" << i, BufferUtil::get(ps, i)->getPwm());
         }
     }
 
     template <typename C>
-    void forEachPs(C c, void (*consumer)(C, PropellerStatus *)) {
-        if (this->propeller < 0 || this->propeller >= pss.len()) { // ALL.
-            for (int i = 0; i < pss.len(); i++) {
-                PropellerStatus *ps = pss.get(i, 0);
-                consumer(c, ps);
+    void forEachPropellerSelected(C c, void (*consumer)(C, Propeller *)) {
+        Buffer<Propeller *> ps = propellers->getAll();
+        for (int i = 0; i < ps.len(); i++) {
+            if (this->isSelected(i)) {
+                consumer(c, BufferUtil::get(ps, i));
             }
-        } else {
-            PropellerStatus *ps = pss.get(this->propeller, 0);
-            consumer(c, ps);
         }
     }
-    void plus() {
-        forEachPs<EscCalibrateMission *>(this, [](EscCalibrateMission *mission, PropellerStatus *ps) { ps->add(mission->step); });
-    }
-    void minus() {
-        forEachPs<EscCalibrateMission *>(this, [](EscCalibrateMission *mission, PropellerStatus *ps) { ps->add(-mission->step); });
-    }
-    void max() {
-        forEachPs<EscCalibrateMission *>(this, [](EscCalibrateMission *mission, PropellerStatus *ps) { ps->max(); });
-    }
-    void min() {
-        forEachPs<EscCalibrateMission *>(this, [](EscCalibrateMission *mission, PropellerStatus *ps) { ps->min(); });
-    }
+
     int run(Result &res) override {
 
         int ret = propellers->isReady(res);
@@ -210,20 +237,61 @@ public:
             return ret;
         }
 
+        int signal;
         while (this->running) {
             this->message.clear();
-            for (int i = 0; i < pss.len(); i++) {
-                PropellerStatus *ps = pss.get(i, 0);
-                Propeller *prop = propellers->get(i);
-                bool enabled = prop->isEnabled();
-                if (enabled) {
-                    prop->setThrottle(ps->pwm);
-                    prop->commitUpdate(propellers->getPwmCalculator());
-                }
-                this->message << "prop" << i << ":" << (enabled ? "enabled " : "disabled ") //
-                              << ",pwm:" << ps->pwm << "=>" << prop->getPwm() << ";";
+            message << "last signal:" << signal;
+            this->forEachPropellerSelected<int>(0, [](int, Propeller *prop) {
+                prop->commit();
+            });
+            int got = this->signalQueue->take(signal, 6);
+            if (!got) {
+                continue;
             }
-            this->sys->delay(6); // delay 2ms,2000us
+            switch (signal) {
+            case S_CLOSE:
+                this->forEachPropellerSelected<int>(0, [](int, Propeller *prop) {
+                    prop->close();
+                });
+                break;
+            case S_OPEN:
+                this->forEachPropellerSelected<int>(0, [](int, Propeller *prop) {
+                    prop->open();
+                });
+                break;
+            case S_LOCK:
+                this->forEachPropellerSelected<int>(0, [](int, Propeller *prop) {
+                    prop->lock();
+                });
+                break;
+            case S_UNLOCK:
+                this->forEachPropellerSelected<int>(0, [](int, Propeller *prop) {
+                    prop->unLock();
+                });
+                break;
+            case S_PWM_INCREASE:
+                this->forEachPropellerSelected<int>(this->step, [](int step, Propeller *prop) {
+                    long pwm = prop->getPwm();
+                    prop->setPwm(pwm + step);
+                });
+                break;
+            case S_PWM_DECREASE:
+                this->forEachPropellerSelected<int>(this->step, [](int step, Propeller *prop) {
+                    long pwm = prop->getPwm();
+                    prop->setPwm(pwm - step);
+                });
+                break;
+            case S_PWM_MAX:
+                this->forEachPropellerSelected<int>(this->step, [](int step, Propeller *prop) {
+                    prop->setPwm(GlobalVars::MAX_PWM);
+                });
+                break;
+            case S_PWM_MIN:
+                this->forEachPropellerSelected<int>(this->step, [](int step, Propeller *prop) {
+                    prop->setPwm(GlobalVars::MIN_PWM);
+                });
+                break;
+            }
         }
 
         return 1;

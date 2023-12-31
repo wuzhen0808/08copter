@@ -52,10 +52,11 @@ protected:
     int collectorTaskPriority = 1;
 
     long missionId = 0;
-    
-    Config* config;
+
+    Config *config;
+
 public:
-    Commander(Config* config, Factory *fac, PowerManage *pm, Rpy *rpy, Scheduler *sch, System *sys, LoggerFactory *logFac) : FlyWeight(logFac, "Commander") {
+    Commander(Config *config, Factory *fac, PowerManage *pm, Rpy *rpy, Scheduler *sch, System *sys, LoggerFactory *logFac) : FlyWeight(logFac, "Commander") {
         this->config = config;
         this->fac = fac;
         this->sys = sys;
@@ -144,7 +145,7 @@ public:
             }
             Collector *collector = me->mission->getCollector();
             this->collectorInQueue->offer(collector);
-            // run mission.            
+            // run mission.
             me->ret = me->mission->run(*me->res);
             // close collector.
             collector->close();
@@ -184,7 +185,7 @@ public:
             }
         }
         A8_TRACE(">>Commander::run()1");
-        
+
         A8_TRACE(">>config->2");
         this->sch->createTask<Commander *>("MissionQueueRunner", missionTaskPriority, this, [](Commander *this_) {
             this_->missionLoop();
@@ -204,7 +205,7 @@ public:
             Result res;
             int ret = this->buildNextMission(config, cc, propellers, throttle, writer, &collector, mission, res);
             if (ret < 0) {
-                //failed to build mission, build next .                
+                // failed to build mission, build next .
                 sys->out->println(res.errorMessage);
                 continue;
             }
@@ -231,7 +232,7 @@ public:
             if (me->ret < 0) {
                 log(String() << "fail of mission, detail:" << me->res->errorMessage);
             } else {
-                log("done of mission.");
+                log(String() << "done of mission(" << me->mission->getId() << ")");
             }
             delete me->mission;
             delete me;

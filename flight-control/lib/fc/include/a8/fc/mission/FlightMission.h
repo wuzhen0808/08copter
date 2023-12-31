@@ -212,12 +212,14 @@ public:
         throttle.commitUpdate();
         return 1;
     }
-    int run2(Result &res) {
-        float minInTheory = 0;
-        float maxInTheory = 0;
-        this->throttler->getLimitInTheory(minInTheory, maxInTheory);
-        this->propellers->setLimitInTheory(minInTheory, maxInTheory);
-        this->propellers->open(config->enablePropeller);
+    int run2(Result &res) {        
+        if (config->lockPropellers) {
+            this->propellers->lockAll();
+        } else {
+            this->propellers->unlockAll();
+        }
+
+        this->propellers->open();
         this->sys->out->println(String() << "running ... " << this->id);
         this->rpy->reset();
         this->throttle.reset(startTimeMs);
@@ -277,8 +279,8 @@ protected:
         float deg;
         ret = rpy->getImu()->checkBalance(false, config->unBalanceDegLimit, deg, res);
         if (ret < 0) { //
-            if (deg > config->unBalanceDegUpLimit && config->enablePropeller) {
-                res << String() << "cannot create mission, rpy un-balance degree(" << deg << ") exceed the up limit(" << config->unBalanceDegUpLimit << ") and the propellers are enabled.";
+            if (deg > config->unBalanceDegUpLimit && !config->lockPropellers) {
+                res << String() << "cannot create mission, rpy un-balance degree(" << deg << ") exceed the up limit(" << config->unBalanceDegUpLimit << ") and the propellers are unLocked.";
                 return -1;
             }
 
@@ -312,8 +314,8 @@ protected:
 
     int checkSafetyWhenIgnoreBalance(FlightConfigItem *config, Result &res) {
 
-        if (config->enablePropeller) {
-            res << "propeller is enabled,it's not safe to start the mission with un-balance rpy.";
+        if (!config->lockPropellers) {
+            res << "propeller is not locked,it's not safe to start the mission with un-balance rpy.";
             return -1;
         }
         return 1;

@@ -32,6 +32,11 @@ public:
 
     ~Mission() {
     }
+    
+    void signal(int signal) {
+        this->signalQueue->offer(signal);
+    }
+    
     long getId() {
         return id;
     }

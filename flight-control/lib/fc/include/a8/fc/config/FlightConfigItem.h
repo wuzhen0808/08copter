@@ -47,7 +47,7 @@ public:
     float activeThrottle3 = 45;
 
     long flyingTimeLimitSec = 15;
-    bool enablePropeller = true;
+    bool lockPropellers = true;
     int stableCheckRetries = 10;
     int unBalanceAction = UnBalanceAction::IGNORE_IF_SAFE;
     float unBalanceDegUpLimit = 10.0f;
@@ -57,6 +57,7 @@ public:
     // 19.5,0,3.5,volt@11.2 **
     // 19.5,5,3.9,volt@12.2 *
     // 19.5,6.5,4.25,volt@11.0 *
+    // 18,16.5,4.1,volt@11.3
 
     double pidKp = 19.5; // volt@11.2
     double pidKi = 6.5;
@@ -93,7 +94,7 @@ public:
     }
 
     void buildTitle(ConfigItem::TitleBuilder &title) override {
-        title.set<bool>("enablePropeller", this->enablePropeller);
+        title.set<bool>("lockPropellers", this->lockPropellers);
         title.set<float>("Kp", this->pidKp);
         title.set<float>("Ki", this->pidKi);
         title.set<float>("Kd", this->pidKd);
@@ -184,7 +185,7 @@ public:
             ci = this;
         }
 
-        ConfigItems::add(ci, "Propellers", new PropellersConfigItem(enablePropeller, activeThrottle0, activeThrottle1, activeThrottle2, activeThrottle3));
+        ConfigItems::add(ci, "Propellers", new PropellersConfigItem(lockPropellers, activeThrottle0, activeThrottle1, activeThrottle2, activeThrottle3));
 
         ci = ConfigItems::addReturn(ci, "Balance-pid");
         {

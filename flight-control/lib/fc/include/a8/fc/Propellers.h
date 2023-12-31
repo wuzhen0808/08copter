@@ -81,8 +81,7 @@ public:
         return propellers.get(idx, 0);
     }
 
-    void open(bool enable) {
-        this->enableAll(enable);
+    void open() {
         propellers.forEach<int>(0, [](int c, Propeller *propeller) {
             propeller->open();
         });
@@ -92,30 +91,24 @@ public:
             propeller->beforeUpdate();
         });
     }
-    void commitUpdate() {
+    void commitThrottle() {
         for (int i = 0; i < propellers.len(); i++) {
             Propeller *prop = this->propellers.get(i, 0);
-            prop->commitUpdate(this->pwmCalculator);
+            prop->commitThrottle(this->pwmCalculator);
         }
     }
-    void commitUpdate(int idx) {
+    void commitThrottle(int idx) {
         Propeller *prop = this->propellers.get(idx, 0);
         if (prop == 0) {
             return;
         }
-        prop->commitUpdate(this->pwmCalculator);
+        prop->commitThrottle(this->pwmCalculator);
     }
 
     void close() {
         propellers.forEach<int>(0, [](int, Propeller *propeller) {
             propeller->close();
         });
-    }
-
-    void setLimitInTheory(long minInTheory, long maxInTheory) {
-        for (int i = 0; i < propellers.len(); i++) {
-            propellers.get(i, 0)->setLimitInTheory(minInTheory, maxInTheory);
-        }
     }
 
     void addThrottle(float th0, float th1, float th2, float th3) {
@@ -142,9 +135,15 @@ public:
         });
     }
 
-    void enableAll(bool enable) {
-        propellers.forEach<bool>(enable, [](bool enable, Propeller *propeller) {
-            propeller->enable(enable);
+    void lockAll() {
+        propellers.forEach<bool>(0, [](bool , Propeller *propeller) {
+            propeller->lock();
+        });
+    }
+
+    void unlockAll() {
+        propellers.forEach<bool>(0, [](bool , Propeller *propeller) {
+            propeller->unLock();
         });
     }
 

@@ -3,7 +3,7 @@
 #include "a8/fc/pwm/PwmCalculator.h"
 #include "a8/util/Result.h"
 #include "a8/util/comp.h"
-
+#include "a8/fc/GlobalVars.h"
 namespace a8::fc {
 using namespace a8::util;
 using namespace a8::util::comp;
@@ -14,15 +14,18 @@ protected:
     float throttle;
     String name;
     int idx;
-    bool enable_ = true;
-    float minInTheory = 0;
-    float maxInTheory = 1000;
+    bool locked_ = true;
+    bool open_ = false;
     long pwm;
 
 public:
     Propeller(String name, int idx) {
         this->name = name;
         this->idx = idx;
+        this->pwm = GlobalVars::MIN_PWM;
+    }
+    int getIndex() {
+        return this->idx;
     }
     virtual void hz(int hz) = 0;
 
@@ -39,22 +42,27 @@ public:
     }
 
     void open() {
+        this->open_ = true;
     }
     void close() {
+        this->open_ = false;
     }
 
-    void setLimitInTheory(float min, float max) {
-        this->minInTheory = min;
-        this->maxInTheory = max;
+    bool isLocked() {
+        return this->locked_;
+    }
+    bool isOpen() {
+        return this->open_;
     }
 
-    bool isEnabled() {
-        return this->enable_;
+    void lock() {
+        this->locked_ = true;
     }
 
-    void enable(bool enable) {
-        this->enable_ = enable;
+    void unLock() {
+        this->locked_ = false;
     }
+
     String getName() {
         return this->name;
     }
@@ -88,12 +96,24 @@ public:
             max = value;
         }
     }
-
-    void commitUpdate(PwmCalculator *pwmCalculator) {
-        pwm = 1000 + pwmCalculator->calculate(this->idx, this->throttle);
-        if (this->enable_) {
-            this->doApply(pwm);
+    void setPwm(long pwm) {
+        this->pwm = pwm;
+    }
+    void commit() {
+        if (this->locked_) {
+            return;
         }
+        if (!this->open_) {
+            return;
+        }
+        this->doApply(pwm);
+    }
+    void commit(long pwm) {
+        this->setPwm(pwm);
+        this->commit();
+    }
+    void commitThrottle(PwmCalculator *pwmCalculator) {
+        commit(1000 + pwmCalculator->calculate(this->idx, this->throttle));
     }
 
     virtual void doApply(long pwm) = 0;

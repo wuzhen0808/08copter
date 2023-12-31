@@ -33,7 +33,13 @@
 #include "a8/fc/Rpy.h"
 namespace a8::fc {
 class GlobalVars {
+
 public:
+    static const int MAX_PWM = 2000;
+    static const int MIN_PWM = 1000;
+    static constexpr float MAX_THROTTLE = 1000;
+    static constexpr float MIN_THROTTLE = 0;
+
     int rpyMovingAvgWindowWidth = 1;
 };
 } // namespace a8::fc
