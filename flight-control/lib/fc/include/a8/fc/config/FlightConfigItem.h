@@ -1,8 +1,8 @@
 #pragma once
 #include "a8/fc/GlobalVars.h"
 #include "a8/fc/Imu.h"
+#include "a8/fc/ImuMonitor.h"
 #include "a8/fc/PowerManage.h"
-#include "a8/fc/RpyMonitor.h"
 #include "a8/fc/config/PowerConfigItem.h"
 #include "a8/fc/config/PropellersConfigItem.h"
 #include "a8/fc/config/RpyConfigItem.h"
@@ -10,6 +10,17 @@
 
 namespace a8::fc {
 using namespace a8::util;
+
+enum ImuFilter {
+    NONE = 0,
+    MAG = 1,
+    MOH = 2
+};
+enum GyroFilter {
+    NO = 0,
+    LP1 = 1,
+    LP2 = 2
+};
 enum UnBalanceAction {
     ASK = 0,
     IGNORE = 1,
@@ -34,12 +45,14 @@ class FlightConfigItem : public ConfigItem {
     Reader *reader;
     Output *out;
     Scheduler *sch;
-    RpyMonitor *rpyMonitor;
+    ImuMonitor *imuMonitor;
     PowerManage *pm;
-    Rpy *rpy;
+    Imu *imu;
 
 public:
     long tickTimeMs = 6;
+    // rpy
+    int imuFilter = 0;
 
     float elevationThrottle = 0.0f;
     float activeThrottle0 = 55;
@@ -47,31 +60,37 @@ public:
     float activeThrottle2 = 45;
     float activeThrottle3 = 45;
 
-    long flyingTimeLimitSec = 15;
+    long flyingTimeLimitSec = 10;
     bool lockPropellers = true;
     int stableCheckRetries = 10;
     int unBalanceAction = UnBalanceAction::IGNORE_IF_SAFE;
     float unBalanceDegUpLimit = 10.0f;
     float unBalanceDegLimit = 5.0f;
     float maxThrottle = 1000;
+    //////////////////////
+    // MAG filter only on IMU:
     // 18.75,0,4.5,volt@11.2
     // 19.5,0,3.5,volt@11.2 **
     // 19.5,5,3.9,volt@12.2 *
     // 19.5,6.5,4.25,volt@11.0 *
     // 18,16.5,4.1,volt@11.3
-
+    //////////////////////
+    // imuFilter:empty;
+    // rpyFilter:LP1
+    // TODO: 12.75,0,3.9
+    //////////////////////
     double pidKp = 19.5; // volt@11.2
     double pidKi = 5.0;
     double pidKd = 3.9;
     double pidOutputLimit = 500.0; //
     double pidOutputLimitI = 500.0;
     bool pidEnableErrorDiffFilter = true;
-    float pidErrorDiffFilterCutOffRate = 15.0f;
+    float pidErrorDiffFilterCutOffRate = 50.0f;
     int pidErrorDiffFilterOrder = 2;
 
-    double yawPidKp = 9.5;
-    double yawPidKi = 3.5;
-    double yawPidKd = 2.25;
+    double yawPidKp = 0;
+    double yawPidKi = 0;
+    double yawPidKd = 0;
     double yawPidOutputLimit = 150.0; //
     double yawPidOutputLimitI = 150.0;
     int yawPidErrorDiffMAWidth = 1;
@@ -88,28 +107,33 @@ public:
     float maxVoltForPwmCompensate = 12.5f;
     float minVoltForPwmCompensate = 7.0f;
 
+    int maxImuUpdateRetries = 5;
+    int rpyFilter = LP1;
+    float rpyFilterCutOffHz = 20.0f;
+
     GlobalVars &vars;
 
 public:
-    FlightConfigItem(GlobalVars &vars, Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Scheduler *sch) : vars(vars) {
+    FlightConfigItem(GlobalVars &vars, Reader *reader, Output *out, PowerManage *pm, Imu *imu, Scheduler *sch) : vars(vars) {
         this->reader = reader;
         this->out = out;
         this->sch = sch;
-        this->rpy = rpy;
+        this->imu = imu;
         this->pm = pm;
-        this->rpyMonitor = new RpyMonitor(rpy, out, sch);
+        this->imuMonitor = new ImuMonitor(imu, out, sch);
     }
     ~FlightConfigItem() {
-        delete this->rpyMonitor;
+        delete this->imuMonitor;
     }
 
     void buildTitle(ConfigItem::TitleBuilder &title) override {
-        title.set<bool>("lockPropellers", this->lockPropellers);
+        title.set<long>("flySec", this->flyingTimeLimitSec);
+        title.set<bool>("lockProps", this->lockPropellers);
         title.set<float>("Kp", this->pidKp);
         title.set<float>("Ki", this->pidKi);
         title.set<float>("Kd", this->pidKd);
-        title.set<bool>("enableForeground", this->enableForeground);
-        title.set<long>("preStartDelaySec", this->preStartCountDown);
+        title.set<bool>("enFg", this->enableForeground);
+        title.set<long>("countDown", this->preStartCountDown);
     }
 
     void onAttached() override {
@@ -147,28 +171,53 @@ public:
         }
         ci = ConfigItems::addReturn(ci, "Rpy");
         {
-            ConfigItems::add(ci, "Rpy-check", new RpyConfigItem(rpy, this->unBalanceDegLimit));
-            ConfigItems::add(ci, "rpyMovingAvgWindowWidth", vars.rpyMovingAvgWindowWidth);
-            ConfigItems::add(ci, "maxRpyUpdateRetries", vars.maxRpyUpdateRetries);
+            {
+
+                Buffer<String> options;
+                options.add("NONE");
+                options.add("MAG");
+                options.add("MOH");
+                ConfigItems::addSelectInput(ci, "imuFilter", imuFilter, options);
+            }
+            {
+                ci = ci->getLastChild();
+                ci->setAttribute(0, this, Lang::empty<void *>);
+                ci->onAfterEnter = [](ConfigContext &cc) {
+                    FlightConfigItem *this_ = cc.getConfigItem()->getAttribute<FlightConfigItem *>(0, 0);
+                    this_->imu->setFilter(this_->imuFilter);
+                };
+                ci = ci->getParent<ConfigItem>();
+            }
+            {
+
+                Buffer<String> options;
+                options.add("NO");
+                options.add("LP1");
+                options.add("LP2");
+                ConfigItems::addSelectInput(ci, "rpyFilter", rpyFilter, options);
+            }
+            ConfigItems::add(ci, "rpyFilterCutOffHz", rpyFilterCutOffHz);
+            ConfigItems::add(ci, "Rpy-check", new RpyConfigItem(imu, this->unBalanceDegLimit));
+            ConfigItems::add(ci, "maxImuUpdateRetries", maxImuUpdateRetries);
             ci = ConfigItems::addReturn(ci, "Monitor-rpy");
             {
-                ci->setAttribute(rpyMonitor, [](void *) {});
+                ci->setAttribute(imuMonitor, [](void *) {});
                 ci->onBuildTitle = [](TitleBuilder &title) {
-                    RpyMonitor *rpyMonitor = title.configItem->getAttribute<RpyMonitor *>(0);
-                    title.set<bool>("Running", rpyMonitor->isRunning());
+                    ImuMonitor *imuMonitor = title.configItem->getAttribute<ImuMonitor *>(0);
+                    title.set<bool>("Running", imuMonitor->isRunning());
                 };
                 ci->onEnter = [](ConfigContext &cc) {
-                    RpyMonitor *rpyMonitor = cc.navigator->get()->getAttribute<RpyMonitor *>(0);
-                    if (rpyMonitor->isRunning()) {
-                        rpyMonitor->close();
+                    ImuMonitor *imuMonitor = cc.navigator->get()->getAttribute<ImuMonitor *>(0);
+                    if (imuMonitor->isRunning()) {
+                        imuMonitor->close();
                     } else {
-                        rpyMonitor->open();
+                        imuMonitor->open();
                     }
                 };
-                ConfigItems::add<RpyMonitor *, float>(
-                    ci, "Set-rate", rpyMonitor,                                           //
-                    [](RpyMonitor *rpyMonitor) { return rpyMonitor->getRate().Hz(); },    //
-                    [](RpyMonitor *rpyMonitor, float rate) { rpyMonitor->setRate(rate); } //
+                ConfigItems::add<ImuMonitor *, float>(
+                    ci, "Set-rate", imuMonitor,                                           //
+                    [](ImuMonitor *imuMonitor) { return imuMonitor->getRate().Hz(); },    //
+                    [](ImuMonitor *imuMonitor, float rate) { imuMonitor->setRate(rate); } //
                 );
             }
             ci = this;
@@ -209,11 +258,10 @@ public:
 
                 ci = ci->getParent<ConfigItem>();
             } // end of pid.
-            
+
             ConfigItems::add(ci, "pidEnableErrorDiffFilter", pidEnableErrorDiffFilter);
             ConfigItems::add(ci, "pidErrorDiffFilterCutOffRate", pidErrorDiffFilterCutOffRate);
             ConfigItems::add(ci, "pidErrorDiffFilterOrder", pidErrorDiffFilterOrder);
-            
 
             ci = ci->getParent<ConfigItem>();
         }

@@ -3,23 +3,24 @@
 #pragma once
 #include "a8/fc/Commander.h"
 #include "a8/fc/Factory.h"
+#include "a8/fc/GlobalVars.h"
 #include "a8/fc/PowerManage.h"
 #include "a8/fc/Rpy.h"
 #include "a8/util/comp.h"
-#include "a8/fc/GlobalVars.h"
 
 namespace a8::fc {
 class Assembler : public Component {
 
 protected:
     Commander *commander;
-    
+
     PowerManage *pm;
     Factory *fac;
-    Directory<ConfigItem *> * root;
-    Rpy * rpy;
-    Config * config;
+    Directory<ConfigItem *> *root;
+    Imu *imu;
+    Config *config;
     GlobalVars vars;
+
 public:
     Assembler(Factory *fac) : Component("Assembler") {
         this->fac = fac;
@@ -29,14 +30,13 @@ public:
         log(">>populate.");
         Component::populate(sc);
         fac->populate(sc);
-        System* sys = sc->getSys();        
+        System *sys = sc->getSys();
         this->pm = new PowerManage(sys, 5, 21, loggerFactory);
-        Imu * imu= fac->newImu();
-        this->rpy = new Rpy(imu, vars.maxRpyUpdateRetries, vars.rpyMovingAvgWindowWidth);
-        config = new Config(vars, sys->input, sys->out, pm, rpy, sc->scheduler);
-        root = new Directory<ConfigItem *>("Root", 0);        
+        imu = fac->newImu();
+        config = new Config(vars, sys->input, sys->out, pm, imu, sc->scheduler);
+        root = new Directory<ConfigItem *>("Root", 0);
         config->attach(root);
-        this->commander = new Commander(config, fac, pm, rpy, sc->scheduler, sc->getSys(), loggerFactory);
+        this->commander = new Commander(config, fac, pm, imu, sc->scheduler, sc->getSys(), loggerFactory);
         log("<<populate.");
     }
 
@@ -45,8 +45,8 @@ public:
         this->fac->setupWire();
         log(">>setup pm.");
         this->pm->setup();
-        log(">>setup rpy.");
-        this->rpy->getImu()->setup();
+        log(">>setup imu.");
+        this->imu->setup();
         log(">>setup commander.");
         this->commander->setup();
         log("<<setup done.");
@@ -87,7 +87,7 @@ public:
 
     void run(TickingContext *tc) {
         System *sys = tc->getSys();
-        while (true) {            
+        while (true) {
             Result res;
             int ret = this->commander->run(res);
             if (ret < 0) {

@@ -73,6 +73,7 @@ public:
     };
 
     using onEnterF = void (*)(ConfigContext &);
+    using onAfterEnterF = void (*)(ConfigContext &);
     using onBuildTitleF = void (*)(TitleBuilder &);
 
 protected:
@@ -81,6 +82,7 @@ protected:
 public:
     // event handler.
     onEnterF onEnter = 0;
+    onAfterEnterF onAfterEnter = 0;
     onBuildTitleF onBuildTitle = 0;
 
 public:
@@ -190,6 +192,12 @@ public:
         }
     }
 
+    virtual void afterEnter(ConfigContext &cc) {
+        if (this->onAfterEnter != 0) {
+            this->onAfterEnter(cc);
+        }
+    }
+
     virtual bool attach(Directory<ConfigItem *> *dir) {
         if (this->dir != 0) {
             return false;
@@ -227,6 +235,13 @@ public:
                 child->forEach<C>(c, consumer, true);
             }
         }
+    }
+    ConfigItem *getLastChild() {
+        Directory<ConfigItem *> *child = this->dir->getLastChild();
+        if (child == 0) {
+            return 0;
+        }
+        return child->getElement();
     }
 };
 

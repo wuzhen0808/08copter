@@ -193,6 +193,7 @@ public:
             }
             ConfigItem *ci = dir->getElement();
             ci->enter(cc);
+            ci->afterEnter(cc);
         });
         nav.setLeftHandler([](ConfigContext &cc, DirectoryNavigator<ConfigContext &, ConfigItem *> *nav) {
             bool changed = nav->left();

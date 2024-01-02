@@ -19,22 +19,27 @@ public:
         nameWithExprs.add("voltage");
         nameWithExprs.add("maxPwmC[maxOf(prop0-pwmC,prop1-pwmC,prop2-pwmC,prop3-pwmC)]");
         nameWithExprs.add("maxPwmT[maxOf(prop0-pwmT,prop1-pwmT,prop2-pwmT,prop3-pwmT)]");
+        
+        nameWithExprs.add("afRoll");        
+        nameWithExprs.add("afPitch");
+        nameWithExprs.add("afYaw");
+        
+        nameWithExprs.add("aRoll");
+        nameWithExprs.add("aPitch");
+        nameWithExprs.add("aYaw");
+        nameWithExprs.add("aRollDiff[diff(aRoll)]");
+        nameWithExprs.add("aPitchDiff[diff(aPitch)]");
+        nameWithExprs.add("aYawDiff[diff(aYaw)]");
 
-        nameWithExprs.add("rawRoll");
-        nameWithExprs.add("rawPitch");
-        nameWithExprs.add("rawYaw");
-        nameWithExprs.add("roll");
-        nameWithExprs.add("pitch");
-        nameWithExprs.add("yaw");
-        nameWithExprs.add("rollDiff[diff(roll)]");
-        nameWithExprs.add("pitchDiff[diff(pitch)]");
-        nameWithExprs.add("yawDiff[diff(yaw)]");
+        nameWithExprs.add("afRollDiff[diff(afRoll)]");
+        nameWithExprs.add("afPitchDiff[diff(afPitch)]");
+        nameWithExprs.add("afYawDiff[diff(afYaw)]");
+        
         nameWithExprs.add("maxPwm[maxOf(prop0-pwm,prop1-pwm,prop2-pwm,prop3-pwm)]");
         nameWithExprs.add("avgMaxPwm[avg(maxPwm)]");
-        nameWithExprs.add("RollPid-err0");
-        nameWithExprs.add("RollPid-err1");
-        nameWithExprs.add("RollPid-err0Diff");
-        nameWithExprs.add("RollPid-err1Diff");
+        nameWithExprs.add("RollPid-err");
+        nameWithExprs.add("RollPid-dErr");
+        nameWithExprs.add("RollPid-dErrDiff");
         nameWithExprs.add("RollPid-ets");
         nameWithExprs.add("RollPid-etMs[*(RollPid-ets,1000)]");
         nameWithExprs.add("RollPid-p");
@@ -42,10 +47,9 @@ public:
         nameWithExprs.add("RollPid-d");
         nameWithExprs.add("RollPid-o");
         //
-        nameWithExprs.add("PitchPid-err0");
-        nameWithExprs.add("PitchPid-err1");
-        nameWithExprs.add("PitchPid-err0Diff");
-        nameWithExprs.add("PitchPid-err1Diff");
+        nameWithExprs.add("PitchPid-err");
+        nameWithExprs.add("PitchPid-dErr");
+        nameWithExprs.add("PitchPid-dErrDiff");
         nameWithExprs.add("PitchPid-ets");
         nameWithExprs.add("PitchPid-etMs[*(PitchPid-ets,1000)]");
         nameWithExprs.add("PitchPid-p");
@@ -53,10 +57,9 @@ public:
         nameWithExprs.add("PitchPid-d");
         nameWithExprs.add("PitchPid-o");
         //
-        nameWithExprs.add("YawPid-err0");
-        nameWithExprs.add("YawPid-err1");
-        nameWithExprs.add("YawPid-err0Diff");
-        nameWithExprs.add("YawPid-err1Diff");        
+        nameWithExprs.add("YawPid-err");
+        nameWithExprs.add("YawPid-dErr");
+        nameWithExprs.add("YawPid-dErrDiff");        
         nameWithExprs.add("YawPid-etMs[*(YawPid-ets,1000)]");
         nameWithExprs.add("YawPid-p");
         nameWithExprs.add("YawPid-i");
@@ -70,8 +73,8 @@ public:
 
         /*
         names.add("timeMs[diff]");
-        names.add("roll");
-        names.add("roll[diff]");
+        names.add("aRoll");
+        names.add("aRoll[diff]");
         names.add("pitch");
         names.add("pitch[diff]");
         names.add("yaw");

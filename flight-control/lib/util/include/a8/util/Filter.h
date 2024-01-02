@@ -24,6 +24,11 @@
 namespace a8::util {
 class Filter {
 public:
-    virtual float update(float value);
+    virtual float update(float value) = 0;
+};
+class EmptyFilter : public Filter {
+    float update(float value) {
+        return value;
+    }
 };
 } // namespace a8::util

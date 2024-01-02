@@ -1,7 +1,7 @@
 #pragma once
 #include "a8/fc/PowerManage.h"
 #include "a8/fc/Rpy.h"
-#include "a8/fc/RpyMonitor.h"
+#include "a8/fc/ImuMonitor.h"
 #include "a8/fc/config/FlightConfigItem.h"
 #include "a8/fc/config/PowerConfigItem.h"
 #include "a8/fc/config/RpyConfigItem.h"
@@ -38,10 +38,10 @@ private:
     Scheduler *sch;
     ConfigItem *startConfigItem;
     PowerManage *pm;
-    Rpy *rpy;
+    Imu *rpy;
     GlobalVars& vars;
 public:
-    Config(GlobalVars &vars, Reader *reader, Output *out, PowerManage *pm, Rpy *rpy, Scheduler *sch):vars(vars) {
+    Config(GlobalVars &vars, Reader *reader, Output *out, PowerManage *pm, Imu *rpy, Scheduler *sch):vars(vars) {
         this->reader = reader;
         this->out = out;
         this->sch = sch;

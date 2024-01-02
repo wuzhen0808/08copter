@@ -1,5 +1,6 @@
 #pragma once
 #include "a8/fc/Factory.h"
+#include "a8/fc/Imu.h"
 #include "a8/fc/PowerManage.h"
 #include "a8/fc/collect/Collector.h"
 #include "a8/fc/config/Config.h"
@@ -33,7 +34,7 @@ protected:
     Scheduler *sch;
     Propellers *propellers;
     PowerManage *pm;
-    Rpy *rpy;
+    Imu *imu;
     Collector *collector;
     Throttler *throttler;
 
@@ -56,14 +57,14 @@ protected:
     Config *config;
 
 public:
-    Commander(Config *config, Factory *fac, PowerManage *pm, Rpy *rpy, Scheduler *sch, System *sys, LoggerFactory *logFac) : FlyWeight(logFac, "Commander") {
+    Commander(Config *config, Factory *fac, PowerManage *pm, Imu *imu, Scheduler *sch, System *sys, LoggerFactory *logFac) : FlyWeight(logFac, "Commander") {
         this->config = config;
         this->fac = fac;
         this->sys = sys;
         this->reader = sys->input;
         this->sch = sch;
         this->pm = pm;
-        this->rpy = rpy;
+        this->imu = imu;
         this->propellers = new Propellers(fac, 17, 18, 19, 20, loggerFactory);
         this->missionInQueue = this->sch->createSyncQueue<MissionEntry *>(1);
         this->missionOutQueue = this->sch->createSyncQueue<MissionEntry *>(1);
@@ -105,7 +106,7 @@ public:
             log(res.errorMessage);
             return ret;
         }
-        ret = rpy->collectDataItems(collector, res);
+        ret = imu->collectDataItems(collector, res);
         if (ret < 0) {
             log(res.errorMessage);
             return ret;
@@ -116,7 +117,7 @@ public:
         }
         A8_DEBUG("buildNextMission.2");
         if (config->missionSelect == Config::MissionType::FLIGHT) {
-            mission = new FlightMission(missionId++, config->flightConfigItem, fac, pm, rpy, propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
+            mission = new FlightMission(missionId++, config->flightConfigItem, fac, pm, imu, propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
         } else if (config->missionSelect == Config::MissionType::ESC_CALIBRATE) {
             mission = new EscCalibrateMission(missionId++, pm, propellers, collector, cc, throttle, signalQueue, sys, loggerFactory);
         } else {
@@ -232,7 +233,7 @@ public:
             if (me->ret < 0) {
                 log(String() << "fail of mission, detail:" << me->res->errorMessage);
             } else {
-                log(String() << "done of mission(" << me->mission->getId() << ")");
+                log(String() << "done of mission(" << me->mission->getId() << "), time cost in sec:" << (mission->getTimeCost() / 1000.0f));
             }
             delete me->mission;
             delete me;

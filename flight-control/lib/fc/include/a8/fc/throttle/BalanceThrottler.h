@@ -26,6 +26,7 @@ class BalanceThrottler : public Throttler {
     float maxBalanceThrottle = 0;
 
     float rpy_[3];
+    float fRpy_[3];
 
     FlightConfigItem *config;
 
@@ -40,9 +41,9 @@ public:
         if (config->pidEnableErrorDiffFilter) {
             Rate tickRate = Rate::ms(config->tickTimeMs);
             int order = config->pidErrorDiffFilterOrder;
-            this->rollPid->setErrorDiffFilter(fac->newLowPassFilter(config->pidErrorDiffFilterCutOffRate, tickRate,order), Lang::delete_<Filter>);
-            this->pitchPid->setErrorDiffFilter(fac->newLowPassFilter(config->pidErrorDiffFilterCutOffRate, tickRate,order), Lang::delete_<Filter>);
-            this->yawPid->setErrorDiffFilter(fac->newLowPassFilter(config->pidErrorDiffFilterCutOffRate, tickRate,order), Lang::delete_<Filter>);
+            this->rollPid->setErrorDiffFilter(fac->newLowPassFilter(config->pidErrorDiffFilterCutOffRate, tickRate, order), Lang::delete_<Filter>);
+            this->pitchPid->setErrorDiffFilter(fac->newLowPassFilter(config->pidErrorDiffFilterCutOffRate, tickRate, order), Lang::delete_<Filter>);
+            this->yawPid->setErrorDiffFilter(fac->newLowPassFilter(config->pidErrorDiffFilterCutOffRate, tickRate, order), Lang::delete_<Filter>);
         }
     }
     ~BalanceThrottler() {
@@ -59,14 +60,6 @@ public:
 
     int collectDataItems(Collector *collector, Result &res) override {
         int ret = 1;
-        if (ret > 0)
-            ret = collector->add("roll", this->rpy_[0], res);
-        if (ret > 0) {
-            ret = collector->add("pitch", this->rpy_[1], res);
-        }
-        if (ret > 0) {
-            ret = collector->add("yaw", this->rpy_[2], res);
-        }
         if (ret > 0) {
             ret = this->rollPid->collectDataItems(collector, res);
         }
@@ -91,11 +84,11 @@ public:
     int update(Throttle &ctx, Result &res) override {
         A8_LOG_DEBUG(logger, ">>Bal.update.");
 
-        rpy->get(rpy_);
+        rpy->get(rpy_, fRpy_);
         // pid
-        rollPid->update(ctx.timeMs_, rpy_[0], desiredRoll);
-        pitchPid->update(ctx.timeMs_, rpy_[1], desiredPitch);
-        yawPid->update(ctx.timeMs_, rpy_[2], desiredYaw);
+        rollPid->update(ctx.timeMs_, rpy_[0], fRpy_[0], desiredRoll);
+        pitchPid->update(ctx.timeMs_, rpy_[1], fRpy_[1], desiredPitch);
+        yawPid->update(ctx.timeMs_, rpy_[2], fRpy_[2], desiredYaw);
         //
         float rollThrottle = rollPid->getOutput();
         float pitchThrottle = pitchPid->getOutput();

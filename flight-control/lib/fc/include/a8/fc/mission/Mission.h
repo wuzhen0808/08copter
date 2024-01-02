@@ -20,6 +20,8 @@ protected:
     SyncQueue<int> *signalQueue;
     Collector *collector;
     long id;
+    long startTimeMs;
+    long endTimeMs;
 
 public:
     Mission(long id, ConfigContext &configContext, Throttle &throttle, SyncQueue<int> *signalQueue, Collector *collector, System *sys, LoggerFactory *logFac, String name)
@@ -32,11 +34,22 @@ public:
 
     ~Mission() {
     }
-    
+    void onStart(long timeMs) {
+        this->startTimeMs = timeMs;
+    }
+
+    void onEnd(long timeMs) {
+        this->endTimeMs = timeMs;
+    }
+
+    long getTimeCost() {
+        return this->endTimeMs - this->startTimeMs;
+    }
+
     void signal(int signal) {
         this->signalQueue->offer(signal);
     }
-    
+
     long getId() {
         return id;
     }

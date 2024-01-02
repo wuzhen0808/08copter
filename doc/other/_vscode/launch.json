@@ -1,0 +1,86 @@
+// AUTOMATICALLY GENERATED FILE. PLEASE DO NOT MODIFY IT MANUALLY
+//
+// PIO Unified Debugger
+//
+// Documentation: https://docs.platformio.org/page/plus/debugging.html
+// Configuration: https://docs.platformio.org/page/projectconf/section_env_debug.html
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch - util_native",
+            "type": "gdb",
+            "request": "launch",
+            "target": ".pio/build/util_native/program.exe",
+            "cwd": "${workspaceRoot}",
+            "valuesFormatting": "parseText"
+        },
+        {
+            "name": "Launch - gs_fc_native",
+            "type": "gdb",
+            "request": "launch",
+            "target": ".pio/build/gs_fc_native/program.exe",
+            "cwd": "${workspaceRoot}",
+            "valuesFormatting": "parseText"
+        },
+        {
+            "name": "Launch - fc_native",
+            "type": "gdb",
+            "request": "launch",
+            "target": ".pio/build/fc_native/program.exe",
+            "cwd": "${workspaceRoot}",
+            "valuesFormatting": "parseText"
+        },
+        {
+            "name": "Launch - gs",
+            "type": "gdb",
+            "request": "launch",
+            "target": ".pio/build/gs/program.exe",
+            "cwd": "${workspaceRoot}",
+            "valuesFormatting": "parseText"
+        },
+        {
+            "type": "gdb",
+            "request": "attach",
+            "name": "Attach fc_native to gdbserver",
+            "executable": ".pio/build/fc_native/program.exe",
+            "target": ":2345",
+            "remote": true,
+            "cwd": "${workspaceRoot}",
+            "valuesFormatting": "parseText"
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug",
+            "executable": "D:/git/08copter/flight-control/.pio/build/ts_esp/firmware.elf",
+            "projectEnvName": "ts_esp",
+            "toolchainBinDir": "C:/Users/wu/.platformio/packages/toolchain-xtensa-esp32s3@8.4.0+2021r2-patch5/bin",
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchTask": {
+                "type": "PlatformIO",
+                "task": "Pre-Debug (ts_esp)"
+            }
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug (skip Pre-Debug)",
+            "executable": "D:/git/08copter/flight-control/.pio/build/ts_esp/firmware.elf",
+            "projectEnvName": "ts_esp",
+            "toolchainBinDir": "C:/Users/wu/.platformio/packages/toolchain-xtensa-esp32s3@8.4.0+2021r2-patch5/bin",
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug (without uploading)",
+            "executable": "D:/git/08copter/flight-control/.pio/build/ts_esp/firmware.elf",
+            "projectEnvName": "ts_esp",
+            "toolchainBinDir": "C:/Users/wu/.platformio/packages/toolchain-xtensa-esp32s3@8.4.0+2021r2-patch5/bin",
+            "internalConsoleOptions": "openOnSessionStart",
+            "loadMode": "manual"
+        }
+    ]
+}

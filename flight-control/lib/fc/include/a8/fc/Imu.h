@@ -15,6 +15,8 @@ public:
     virtual float getRoll() = 0;
     virtual float getPitch() = 0;
     virtual float getYaw() = 0;
+    virtual void getGyro(float *xyz) = 0;
+
     virtual int checkReady(float limit, Result &res) = 0;
     virtual int checkStable(Result &res) = 0;
     int checkStable(int retries, Result &res) {
@@ -24,8 +26,9 @@ public:
         }
         return ret;
     }
-    virtual int checkBalance(bool silence, float limit, float& deg, Result &res) = 0;
+    virtual int checkBalance(bool silence, float limit, float &deg, Result &res) = 0;
     virtual bool isBalance(float limit, bool silence) = 0;
     virtual String getLastError() = 0;
+    virtual void setFilter(int filter) = 0;
 };
 } // namespace a8::fc

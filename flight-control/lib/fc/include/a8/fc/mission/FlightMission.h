@@ -95,12 +95,21 @@ class FlightMission : public Mission {
     bool running = true;
 
 public:
-    FlightMission(long id, FlightConfigItem *config, Factory * fac, PowerManage *pm, Rpy *rpy, Propellers *propellers, Collector *collector, ConfigContext &configContext, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac)
+    FlightMission(long id, FlightConfigItem *config, Factory *fac, PowerManage *pm, Imu *imu, Propellers *propellers, Collector *collector, ConfigContext &configContext, Throttle &throttle, SyncQueue<int> *signalQueue, System *sys, LoggerFactory *logFac)
         : Mission(id, configContext, throttle, signalQueue, collector, sys, logFac, "FlightMission") {
         this->config = config;
-        this->rpy = rpy;
+        this->rpy = new Rpy(imu, config->maxImuUpdateRetries);
+        Rate tickRate = Rate::ms(config->tickTimeMs);
+        if (config->rpyFilter == GyroFilter::LP1) {
+            this->rpy->setFilter(fac->newLowPassFilter(config->rpyFilterCutOffHz, tickRate, 1), Lang::delete_<Filter>);
+        } else if (config->rpyFilter == GyroFilter::LP2) {
+            this->rpy->setFilter(fac->newLowPassFilter(config->rpyFilterCutOffHz, tickRate, 2), Lang::delete_<Filter>);
+        } else {
+            this->rpy->setFilter(new EmptyFilter(), Lang::delete_<Filter>);
+        }
+
         this->propellers = propellers;
-        this->throttler = new throttle::FlightThrottler(config,fac, rpy, logFac);
+        this->throttler = new throttle::FlightThrottler(config, fac, rpy, logFac);
         this->pwmCalculator = 0;
         if (config->enableVoltageCompensate) {
             this->pwmCalculator = new VoltageCompensatePwmCalculator(pm, config->minVoltForPwmCompensate, config->maxVoltForPwmCompensate, logFac);
@@ -122,6 +131,7 @@ public:
         if (fg != 0) {
             delete this->fg;
         }
+        delete this->rpy;
     }
 
     long getPreStartDelaySec() override {
@@ -144,7 +154,12 @@ public:
     }
     int collectDataItems(Collector *collector, Result &res) {
         int ret = 1;
-        ret = pwmCalculator->collectDataItems(collector, res);
+        if (ret > 0) {
+            this->rpy->collectDataItems(collector, res);
+        }
+        if (ret > 0) {
+            ret = pwmCalculator->collectDataItems(collector, res);
+        }
         if (ret > 0)
             ret = throttler->collectDataItems(collector, res);
         if (ret > 0)
@@ -204,7 +219,7 @@ public:
 
             if (ret > 0) {
 
-                ret = this->rpy->calibrateYaw(res);
+                ret = this->rpy->alignYaw(res);
             }
         }
 
@@ -212,7 +227,9 @@ public:
             ret = propellers->isReady(res);
         }
         if (ret > 0) {
+            Mission::onStart(sys->getSteadyTime());
             ret = this->run2(res);
+            Mission::onEnd(sys->getSteadyTime());
         }
         return ret;
     }
@@ -240,18 +257,22 @@ public:
         int ret = 1;
 
         for (int ticks = 0; this->running; ticks++) {
-            Result res;
+            Result res2;
             throttle.preUpdate(timeMs);
-            int rpyUpdateRet = rpy->update(res);
+            int rpyUpdateRet = rpy->update(res2);
 
-            int updateRet = this->doUpdate(res);
+            int updateRet = this->doUpdate(res2);
 
             if (running && throttler->isLanded()) {
                 running = false;
             }
 
             if (running && !landing) {
-                this->checkLanding(rpyUpdateRet, updateRet, timeMs);
+                int err = this->checkLanding(rpyUpdateRet, updateRet, timeMs);
+                if (err < 0) {
+                    res << res2.errorMessage;
+                    ret = err;
+                }
             }
 
             long now = sys->getSteadyTime();
@@ -320,6 +341,7 @@ protected:
                 res << "cannot create mission, it is not allowed to start with a un-balanced-rpy.";
                 return -1;
             }
+            res.reset();
         }
         return 1;
     }
@@ -332,14 +354,23 @@ protected:
         }
         return 1;
     }
-    void checkLanding(int rpyUpdateRet, int updateRet, long timeMs) {
+    int checkLanding(int rpyUpdateRet, int updateRet, long timeMs) {
+        int ret = 1;
         if (!landing) { //
             // check if need start landing.
-            if (rpyUpdateRet < 0 || updateRet < 0 || timeMs - startTimeMs > config->flyingTimeLimitSec * 1000) {
+            if (rpyUpdateRet < 0 || updateRet < 0) {
+                ret = -1; // abnormal end.
                 landing = true;
+            }
+            if (timeMs - startTimeMs > config->flyingTimeLimitSec * 1000) {
+                ret = 1; // normal end.
+                landing = true;
+            }
+            if (landing) {
                 this->throttler->startLanding(timeMs);
             }
         }
+        return ret;
     }
 
     bool isLanded() {

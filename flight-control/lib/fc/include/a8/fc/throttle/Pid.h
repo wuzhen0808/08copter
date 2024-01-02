@@ -24,15 +24,13 @@ class Pid : public FlyWeight {
     float p = 0;
     float i = 0;
     float d = 0;
-    float lastError0 = 0;
-    float lastError1 = 0;
     long lastTimeMs = -1;
     //
     float elapsedTimeSec = 0;
-    float error0 = 0;
-    float error1 = 0;
-    float error0Diff = 0;
-    float error1Diff = 0;
+    float error = 0;
+    float dError = 0;
+    float dLastError = 0;
+    float dErrorDiff = 0;
     //
     long ticks = 0;
     Filter *filter_;
@@ -82,13 +80,11 @@ public:
     int collectDataItems(Collector *collector, Result &res) {
         int ret = 1;
         if (ret > 0)
-            ret = collector->add(String(this->name) << "-err0", error0, res);
+            ret = collector->add(String(this->name) << "-err", error, res);
         if (ret > 0)
-            ret = collector->add(String(this->name) << "-err1", error0, res);    
+            ret = collector->add(String(this->name) << "-dErr", dError, res);    
         if (ret > 0)
-            ret = collector->add(String(this->name) << "-err0Diff", error0Diff, res);
-        if (ret > 0)
-            ret = collector->add(String(this->name) << "-err1Diff", error1Diff, res);
+            ret = collector->add(String(this->name) << "-dErrDiff", dErrorDiff, res);        
         String etsName = String(this->name) << "-ets";
         if (ret > 0)
             ret = collector->add(etsName, this->elapsedTimeSec, res);
@@ -111,30 +107,27 @@ public:
         return outputLimit;
     }
 
-    void update(long timeMs, float actual0, float desired) {
+    void update(long timeMs, float actual, float dTermActual, float desired) {
         A8_LOG_DEBUG(logger, String() << ">>update," << actual << "," << desired);
         if (lastTimeMs < 0) {
             lastTimeMs = timeMs;
         }
-        error0 = actual0 - desired;
-        float actual1 = filter_ ==0 ?actual0:filter_->update(actual0);
-        error1 = actual1 - desired;
-        p = kp * error0;
+        error = actual - desired;        
+        dError = dTermActual - desired;
+        p = kp * error;
         elapsedTimeSec = (timeMs - lastTimeMs) / 1000.0f;
         // if (-3 < error < 3) {
-        i = i + (ki * error0 * elapsedTimeSec);
+        i = i + (ki * error * elapsedTimeSec);
         limit(i, -outputLimitI, outputLimitI);
         // }
         d = 0;
         if (ticks == 0) {
-            lastError0 = error0;
-            lastError1 = error1;
+            dLastError = dError;
         }
-        error0Diff = error0 - lastError0;
-        error1Diff = error1 - lastError1;
+        dErrorDiff = dError - dLastError;
         if (elapsedTimeSec > 0) {
 
-            d = kd * (error1Diff / elapsedTimeSec);
+            d = kd * (dErrorDiff / elapsedTimeSec);
         }
         //
         output = p + i + d;
@@ -149,8 +142,7 @@ public:
         A8_DEBUG8(">>update,p:", p, ",i:", i, ",d:", d, ",output:", output);
 
         lastTimeMs = timeMs;
-        lastError0 = error0;
-        lastError1 = error1;
+        dLastError = dError;
 
         ticks++;
     }

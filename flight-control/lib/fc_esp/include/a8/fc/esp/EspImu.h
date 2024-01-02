@@ -13,13 +13,7 @@ class EspImu : public Imu, public FlyWeight {
     bool firstStableCheckedIsOk = false;
     String lastStableCheckError;
     String lastBalanceCheckError;
-    int setupMpu9250() {
-        mpu->setup(0x68);
-        mpu->selectFilter(QuatFilterSel::MADGWICK);
-        mpu->setFilterIterations(5);
-        log("success of setupMpu9250.");
-        return 1;
-    }
+    int filter_ = ImuFilter::NONE;
 
 public:
     EspImu(LoggerFactory *logFac) : FlyWeight(logFac, "EspRpy") {
@@ -27,11 +21,25 @@ public:
         this->lastBalanceCheckError = "balance is unknown.";
         this->lastStableCheckError = "stable is unknown.";
     }
+    void setFilter(int filter) override {
+        if (filter == ImuFilter::MAG) {
+            mpu->selectFilter(QuatFilterSel::MADGWICK);
+            mpu->setFilterIterations(5);
+        } else if (filter == ImuFilter::MOH) {
+            mpu->selectFilter(QuatFilterSel::MAHONY);
+            mpu->setFilterIterations(5);
+        } else {
+            mpu->selectFilter(QuatFilterSel::NONE);
+        }
+    }
 
     void setup() override {
         A8_LOG_DEBUG(logger, "setup");
-        int ret = this->setupMpu9250();
-        if (ret > 0) {
+
+        bool ok = mpu->setup(0x68);
+        log("success of setupMpu9250.");
+        if (ok) {
+
             this->setupOk_ = true;
         } else {
             this->setupOk_ = false;
@@ -54,6 +62,13 @@ public:
         }
         return ret;
     }
+    
+    void getGyro(float *xyz) override {
+        xyz[0] = mpu->getGyroX();
+        xyz[1] = mpu->getGyroY();
+        xyz[2] = mpu->getGyroZ();
+    }
+
     float getRoll() override {
         return mpu->getRoll();
     }
