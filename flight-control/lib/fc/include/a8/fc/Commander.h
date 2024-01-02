@@ -148,8 +148,9 @@ public:
             this->collectorInQueue->offer(collector);
             // run mission.
             me->ret = me->mission->run(*me->res);
-            // close collector.
-            collector->close();
+
+            collectQueue->offer(0);
+
             // waiting collector done.
             this->collectorOutQueue->take();
             // notify mission done.

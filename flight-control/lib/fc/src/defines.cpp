@@ -33,9 +33,33 @@ int operator%(ImuFilter &filter, int iValue) {
 String &operator<<(String &str, const ImuFilter f) {
     return str << IMU_FILTERS.get(f, "<unknown>") << "(" << (int)f << ")";
 }
+
+Options<RpyFilter> RPY_FILTERS;
+
+using namespace a8::util;
+int operator%(RpyFilter &filter, int iValue) {
+    return (int)filter % iValue;
+}
+String &operator<<(String &str, const RpyFilter f) {
+    return str << RPY_FILTERS.get(f, "<unknown>") << "(" << (int)f << ")";
+}
+
+EnumType<UnBalanceAction> UN_BALANCE_ACTIONS;
+String &operator<<(String &str, const UnBalanceAction f){
+    return UN_BALANCE_ACTIONS.toStr(str, f);
+}
 void initialize() {
     IMU_FILTERS.add(ImuFilter::NONE, "NONE");
     IMU_FILTERS.add(ImuFilter::MAG, "MAG");
     IMU_FILTERS.add(ImuFilter::MOH, "MOH");
+    RPY_FILTERS.add(RpyFilter::NO, "NO");
+    RPY_FILTERS.add(RpyFilter::LP1, "LP1");
+    RPY_FILTERS.add(RpyFilter::LP2, "LP2");
+
+    UN_BALANCE_ACTIONS.add(UnBalanceAction::ASK,"ASK");
+    UN_BALANCE_ACTIONS.add(UnBalanceAction::IGNORE,"IGNORE");
+    UN_BALANCE_ACTIONS.add(UnBalanceAction::IGNORE_IF_SAFE,"IGNORE_IF_SAFE");
+    UN_BALANCE_ACTIONS.add(UnBalanceAction::END_OF_MISSION,"END_OF_MISSION");
+    
 }
 } // namespace a8::fc

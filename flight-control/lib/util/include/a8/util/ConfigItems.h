@@ -1,6 +1,9 @@
 #pragma once
+
 #include "a8/util/ConfigItem.h"
+#include "a8/util/EnumType.h"
 namespace a8::util {
+
 class ConfigItems {
 public:
     static bool confirm(ConfigContext &cc, String prompt, bool def) {
@@ -114,6 +117,16 @@ public:
         };
         return ci;
     }
+
+    template <typename T>
+    static ConfigItem *addSelectInput(ConfigItem *ci, String name, T &var, EnumType<T> *options) {
+        return addSelectInput<T>(ci, name, var, options->options);
+    }
+
+    template <typename T>
+    static ConfigItem *addSelectInput(ConfigItem *ci, String name, T &var, Options<T> &options) {
+        return addSelectInput<T>(ci, name, var, &options);
+    }
     template <typename T>
     static ConfigItem *addSelectInput(ConfigItem *ci, String name, T &var, Options<T> *options) {
         Buffer<T> values;
@@ -147,8 +160,8 @@ public:
     static ConfigItem *addSelectInput(ConfigItem *ci, String name, T &var, //
                                       C c, void (*rcf)(C),                 //
                                       int len,                             //
-                                      T (*values)(C,int),                //
-                                      String (*names)(C,int)) {
+                                      T (*values)(C, int),                 //
+                                      String (*names)(C, int)) {
         return add<T>(
             ci, name, new SelectInput<C, T>(String() << "Please select " << name << ":", //
                                             c,                                           //

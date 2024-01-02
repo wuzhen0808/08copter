@@ -100,9 +100,9 @@ public:
         this->config = config;
         this->rpy = new Rpy(imu, config->maxImuUpdateRetries);
         Rate tickRate = Rate::ms(config->tickTimeMs);
-        if (config->rpyFilter == GyroFilter::LP1) {
+        if (config->rpyFilter == RpyFilter::LP1) {
             this->rpy->setFilter(fac->newLowPassFilter(config->rpyFilterCutOffHz, tickRate, 1), Lang::delete_<Filter>);
-        } else if (config->rpyFilter == GyroFilter::LP2) {
+        } else if (config->rpyFilter == RpyFilter::LP2) {
             this->rpy->setFilter(fac->newLowPassFilter(config->rpyFilterCutOffHz, tickRate, 2), Lang::delete_<Filter>);
         } else {
             this->rpy->setFilter(new EmptyFilter(), Lang::delete_<Filter>);

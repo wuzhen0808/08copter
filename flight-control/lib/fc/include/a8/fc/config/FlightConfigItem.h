@@ -12,18 +12,6 @@
 namespace a8::fc {
 using namespace a8::util;
 
-enum GyroFilter {
-    NO = 0,
-    LP1 = 1,
-    LP2 = 2
-};
-
-enum UnBalanceAction {
-    ASK = 0,
-    IGNORE = 1,
-    IGNORE_IF_SAFE = 2,
-    END_OF_MISSION = 3
-};
 enum BalanceMode {
     FULL = 0,
     ROLL = 1,
@@ -60,7 +48,7 @@ public:
     long flyingTimeLimitSec = 10;
     bool lockPropellers = true;
     int stableCheckRetries = 10;
-    int unBalanceAction = UnBalanceAction::IGNORE_IF_SAFE;
+    UnBalanceAction unBalanceAction = UnBalanceAction::IGNORE_IF_SAFE;
     float unBalanceDegUpLimit = 10.0f;
     float unBalanceDegLimit = 5.0f;
     float maxThrottle = 1000;
@@ -68,13 +56,16 @@ public:
     // MAG filter only on IMU:
     // 18.75,0,4.5,volt@11.2
     // 19.5,0,3.5,volt@11.2 **
-    // 19.5,5,3.9,volt@12.2 *
+    // 19.5,5,3.9,volt@12.2/11.8 *
     // 19.5,6.5,4.25,volt@11.0 *
     // 18,16.5,4.1,volt@11.3
+    // 19.5,5,4.25,volt@11.6 : very fast flapping.
+    // 19.5,5,4.1,volt@11.7 : mid fast flapping.
+    // 19.5,6,4.1,volt@11.7 : mid shaving.
+
     //////////////////////
     // imuFilter:empty;
     // rpyFilter:LP1
-    // TODO: 12.75,0,3.9
     //////////////////////
     double pidKp = 19.5; // volt@11.2
     double pidKi = 5.0;
@@ -105,7 +96,8 @@ public:
     float minVoltForPwmCompensate = 7.0f;
 
     int maxImuUpdateRetries = 5;
-    int rpyFilter = LP1;
+    RpyFilter rpyFilter = RpyFilter::NO; // LP1 don't get the Pid balanceed.
+
     float rpyFilterCutOffHz = 20.0f;
 
     GlobalVars &vars;
@@ -140,12 +132,7 @@ public:
             ConfigItems::add(ci, "lockPropellers", this->lockPropellers);
             ConfigItems::add(ci, "preStartDelaySec", this->preStartCountDown);
             ConfigItems::add(ci, "enableForeground", this->enableForeground);
-            Buffer<String> options;
-            options.add("ASK");
-            options.add("IGNORE");
-            options.add("IGNORE_IF_SAFE");
-            options.add("END_MISSION");
-            ConfigItems::addSelectInput(ci, "unBalanceAction", unBalanceAction, options);
+            ConfigItems::addSelectInput<UnBalanceAction>(ci, "unBalanceAction", unBalanceAction, &UN_BALANCE_ACTIONS);
             ConfigItems::add(ci, "stableCheckRetries", stableCheckRetries);
             ConfigItems::add(ci, "enableStart", this->enableStart);
             ConfigItems::add(ci, "tickTimeMs", tickTimeMs);
@@ -169,7 +156,7 @@ public:
         }
         ci = ConfigItems::addReturn(ci, "Rpy");
         {
-            {   
+            {
                 ConfigItems::addSelectInput<ImuFilter>(ci, "imuFilter", imuFilter, &IMU_FILTERS);
             }
             {
@@ -182,12 +169,7 @@ public:
                 ci = ci->getParent<ConfigItem>();
             }
             {
-
-                Buffer<String> options;
-                options.add("NO");
-                options.add("LP1");
-                options.add("LP2");
-                ConfigItems::addSelectInput(ci, "rpyFilter", rpyFilter, options);
+                ConfigItems::addSelectInput<RpyFilter>(ci, "rpyFilter", rpyFilter, &RPY_FILTERS);
             }
             ConfigItems::add(ci, "rpyFilterCutOffHz", rpyFilterCutOffHz);
             ConfigItems::add(ci, "Rpy-check", new RpyConfigItem(imu, this->unBalanceDegLimit));

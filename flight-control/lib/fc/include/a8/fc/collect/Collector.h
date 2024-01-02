@@ -291,6 +291,11 @@ public:
             if (got < 0) {
                 continue;
             }
+            if (row == 0) {
+                // null row indicate the end.
+                this->running = false;
+                break;
+            }
             if (counter == 0) {
                 for (int i = 0; i < rowWidth; i++) {
                     DataItem *di = this->enabledDataItems.get(i, 0);
