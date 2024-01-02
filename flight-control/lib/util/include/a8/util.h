@@ -4,6 +4,7 @@
 #include "a8/util/Assert.h"
 #include "a8/util/Attributes.h"
 #include "a8/util/Buffer.h"
+#include "a8/util/Options.h"
 #include "a8/util/Filter.h"
 #include "a8/util/BufferUtil.h"
 #include "a8/util/Circle.h"

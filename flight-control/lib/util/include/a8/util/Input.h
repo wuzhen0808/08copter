@@ -202,6 +202,7 @@ public:
 
 template <typename T>
 class NumberInput : public Input<T> {
+
 public:
     NumberInput(String prompt, T def) : Input<T>(prompt, def) {
     }
@@ -211,34 +212,44 @@ public:
         this->value = this->template readNumber<T>(ic, this->prompt, this->default_);
     }
 };
-template <typename C>
-class SelectInput : public NumberInput<int> {
-
+template <typename C, typename T>
+class SelectInput : public Input<T> {
 public:
-    using optionsF = String (*)(C, int);
+    using valueF = T (*)(C, int);
+    using nameF = String (*)(C, int);
     using releaseContextF = void (*)(C);
 
 protected:
     C context;
-    optionsF options_;
+    valueF values_;
+    nameF names_;
     int focused = 0;
+    int selected = 0;
     int len;
     releaseContextF releaseContext;
 
 public:
-    SelectInput(String prompt, C c, int len, optionsF options, int def) : NumberInput(prompt, def) {
-        this->init(c, len, options, 0);
+    SelectInput(String prompt, C c, int len, valueF values, nameF names, T def) : Input<T>(prompt, def) {
+        this->init(c, len, values, names, 0);
     }
 
-    SelectInput(String prompt, C c, releaseContextF rcf, int len, optionsF options, int def) : NumberInput(prompt, def) {
-        this->init(c, len, options, rcf);
+    SelectInput(String prompt, C c, releaseContextF rcf, int len, valueF values, nameF names, T def) : Input<T>(prompt, def) {
+        this->init(c, len, values, names, rcf);
     }
 
-    void init(C c, int len, optionsF options, releaseContextF rcf) {
+    void init(C c, int len, valueF values, nameF names, releaseContextF rcf) {
         this->context = c;
         this->len = len;
-        this->options_ = options;
+        this->values_ = values;
+        this->names_ = names;
         this->releaseContext = rcf;
+        // resolve selected index.
+        for (int i = 0; i < this->len; i++) {
+            if (this->value == this->values_(c, i)) {
+                this->selected = i;
+                break;
+            }
+        }
     }
 
     ~SelectInput() {
@@ -252,15 +263,15 @@ public:
 
             ic->println(String() << " " << (focused == i ? " o->" : "    ") //
                                  << i                                       //
-                                 << (value == i ? "[*]" : "[ ]")            //
-                                 << this->options_(context, i));
+                                 << (this->selected == i ? "[*]" : "[ ]")   //
+                                 << this->names_(context, i));
         }
         ic->println(String() << "Press up/down and enter to select the options above.");
     }
     void update(InputContext *ic) override {
-        this->focused = this->value;
+        this->focused = this->selected;
         struct Params {
-            SelectInput *this_;
+            SelectInput<C, T> *this_;
             bool done = false;
         } p;
         p.this_ = this;
@@ -289,7 +300,8 @@ public:
             this->focused %= this->len;
         } break;
         case Keys::enterKey: {
-            this->value = this->focused;
+            this->selected = this->focused;
+            this->value = this->values_(this->context, this->selected);
             done = true;
         } break;
         default:
@@ -298,23 +310,27 @@ public:
         return true;
     }
 };
+
 class BoolInput : public Input<bool> {
-    SelectInput<BoolInput *> *select;
+    SelectInput<BoolInput *, bool> *select;
 
 public:
     BoolInput(String prompt, bool def) : Input(prompt, def) {
-        String (*options)(BoolInput *, int) = [](BoolInput *this_, int idx) {
+        String (*names)(BoolInput *, int) = [](BoolInput *this_, int idx) {
             return idx == 0 ? String("Yes") : String("No");
         };
-        this->select = new SelectInput<BoolInput *>(prompt, this, 2, options, def ? 0 : 1);
+        bool (*values)(BoolInput *, int) = [](BoolInput *this_, int idx) {
+            return idx == 0 ? true : false;
+        };
+
+        this->select = new SelectInput<BoolInput *, bool>(prompt, this, 2, values, names, def);
     }
 
     ~BoolInput() {
         delete this->select;
     }
     void update(InputContext *ic) override {
-        int selected = select->readValue(ic);
-        value = selected == 0 ? true : false;
+        this->value = select->readValue(ic);
     }
 };
 

@@ -40,6 +40,7 @@ public:
     ~HashTable() {
         this->clear();
     }
+    //TODO add copy constructor.
 
     void set(K key, V value) {
         int code = hashCode_(key);

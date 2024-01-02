@@ -6,21 +6,18 @@
 #include "a8/fc/config/PowerConfigItem.h"
 #include "a8/fc/config/PropellersConfigItem.h"
 #include "a8/fc/config/RpyConfigItem.h"
+#include "a8/fc/defines.h"
 #include "a8/util.h"
 
 namespace a8::fc {
 using namespace a8::util;
 
-enum ImuFilter {
-    NONE = 0,
-    MAG = 1,
-    MOH = 2
-};
 enum GyroFilter {
     NO = 0,
     LP1 = 1,
     LP2 = 2
 };
+
 enum UnBalanceAction {
     ASK = 0,
     IGNORE = 1,
@@ -52,7 +49,7 @@ class FlightConfigItem : public ConfigItem {
 public:
     long tickTimeMs = 6;
     // rpy
-    int imuFilter = 0;
+    ImuFilter imuFilter = ImuFilter::NONE;
 
     float elevationThrottle = 0.0f;
     float activeThrottle0 = 55;
@@ -140,6 +137,7 @@ public:
         ConfigItem *ci = this;
         ci = ConfigItems::addReturn(ci, String() << "Basic-Options");
         {
+            ConfigItems::add(ci, "lockPropellers", this->lockPropellers);
             ConfigItems::add(ci, "preStartDelaySec", this->preStartCountDown);
             ConfigItems::add(ci, "enableForeground", this->enableForeground);
             Buffer<String> options;
@@ -171,13 +169,8 @@ public:
         }
         ci = ConfigItems::addReturn(ci, "Rpy");
         {
-            {
-
-                Buffer<String> options;
-                options.add("NONE");
-                options.add("MAG");
-                options.add("MOH");
-                ConfigItems::addSelectInput(ci, "imuFilter", imuFilter, options);
+            {   
+                ConfigItems::addSelectInput<ImuFilter>(ci, "imuFilter", imuFilter, &IMU_FILTERS);
             }
             {
                 ci = ci->getLastChild();
@@ -231,7 +224,7 @@ public:
             ci = this;
         }
 
-        ConfigItems::add(ci, "Propellers", new PropellersConfigItem(lockPropellers, activeThrottle0, activeThrottle1, activeThrottle2, activeThrottle3));
+        ConfigItems::add(ci, "Propellers", new PropellersConfigItem(activeThrottle0, activeThrottle1, activeThrottle2, activeThrottle3));
         ci = ConfigItems::addReturn(ci, "Pid-arguments");
         {
 

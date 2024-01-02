@@ -30,7 +30,7 @@ public:
     static ConfigItem *add(ConfigItem *ci, String name, int &var) {
         return addNumberInput<int>(ci, name, var);
     }
-    
+
     template <typename C>
     static ConfigItem *add(ConfigItem *ci1, String name, C c, void (*action)(C, ConfigContext &)) {
         ConfigItem *ci2 = ConfigItems::addReturn(ci1, name);
@@ -114,21 +114,71 @@ public:
         };
         return ci;
     }
+    template <typename T>
+    static ConfigItem *addSelectInput(ConfigItem *ci, String name, T &var, Options<T> *options) {
+        Buffer<T> values;
+        Buffer<String> names;
+        options->getValueAndNames(values, names);
+        return addSelectInput<T>(ci, name, var, values, names);
+    }
 
-    static ConfigItem *addSelectInput(ConfigItem *ci, String name, int &var, Buffer<String> options) {
+    template <typename T>
+    static ConfigItem *addSelectInput(ConfigItem *ci, String name, T &var, Buffer<T> values, Buffer<String> names) {
+        struct Params {
+            T &def;
+            Buffer<T> values;
+            Buffer<String> names;
+            Params(T &def) : def(def) {
+            }
+        };
+        Params *p = new Params(var);
+        p->values = values;
+        p->names = names;
+        return addSelectInput<Params *, T>(
+            ci, name, var,                                                //
+            p, Lang::delete_<Params>,                                     //
+            p->values.len(),                                              //
+            [](Params *p, int i) { return p->values.get(i, p->def); },    //
+            [](Params *p, int i) { return p->names.get(i, "<unknown>"); } //
+        );
+    }
+
+    template <typename C, typename T>
+    static ConfigItem *addSelectInput(ConfigItem *ci, String name, T &var, //
+                                      C c, void (*rcf)(C),                 //
+                                      int len,                             //
+                                      T (*values)(C,int),                //
+                                      String (*names)(C,int)) {
+        return add<T>(
+            ci, name, new SelectInput<C, T>(String() << "Please select " << name << ":", //
+                                            c,                                           //
+                                            rcf,                                         //
+                                            len,                                         //
+                                            values,                                      //
+                                            names,                                       //
+                                            var),                                        //
+            Lang::delete_<Input<T>>,                                                     //
+            var                                                                          //
+        );
+    }
+
+    static ConfigItem *addSelectInput(ConfigItem *ci, String name, int &var, Buffer<String> names) {
         struct Context {
-            Buffer<String> options;
+            Buffer<String> names;
         };
         Context *c = new Context();
-        c->options = options;
+        c->names = names;
         return add<int>(
-            ci, name, new SelectInput<Context *>(
+            ci, name, new SelectInput<Context *, int>(
                           String() << "Please select " << name << ":", //
                           c,                                           //
                           Lang::delete_<Context>,
-                          options.len(), //
+                          names.len(), //
                           [](Context *c, int idx) {
-                              return c->options.get(idx, "No-Such-Option");
+                              return idx;
+                          },
+                          [](Context *c, int idx) {
+                              return c->names.get(idx, "No-Such-Option");
                           },           //
                           var),        //
             Lang::delete_<Input<int>>, //
@@ -137,11 +187,12 @@ public:
     }
 
     template <typename C>
-    static ConfigItem *addSelectInput(ConfigItem *ci, String name, int &var, C c, int len, String (*options)(C, int)) {
+    static ConfigItem *addSelectInput(ConfigItem *ci, String name, int &var, C c, int len, String (*names)(C, int)) {
         return add<int>(
-            ci, name, new SelectInput<C>(String() << "Please select " << name << ":", c, len, options, var), //
-            Lang::delete_<Input<int>>,                                                                       //
-            var                                                                                              //
+            ci, name, new SelectInput<C, int>(
+                          String() << "Please select " << name << ":", c, len, [](C c, int i) { return i; }, names, var), //
+            Lang::delete_<Input<int>>,                                                                                    //
+            var                                                                                                           //
         );
     }
     template <typename T>

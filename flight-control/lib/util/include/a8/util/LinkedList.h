@@ -64,6 +64,7 @@ public:
         this->clear();
         delete this->head;
     }
+    //TODO add copy constructor.
 
     void add(T ele) {
         insert(this->tailNode(), ele);

@@ -1,6 +1,7 @@
 #pragma once
 #include "a8/fc/collect/Collector.h"
 #include "a8/util.h"
+#include "a8/fc/defines.h"
 namespace a8::fc {
 using namespace a8::util;
 using namespace a8::fc::collect;
@@ -29,6 +30,6 @@ public:
     virtual int checkBalance(bool silence, float limit, float &deg, Result &res) = 0;
     virtual bool isBalance(float limit, bool silence) = 0;
     virtual String getLastError() = 0;
-    virtual void setFilter(int filter) = 0;
+    virtual void setFilter(ImuFilter filter) = 0;
 };
 } // namespace a8::fc

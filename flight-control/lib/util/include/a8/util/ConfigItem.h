@@ -44,7 +44,9 @@ public:
 
         template <typename T>
         void set(String key, T value) {
-            HashTable<String, String>::set(key, String() << value);
+            String str;
+            str<<value;
+            HashTable<String, String>::set(key, str);
             sortedKeyBuffer.addIfNotExists(key);
         }
 

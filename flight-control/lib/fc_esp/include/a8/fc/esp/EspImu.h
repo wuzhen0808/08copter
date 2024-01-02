@@ -13,7 +13,7 @@ class EspImu : public Imu, public FlyWeight {
     bool firstStableCheckedIsOk = false;
     String lastStableCheckError;
     String lastBalanceCheckError;
-    int filter_ = ImuFilter::NONE;
+    ImuFilter filter_ = ImuFilter::NONE;
 
 public:
     EspImu(LoggerFactory *logFac) : FlyWeight(logFac, "EspRpy") {
@@ -21,7 +21,7 @@ public:
         this->lastBalanceCheckError = "balance is unknown.";
         this->lastStableCheckError = "stable is unknown.";
     }
-    void setFilter(int filter) override {
+    void setFilter(ImuFilter filter) override {
         if (filter == ImuFilter::MAG) {
             mpu->selectFilter(QuatFilterSel::MADGWICK);
             mpu->setFilterIterations(5);
