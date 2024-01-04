@@ -30,6 +30,6 @@ public:
     virtual int checkBalance(bool silence, float limit, float &deg, Result &res) = 0;
     virtual bool isBalance(float limit, bool silence) = 0;
     virtual String getLastError() = 0;
-    virtual void setFilter(ImuFilter filter) = 0;
+    virtual void setFilter(ImuFilter filter, int iterations) = 0;
 };
 } // namespace a8::fc

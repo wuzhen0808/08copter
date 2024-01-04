@@ -281,7 +281,7 @@ public:
                 return p->this_->onKey(ch, p->done);
             });
         }
-        A8_LOG_DEBUG(ic->logger, String() << "<<readValue:" << value);
+        A8_LOG_DEBUG(ic->logger, String() << "<<readValue:" << this->value);
     }
 
     bool onKey(char ch, bool &done) {

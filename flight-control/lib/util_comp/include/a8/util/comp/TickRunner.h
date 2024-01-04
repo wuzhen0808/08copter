@@ -17,7 +17,7 @@ class TickRunner : public FlyWeight {
     Task *thread;
     Buffer<Component::TickEntry *> *entries;
     TickingContext *ticking;
-    long lastLogTime = 0;
+    TimeUs lastLogTimeUs = 0;
     long lastLogTicks = 0;
     long ticks = 0;
 
@@ -35,16 +35,16 @@ public:
 
     void tick() {
         ticks++;
-        long now = this->ticking->getStaging()->getSys()->getSteadyTime();
-        bool doLog = A8_LOG_TRACE_ENABLED && (now - lastLogTime > 10 * 1000);
+        TimeUs nowUs = this->ticking->getStaging()->getSys()->getSteadyTimeUs();
+        bool doLog = A8_LOG_TRACE_ENABLED && (nowUs - lastLogTimeUs > 10 * A8_US_PER_SEC);
 
         if (doLog) {
             logger->trace(String() << ">>TickRunner::tick(),rate:" << this->ticking->getRate().Hz() << ",ticksFromLastLog:" << (ticks - lastLogTicks) << ",ticks:" << ticks);
-            lastLogTime = now;
+            lastLogTimeUs = nowUs;
             lastLogTicks = ticks;
         }
 
-        this->ticking->beforTick(now);
+        this->ticking->beforTick(nowUs);
 
         for (int i = 0; i < entries->length(); i++) {
             Component::TickEntry *entry = entries->get(i,0);

@@ -7,7 +7,7 @@ class ArduinoSystem : public System {
 public:
     ArduinoSystem();
     long long getSysTime() override;
-    long long getSteadyTime() override;
+    TimeUs getSteadyTimeUs() override;
     void formatTime(long long ms, String *str) override;
     int openFile(String fpath, Reader *&fReaderCb) override;
     String getEnv(String name) override;
@@ -17,5 +17,6 @@ public:
     bool digitalRead(int pin) override;
     void digitalWrite(int pin, bool high) override;
     void delay(long ms) override;
+    void delayUs(TimeUs us) override;
 };
 } // namespace a8::hal::arduino_

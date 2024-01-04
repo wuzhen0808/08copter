@@ -52,7 +52,7 @@ public:
     void waitMoving(AnalogInputPin *aPin, String prompt) {
         while (true) {
             log(prompt);
-            int moving = waitMoving(aPin, 5000);
+            int moving = waitMovingMs(aPin, 5000);
             if (moving > 0) {
                 log("start moving.");
                 break;
@@ -60,24 +60,24 @@ public:
         }
     }
 
-    int waitMoving(AnalogInputPin *aPin, long timeout) {
-        long started = sys->getSteadyTime();
+    int waitMovingMs(AnalogInputPin *aPin, long timeoutMs) {
+        long started = sys->getSteadyTimeUs();
         while (true) {
             if (aPin->isMoving()) {
                 break;
             }
 
-            if (sys->getSteadyTime() - started > timeout) {
+            if (sys->getSteadyTimeUs() - started > timeoutMs * 1000) {
                 return -1;
             }
         }
         return 1;
     }
     void detectMinMax(AnalogInputPin *aPin, int &min, int &max) {
-        long started = sys->getSteadyTime();
-        long steadyInterval = 3000;
+        TimeUs started = sys->getSteadyTimeUs();
+        TimeUs steadyInterval = 3000000;
 
-        long lastModified = started;
+        TimeUs lastModified = started;
 
         while (true) {
 
@@ -85,14 +85,14 @@ public:
 
             if (rValue < min || min == -1) {
                 min = rValue;
-                lastModified = sys->getSteadyTime();
+                lastModified = sys->getSteadyTimeUs();
             }
             if (rValue > max || max == -1) {
                 max = rValue;
-                lastModified = sys->getSteadyTime();
+                lastModified = sys->getSteadyTimeUs();
             }
 
-            if (sys->getSteadyTime() - lastModified > steadyInterval) {
+            if (sys->getSteadyTimeUs() - lastModified > steadyInterval) {
                 // timeout .
                 break;
             }

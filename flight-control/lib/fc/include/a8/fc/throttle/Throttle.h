@@ -7,9 +7,10 @@ using namespace a8::util;
 
 class Throttle {
 public:
-    long startTimeMs = -1;
-    long timeMs_;
-    long lastTimeMs_;
+  
+    TimeUs startTimeUs = -1;
+    TimeUs timeUs_;
+    TimeUs lastTimeUs_;
     Propellers *propellers;
     bool active = true;
 
@@ -21,14 +22,14 @@ public:
         A8_DEBUG("~Throttle()");
     }
     
-    void reset(long timeMs) {
-        this->startTimeMs = timeMs;
-        this->timeMs_ = this->startTimeMs;
+    void reset(TimeUs timeUs) {
+        this->startTimeUs = timeUs;
+        this->timeUs_ = this->startTimeUs;
     }
 
-    void preUpdate(long timeMs) {
-        this->lastTimeMs_ = this->timeMs_;
-        this->timeMs_ = timeMs;
+    void preUpdate(TimeUs timeUs) {
+        this->lastTimeUs_ = this->timeUs_;
+        this->timeUs_ = timeUs;
         this->propellers->beforeUpdate();
     }
     Throttle &operator+=(long pwm) {

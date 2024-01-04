@@ -232,9 +232,9 @@ public:
             A8_LOG_DEBUG(cc.logger, "after run()");
             */
             if (me->ret < 0) {
-                log(String() << "fail of mission, detail:" << me->res->errorMessage);
+                log(String() << "fail of mission, ret:" << me->ret << ",detail:" << me->res->errorMessage << "), time cost in us:" << mission->getTimeCostUs());
             } else {
-                log(String() << "done of mission(" << me->mission->getId() << "), time cost in sec:" << (mission->getTimeCost() / 1000.0f));
+                log(String() << "done of mission(" << me->mission->getId() << "),ret(" << me->ret << "), time cost in us:" << mission->getTimeCostUs());
             }
             delete me->mission;
             delete me;

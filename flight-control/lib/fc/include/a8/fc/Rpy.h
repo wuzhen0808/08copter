@@ -20,7 +20,7 @@ class Rpy {
 
     float offset[3];
 
-    Filter *filter_;
+    Filter *filters_[3];
     void (*releaseFilter_)(Filter *);
 
 public:
@@ -43,20 +43,25 @@ public:
         this->offset[0] = 0.0f;
         this->offset[1] = 0.0f;
         this->offset[2] = 0.0f;
-        this->filter_ = 0;
+        this->filters_[0] = 0;
+        this->filters_[1] = 0;
+        this->filters_[2] = 0;
     }
     ~Rpy() {
     }
-    void releaseFilter() {
-        if (this->filter_ == 0) {
-            return;
+    void releaseFilters() {
+        for (int i = 0; i < 3; i++) {
+
+            if (this->filters_[i] == 0) {
+                continue;
+            }
+            this->releaseFilter_(this->filters_[i]);
+            this->filters_[i] = 0;
         }
-        this->releaseFilter_(this->filter_);
-        this->filter_ = 0;
     }
-    void setFilter(Filter *filter, void (*release)(Filter *)) {
-        this->releaseFilter();
-        this->filter_ = filter;
+    void setFilters(Filter **filters, void (*release)(Filter *)) {
+        this->releaseFilters();
+        Array::copy<Filter*>(filters, 0, 3, this->filters_);
         this->releaseFilter_ = release;
     }
 
@@ -95,17 +100,16 @@ public:
         return 1;
     }
 
-    int continueUpdate(System *sys, long time, long interval, Result &res) {
-        long timeStart = sys->getSteadyTime();
+    int continueUpdate(System *sys, long timeMs, long intervalMs, Result &res) {
+        TimeUs timeStartUs = sys->getSteadyTimeUs();
         int ret = 1;
         while (true) {
             ret = this->update(res);
             if (ret < 0) {
                 break;
             }
-            sys->delay(interval);
-            long timeRemain = timeStart + time - sys->getSteadyTime();
-            if (timeRemain < 0) {
+            sys->delay(intervalMs);
+            if (timeStartUs + timeMs * 1000 < sys->getSteadyTimeUs()) {
                 break;
             }
         }
@@ -137,9 +141,9 @@ public:
         }
 
         imu->get(this->rpy_);
-        this->fRpy_[0] = filter_->update(rpy_[0]);
-        this->fRpy_[1] = filter_->update(rpy_[1]);
-        this->fRpy_[2] = filter_->update(rpy_[2]);
+        this->fRpy_[0] = filters_[0]->update(rpy_[0]);
+        this->fRpy_[1] = filters_[1]->update(rpy_[1]);
+        this->fRpy_[2] = filters_[2]->update(rpy_[2]);
 
         aRpy_[0] = this->rpy_[0] + offset[0];
         aRpy_[1] = this->rpy_[1] + offset[1];

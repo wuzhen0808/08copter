@@ -10,9 +10,11 @@ ArduinoSystem::ArduinoSystem() {
     input = new ArduinoInput();
 }
 
-long long ArduinoSystem::getSteadyTime() {
-    return millis();
+    
+TimeUs ArduinoSystem::getSteadyTimeUs() {
+    return micros();
 }
+    
 
 long long ArduinoSystem::getSysTime() {
     return millis();
@@ -50,5 +52,8 @@ int ArduinoSystem::analogRead(int pin) {
 }
 void ArduinoSystem::delay(long ms) {
     ::delay(ms);
+}
+void ArduinoSystem::delayUs(TimeUs us) {
+    ::delayMicroseconds(us);
 }
 } // namespace a8::hal::arduino_

@@ -24,6 +24,9 @@ public:
     static ConfigItem *add(ConfigItem *ci, String name, long &var) {
         return addNumberInput<long>(ci, name, var);
     }
+    static ConfigItem *add(ConfigItem *ci, String name, unsigned long &var) {
+        return addNumberInput<unsigned long>(ci, name, var);
+    }
     static ConfigItem *add(ConfigItem *ci, String name, float &var) {
         return addNumberInput<float>(ci, name, var);
     }

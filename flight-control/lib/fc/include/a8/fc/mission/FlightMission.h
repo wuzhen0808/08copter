@@ -88,9 +88,9 @@ class FlightMission : public Mission {
     Rpy *rpy;
     PwmCalculator *pwmCalculator;
     bool landing;
-    long startTimeMs;
-    long tickCostTimeMs;
-    long timeMs;
+    TimeUs startTimeUs;
+    TimeUs tickCostTimeUs;
+    TimeUs timeUs;
     Foreground *fg;
     bool running = true;
 
@@ -99,14 +99,22 @@ public:
         : Mission(id, configContext, throttle, signalQueue, collector, sys, logFac, "FlightMission") {
         this->config = config;
         this->rpy = new Rpy(imu, config->maxImuUpdateRetries);
-        Rate tickRate = Rate::ms(config->tickTimeMs);
+        Rate tickRate = Rate::us(config->tickTimeUs);
+        Filter *filters[3];
         if (config->rpyFilter == RpyFilter::LP1) {
-            this->rpy->setFilter(fac->newLowPassFilter(config->rpyFilterCutOffHz, tickRate, 1), Lang::delete_<Filter>);
+            filters[0] = fac->newLowPassFilter(config->rpyFilterCutOffHz, tickRate, 1);
+            filters[1] = fac->newLowPassFilter(config->rpyFilterCutOffHz, tickRate, 1);
+            filters[2] = fac->newLowPassFilter(config->rpyFilterCutOffHz, tickRate, 1);
         } else if (config->rpyFilter == RpyFilter::LP2) {
-            this->rpy->setFilter(fac->newLowPassFilter(config->rpyFilterCutOffHz, tickRate, 2), Lang::delete_<Filter>);
+            filters[0] = fac->newLowPassFilter(config->rpyFilterCutOffHz, tickRate, 2);
+            filters[1] = fac->newLowPassFilter(config->rpyFilterCutOffHz, tickRate, 2);
+            filters[2] = fac->newLowPassFilter(config->rpyFilterCutOffHz, tickRate, 2);
         } else {
-            this->rpy->setFilter(new EmptyFilter(), Lang::delete_<Filter>);
+            filters[0] = new EmptyFilter();
+            filters[1] = new EmptyFilter();
+            filters[2] = new EmptyFilter();
         }
+        this->rpy->setFilters(filters, Lang::delete_<Filter>);
 
         this->propellers = propellers;
         this->throttler = new throttle::FlightThrottler(config, fac, rpy, logFac);
@@ -122,7 +130,7 @@ public:
             fg = 0;
         }
         this->landing = false;
-        this->tickCostTimeMs = 0;
+        this->tickCostTimeUs = 0;
     }
 
     ~FlightMission() {
@@ -163,9 +171,9 @@ public:
         if (ret > 0)
             ret = throttler->collectDataItems(collector, res);
         if (ret > 0)
-            ret = collector->add("timeMs", this->timeMs, res);
+            ret = collector->add("timeUs", this->timeUs, res);
         if (ret > 0)
-            ret = collector->add("tickCostTimeMs", this->tickCostTimeMs, res);
+            ret = collector->add("tickCostTimeUs", this->tickCostTimeUs, res);
         if (ret > 0)
             ret = collector->add("Landing", this->landing, res);
         if (ret > 0) {
@@ -227,9 +235,9 @@ public:
             ret = propellers->isReady(res);
         }
         if (ret > 0) {
-            Mission::onStart(sys->getSteadyTime());
+            Mission::onStart(sys->getSteadyTimeUs());
             ret = this->run2(res);
-            Mission::onEnd(sys->getSteadyTime());
+            Mission::onEnd(sys->getSteadyTimeUs());
         }
         return ret;
     }
@@ -251,32 +259,34 @@ public:
 
         this->propellers->open();
         this->sys->out->println(String() << "running ... " << this->id);
-        this->throttle.reset(startTimeMs);
-        this->timeMs = sys->getSteadyTime();
-        this->startTimeMs = timeMs; // m
+        this->throttle.reset(startTimeUs);
+        this->timeUs = sys->getSteadyTimeUs();
+        this->startTimeUs = this->timeUs; // m
         int ret = 1;
 
         for (int ticks = 0; this->running; ticks++) {
             Result res2;
-            throttle.preUpdate(timeMs);
+            throttle.preUpdate(timeUs);
             int rpyUpdateRet = rpy->update(res2);
 
             int updateRet = this->doUpdate(res2);
 
             if (running && throttler->isLanded()) {
+                ret = -1;
+                res.errorMessage << "landed.";
                 running = false;
             }
 
             if (running && !landing) {
-                int err = this->checkLanding(rpyUpdateRet, updateRet, timeMs);
+                int err = this->checkLanding(rpyUpdateRet, updateRet, timeUs);
                 if (err < 0) {
                     res << res2.errorMessage;
                     ret = err;
                 }
             }
 
-            long now = sys->getSteadyTime();
-            tickCostTimeMs = now - timeMs;
+            TimeUs now = sys->getSteadyTimeUs();
+            tickCostTimeUs = now - timeUs;
             //
             if (ticks % config->collectEveryTicks == 0) {
                 collector->update();
@@ -288,12 +298,13 @@ public:
             }
 
             // calculate next tick time.
-            long remain = config->tickTimeMs - tickCostTimeMs;
-            if (remain > 0) {
-                sys->delay(remain);
-                timeMs = now + remain;
+
+            if (config->tickTimeUs > tickCostTimeUs) {
+                TimeUs remain = config->tickTimeUs - tickCostTimeUs;
+                sys->delayUs(remain);
+                timeUs = now + remain;
             } else {
-                timeMs = now;
+                timeUs = now;
             }
         }
         // end of mission.
@@ -354,20 +365,23 @@ protected:
         }
         return 1;
     }
-    int checkLanding(int rpyUpdateRet, int updateRet, long timeMs) {
+    int checkLanding(int rpyUpdateRet, int updateRet, TimeUs timeUs) {
         int ret = 1;
         if (!landing) { //
             // check if need start landing.
             if (rpyUpdateRet < 0 || updateRet < 0) {
                 ret = -1; // abnormal end.
+                A8_DEBUG("landing by rpy or other error.");
                 landing = true;
             }
-            if (timeMs - startTimeMs > config->flyingTimeLimitSec * 1000) {
-                ret = 1; // normal end.
+            if (timeUs - startTimeUs > config->flyingTimeLimitSec * A8_US_PER_SEC) {
+                ret = -2; // time limit.
+                A8_DEBUG("landing by time limit.");
                 landing = true;
             }
             if (landing) {
-                this->throttler->startLanding(timeMs);
+                A8_DEBUG("landing");
+                this->throttler->startLanding(timeUs);
             }
         }
         return ret;

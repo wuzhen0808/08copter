@@ -76,13 +76,13 @@ public:
         // this->rpy->tick();
     }
     void hz500(TickingContext *tc) {
-        long timeMs = tc->getSteadyTime();
+        TimeUs timeUs = tc->getSteadyTimeUs();
         // this->pm->tick(timeMs);
     }
 
     void hz100(TickingContext *tc) {
-        long timeMs = tc->getSteadyTime();
-        this->pm->tick(timeMs);
+        TimeUs timeUs = tc->getSteadyTimeUs();
+        this->pm->tick(timeUs);
     }
 
     void run(TickingContext *tc) {

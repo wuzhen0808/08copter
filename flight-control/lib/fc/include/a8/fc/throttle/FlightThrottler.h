@@ -79,8 +79,8 @@ public:
         return this->landing->isLanded();
     }
 
-    int startLanding(long timeMs) {
-        return this->landing->startLanding(timeMs);
+    int startLanding(TimeUs timeUs) {
+        return this->landing->startLanding(timeUs);
     }
 
     int update(Throttle &ctx, Result &res) {

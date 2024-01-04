@@ -21,13 +21,13 @@ public:
         this->lastBalanceCheckError = "balance is unknown.";
         this->lastStableCheckError = "stable is unknown.";
     }
-    void setFilter(ImuFilter filter) override {
+    void setFilter(ImuFilter filter, int iterations) override {
         if (filter == ImuFilter::MAG) {
             mpu->selectFilter(QuatFilterSel::MADGWICK);
-            mpu->setFilterIterations(5);
+            mpu->setFilterIterations(iterations);
         } else if (filter == ImuFilter::MOH) {
             mpu->selectFilter(QuatFilterSel::MAHONY);
-            mpu->setFilterIterations(5);
+            mpu->setFilterIterations(iterations);
         } else {
             mpu->selectFilter(QuatFilterSel::NONE);
         }

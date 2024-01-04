@@ -14,8 +14,8 @@ class PowerManage : public FlyWeight {
     float remindVoltage = 11.0f;
     float dangerVoltage = 10.5f;
 
-    long lastUpdateTimeMs = -1;
-    long lastLedSetTimeMs = -1;
+    TimeUs lastUpdateTimeUs = 0;
+    TimeUs lastLedSetTimeUs = 0;
 
 public:
     PowerManage(System *sys, int voltagePin, int ledPin, LoggerFactory *logFac) : FlyWeight(logFac, "PowerManage") {
@@ -31,17 +31,17 @@ public:
 
     void setup() {
         this->led->setup();
-        this->led->start(sys->getSteadyTime());
+        this->led->start(sys->getSteadyTimeUs());
     }
     int collectDataItems(Collector *collector, Result &res) {
         return collector->add("voltage", this->voltage, res);
     }
-    void tick(long timeMs) {
+    void tick(TimeUs timeUs) {
 
-        if (this->lastUpdateTimeMs + 1000 < timeMs) {
-            this->update(timeMs);
+        if (this->lastUpdateTimeUs + A8_US_PER_SEC < timeUs) {
+            this->update(timeUs);
         }
-        if (this->lastLedSetTimeMs < this->lastUpdateTimeMs) {
+        if (this->lastLedSetTimeUs < this->lastUpdateTimeUs) {
             if (this->voltage < dangerVoltage) {
                 if (A8_PM_DEBUG) {
                     log("danger");
@@ -58,10 +58,10 @@ public:
                 }
                 led->info(); // normal mode.
             }
-            this->lastLedSetTimeMs = timeMs;
+            this->lastLedSetTimeUs = timeUs;
         }
         Result res;
-        int ret = led->tick(timeMs, res);
+        int ret = led->tick(timeUs, res);
 
         if (ret < 0) {
             log(String() << "led error(" << ret << "),detail:" << res.errorMessage);
@@ -71,23 +71,23 @@ public:
         }
     }
     // TODO thread safe.
-    void update(long timeMs) {
-        update(timeMs, false);
+    void update(TimeUs timeUs) {
+        update(timeUs, false);
     }
 
-    void update(long timeMs, bool debug) {
+    void update(TimeUs timeUs, bool debug) {
         int mV = sys->analogRead(voltagePin); /// 1024.0f * 12.0f;
         voltage = mV * 1e-3 * 4.10f;
         if (debug) {
             log(String() << "raw:" << mV << "voltage:" << voltage);
         }
 
-        this->lastUpdateTimeMs = timeMs;
+        this->lastUpdateTimeUs = timeUs;
     }
 
     int isReady(Result &res) {
-        long timeMs = sys->getSteadyTime();
-        this->update(timeMs);
+        TimeUs timeUs = sys->getSteadyTimeUs();
+        this->update(timeUs);
         if (this->voltage < dangerVoltage) {
             res << "voltage(" << voltage << ") is low, it must higher than " << dangerVoltage << ".";
             return -1;

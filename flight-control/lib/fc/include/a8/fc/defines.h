@@ -1,6 +1,7 @@
 #pragma once
 #include "a8/util.h"
 namespace a8::fc {
+
 using namespace a8::util;
 
 enum UnBalanceAction {

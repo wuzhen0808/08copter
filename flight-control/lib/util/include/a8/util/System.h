@@ -21,7 +21,7 @@ public:
 
     virtual long long getSysTime() = 0;
 
-    virtual long long getSteadyTime() = 0;
+    virtual TimeUs getSteadyTimeUs() = 0;
 
     virtual void formatTime(long long ms, String *str) = 0;
 
@@ -40,6 +40,8 @@ public:
     virtual void digitalWrite(int pin, bool high);
 
     virtual void delay(long ms);
+
+    virtual void delayUs(TimeUs us);
 
     Reader *getInput() {
         return this->input;

@@ -16,7 +16,7 @@ private:
     StagingContext *staging;
     Rate rate;
     int group;
-    long tickTimeMs;
+    TimeUs tickTimeUs;
     // for thead safe, attributes is used to store thread local variables.
     Buffer<void *> variables;
     //
@@ -34,12 +34,12 @@ public:
     System *getSys() {
         return this->staging->getSys();
     }
-    long getTickTimeMs() {
-        return tickTimeMs;
+    TimeUs getTickTimeUs() {
+        return tickTimeUs;
     }
 
-    long getSteadyTime() {
-        return this->staging->getSys()->getSteadyTime();
+    TimeUs getSteadyTimeUs() {
+        return this->staging->getSys()->getSteadyTimeUs();
     }
 
     void setVar(int key, void *var) {
@@ -68,8 +68,8 @@ public:
         return this->staging;
     }
 
-    void beforTick(long timeMs) {
-        this->tickTimeMs = timeMs;
+    void beforTick(TimeUs timeUs) {
+        this->tickTimeUs = timeUs;
     }
     void afterTick() {
         this->ret = 0;

@@ -21,7 +21,7 @@ class BalanceThrottler : public Throttler {
     float desiredPitch = .0f;
     float desiredYaw = .0f;
 
-    long startTimeMs = -1;
+    long startTimeUs = -1;
 
     float maxBalanceThrottle = 0;
 
@@ -39,7 +39,7 @@ public:
         this->yawPid = new Pid(logFac, "YawPid");
 
         if (config->pidEnableErrorDiffFilter) {
-            Rate tickRate = Rate::ms(config->tickTimeMs);
+            Rate tickRate = Rate::ms(config->tickTimeUs);
             int order = config->pidErrorDiffFilterOrder;
             this->rollPid->setErrorDiffFilter(fac->newLowPassFilter(config->pidErrorDiffFilterCutOffRate, tickRate, order), Lang::delete_<Filter>);
             this->pitchPid->setErrorDiffFilter(fac->newLowPassFilter(config->pidErrorDiffFilterCutOffRate, tickRate, order), Lang::delete_<Filter>);
@@ -86,9 +86,9 @@ public:
 
         rpy->get(rpy_, fRpy_);
         // pid
-        rollPid->update(ctx.timeMs_, rpy_[0], fRpy_[0], desiredRoll);
-        pitchPid->update(ctx.timeMs_, rpy_[1], fRpy_[1], desiredPitch);
-        yawPid->update(ctx.timeMs_, rpy_[2], fRpy_[2], desiredYaw);
+        rollPid->update(ctx.timeUs_, rpy_[0], fRpy_[0], desiredRoll);
+        pitchPid->update(ctx.timeUs_, rpy_[1], fRpy_[1], desiredPitch);
+        yawPid->update(ctx.timeUs_, rpy_[2], fRpy_[2], desiredYaw);
         //
         float rollThrottle = rollPid->getOutput();
         float pitchThrottle = pitchPid->getOutput();

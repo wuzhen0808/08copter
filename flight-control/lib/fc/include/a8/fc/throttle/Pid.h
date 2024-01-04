@@ -24,7 +24,7 @@ class Pid : public FlyWeight {
     float p = 0;
     float i = 0;
     float d = 0;
-    long lastTimeMs = -1;
+    TimeUs lastTimeUs = 0;
     //
     float elapsedTimeSec = 0;
     float error = 0;
@@ -107,15 +107,15 @@ public:
         return outputLimit;
     }
 
-    void update(long timeMs, float actual, float dTermActual, float desired) {
+    void update(TimeUs timeUs, float actual, float dTermActual, float desired) {
         A8_LOG_DEBUG(logger, String() << ">>update," << actual << "," << desired);
-        if (lastTimeMs < 0) {
-            lastTimeMs = timeMs;
+        if (lastTimeUs == 0) {
+            lastTimeUs = timeUs;
         }
         error = actual - desired;        
         dError = dTermActual - desired;
         p = kp * error;
-        elapsedTimeSec = (timeMs - lastTimeMs) / 1000.0f;
+        elapsedTimeSec = (timeUs - lastTimeUs) / 1000000.0f;
         // if (-3 < error < 3) {
         i = i + (ki * error * elapsedTimeSec);
         limit(i, -outputLimitI, outputLimitI);
@@ -133,15 +133,15 @@ public:
         output = p + i + d;
         limit(output, -outputLimit, outputLimit);
 
-        A8_LOG_DEBUG(logger, String(name) << "timeMs(" << timeMs << ")-lastTimeMs(" << lastTimeMs << ")/1000=elapsedTimeSec?(" << elapsedTimeSec << ")");
-        A8_LOG_DEBUG(logger, String(name) << "error(" << error << ")-lastError(" << lastError << ")=rawErrorDiff(" << rawErrorDiff << ")/elapsedTimeSec(" << elapsedTimeSec << ")=?" << d);
+        A8_LOG_DEBUG(logger, String(name) << "timeUs(" << timeUs << ")-lastTimeUs(" << lastTimeUs << ")/1000=elapsedTimeSec?(" << elapsedTimeSec << ")");
+        A8_LOG_DEBUG(logger, String(name) << "dError(" << dError << ")-lastError(" << dLastError << ")=rawErrorDiff(" << dErrorDiff << ")/elapsedTimeSec(" << elapsedTimeSec << ")=?" << d);
         A8_LOG_DEBUG(logger, String(name) << ">>update,p:" << p << ",i:" << i << ",d:" << d << ","
                                           << "output:" << output);
-        A8_DEBUG7("timeMs(", timeMs, ")-lastTimeMs(", lastTimeMs, ")/1000=elapsedTimeSec?(", elapsedTimeSec, ")");
-        A8_DEBUG10("error(", error, ")-lastError(", lastError, ")=rawErrorDiff(", rawErrorDiff, ")/elapsedTimeSec(", elapsedTimeSec, ")=?", d);
+        A8_DEBUG7("timeUs(", timeUs, ")-lastTimeUs(", lastTimeUs, ")/1000=elapsedTimeSec?(", elapsedTimeSec, ")");
+        A8_DEBUG10("error(", error, ")-lastError(", dLastError, ")=rawErrorDiff(", dErrorDiff, ")/elapsedTimeSec(", elapsedTimeSec, ")=?", d);
         A8_DEBUG8(">>update,p:", p, ",i:", i, ",d:", d, ",output:", output);
 
-        lastTimeMs = timeMs;
+        lastTimeUs = timeUs;
         dLastError = dError;
 
         ticks++;

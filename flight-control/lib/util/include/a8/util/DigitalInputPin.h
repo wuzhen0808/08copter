@@ -30,15 +30,15 @@ public:
         return !isLow();
     }
 
-    int waitHigh(long timeout) {
-        long started = sys->getSteadyTime();
+    int waitHighMs(long timeoutMs) {
+        TimeUs started = sys->getSteadyTimeUs();
         while (true) {
             bool high = this->isHigh();
             if (high) {
                 log("become high.");
                 break;
             }
-            if (sys->getSteadyTime() - started > timeout) {
+            if (sys->getSteadyTimeUs() - started > timeoutMs * 1000) {
                 return -1;
             }
             this->sys->delay(1);

@@ -35,9 +35,10 @@ class FlightConfigItem : public ConfigItem {
     Imu *imu;
 
 public:
-    long tickTimeMs = 6;
+    TimeUs tickTimeUs = 6000;
     // rpy
     ImuFilter imuFilter = ImuFilter::NONE;
+    int imuFilterIterations = 1;
 
     float elevationThrottle = 0.0f;
     float activeThrottle0 = 55;
@@ -52,16 +53,18 @@ public:
     float unBalanceDegUpLimit = 10.0f;
     float unBalanceDegLimit = 5.0f;
     float maxThrottle = 1000;
+
     //////////////////////
-    // MAG filter only on IMU:
-    // 18.75,0,4.5,volt@11.2
-    // 19.5,0,3.5,volt@11.2 **
-    // 19.5,5,3.9,volt@12.2/11.8 *
-    // 19.5,6.5,4.25,volt@11.0 *
-    // 18,16.5,4.1,volt@11.3
-    // 19.5,5,4.25,volt@11.6 : very fast flapping.
-    // 19.5,5,4.1,volt@11.7 : mid fast flapping.
-    // 19.5,6,4.1,volt@11.7 : mid shaving.
+    // 20,6,4.25,v11.2,f(NO->LP1) --(This is only work at first flight, because LP filter does not address cumulative bias.)
+    // 19.5,6.0,4.25,v11.4,f(MAG->NO) ***, 
+    // 18.75,0,4.5,v11.2
+    // 19.5,0,3.5,v11.2 **
+    // 19.5,5,3.9,v12.2/11.8 *
+    // 19.5,6.5,4.25,v11.0 *
+    // 18,16.5,4.1,v11.3
+    // 19.5,5,4.25,v11.6 : very fast flapping.
+    // 19.5,5,4.1,v11.7 : mid fast flapping.
+    // 19.5,6,4.1,v11.7 : mid shaving.
 
     //////////////////////
     // imuFilter:empty;
@@ -93,7 +96,7 @@ public:
 
     bool enableVoltageCompensate = true;
     float maxVoltForPwmCompensate = 12.5f;
-    float minVoltForPwmCompensate = 7.0f;
+    float minVoltForPwmCompensate = 9.0f;
 
     int maxImuUpdateRetries = 5;
     RpyFilter rpyFilter = RpyFilter::NO; // LP1 don't get the Pid balanceed.
@@ -135,7 +138,7 @@ public:
             ConfigItems::addSelectInput<UnBalanceAction>(ci, "unBalanceAction", unBalanceAction, &UN_BALANCE_ACTIONS);
             ConfigItems::add(ci, "stableCheckRetries", stableCheckRetries);
             ConfigItems::add(ci, "enableStart", this->enableStart);
-            ConfigItems::add(ci, "tickTimeMs", tickTimeMs);
+            ConfigItems::add(ci, "tickTimeUs", tickTimeUs);
             ConfigItems::add(ci, "flyingTimeLimit(sec)", flyingTimeLimitSec);
             ConfigItems::add(ci, "unBalanceDegDownLimit", unBalanceDegLimit);
             ConfigItems::add(ci, "unBalanceDegUpLimit", unBalanceDegUpLimit);
@@ -158,13 +161,14 @@ public:
         {
             {
                 ConfigItems::addSelectInput<ImuFilter>(ci, "imuFilter", imuFilter, &IMU_FILTERS);
+                ConfigItems::add(ci, "imuFilterIterations", imuFilterIterations);
             }
             {
                 ci = ci->getLastChild();
                 ci->setAttribute(0, this, Lang::empty<void *>);
                 ci->onAfterEnter = [](ConfigContext &cc) {
                     FlightConfigItem *this_ = cc.getConfigItem()->getAttribute<FlightConfigItem *>(0, 0);
-                    this_->imu->setFilter(this_->imuFilter);
+                    this_->imu->setFilter(this_->imuFilter, this_->imuFilterIterations);
                 };
                 ci = ci->getParent<ConfigItem>();
             }

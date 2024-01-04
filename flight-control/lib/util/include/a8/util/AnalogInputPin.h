@@ -32,13 +32,13 @@ public:
         return false;
     }
 
-    int waitMoving(long timeout) {
-        long started = sys->getSteadyTime();
+    int waitMovingMs(long timeoutMs) {
+        TimeUs started = sys->getSteadyTimeUs();
         while (true) {
             if (this->isMoving()) {
                 break;
             }
-            if (sys->getSteadyTime() - started > timeout) {
+            if (sys->getSteadyTimeUs() - started > timeoutMs * 1000) {
                 return -1;
             }
         }

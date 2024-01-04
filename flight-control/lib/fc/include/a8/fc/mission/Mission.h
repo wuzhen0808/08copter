@@ -20,8 +20,8 @@ protected:
     SyncQueue<int> *signalQueue;
     Collector *collector;
     long id;
-    long startTimeMs;
-    long endTimeMs;
+    TimeUs startTimeUs;
+    TimeUs endTimeUs;
 
 public:
     Mission(long id, ConfigContext &configContext, Throttle &throttle, SyncQueue<int> *signalQueue, Collector *collector, System *sys, LoggerFactory *logFac, String name)
@@ -34,16 +34,16 @@ public:
 
     ~Mission() {
     }
-    void onStart(long timeMs) {
-        this->startTimeMs = timeMs;
+    void onStart(TimeUs timeUs) {
+        this->startTimeUs = timeUs;
     }
 
-    void onEnd(long timeMs) {
-        this->endTimeMs = timeMs;
+    void onEnd(TimeUs timeUs) {
+        this->endTimeUs = timeUs;
     }
 
-    long getTimeCost() {
-        return this->endTimeMs - this->startTimeMs;
+    TimeUs getTimeCostUs() {
+        return this->endTimeUs - this->startTimeUs;
     }
 
     void signal(int signal) {

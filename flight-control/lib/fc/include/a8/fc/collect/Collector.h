@@ -168,6 +168,10 @@ public:
         return add<long>(name, var, &longFormat, res);
     }
 
+    int add(String name, unsigned long &var, Result &res) {
+        return add<unsigned long>(name, var, &longFormat, res);
+    }
+
     int add(String name, int &var, Result &res) {
         return add<int>(name, var, &intFormat, res);
     }

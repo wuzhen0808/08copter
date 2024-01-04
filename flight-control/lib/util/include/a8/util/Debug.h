@@ -116,6 +116,8 @@ public:
 
     static void print(unsigned i);
 
+    static void print(unsigned long i);
+
     static void debug(const char *str);
 
     static void debug(const char *str, float fValue);

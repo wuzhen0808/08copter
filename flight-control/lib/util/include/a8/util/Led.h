@@ -9,14 +9,14 @@ class Led {
 public:
     class Light {
     public:
-        long timeMs;
+        TimeUs timeUs;
         bool on;
-        long startTimeMs = -1;
-        long endTimeMs = -1;
+        TimeUs startTimeUs = 0;
+        TimeUs endTimeUs = 0;
 
     public:
-        Light(long timeMs, bool on) {
-            this->timeMs = timeMs;
+        Light(TimeUs timeUs, bool on) {
+            this->timeUs = timeUs;
             this->on = on;
         }
     };
@@ -57,12 +57,12 @@ public:
             });
         }
 
-        Mode *off(long timeMs) {
-            return add(timeMs, false);
+        Mode *off(TimeUs timeUs) {
+            return add(timeUs, false);
         }
 
-        Mode *on(long timeMs) {
-            return add(timeMs, true);
+        Mode *on(TimeUs timeUs) {
+            return add(timeUs, true);
         }
 
         Mode *offOn(long off, long on) {
@@ -77,26 +77,26 @@ public:
             return this;
         }
 
-        Mode *add(long timeMs, bool on) {
-            return add(new Light(timeMs, on));
+        Mode *add(TimeUs timeUs, bool on) {
+            return add(new Light(timeUs, on));
         }
 
         Mode *add(Light *light) {
             Light *preLight = 0;
             this->lights.getLast(preLight);
             this->lights.append(light);
-            light->startTimeMs = preLight == 0 ? 0 : preLight->endTimeMs;
-            light->endTimeMs = light->startTimeMs + light->timeMs;
+            light->startTimeUs = preLight == 0 ? 0 : preLight->endTimeUs;
+            light->endTimeUs = light->startTimeUs + light->timeUs;
             return this;
         }
         void log(String msg) {
             sys->out->println(msg);
         }
-        bool shouldOn(long startTimeMs, long timeMs) {
-            long elapsed = timeMs - startTimeMs;
+        bool shouldOn(TimeUs startTimeUs, TimeUs timeUs) {
+            TimeUs elapsedUs = timeUs - startTimeUs;
             if (A8_LED_DEBUG) {
 
-                log(String() << "timeMs:" << timeMs << ",startTimeMs:" << startTimeMs << ",elapsed:" << elapsed);
+                log(String() << "timeUs:" << timeUs << ",startTimeUs:" << startTimeUs << ",elapsedUs:" << elapsedUs);
             }
 
             Light *last = 0;
@@ -108,12 +108,12 @@ public:
                 return false;
             }
 
-            long elapsed2 = elapsed % last->endTimeMs;
+            TimeUs elapsedUs2 = elapsedUs % last->endTimeUs;
             // find a light
             Light *l = 0;
             for (int i = 0; i < lights.len(); i++) {
                 l = lights.get(i, 0);
-                if (elapsed2 < l->endTimeMs) {
+                if (elapsedUs2 < l->endTimeUs) {
                     if (A8_LED_DEBUG) {
                         log(String() << "found light:" << i);
                     }
@@ -126,7 +126,7 @@ public:
 
 protected:
     int pin;
-    long startTimeMs = -1;
+    TimeUs startTimeUs = 0;
     bool on_ = false; // status of the led.
     System *sys;
     Mode *mode = 0;
@@ -156,8 +156,8 @@ public:
         this->sys->setPinMode(pin, PinMode::OUT);
     }
 
-    void start(long timeMs) {
-        this->startTimeMs = timeMs;
+    void start(TimeUs timeUs) {
+        this->startTimeUs = timeUs;
     }
 
     void update(long off, long on) {
@@ -170,15 +170,15 @@ public:
         this->releaseMode_ = releaseMode;
     }
 
-    int tick(long timeMs, Result &res) {
-        if (startTimeMs < 0) {
+    int tick(TimeUs timeUs, Result &res) {
+        if (startTimeUs == 0) {
             res << "not started.";
             return -1; // do not update if not started.
         }
         if (mode == 0) {
             return 1;
         }
-        bool shouldOn = mode->shouldOn(startTimeMs, timeMs);
+        bool shouldOn = mode->shouldOn(startTimeUs, timeUs);
         if (shouldOn != this->on_) {
             sys->digitalWrite(this->pin, shouldOn);
             this->on_ = shouldOn;

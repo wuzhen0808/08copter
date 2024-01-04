@@ -235,6 +235,10 @@ public:
         appendAsInt<unsigned>(0, ' ', iValue);
     }
 
+    void append(const unsigned long iValue) {
+        appendAsInt<unsigned long>(0, ' ', iValue);
+    }
+
     int lastIndexOf(char ch) const {
         for (int i = this->length_ - 1; i >= 0; i--) {
             if (this->text_[i] == ch) {
@@ -354,6 +358,11 @@ public:
     }
 
     String &operator<<(const unsigned fValue) {
+        append(fValue);
+        return *this;
+    }
+
+    String &operator<<(const unsigned long fValue) {
         append(fValue);
         return *this;
     }

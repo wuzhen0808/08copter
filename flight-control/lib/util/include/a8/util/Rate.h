@@ -11,7 +11,11 @@ public:
     static Rate RUN;
 
     static Rate ms(long ms) {
-        return 1000.0f / (float)ms;
+        return A8_MS_PER_SEC / (double)ms;
+    }
+    
+    static Rate us(unsigned long us) {
+        return A8_US_PER_SEC / (double)us;
     }
 
     Rate() {
@@ -58,6 +62,12 @@ public:
             return -1;
         }
         return 1.0f / hz;
+    }
+    float us() const {
+        if (isZero()) {
+            return -1;
+        }
+        return 1.0e6 * sec();
     }
     /**
      * millisec per round

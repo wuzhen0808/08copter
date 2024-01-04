@@ -35,6 +35,10 @@ void a8::util::Debug::print(unsigned d) {
     Serial.print(d);
 }
 
+void a8::util::Debug::print(unsigned long d) {
+    Serial.print(d);
+}
+
 
 
 void a8::util::Debug::debug(const char *exp1, float exp2, float exp3, float exp4, float exp5, float exp6) {
