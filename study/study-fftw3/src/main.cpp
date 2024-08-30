@@ -14,9 +14,9 @@ using namespace std;
 int writeGpScript(const char *datName, int rate, int N);
 string fname("build/fc231229.csv");
 const char *ofname = "build/out.dat";
-int N = 50;
+int N = 80;
 const char *COL = "RollPid-err";
-int RATE = 5;
+int RATE = 200;
 ifstream f(fname);
 
 int loadInput(vector<double> *in) {
@@ -104,7 +104,7 @@ int main() {
         // }
 
         double correction = (double)RATE / (double)N;
-        for (int j = 0; j < N / 2 + 1; j++) {
+        for (int j = 1; j < N / 2 + 1; j++) {
             double mag = 2 * (out[j][0] * out[j][0] + out[j][1] * out[j][1]) / N;
             double freqBin = (double)(j)*correction;
             double mag2 = (10. * log10(mag + 0.001)) / log10(10);
